@@ -153,38 +153,7 @@
         </div>
 
         <template #foot>
-            <Composer isThread
-                      :title="conversationTitle"
-                      :isChannel="isChannel"
-                      :isLocked="isLocked"
-                      :lockedReason="lockedReason"
-                      :maxLength="maxLength"
-                      :text="draft.text"
-                      :mentions="draft.mentions"
-                      :isAlsoSent="draft.isAlsoSent"
-                      :quote="quote"
-                      :isQuoteOwn="isQuoteOwn"
-                      :emojiSource="emojiSource"
-                      :mentionSource="mentionSource"
-                      :conversationKey="root ? `thread:${root.id}` : null"
-                      :sendFailure="replyFailure"
-                      :lastFailure="lastFailure"
-                      :tray="tray"
-                      :busyPerson="busyPerson"
-                      @send="onSend"
-                      @retryFailed="onRetryFailed"
-                      @discardFailed="onDiscardFailed"
-                      @update:text="emit('draftText', $event)"
-                      @update:isAlsoSent="emit('draftAlsoSent', $event)"
-                      @mention="emit('draftMention', $event)"
-                      @editLast="emit('editLast')"
-                      @cancelQuote="emit('cancelQuote')"
-                      @emojiPickerOpen="emit('emojiPickerOpen')"
-                      @emojiChosen="emit('emojiChosen', $event)"
-                      @mentionQuery="emit('mentionQuery', $event)"
-                      @focus="emit('composerFocus')"
-                      @blur="emit('composerBlur')"
-                      @overLimit="emit('overLimit', $event)" />
+            <slot name="composer" />
         </template>
     </PanelHost>
 </template>
@@ -319,9 +288,6 @@
     import { computed, nextTick, onBeforeUnmount, onMounted, PropType, ref, watch } from "vue";
     import { newGuid } from "@Obsidian/Utility/guid";
     import ActionBar from "./actionBar.partial.obs";
-    import Composer from "./composer.partial.obs";
-    import { PickerSource } from "./emojiPicker.partial.obs";
-    import { MentionPickerSource } from "./mentionPicker.partial.obs";
     import MessageRow from "./messageRow.partial.obs";
     import TypingBubble from "./typingBubble.partial.obs";
     import Icon from "../ui/icon.partial.obs";
@@ -331,12 +297,10 @@
     import { isMotionReduced } from "../ui/viewport.partial";
     import { failureNote } from "../composables/saveRule.partial";
     import { useActionBar } from "../composables/useActionBar.partial";
-    import { AttachmentTray } from "../composables/useAttachments.partial";
-    import { ComposerDraft } from "../composables/useDrafts.partial";
     import { MessageActionRequest } from "../composables/useMessageActions.partial";
     import { Typing } from "../composables/usePresence.partial";
     import { ReactionHost } from "../composables/useReactions.partial";
-    import { failedSends, retryableSends, sendFailure, SendFailure, SendFailureNews, useSentHold, useSlowSend } from "../composables/useSend.partial";
+    import { useSentHold, useSlowSend } from "../composables/useSend.partial";
     import { FollowError } from "../composables/useThreads.partial";
     import { messageForError } from "../errors.partial";
     import { useViewArrivals } from "../messageMotion.partial";
@@ -346,7 +310,7 @@
     import { useSeenObserver } from "../composables/useSeenObserver.partial";
     import { FeedItem, FeedLayoutResult, layoutFeed, replyCountText, useLayoutAgain } from "../feedLayout.partial";
     import { useChatSession } from "../chatSession.partial";
-    import { ChatError, ChatPerson, DisplayPiece, PendingMessage, TimelineMessage } from "../types.partial";
+    import { ChatError, PendingMessage, TimelineMessage } from "../types.partial";
 
     // #region Types
 
@@ -376,12 +340,6 @@
             default: () => []
         },
 
-        /** The latest send to fail, which the reply composer's strip says aloud when it is one of this thread's. */
-        lastFailure: {
-            type: Object as PropType<SendFailureNews | null>,
-            default: null
-        },
-
         isFollowing: {
             type: Boolean,
             default: false
@@ -409,16 +367,6 @@
         isDirectMessage: {
             type: Boolean,
             default: false
-        },
-
-        /**
-         * The other person of a two-person direct message, whose Busy the reply box says as the
-         * conversation's does: a reply notifies her no more than a message, and on a phone the
-         * drawer covers the conversation's own box. Null in a group or a channel.
-         */
-        busyPerson: {
-            type: Object as PropType<ChatPerson | null>,
-            default: null
         },
 
         /** Opened from a list, the threads list or the mentions inbox, so Escape and the chevron go back to it. */
@@ -460,24 +408,6 @@
             default: null
         },
 
-        /** Whether the service is read only or in maintenance, so the composer gives way to a locked bar. */
-        isLocked: {
-            type: Boolean,
-            default: false
-        },
-
-        /** The server's sentence for why the person cannot post in the thread's room, or null. */
-        lockedReason: {
-            type: String as PropType<string | null>,
-            default: null
-        },
-
-        /** The longest reply the room takes, which the composer counts down to; 0 for no limit. */
-        maxLength: {
-            type: Number,
-            default: 0
-        },
-
         /** Whether the reader leads this conversation, for the Leader pill on their own messages. */
         isPersonLeader: {
             type: Boolean,
@@ -487,18 +417,6 @@
         /** The reply a push or a link opened the thread at, once the replies hold it; scrolled to and flashed once. */
         landOnId: {
             type: Number as PropType<number | null>,
-            default: null
-        },
-
-        /** The reply this thread's composer holds, as its owner keeps it for the thread. */
-        draft: {
-            type: Object as PropType<ComposerDraft>,
-            default: () => ({ text: "", mentions: [], isAlsoSent: false })
-        },
-
-        /** The files waiting to go with the next reply, or null where files cannot go. */
-        tray: {
-            type: Object as PropType<AttachmentTray | null>,
             default: null
         },
 
@@ -512,18 +430,6 @@
         typingPlace: {
             type: String as PropType<string | null>,
             default: null
-        },
-
-        /** The message being quoted into the next reply, drawn in the composer's strip. */
-        quote: {
-            type: Object as PropType<TimelineMessage | null>,
-            default: null
-        },
-
-        /** Whether the quoted message is the reader's own, which the strip calls "yourself". */
-        isQuoteOwn: {
-            type: Boolean,
-            default: false
         },
 
         /** A room the person has not joined, where they may read but not act on a message. */
@@ -554,18 +460,6 @@
         reactionHost: {
             type: Object as PropType<ReactionHost | null>,
             default: null
-        },
-
-        /** What the reply composer's emoji picker draws. */
-        emojiSource: {
-            type: Object as PropType<PickerSource | null>,
-            default: null
-        },
-
-        /** What the reply composer's @ picker lists, the conversation's as the main composer's; null offers none. */
-        mentionSource: {
-            type: Object as PropType<MentionPickerSource | null>,
-            default: null
         }
     });
 
@@ -573,32 +467,13 @@
         (e: "close"): void,
         (e: "back"): void,
         (e: "follow", isFollowing: boolean): void,
-        (e: "send", body: string, isShownInChannel: boolean): void,
         (e: "seen", messageId: number): void,
         (e: "loadOlder"): void,
-        /** Try again on the strip: the replies to send again, oldest first, which go one at a time in that order. */
+        /** A failed reply's own Try again: the replies to send again, oldest first. */
         (e: "retry", localIds: string[]): void,
         (e: "discard", localId: string): void,
-        (e: "cancelQuote"): void,
-        /** The reply composer's text changed. */
-        (e: "draftText", text: string): void,
-        /** The reply composer's also-send choice changed. */
-        (e: "draftAlsoSent", isAlsoSent: boolean): void,
-        /** A chip was drawn in the reply composer. */
-        (e: "draftMention", piece: DisplayPiece): void,
-        (e: "editLast"): void,
         (e: "jump", quotedMessageId: number): void,
-        (e: "messageAction", request: MessageActionRequest): void,
-        (e: "emojiPickerOpen"): void,
-        (e: "emojiChosen", code: string): void,
-        /** The reply composer's @ query whenever it changes, for the search; null for none. */
-        (e: "mentionQuery", query: string | null): void,
-        /** Focus came into the reply composer, for the search to ready its people. */
-        (e: "composerFocus"): void,
-        /** Focus left the reply composer. */
-        (e: "composerBlur"): void,
-        /** A reply over the room's limit was held back. */
-        (e: "overLimit", maxLength: number): void
+        (e: "messageAction", request: MessageActionRequest): void
     }>();
 
     // #region Values
@@ -692,9 +567,6 @@
 
     /** This root's replies the person is still sending, as the conversation draws its own. */
     const pendingReplies = computed((): PendingMessage[] => props.root ? props.pending.filter(row => row.parentId === props.root?.id) : []);
-
-    /** What this thread's failed replies come to, for the strip over the reply composer. */
-    const replyFailure = computed((): SendFailure | null => sendFailure(pendingReplies.value));
 
     /** The keys of the person's replies that settled while the thread was open, each showing "Sent" for a moment, as in the conversation. */
     const justSentKeys = useSentHold(() => pendingReplies.value, bodyElement);
@@ -797,20 +669,6 @@
     async function onFollowRetry(): Promise<void> {
         await nextTick();
         followElement.value?.focus();
-    }
-
-    /** Try again on the strip: the thread's failed replies that can go, for the owner to resend in turn. */
-    function onRetryFailed(): void {
-        emit("retry", retryableSends(pendingReplies.value).map(row => row.localId));
-    }
-
-    /** Delete on the strip: every failed reply of the thread. */
-    function onDiscardFailed(): void {
-        failedSends(pendingReplies.value).forEach(row => emit("discard", row.localId));
-    }
-
-    function onSend(body: string, isAlsoSent?: boolean): void {
-        emit("send", body, isAlsoSent === true);
     }
 
     /** A row's flash plays once: the flash goes from the row as it ends. */
@@ -963,7 +821,7 @@
         // A phone never focuses the composer on its own, since the keyboard would rise over the
         // thread; its back chevron takes focus instead, because the pane that opened the drawer
         // has slid out of reach and would leave focus nowhere.
-        const firstFocus = isPhone.value ? "[data-testid='panel-back']" : "[data-testid='composer-input']";
+        const firstFocus = isPhone.value ? "[data-focus-stop='panel-back']" : "[data-focus-stop='composer']";
         focusTimer = setTimeout(() => {
             focusTimer = null;
             bodyElement.value?.closest(".chat-panel")?.querySelector<HTMLElement>(firstFocus)?.focus({ preventScroll: true });

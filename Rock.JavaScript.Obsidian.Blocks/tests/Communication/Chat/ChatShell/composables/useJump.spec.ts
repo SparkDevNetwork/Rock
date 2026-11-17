@@ -21,16 +21,18 @@
 // asked before it, still fetching, never scrolls or flashes once the newer has, and nor does one
 // whose conversation the person left.
 //
-// The composable these tests are written to, in useJump.partial.ts:
+// The landings these tests are written to, the frame's in useFrameView.partial.ts, mounted in a
+// bare host since the frame lives as long as the block does:
 //
-//   useJump(dependencies: { shell, activeChannelId, isPhone, threadOpenCount, openThreadDrawer, closeThreadDrawer }): {
+//   useFrameView(dependencies: { shell, activeChannelId, rootElement, linkedReply, campuses, showNotice }): {
 //       landingReplyId: Ref<number | null>, landingMessageId: Ref<number | null>,
 //       landOnReply(landing, origin?): Promise<void>,
 //       onJump(messageId, isFromThread): Promise<void>,
 //       landInConversation(channelId, messageId): Promise<"held" | "more" | "stop">
 //   }
-import { ref, shallowRef, watch } from "vue";
-import { useJump } from "../../../../../src/Communication/Chat/ChatShell/composables/useJump.partial";
+import { mount, VueWrapper } from "@vue/test-utils";
+import { defineComponent, h, reactive, ref, shallowRef, watch } from "vue";
+import { Frame, useFrameView } from "../../../../../src/Communication/Chat/ChatShell/composables/useFrameView.partial";
 import { createTimelines } from "../../../../../src/Communication/Chat/ChatShell/composables/useHistory.partial";
 import { platformMask } from "../../../../../src/Communication/Chat/ChatShell/heldMessage.partial";
 import { ChatShell } from "../../../../../src/Communication/Chat/ChatShell/shell.partial";
@@ -67,13 +69,20 @@ function fetchPage(_channelId: string, options: { limit: number, beforeId?: numb
     return Promise.resolve({ messages, read_cursor: 100, unread_count: 0, has_more: top - 10 > 0 });
 }
 
+let host: VueWrapper | null = null;
+
+afterEach(() => {
+    host?.unmount();
+    host = null;
+});
+
 /**
  * The landings over a stand-in shell with real timelines: selecting a conversation puts it on
  * screen and reads its newest page, as the shell's open does, and each older page waits for the
  * test to let it through while it holds them.
  */
 async function setup(): Promise<{
-    jump: ReturnType<typeof useJump>,
+    jump: Frame,
     timelines: ReturnType<typeof createTimelines>,
     active: { value: string | null },
     landed: number[],
@@ -88,6 +97,7 @@ async function setup(): Promise<{
     let isHolding = false;
     let opening: Promise<void> = Promise.resolve();
     const shell = {
+        state: reactive({ hiddenPanes: { conversation: false, thread: false } }),
         timelines,
         // a second select of the conversation still opening waits for that open, as the shell's does
         selectChannel: async (channelId: string): Promise<void> => {
@@ -109,14 +119,20 @@ async function setup(): Promise<{
         threads: { state: { thread: null }, loadOlderReplies: async () => undefined }
     };
 
-    const jump = useJump({
-        shell: shallowRef(shell as unknown as ChatShell),
-        activeChannelId: active,
-        isPhone: ref(false),
-        threadOpenCount: () => 0,
-        openThreadDrawer: async () => undefined,
-        closeThreadDrawer: () => undefined
-    });
+    let jump!: Frame;
+    host = mount(defineComponent({
+        setup() {
+            jump = useFrameView({
+                shell: shallowRef(shell as unknown as ChatShell),
+                activeChannelId: active,
+                rootElement: ref(),
+                linkedReply: null,
+                campuses: [],
+                showNotice: () => undefined
+            });
+            return () => h("div");
+        }
+    }));
 
     const landed: number[] = [];
     watch(jump.landingMessageId, id => {

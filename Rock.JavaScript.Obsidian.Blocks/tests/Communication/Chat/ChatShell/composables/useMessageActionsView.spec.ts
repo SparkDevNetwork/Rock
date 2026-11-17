@@ -16,12 +16,14 @@
 //
 // Where a message's bar and menu send their actions: to the open conversation, or with a root to
 // the thread the drawer draws, and nowhere when that place is gone. A press on an author opens the
-// person's card through the block, for the room it was pressed in; the delete confirm names a
-// channel by its title and anything else as this conversation. The shell's message actions are
-// faked in their real shape, with only the calls these cells reach.
+// person's card, for the room it was pressed in; the delete confirm names a channel by its title
+// and anything else as this conversation. The overlays are mounted in a bare host, as they live as
+// long as the block does, over a shell faked in its real shape, with only the calls these cells reach.
 /* eslint-disable @typescript-eslint/naming-convention */
-import { reactive, ref, shallowRef } from "vue";
-import { MessageActionsView, useMessageActionsView } from "../../../../../src/Communication/Chat/ChatShell/composables/useMessageActionsView.partial";
+import { mount, VueWrapper } from "@vue/test-utils";
+import { computed, defineComponent, h, reactive, ref, shallowRef } from "vue";
+import { OverlaysView, useOverlaysView } from "../../../../../src/Communication/Chat/ChatShell/composables/useOverlaysView.partial";
+import { Frame } from "../../../../../src/Communication/Chat/ChatShell/composables/useFrameView.partial";
 import { MessageActionRequest } from "../../../../../src/Communication/Chat/ChatShell/composables/useMessageActions.partial";
 import { OpenThreadState } from "../../../../../src/Communication/Chat/ChatShell/composables/useThreads.partial";
 import { ChatShell } from "../../../../../src/Communication/Chat/ChatShell/shell.partial";
@@ -33,7 +35,14 @@ const anna = "a0000002-0000-4000-8000-000000000000";
 
 const message = { id: 41, body: "Hello" } as TimelineMessage;
 
-function setUp(activeChannelId: string | null, thread: { channelId: string, rootId: number } | null = null): { view: MessageActionsView, actions: { startQuote: jest.Mock, askDelete: jest.Mock }, openCard: jest.Mock, openReactionPicker: jest.Mock } {
+let host: VueWrapper | null = null;
+
+afterEach(() => {
+    host?.unmount();
+    host = null;
+});
+
+function setUp(activeChannelId: string | null, thread: { channelId: string, rootId: number } | null = null): { view: OverlaysView, actions: { startQuote: jest.Mock, askDelete: jest.Mock }, openCard: jest.Mock, openReactionPicker: jest.Mock } {
     const state = reactive({ quotes: {} as Record<string, TimelineMessage>, editing: null, confirmingDelete: null as { channelId: string, message: TimelineMessage } | null });
     const actions = {
         state,
@@ -42,32 +51,56 @@ function setUp(activeChannelId: string | null, thread: { channelId: string, root
             state.confirmingDelete = { channelId, message: m };
         })
     };
-    const shell = shallowRef({ messageActions: actions } as unknown as ChatShell);
+    // the card opens in the shell's rooms, for the person and the room
     const openCard = jest.fn();
+    const rooms = { state: { card: null }, openCard, leaveOf: () => ({ kind: "idle" }) };
+    const shell = shallowRef({ messageActions: actions, rooms } as unknown as ChatShell);
     const openReactionPicker = jest.fn();
-    const view = useMessageActionsView({
-        shell,
-        activeChannelId: ref(activeChannelId),
-        drawnThread: shallowRef(thread as OpenThreadState | null),
-        personAliasGuid: ref(anna),
-        roomTitles: ref({ [team]: "young-adults", [pair]: "Anna Reyes" }),
-        roomKinds: ref({ [team]: "channel", [pair]: "person" }),
-        rootElement: ref(undefined),
+    const frame = {
+        panelKind: ref(null),
+        mainView: ref(null),
         panelElement: ref(undefined),
-        openReactionPicker,
-        openCard
-    });
+        mainElement: ref(undefined),
+        isPhone: ref(false),
+        drawnThread: shallowRef(thread as OpenThreadState | null),
+        rooms: {
+            roomTitles: computed(() => ({ [team]: "young-adults", [pair]: "Anna Reyes" })),
+            roomKinds: computed(() => ({ [team]: "channel", [pair]: "person" }))
+        },
+        closePanel: jest.fn(),
+        openFromMainView: jest.fn(),
+        openMainView: jest.fn(),
+        onListPanel: jest.fn(),
+        focusStop: jest.fn(() => null)
+    } as unknown as Frame;
+    let view!: OverlaysView;
+    host = mount(defineComponent({
+        setup() {
+            view = useOverlaysView({
+                shell,
+                activeChannelId: ref(activeChannelId),
+                personAliasGuid: ref(anna),
+                rootElement: ref(undefined),
+                frame,
+                openReactionPicker,
+                closeReactionPicker: jest.fn()
+            });
+            return () => h("div");
+        }
+    }));
     return { view, actions, openCard, openReactionPicker };
 }
 
-test("an author pressed opens their card through the block, for the room it was pressed in", () => {
+test("an author pressed opens their card beside what was pressed, for the room it was pressed in", () => {
     const { view, openCard } = setUp(team, { channelId: pair, rootId: 7 });
     const anchor = document.createElement("button");
 
     view.onMessageAction({ kind: "person", personAliasGuid: anna, anchor } as MessageActionRequest, null);
     view.onMessageAction({ kind: "person", personAliasGuid: anna, anchor } as MessageActionRequest, 7);
 
-    expect(openCard.mock.calls).toEqual([[anchor, anna, team], [anchor, anna, pair]]);
+    expect(openCard.mock.calls).toEqual([[anna, team], [anna, pair]]);
+    expect(view.cardAnchor.value).toBe(anchor);
+    expect(view.cardOpenCount.value).toBe(2);
 });
 
 test("the picker opens for the room it was asked in, with what opened it and where it starts", () => {

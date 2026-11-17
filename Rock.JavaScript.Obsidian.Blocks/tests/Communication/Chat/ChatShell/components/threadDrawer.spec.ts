@@ -15,10 +15,11 @@
 // </copyright>
 //
 // The thread drawer, in the panel host: the root, a divider that counts the replies or invites the
-// first, the replies in the conversation's look, a Follow toggle in the header and the reply
-// composer, whose foot offers to send the reply to the conversation too. Escape closes it, or goes
-// back to the threads list it was opened from. A phone never focuses the composer on its own,
-// since the keyboard would cover the thread.
+// first, the replies in the conversation's look, a Follow toggle in the header and, at its foot, the
+// reply composer its owner fills, the conversation's own Composer with isThread, whose foot offers
+// to send the reply to the conversation too. Escape closes it, or goes back to the threads list it
+// was opened from. A phone never focuses the composer on its own, since the keyboard would cover
+// the thread.
 //
 // The component these tests are written to, threadDrawer.partial.obs:
 //
@@ -26,14 +27,9 @@
 //          pending: PendingMessage[] (default []), isFollowing: boolean, conversationTitle: string,
 //          isChannel: boolean, isDirectMessage: boolean, isPhone: boolean, isFromList: boolean,
 //          personAliasGuid: string (required)
-//          mentionSource: MentionPickerSource | null (the reply composer's @ picker; null offers none)
-//          draft: ComposerDraft (the reply its owner keeps for the thread)
-//   emits: close, back, follow(isFollowing: boolean), send(body: string, isShownInChannel: boolean),
-//          seen(messageId: number), loadOlder, retry(localIds: string[]) (oldest first, sent in turn),
-//          discard(localId: string),
-//          mentionQuery(query: string | null) (the reply composer's @ query, for the search),
-//          composerFocus (focus came into the reply composer),
-//          draftText(text: string), draftMention(piece) (the reply composer's changes, for its owner)
+//   slots: composer (the reply composer, filled by the drawer's owner)
+//   emits: close, back, follow(isFollowing: boolean), seen(messageId: number), loadOlder,
+//          retry(localIds: string[]) (a failed reply's own Try again), discard(localId: string)
 //   marks: thread-divider, thread-follow (aria-pressed), and the composer's composer-input and
 //          composer-also (the foot's label around its switch).
 //
@@ -51,12 +47,13 @@
 // The toggle changes at once; a refused change comes back as followError, shown under the header
 // with Try again where another try can pass. Only an unfollow is toasted, from useThreads' unfollowNotice, once it lands.
 import { mount, VueWrapper } from "@vue/test-utils";
-import { nextTick } from "vue";
+import { h, nextTick, reactive } from "vue";
 import ThreadDrawer from "../../../../../src/Communication/Chat/ChatShell/components/threadDrawer.partial.obs";
 import { providedSession } from "../sessionShapes";
 import Composer from "../../../../../src/Communication/Chat/ChatShell/components/composer.partial.obs";
 import MessageRow from "../../../../../src/Communication/Chat/ChatShell/components/messageRow.partial.obs";
 import { unfollowNotice } from "../../../../../src/Communication/Chat/ChatShell/composables/useThreads.partial";
+import { sendFailure } from "../../../../../src/Communication/Chat/ChatShell/composables/useSend.partial";
 import { TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 import { createMessageMotion, messageMotionKey } from "../../../../../src/Communication/Chat/ChatShell/messageMotion.partial";
 import type { Typing } from "../../../../../src/Communication/Chat/ChatShell/composables/usePresence.partial";
@@ -127,32 +124,47 @@ function replies(count: number): TimelineMessage[] {
 
 let wrapper: VueWrapper | null = null;
 
+/** The props of the reply composer the drawer's owner put in its slot, kept as the shell keeps each thread's text. */
+let composerProps: Record<string, unknown> = reactive({});
+
 /**
- * Mounts the drawer, its owner keeping the reply composer's text as the shell keeps each thread's.
- * A test about an entrance keeps Vue's real Transition, which marks an element entering as a
- * browser plays it; one about status provides the store its faces read.
+ * Mounts the drawer with its owner's reply composer in its slot, the conversation's own Composer
+ * with isThread, named for the drawer's conversation as the shell names it. A test about an
+ * entrance keeps Vue's real Transition, which marks an element entering as a browser plays it; one
+ * about status provides the store its faces read.
  */
-function draw(props: Record<string, unknown> = {}, isTransitionKept = false, motion = createMessageMotion(), provide: Record<symbol, unknown> = {}): VueWrapper {
-    const drawn: VueWrapper = mount(ThreadDrawer, inSession({
-        global: { provide: { [messageMotionKey as symbol]: motion, ...provide }, ...(isTransitionKept ? { stubs: { transition: false } } : {}) },
-        props: {
-            draft: { text: "", mentions: [] },
-            onDraftText: (text: string) => drawn.setProps({ draft: { text, mentions: [] } }),
-            root: rootWith(3),
-            replies: replies(3),
-            pending: [],
-            isFollowing: false,
-            conversationTitle: channelTitle,
-            isChannel: true,
-            isDirectMessage: false,
-            isPhone: false,
-            isFromList: false,
-            personAliasGuid: me,
-            ...props
+function draw(props: Record<string, unknown> = {}, isTransitionKept = false, motion = createMessageMotion(), provide: Record<symbol, unknown> = {}, composer: Record<string, unknown> = {}): VueWrapper {
+    const drawerProps: Record<string, unknown> = {
+        root: rootWith(3),
+        replies: replies(3),
+        pending: [],
+        isFollowing: false,
+        conversationTitle: channelTitle,
+        isChannel: true,
+        isDirectMessage: false,
+        isPhone: false,
+        isFromList: false,
+        personAliasGuid: me,
+        ...props
+    };
+    composerProps = reactive({
+        isThread: true,
+        title: drawerProps.conversationTitle,
+        isChannel: drawerProps.isChannel,
+        text: "",
+        mentions: [],
+        conversationKey: "thread:40",
+        "onUpdate:text": (text: string) => {
+            composerProps.text = text;
         },
+        ...composer
+    });
+    wrapper = mount(ThreadDrawer, inSession({
+        global: { provide: { [messageMotionKey as symbol]: motion, ...provide }, ...(isTransitionKept ? { stubs: { transition: false } } : {}) },
+        props: drawerProps,
+        slots: { composer: () => h(Composer, { ...composerProps }) },
         attachTo: document.body
     }));
-    wrapper = drawn;
     return wrapper;
 }
 
@@ -601,7 +613,7 @@ describe("the Follow toggle", () => {
         // The production runtime logs a render that threw rather than rethrowing it.
         const logged = jest.spyOn(console, "error");
         const w = production.mount(production.drawer, {
-            props: { root: null, replies: [], isLoading: true, personAliasGuid: me, draft: { text: "", mentions: [] } },
+            props: { root: null, replies: [], isLoading: true, personAliasGuid: me },
             attachTo: document.body
         });
         wrapper = w;
@@ -672,15 +684,26 @@ describe("the Follow toggle", () => {
     });
 });
 
-/** Types one line into the reply composer's editor as a browser does: the text, then input. */
-async function typeReply(w: VueWrapper, text: string): Promise<void> {
-    const editor = w.get("[data-testid='composer-input']").element as HTMLElement;
-    editor.textContent = text;
-    editor.dispatchEvent(new Event("input", { bubbles: true }));
-    await nextTick();
-}
-
 describe("the reply composer", () => {
+    // The drawer's owner fills the foot with the same Composer it fills the conversation's, so the
+    // drawer passes nothing of a composer's along and says nothing of what it sends.
+    test("is what the drawer's composer slot holds, the drawer declaring none of a composer's props or events", () => {
+        wrapper = mount(ThreadDrawer, inSession({
+            global: { provide: { [messageMotionKey as symbol]: createMessageMotion() } },
+            props: { root: rootWith(3), replies: replies(3), personAliasGuid: me },
+            slots: { composer: () => h("div", { "data-testid": "slotted-composer" }) },
+            attachTo: document.body
+        }));
+        const drawer = ThreadDrawer as unknown as { props: Record<string, unknown>, emits: string[] };
+        const forwardedProps = ["isLocked", "lockedReason", "maxLength", "draft", "tray", "quote", "isQuoteOwn", "emojiSource", "mentionSource", "lastFailure", "busyPerson"];
+        const forwardedEvents = ["send", "cancelQuote", "draftText", "draftAlsoSent", "draftMention", "editLast", "emojiPickerOpen", "emojiChosen", "mentionQuery", "composerFocus", "composerBlur", "overLimit"];
+
+        expect(wrapper.find("[data-testid='panel-host'] [data-testid='slotted-composer']").exists()).toBe(true);
+        expect(wrapper.findComponent(Composer).exists()).toBe(false);
+        expect(Object.keys(drawer.props).filter(name => forwardedProps.includes(name))).toEqual([]);
+        expect(drawer.emits.filter(name => forwardedEvents.includes(name))).toEqual([]);
+    });
+
     test("asks for a reply in the thread", () => {
         const w = draw();
 
@@ -700,25 +723,6 @@ describe("the reply composer", () => {
         expect(plain(w.get("[data-testid='composer-also']").text())).toBe("Also send to the conversation");
     });
 
-    test("sends a reply to the thread alone unless the switch is on", async () => {
-        const w = draw();
-
-        await typeReply(w, "Count me in");
-        await w.get("[data-testid='composer-input']").trigger("keydown", { key: "Enter" });
-
-        expect(w.emitted("send")).toEqual([["Count me in", false]]);
-    });
-
-    test("sends a reply to the conversation too when the switch is on", async () => {
-        const w = draw();
-
-        await w.get("[data-testid='composer-also'] [role='switch']").trigger("click");
-        await typeReply(w, "Count me in");
-        await w.get("[data-testid='composer-input']").trigger("keydown", { key: "Enter" });
-
-        expect(w.emitted("send")).toEqual([["Count me in", true]]);
-    });
-
     // A reply notifies the other person of a direct message no more than a message does, and on a
     // phone the drawer covers the conversation's own composer, so the reply box says it too.
     test("in a thread of a two-person direct message, says the other person is Busy over the reply box, as the conversation's composer does", () => {
@@ -726,7 +730,7 @@ describe("the reply composer", () => {
         const busyPerson = { person_alias_guid: anna, nick_name: "Anna", last_name: "Reyes", avatar_url: null };
         store.store.told([told(anna, busyNow(null), "Anna")]);
 
-        const w = draw({ conversationTitle: "Anna Reyes", isChannel: false, isDirectMessage: true, busyPerson }, false, createMessageMotion(), store.provide);
+        const w = draw({ conversationTitle: "Anna Reyes", isChannel: false, isDirectMessage: true }, false, createMessageMotion(), store.provide, { busyPerson });
 
         expect(w.findComponent(Composer).props("busyPerson")).toEqual(busyPerson);
         const note = w.get("[data-testid='composer-busy-note']");
@@ -744,14 +748,6 @@ describe("the reply composer", () => {
         expect(w.findComponent(Composer).props("busyPerson")).toBeNull();
         expect(w.find("[data-testid='composer-busy-note']").exists()).toBe(false);
     });
-});
-
-// The reply composer types into the thread, not the conversation, so what it keeps for one place
-// (the names its chips draw, what it last said aloud) is the thread's.
-test("the reply composer is keyed by its thread", () => {
-    const w = draw();
-
-    expect(w.findComponent(Composer).props("conversationKey")).toBe("thread:40");
 });
 
 // Someone typing a reply in this thread is drawn as the thread's newest row, as the conversation
@@ -903,7 +899,7 @@ describe("someone typing a reply", () => {
 describe("the reply composer's @ picker", () => {
     test("opens on @ from the drawer's mention source, tells the drawer's owner the query, and takes Enter for the chip", async () => {
         const mentionSource = { canMention: true, people: [{ person_alias_guid: ben, nick_name: "Ben", last_name: "Okafor" }], isAllOffered: false };
-        const w = draw({ mentionSource });
+        const w = draw({}, false, createMessageMotion(), {}, { mentionSource });
 
         // Typed as a browser leaves it, the caret after the query.
         const editor = w.get("[data-testid='composer-input']").element as HTMLElement;
@@ -919,22 +915,22 @@ describe("the reply composer's @ picker", () => {
         await nextTick();
 
         expect(document.querySelector("[data-testid='mention-picker']")).not.toBeNull();
-        expect(w.emitted("mentionQuery")?.slice(-1)).toEqual([["be"]]);
+        expect(w.findComponent(Composer).emitted("mentionQuery")?.slice(-1)).toEqual([["be"]]);
 
         await w.get("[data-testid='composer-input']").trigger("keydown", { key: "Enter" });
         await nextTick();
 
-        expect(w.emitted("send")).toBeUndefined();
+        expect(w.findComponent(Composer).emitted("send")).toBeUndefined();
         expect(editor.querySelectorAll("[data-testid='editor-chip']")).toHaveLength(1);
         expect(document.querySelector("[data-testid='mention-picker']")).toBeNull();
     });
 
     test("tells the drawer's owner when the reply composer takes focus, so the picker's people are fetched before the @", () => {
-        const w = draw({ mentionSource: { canMention: true, people: [], isAllOffered: false } });
+        const w = draw({}, false, createMessageMotion(), {}, { mentionSource: { canMention: true, people: [], isAllOffered: false } });
 
         (w.get("[data-testid='composer-input']").element as HTMLElement).focus();
 
-        expect(w.emitted("composerFocus")).toHaveLength(1);
+        expect(w.findComponent(Composer).emitted("focus")).toHaveLength(1);
     });
 });
 
@@ -996,7 +992,7 @@ describe("editing the person's own reply", () => {
 
         await w.get("[data-testid='composer-input']").trigger("keydown", { key: "ArrowUp" });
 
-        expect(w.emitted("editLast")).toHaveLength(1);
+        expect(w.findComponent(Composer).emitted("editLast")).toHaveLength(1);
     });
 
     test("the reply open in the editor is drawn in place, with the refusal it met", async () => {
@@ -1252,42 +1248,20 @@ describe("the thread's action bar", () => {
     });
 });
 
-// A reply that failed is marked on its row; the strip over the reply composer speaks for this
-// thread's failed replies alone, and its buttons reach the drawer's owner one reply at a time.
+// A reply that failed is marked on its row; the strip over the reply composer, which its owner
+// works out, says each failure as it happens.
 describe("the person's failed replies", () => {
     const failed = (localId: string, extra: Record<string, unknown> = {}): Record<string, unknown> =>
         ({ localId, channelId: "c1", body: localId, status: "failed", errorCode: "rpc.transport", reason: { alone: "You're offline. Try again when you're back.", besideRetry: "You're offline.", canRetry: true }, parentId: 40, isShownInChannel: false, ...extra });
-    const refusal = { code: "authz.no_mention_all_right", severity: "permission", text: "You can't mention everyone in this channel." };
-
-    test("are counted in the reply composer's strip, this thread's only", () => {
-        const w = draw({ pending: [failed("a"), failed("b"), failed("elsewhere", { parentId: 99 }), failed("plain", { parentId: null })] });
-
-        expect(w.get("[data-testid='composer-failed-lead']").text()).toBe("2 messages weren't sent");
-        expect(w.get("[data-testid='composer-failed-reason']").text()).toBe("You're offline.");
-    });
-
-    test("Try again asks for each that can go, oldest first, in one go so they are sent in turn, and Delete drops each", async () => {
-        const w = draw({ pending: [failed("a"), failed("refused", { refusal, reason: { alone: refusal.text, besideRetry: refusal.text, canRetry: false } }), failed("b")] });
-
-        await w.get("[data-testid='composer-failed-retry']").trigger("click");
-        expect(w.emitted("retry")).toEqual([[["a", "b"]]]);
-
-        await w.get("[data-testid='composer-failed-discard']").trigger("click");
-        expect(w.emitted("discard")).toEqual([["a"], ["refused"], ["b"]]);
-    });
 
     test("say a reply's failure as it happens, from the sender's news", async () => {
-        const w = draw({ pending: [failed("a")] });
+        const pending = [failed("a")];
+        draw({ pending }, false, createMessageMotion(), {}, { sendFailure: sendFailure(pending as never) });
 
-        await w.setProps({ lastFailure: { localId: "a", count: 1 } });
+        composerProps.lastFailure = { localId: "a", count: 1 };
+        await nextTick();
 
         expect(document.querySelector("[data-testid='announcer-assertive']")?.textContent).toBe("Your message wasn't sent. You're offline.");
-    });
-
-    test("draw no strip while every reply is on its way", () => {
-        const w = draw({ pending: [failed("a", { status: "sending", errorCode: null })] });
-
-        expect(w.find("[data-testid='composer-failed']").exists()).toBe(false);
     });
 });
 

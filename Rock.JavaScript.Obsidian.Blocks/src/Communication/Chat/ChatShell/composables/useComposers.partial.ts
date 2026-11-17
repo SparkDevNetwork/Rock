@@ -17,7 +17,9 @@
 // The conversation's and the thread's composers, as the block wires them to the shell: each
 // one's draft and the place being typed in, the files waiting and a drop on the feed, the strip
 // of failed sends with Try again and Delete, the @ search, the emoji catalog and recents, and the
-// reply's send. Quotes and the editor are the message actions' and stay there.
+// reply's send. The thread drawer draws whichever composer the block puts in its foot, so the
+// reply composer's key and its strip of failed replies are worked out here beside the
+// conversation's. Quotes and the editor are the message actions' and stay there.
 
 import { computed, ref, Ref, watch } from "vue";
 import { MentionPickerSource } from "../components/mentionPicker.partial.obs";
@@ -25,7 +27,7 @@ import type { ChatShell } from "../shell.partial";
 import { DisplayPiece, PendingMessage, SidebarRow } from "../types.partial";
 import { AttachmentTray, canAttach } from "./useAttachments.partial";
 import { ComposerDraft } from "./useDrafts.partial";
-import { PanelKind } from "./useFrame.partial";
+import { PanelKind } from "./useFrameView.partial";
 import { Typing } from "./usePresence.partial";
 import { failedSends, isOwnedByConversation, lockedReason, retryableSends, sendFailure, SendFailure } from "./useSend.partial";
 import { OpenThreadState } from "./useThreads.partial";
@@ -98,6 +100,27 @@ export function useComposers(dependencies: ComposersDependencies) {
     });
 
     const conversationFailure = computed((): SendFailure | null => sendFailure(conversationSends.value));
+
+    /**
+     * The sends whose failure the reply composer's strip speaks for: the open thread's replies,
+     * once its root is drawn, as the drawer draws them.
+     */
+    const threadSends = computed((): PendingMessage[] => {
+        const thread = drawnThread.value;
+        const rootId = thread?.root?.id;
+        return thread && rootId !== undefined ? shell.value.sender.pending(thread.channelId).filter(row => row.parentId === rootId) : [];
+    });
+
+    const threadFailure = computed((): SendFailure | null => sendFailure(threadSends.value));
+
+    /**
+     * What the reply composer keeps for its place, the names its chips draw and what it last said
+     * aloud, is the thread's, not the conversation's.
+     */
+    const threadComposerKey = computed((): string | null => {
+        const root = drawnThread.value?.root;
+        return root ? `thread:${root.id}` : null;
+    });
 
     /** Who else is typing where each box types, drawn as a bubble at the end of its feed; null for no one. */
     const conversationTyping = computed((): Typing | null => shell.value.presence.typingIn(conversationQuoteKey.value));
@@ -184,9 +207,10 @@ export function useComposers(dependencies: ComposersDependencies) {
         conversationTray.value.add(Array.from(files));
     }
 
-    function onSendReply(body: string, isShownInChannel: boolean): void {
+    /** The reply composer's send: to the thread alone unless its switch also sends it to the conversation. */
+    function onSendReply(body: string, isAlsoSent?: boolean): void {
         if (drawnThread.value) {
-            void shell.value.sendReply(drawnThread.value.rootId, body, isShownInChannel);
+            void shell.value.sendReply(drawnThread.value.rootId, body, isAlsoSent === true);
         }
     }
 
@@ -230,7 +254,7 @@ export function useComposers(dependencies: ComposersDependencies) {
     }
 
     return {
-        conversationTray, conversationDraft, threadDraft, conversationSends, conversationFailure, conversationTyping, threadTyping,
+        conversationTray, conversationDraft, threadDraft, conversationSends, conversationFailure, threadSends, threadFailure, threadComposerKey, conversationTyping, threadTyping,
         onMentionQuery, onComposerFocus, onComposerBlur, onDraftText, onDraftAlsoSent, onDraftMention, onConversationDragOver, onConversationDrop,
         onSendReply, onEmojiPickerOpen, onEmojiChosen, onRetry, onRetryFailed, onDiscardFailed, trayOf, mentionSourceFor
     };

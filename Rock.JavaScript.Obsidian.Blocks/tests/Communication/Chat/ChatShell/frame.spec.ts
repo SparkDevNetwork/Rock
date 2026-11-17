@@ -224,8 +224,9 @@ function fakeShell(): Record<string, unknown> {
             state: timelineOf
         },
         motion: createMessageMotion(),
-        // the latest failure, as the sender tells it, held so a test can say a send just failed
-        sender: { pending: () => [], retryAll: jest.fn(async () => true), discard: jest.fn(), lastFailure: () => mockFailureNews.last },
+        // the latest failure, as the sender tells it, held so a test can say a send just failed; its
+        // sends are reactive, as the sender's own rows are, so a test's new sends reach what reads them
+        sender: reactive({ pending: (): unknown[] => [], retryAll: jest.fn(async () => true), discard: jest.fn(), lastFailure: () => mockFailureNews.last }),
         // the real drafts, on a storage that outlives the block as a browser's does
         drafts: createDrafts({
             storage: {
@@ -1401,6 +1402,10 @@ describe("the conversation's failed sends", () => {
             // the drawer's Try again asks for it alone, and Delete in one place cannot drop it from another
             await w.get("[data-testid='frame-panel'] [data-testid='composer-failed-retry']").trigger("click");
             expect((mockShell!.sender as { retryAll: jest.Mock }).retryAll.mock.calls).toEqual([[["r1"]]]);
+
+            // and its Delete drops that reply alone, from the drawer's own sends
+            await w.get("[data-testid='frame-panel'] [data-testid='composer-failed-discard']").trigger("click");
+            expect((mockShell!.sender as { discard: jest.Mock }).discard.mock.calls).toEqual([["r1"]]);
         });
 
         test("goes to the conversation's strip once its thread closes, without being said again", async () => {
@@ -2308,10 +2313,11 @@ describe("mentions", () => {
         await w.get("[data-testid='frame-main'] [data-testid='thread-summary']").trigger("click");
         await settle();
 
-        const drawer = w.findComponent(ThreadDrawerComponent);
-        expect(drawer.props("mentionSource")).toEqual({ canMention: true, people: [], isAllOffered: false });
+        // the reply composer the block fills the drawer's foot with
+        const reply = w.findComponent(ThreadDrawerComponent).findComponent(ComposerComponent);
+        expect(reply.props("mentionSource")).toEqual({ canMention: true, people: [], isAllOffered: false });
 
-        drawer.vm.$emit("mentionQuery", "b");
+        reply.vm.$emit("mentionQuery", "b");
         expect(mentionsOf().search).toHaveBeenCalledWith(team, "b");
     });
 
@@ -2327,7 +2333,7 @@ describe("mentions", () => {
         await w.get("[data-testid='frame-main'] [data-testid='thread-summary']").trigger("click");
         await settle();
         mentionsOf().warm.mockClear();
-        w.findComponent(ThreadDrawerComponent).vm.$emit("composerFocus");
+        w.findComponent(ThreadDrawerComponent).findComponent(ComposerComponent).vm.$emit("focus");
         expect(mentionsOf().warm).toHaveBeenCalledWith(team);
     });
 });
@@ -3603,6 +3609,18 @@ describe("a channel the person has not joined", () => {
         await settle();
 
         expect(document.activeElement).toBe(w.get("[data-testid='frame-main'] [data-testid='composer-input']").element);
+    });
+
+    test("on a wide screen moves focus from the join bar to the conversation's title when the room cannot be posted in, as there is no input to take it", async () => {
+        const w = await openVolunteers();
+        (w.get("[data-testid='join-channel']").element as HTMLElement).focus();
+
+        const rows = (mockShell!.channels as { rows: SidebarRow[] }).rows;
+        rows.splice(rows.findIndex(r => r.channel_id === volunteers.channel_id), 1, { ...volunteers, is_member: true, can_post: false, can_post_code: "rpc.not_allowed", can_post_reason: "Only leaders can post in Volunteers." });
+        await settle();
+
+        expect(w.find("[data-testid='frame-main'] [data-testid='composer-input']").exists()).toBe(false);
+        expect(document.activeElement).toBe(w.get("[data-testid='frame-main'] [data-testid='header-details']").element);
     });
 
     test("on a phone moves focus from the join bar to the conversation's title, never raising the keyboard", async () => {
@@ -5165,12 +5183,12 @@ describe("the person a composer's Busy note is about", () => {
         await openRow(w, dmAnna.channel_id);
         await w.get("[data-testid='frame-main'] [data-testid='thread-summary']").trigger("click");
         await settle();
-        expect(w.findComponent(ThreadDrawerComponent).props("busyPerson")).toEqual(anna);
+        expect(w.findComponent(ThreadDrawerComponent).findComponent(ComposerComponent).props("busyPerson")).toEqual(anna);
 
         await openRow(w, team.channel_id);
         await w.get("[data-testid='frame-main'] [data-testid='thread-summary']").trigger("click");
         await settle();
-        expect(w.findComponent(ThreadDrawerComponent).props("busyPerson")).toBeNull();
+        expect(w.findComponent(ThreadDrawerComponent).findComponent(ComposerComponent).props("busyPerson")).toBeNull();
     });
 });
 

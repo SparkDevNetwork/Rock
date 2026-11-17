@@ -14,24 +14,41 @@
 // limitations under the License.
 // </copyright>
 //
-// What each column of the block's frame shows: the panel column's one panel at a time (the
-// threads list, the mentions inbox, the members panel or a thread in its drawer), the way back from a thread to the
-// list it came from, focus handed back to what opened a panel, the main column's full views (such
-// as Browse channels) that take the conversation's place, and on a phone which of the three
-// panes is in front. The block keeps the template and the wiring; this keeps the rules, so the
-// phone's pane is worked out in one place from everything that can take a column.
+// The block's frame, as one owner: what each column shows, how the block moves between them, the
+// landings on one message, and where focus goes as each move ends.
 //
-// The landings on a message are useJump's, which takes this frame's drawer open and close, so
-// the frame takes its one landing back lazily, called only once the block is set up.
+// The panel column holds one panel at a time (the threads list, the mentions inbox, the members
+// panel or a thread in its drawer), with the way back from a thread to the list it came from and
+// focus handed back to what opened a panel. The main column's full views (Browse channels, New
+// message) take the conversation's place. On a phone one of the three panes is in front, worked
+// out in one place from everything that can take a column.
+//
+// A landing finds one message that may not be drawn yet: a reply a push's tap or a link names,
+// opened in its thread, the original a quote jumps to, and a mention the inbox opens in its
+// conversation. All of them fetch at most a few older pages through one loop, and each look checks
+// that the view it started in is still there and that no landing has been asked for since, so only
+// the newest lands.
+//
+// The panels' wiring to the shell lives here too: the members panel and its two dialogs, the
+// threads list and the drawer's older replies, since which panel shows and what it asks of the
+// shell change together.
+//
+// Size: about 1,260 lines. The next addition that takes this past 1,500 splits the landings back
+// out to their own file, since they are the one part with a lifetime of their own (a landing
+// outlives the move that asked for it).
 
 import { computed, ComputedRef, nextTick, onBeforeUnmount, ref, Ref, shallowRef, ShallowRef, StyleValue, watch, watchEffect } from "vue";
+import { ToastNotice } from "../components/errorToast.partial.obs";
 import { ChatShell } from "../shell.partial";
-import { PersonRow } from "../types.partial";
+import { FocusStop, PersonRow } from "../types.partial";
 import { tokenDuration } from "../ui/brand.partial";
 import { focusQuietly } from "../ui/focusTrap.partial";
 import { isMotionReduced } from "../ui/viewport.partial";
-import { ReplyLanding, ThreadOrigin } from "./useJump.partial";
-import { OpenThreadState, ThreadPlace } from "./useThreads.partial";
+import { searchStatus, shownMembers, successorChoices } from "./useMembers.partial";
+import { useRoomsView } from "./useRoomsView.partial";
+import { FollowError, OpenThreadState, ThreadListState, ThreadListTab, ThreadPlace, unfollowNotice } from "./useThreads.partial";
+
+// #region Types
 
 /** What the panel column can hold: the threads list, the mentions inbox, the members panel, or one thread in its drawer. */
 export type PanelKind = "threads" | "mentions" | "members" | "thread";
@@ -45,8 +62,42 @@ export type MainViewKind = "directory" | "newdm";
 /** Which pane a phone shows in front. */
 export type FramePane = "list" | "conversation" | "panel";
 
+/** A thread to open in a conversation, at a reply when it names one: from a push's tap, a link, or a message's own thread. */
+export type ReplyLanding = ThreadPlace & { channelId: string };
+
+/** The list a thread was opened from, which its back chevron returns to, or null when it was opened from the conversation. */
+export type ThreadOrigin = "threads" | "mentions" | null;
+
+/** Where a landing stands after a look: its message is held, an older page may hold it, or it is over. */
+export type LandingCheck = "held" | "more" | "stop";
+
+/**
+ * A place focus can go, tried in its order: a stop by its mark, a stop narrowed where it repeats
+ * (a sidebar row by its conversation, a list's row by its root) or looked for inside one element,
+ * or an element already in hand, as what opened a view. Null is a place not drawn, skipped.
+ */
+export type FocusTarget = FocusStop | { stop: FocusStop, match?: string, within?: HTMLElement } | HTMLElement | null | undefined;
+
+/** Where the focus helper looks for its stops and how it puts focus there. */
+export type FocusStopOptions = {
+    /** The frame's column the stops are looked for in: the conversation's, the panel's, or the whole block's when not given. */
+    within?: "main" | "panel";
+
+    /** Leaves what holds the stop unscrolled, for a pane or column still sliding in. */
+    preventScroll?: boolean;
+
+    /** Without the tooltip a focused button shows, as a panel opening puts focus on its X only so the keyboard starts inside it. */
+    isQuiet?: boolean;
+
+    /**
+     * The person asked to type there, as a quote or a closed editor hands typing back, so a
+     * phone's keyboard rising is wanted and the composer is not skipped.
+     */
+    isTyping?: boolean;
+};
+
 /** What the frame reads from the block. */
-export type FrameDependencies = {
+export type FrameViewDependencies = {
     /** The block's shell, read on every use since a birthdate replaces it. */
     shell: Readonly<Ref<ChatShell>>;
 
@@ -58,15 +109,15 @@ export type FrameDependencies = {
     /** The reply a link to this page named, which opens its thread over that conversation once it is the first to open. */
     linkedReply: ReplyLanding | null;
 
-    /** Opens a thread at a reply, through the block's landings. */
-    landOnReply: (landing: ReplyLanding, origin?: ThreadOrigin) => Promise<void>;
+    /** The church's campuses, from the init box, which Add people's search names. */
+    campuses: Array<{ guid: string, name?: string | null }>;
 
-    /** Lets go of the reply the drawer last landed on, so a thread opened afresh lands nothing old. */
-    forgetReplyLanding: () => void;
+    /** Shows a toast that is not a failure, one per code. */
+    showNotice: (notice: ToastNotice) => void;
 };
 
 /** What the template draws of the frame, and the ways the block moves between its columns. */
-export type Frame = {
+export type Frame = MembersPanelViews & ThreadsPanelWiring & {
     /** Whether the block itself is narrower than a phone's layout allows, wherever it sits in the window. */
     isPhone: Ref<boolean>;
 
@@ -103,14 +154,26 @@ export type Frame = {
 
     panelElement: Ref<HTMLElement | undefined>;
 
+    /** The conversation's column, which holds its header, feed and composer. */
+    mainElement: Ref<HTMLElement | undefined>;
+
+    /** The full view drawn in the conversation's place, while one is. */
+    mainViewElement: Ref<HTMLElement | undefined>;
+
     /** The thread the drawer draws, kept after the threads let it go so the drawer narrows over it. */
     drawnThread: ShallowRef<OpenThreadState | null>;
 
     /** The list the open thread came from, which its back chevron and Escape return to, or null. */
     threadOrigin: Ref<ThreadOrigin>;
 
-    /** Counts every thread opened or left, so a landing can tell the drawer it started in is gone. */
-    threadOpenCount: () => number;
+    /** What the frame draws of rooms: the open conversation's, the open thread's and the one New message found. */
+    rooms: ReturnType<typeof useRoomsView>;
+
+    /** The reply the drawer scrolls to and flashes once it holds it, or null. */
+    landingReplyId: Ref<number | null>;
+
+    /** The message the feed scrolls to and flashes once its timeline holds it, or null. */
+    landingMessageId: Ref<number | null>;
 
     onResize: (entries: ResizeObserverEntry[]) => void;
 
@@ -152,13 +215,45 @@ export type Frame = {
 
     /** Add people for a room: its dialog, never for a conversation of two, which Rock keeps as it is. */
     openAddPeople: (channelId: string) => void;
+
+    /** Counts every thread opened or left, so a landing can tell the drawer it started in is gone. */
+    threadOpenCount: () => number;
+
+    landOnReply: (landing: ReplyLanding, origin?: ThreadOrigin) => Promise<void>;
+
+    onJump: (messageId: number, isFromThread: boolean) => Promise<void>;
+
+    /**
+     * Opens a conversation, as a sidebar row does, and lands on a message in it. Answers "more"
+     * when the pages a landing fetches ran out still looking, so the caller can say the message
+     * is too far back; "held" once it landed; "stop" when it did not and is not still looking.
+     */
+    landInConversation: (channelId: string, messageId: number) => Promise<LandingCheck>;
+
+    /**
+     * Puts focus on the first place of an order that is drawn, each stop found by its mark. A
+     * phone skips the composer, whose focus would raise the keyboard over what the person came to
+     * read, unless they asked to type there.
+     */
+    focusStop: (order: FocusTarget[], options?: FocusStopOptions) => HTMLElement | null;
 };
+
+/** What the members panel, the remove confirm and Add people draw of the roster. */
+type MembersPanelViews = ReturnType<typeof membersPanelViews>;
+
+/** What the threads list and the drawer read of the shell's threads, and what they ask of it. */
+type ThreadsPanelWiring = ReturnType<typeof threadsPanelWiring>;
+
+// #endregion Types
 
 /** Below this width the block shows one pane at a time, as on a phone. */
 const phoneWidth = 760;
 
 /** The design's pane slide, used when the sheet is not on the page. */
 const fallbackPaneSlideMs = 300;
+
+/** A landing fetches at most this many older pages before it stays at the newest. */
+const maxLandingOlderPages = 2;
 
 /**
  * Creates the block's frame. Its watches of the open conversation are made here in the order they
@@ -168,8 +263,10 @@ const fallbackPaneSlideMs = 300;
  *
  * @returns What the template draws and the ways to move between the columns.
  */
-export function useFrame(dependencies: FrameDependencies): Frame {
+export function useFrameView(dependencies: FrameViewDependencies): Frame {
     const { shell, activeChannelId, rootElement } = dependencies;
+
+    // #region Values
 
     const isPhone = ref(false);
 
@@ -192,6 +289,10 @@ export function useFrame(dependencies: FrameDependencies): Frame {
     const shownPanel = ref<PanelKind | null>(null);
 
     const panelElement = ref<HTMLElement>();
+
+    const mainElement = ref<HTMLElement>();
+
+    const mainViewElement = ref<HTMLElement>();
 
     const mainView = ref<MainViewKind | null>(null);
 
@@ -220,6 +321,16 @@ export function useFrame(dependencies: FrameDependencies): Frame {
      */
     let linkedReply = dependencies.linkedReply;
 
+    const landingReplyId = ref<number | null>(null);
+    const landingMessageId = ref<number | null>(null);
+
+    /** Counts every landing asked for, so one a newer landing replaced stops looking. */
+    let landingCount = 0;
+
+    // #endregion Values
+
+    // #region Computed Values
+
     /**
      * Which pane a phone shows: the conversation once one is open, or a full view in its place,
      * until Back asks for the list, and an open panel over the conversation.
@@ -238,6 +349,8 @@ export function useFrame(dependencies: FrameDependencies): Frame {
 
     /** A closed panel is out of reach everywhere; an open one only while a phone shows another pane. */
     const isPanelHidden = computed((): boolean => !panelKind.value || (isPhone.value && pane.value !== "panel"));
+
+    // #endregion Computed Values
 
     // #region Event Handlers
 
@@ -262,7 +375,7 @@ export function useFrame(dependencies: FrameDependencies): Frame {
         // the frame to it, which a browser that cannot clip the frame would do.
         if (isPhone.value) {
             await nextTick();
-            rootElement.value?.querySelector<HTMLElement>("[data-header-focus]")?.focus({ preventScroll: true });
+            focusStop(["header"], { preventScroll: true });
         }
     }
 
@@ -277,15 +390,11 @@ export function useFrame(dependencies: FrameDependencies): Frame {
         // goes to what opened it.
         if (isPhone.value) {
             await nextTick();
-            if (mainView.value && mainViewOpener?.isConnected) {
-                mainViewOpener.focus();
-                return;
-            }
-
-            const row = leftChannelId
-                ? rootElement.value?.querySelector<HTMLElement>(`[data-testid='channel-row'][data-channel-id='${leftChannelId}']`)
-                : null;
-            (row ?? rootElement.value?.querySelector<HTMLElement>("[data-testid='new-message']"))?.focus();
+            focusStop([
+                mainView.value && mainViewOpener?.isConnected ? mainViewOpener : null,
+                leftChannelId ? { stop: "row", match: `[data-channel-id='${leftChannelId}']` } : null,
+                "new-message"
+            ]);
         }
     }
 
@@ -318,14 +427,13 @@ export function useFrame(dependencies: FrameDependencies): Frame {
         // column is still 0px wide here, so a focus that scrolled would scroll the column to the
         // control and drag the content in from its edge instead of letting it slide.
         await nextTick();
-        const panel = panelElement.value;
-        const first = panel?.querySelector<HTMLElement>("[data-autofocus]");
-        const exit = panel?.querySelector<HTMLElement>("[data-testid='panel-close'], [data-testid='panel-back']");
+        const first = panelElement.value?.querySelector<HTMLElement>("[data-autofocus]");
         if (first) {
             first.focus({ preventScroll: true });
         }
-        else if (exit) {
-            focusQuietly(exit, { preventScroll: true });
+        else {
+            // the back chevron is drawn before the X, so it is the one found first when both are
+            focusStop(["panel-back", "panel-close"], { within: "panel", preventScroll: true, isQuiet: true });
         }
     }
 
@@ -347,7 +455,7 @@ export function useFrame(dependencies: FrameDependencies): Frame {
      */
     function onOpenThread(place: ThreadPlace): void {
         if (activeChannelId.value) {
-            void dependencies.landOnReply({ channelId: activeChannelId.value, ...place });
+            void landOnReply({ channelId: activeChannelId.value, ...place });
         }
     }
 
@@ -361,9 +469,9 @@ export function useFrame(dependencies: FrameDependencies): Frame {
 
         // The inbox marks the row opened as its current one.
         await nextTick();
-        panelElement.value?.querySelector<HTMLElement>(origin === "threads"
-            ? `[data-testid='thread-row-open'][data-root-id='${rootId}']`
-            : "[data-testid='mention-row-open'][aria-current='true']")?.focus();
+        focusStop([origin === "threads"
+            ? { stop: "threads-row", match: `[data-root-id='${rootId}']` }
+            : { stop: "mentions-row", match: "[aria-current='true']" }], { within: "panel" });
     }
 
     /**
@@ -424,7 +532,7 @@ export function useFrame(dependencies: FrameDependencies): Frame {
         // the focus leaves what holds it unscrolled; the first field is at the view's top.
         await nextTick();
         if (!isPhone.value || kind === "newdm") {
-            rootElement.value?.querySelector<HTMLElement>("[data-testid='main-view'] [data-autofocus]")?.focus({ preventScroll: true });
+            mainViewElement.value?.querySelector<HTMLElement>("[data-autofocus]")?.focus({ preventScroll: true });
         }
     }
 
@@ -443,12 +551,8 @@ export function useFrame(dependencies: FrameDependencies): Frame {
         leaveMainView();
 
         void nextTick(() => {
-            const root = rootElement.value;
-            const composer = isPhone.value ? null : root?.querySelector<HTMLElement>("[data-testid='frame-main'] [data-testid='composer-input']");
             const isOpenerShown = !!opener?.isConnected && !(isPhone.value && pane.value !== "list");
-            (composer
-                ?? (isOpenerShown ? opener : null)
-                ?? root?.querySelector<HTMLElement>("[data-header-focus]"))?.focus();
+            focusStop(["composer", isOpenerShown ? opener : null, "header"], { within: "main" });
         });
     }
 
@@ -466,10 +570,38 @@ export function useFrame(dependencies: FrameDependencies): Frame {
         await shell.value.selectChannel(channelId);
 
         await nextTick();
-        const main = rootElement.value?.querySelector<HTMLElement>("[data-testid='frame-main']");
-        (main?.querySelector<HTMLElement>("[data-testid='join-channel']")
-            ?? (isPhone.value ? null : main?.querySelector<HTMLElement>("[data-testid='composer-input']"))
-            ?? main?.querySelector<HTMLElement>("[data-header-focus]"))?.focus();
+        focusStop(["join", "composer", "header"], { within: "main" });
+    }
+
+    /**
+     * A quote asked to jump to the message it quotes. In a thread, a reply the drawer holds is
+     * landed on there; anything else is in the conversation, which a phone brings back to the
+     * front. The original is usually recent, so the timeline nearly always holds it; when not, a
+     * few older pages are fetched, as for a reply a push opened, and past them the jump does nothing.
+     */
+    async function onJump(messageId: number, isFromThread: boolean): Promise<void> {
+        const thisLanding = ++landingCount;
+        const thread = shell.value.threads.state.thread;
+        if (isFromThread && thread?.replies.some(reply => reply.id === messageId)) {
+            // Let go first, so a second jump to the reply the drawer last landed on lands again.
+            landingReplyId.value = null;
+            await nextTick();
+            if (thisLanding === landingCount) {
+                landingReplyId.value = messageId;
+            }
+            return;
+        }
+
+        const channelId = activeChannelId.value;
+        if (!channelId) {
+            return;
+        }
+
+        if (isFromThread && isPhone.value) {
+            closeThreadDrawer();
+        }
+
+        await landInFeed(channelId, messageId, thisLanding);
     }
 
     // #endregion Event Handlers
@@ -511,7 +643,7 @@ export function useFrame(dependencies: FrameDependencies): Frame {
         if (channelId !== activeChannelId.value) {
             void shell.value.selectChannel(channelId);
         }
-        await dependencies.landOnReply({ channelId, rootId, messageId }, "mentions");
+        await landOnReply({ channelId, rootId, messageId }, "mentions");
     }
 
     /**
@@ -534,7 +666,7 @@ export function useFrame(dependencies: FrameDependencies): Frame {
         isPaneMotionOn.value = true;
         void shell.value.selectChannel(channelId);
         if (rootId !== null) {
-            void dependencies.landOnReply({ channelId, rootId, messageId });
+            void landOnReply({ channelId, rootId, messageId });
         }
         else if (isPhone.value && panelKind.value === "thread") {
             // Only the open conversation's thread is closed here, so focus never aims at a root
@@ -578,12 +710,9 @@ export function useFrame(dependencies: FrameDependencies): Frame {
         panelKind.value = null;
         finishClosing();
 
-        void nextTick(() => {
-            const root = rootElement.value;
-            (root?.querySelector<HTMLElement>(`[data-testid='header-${closed}']`)
-                ?? root?.querySelector<HTMLElement>("[data-testid='header-more'] button")
-                ?? root?.querySelector<HTMLElement>("[data-header-focus]"))?.focus();
-        });
+        // a thread is opened from a message or a list, never from a header button of its own
+        const button: FocusStop | null = closed === "thread" ? null : `${closed}-button`;
+        void nextTick(() => focusStop([button, "more", "header"]));
     }
 
     /**
@@ -604,7 +733,8 @@ export function useFrame(dependencies: FrameDependencies): Frame {
         shell.value.mentions.threadOpened(channelId, rootId);
 
         threadOpenCount++;
-        dependencies.forgetReplyLanding();
+        // A thread opened afresh lands nothing old.
+        landingReplyId.value = null;
         window.clearTimeout(panelClearTimer);
         isPaneMotionOn.value = true;
         threadOrigin.value = origin;
@@ -633,11 +763,8 @@ export function useFrame(dependencies: FrameDependencies): Frame {
         finishClosing();
 
         void nextTick(() => {
-            const root = rootElement.value;
-            const message = root?.querySelector<HTMLElement>(`[data-testid='frame-main'] [data-message-id='${rootId}']`);
-            (message?.querySelector<HTMLElement>("[data-testid='thread-summary']")
-                ?? message
-                ?? root?.querySelector<HTMLElement>("[data-header-focus]"))?.focus();
+            const message = mainElement.value?.querySelector<HTMLElement>(`[data-message-id='${rootId}']`);
+            focusStop([message ? { stop: "thread-summary", within: message } : null, message, "header"], { within: "main" });
         });
     }
 
@@ -665,6 +792,139 @@ export function useFrame(dependencies: FrameDependencies): Frame {
         }
 
         return tokenDuration(rootElement.value, "--chat-t-panel", fallbackPaneSlideMs);
+    }
+
+    /**
+     * Puts focus on the first place of an order that is drawn. Each lookup keeps its own order,
+     * since what is the next best place differs by what just closed or opened.
+     *
+     * @param order The places to try, first to last.
+     * @param options Where the stops are looked for and how focus is put there.
+     *
+     * @returns The element focused, or null when nothing in the order is drawn.
+     */
+    function focusStop(order: FocusTarget[], options: FocusStopOptions = {}): HTMLElement | null {
+        const place = options.within === "main" ? mainElement.value : options.within === "panel" ? panelElement.value : rootElement.value;
+        for (const target of order) {
+            const element = target instanceof HTMLElement ? target : stopElement(target, place, options);
+            if (!element) {
+                continue;
+            }
+
+            // with no scroll to hold, the focus is the plain one every other part of the chat makes
+            const focusOptions = options.preventScroll ? { preventScroll: true } : undefined;
+            if (options.isQuiet) {
+                focusQuietly(element, focusOptions);
+            }
+            else {
+                element.focus(focusOptions);
+            }
+            return element;
+        }
+
+        return null;
+    }
+
+    /**
+     * The element a stop's mark is on, or the first button inside it when the mark is on what
+     * wraps a part that draws its own button, as More's menu does.
+     */
+    function stopElement(target: Exclude<FocusTarget, HTMLElement>, place: HTMLElement | undefined, options: FocusStopOptions): HTMLElement | null {
+        if (!target) {
+            return null;
+        }
+
+        const { stop, match, within } = typeof target === "string" ? { stop: target, match: undefined, within: undefined } : target;
+        if (stop === "composer" && isPhone.value && !options.isTyping) {
+            return null;
+        }
+
+        const mark = stop === "header" ? "[data-header-focus]" : `[data-focus-stop='${stop}']`;
+        const marked = (within ?? place)?.querySelector<HTMLElement>(`${mark}${match ?? ""}`) ?? null;
+        if (!marked || marked.matches("button, input, textarea, select, a[href], [tabindex], [contenteditable]")) {
+            return marked;
+        }
+
+        return marked.querySelector<HTMLElement>("button") ?? marked;
+    }
+
+    /**
+     * Opens a thread at a reply. A push or a link is about a recent reply, so the newest page
+     * nearly always holds it; when not, a few older pages are fetched before the drawer simply
+     * stays at the newest. Each await checks the drawer is still the one this opened, so one
+     * closed or replaced meanwhile asks for nothing more and flashes nothing. A reply opened from
+     * a list keeps the list to go back to.
+     */
+    async function landOnReply(landing: ReplyLanding, origin: ThreadOrigin = null): Promise<void> {
+        const thisLanding = ++landingCount;
+        // Let go first, and let the drawer see it before landing, so a landing on the reply it
+        // last landed on lands again, in the thread already open as in one newly opened.
+        landingReplyId.value = null;
+        const opened = openThreadDrawer(landing.channelId, landing.rootId, origin);
+        const thisOpen = threadOpenCount;
+        await opened;
+        await nextTick();
+
+        const threads = shell.value.threads;
+        await loadUntilHeld(() => {
+            const thread = threads.state.thread;
+            if (thisLanding !== landingCount || thisOpen !== threadOpenCount || !thread || thread.rootId !== landing.rootId || landing.messageId === null) {
+                return "stop";
+            }
+
+            if (thread.replies.some(reply => reply.id === landing.messageId)) {
+                landingReplyId.value = landing.messageId;
+                return "held";
+            }
+
+            // A failed page is shown in the drawer; trying again here would only repeat it.
+            return !thread.hasMore || thread.error || thread.olderError ? "stop" : "more";
+        }, () => threads.loadOlderReplies());
+    }
+
+    /**
+     * Looks for a message in the conversation on screen, fetching a few older pages while it may
+     * be further back, and lands on it once held. Stops when the person has left the conversation
+     * or asked for another landing meanwhile.
+     *
+     * @param thisLanding The landing's number, which must still be the newest at every look.
+     */
+    async function landInFeed(channelId: string, messageId: number, thisLanding: number): Promise<LandingCheck> {
+        // Let go first, so a second landing on the message the feed last landed on lands again.
+        landingMessageId.value = null;
+        await nextTick();
+
+        let oldestSeen: number | undefined;
+        return loadUntilHeld(() => {
+            const timeline = shell.value.timelines.state(channelId);
+            const oldest = timeline.messages[0]?.id;
+            if (thisLanding !== landingCount || activeChannelId.value !== channelId || oldest === undefined) {
+                return "stop";
+            }
+
+            if (timeline.messages.some(message => message.id === messageId)) {
+                landingMessageId.value = messageId;
+                return "held";
+            }
+
+            // An older page that failed or was dropped moved nothing, and one past the message
+            // without it means the conversation does not show it, as a reply kept to its thread
+            // or a message since deleted: neither is too far back.
+            const isStuck = oldest === oldestSeen || oldest < messageId;
+            oldestSeen = oldest;
+            return isStuck || !timeline.hasMore ? "stop" : "more";
+        }, () => shell.value.loadOlder().catch(() => undefined)); // the shell has said why; the look above stops on it
+    }
+
+    /**
+     * Opens a conversation as a sidebar row does, waiting for an open of it already under way,
+     * then lands on a message in it. The landing is numbered as it is asked, before the open, so
+     * one asked for later is never overtaken by this one's open finishing after it.
+     */
+    async function landInConversation(channelId: string, messageId: number): Promise<LandingCheck> {
+        const thisLanding = ++landingCount;
+        await shell.value.selectChannel(channelId);
+        return thisLanding === landingCount ? landInFeed(channelId, messageId, thisLanding) : "stop";
     }
 
     // #endregion Functions
@@ -729,7 +989,7 @@ export function useFrame(dependencies: FrameDependencies): Frame {
 
         linkedReply = null;
         if (channelId === landing.channelId) {
-            void dependencies.landOnReply(landing);
+            void landOnReply(landing);
         }
     });
 
@@ -744,7 +1004,7 @@ export function useFrame(dependencies: FrameDependencies): Frame {
             finishClosing();
 
             if (hadFocus) {
-                void nextTick(() => rootElement.value?.querySelector<HTMLElement>("[data-header-focus]")?.focus());
+                void nextTick(() => focusStop(["header"]));
             }
         }
     });
@@ -766,7 +1026,7 @@ export function useFrame(dependencies: FrameDependencies): Frame {
             finishClosing();
 
             if (hadFocus) {
-                void nextTick(() => rootElement.value?.querySelector<HTMLElement>("[data-header-focus]")?.focus());
+                void nextTick(() => focusStop(["header"]));
             }
         }
     });
@@ -777,6 +1037,8 @@ export function useFrame(dependencies: FrameDependencies): Frame {
         window.clearTimeout(paneGoneTimer);
         window.clearTimeout(panelClearTimer);
     });
+
+    const rooms = useRoomsView({ shell, activeChannelId, drawnThread });
 
     return {
         isPhone,
@@ -791,12 +1053,15 @@ export function useFrame(dependencies: FrameDependencies): Frame {
         goneStyle,
         panelKind,
         mainView,
-        openAddPeople,
         shownPanel,
         panelElement,
+        mainElement,
+        mainViewElement,
         drawnThread,
         threadOrigin,
-        threadOpenCount: () => threadOpenCount,
+        rooms,
+        landingReplyId,
+        landingMessageId,
         onResize,
         onSelect,
         onBack,
@@ -812,6 +1077,188 @@ export function useFrame(dependencies: FrameDependencies): Frame {
         closePanel,
         openMainView,
         closeMainView,
-        openFromMainView
+        openFromMainView,
+        openAddPeople,
+        threadOpenCount: () => threadOpenCount,
+        landOnReply,
+        onJump,
+        landInConversation,
+        focusStop,
+        ...membersPanelViews(shell, rooms, dependencies.campuses),
+        ...threadsPanelWiring(shell, activeChannelId, drawnThread, dependencies.showNotice)
     };
+}
+
+/**
+ * Looks for a landing's message, fetching at most a few older pages while the check says one
+ * may hold it. The check lands the message itself once it is held, in the same step that
+ * found the view unchanged, so a view replaced meanwhile is never landed in.
+ *
+ * @param check Looks once and says where the landing stands.
+ * @param loadOlder Fetches the next older page.
+ *
+ * @returns The last look's answer: "more" when the pages ran out still looking.
+ */
+async function loadUntilHeld(check: () => LandingCheck, loadOlder: () => Promise<void>): Promise<LandingCheck> {
+    let last = check();
+    for (let olderPages = 0; last === "more" && olderPages < maxLandingOlderPages; olderPages++) {
+        await loadOlder();
+        last = check();
+    }
+
+    return last;
+}
+
+/**
+ * Works out what the members panel, the remove confirm and Add people draw. The two dialogs that
+ * change who is in the room stand over the frame rather than in the panel, but all three read the
+ * same roster and the same room, by its title, its kind and its head count.
+ *
+ * @param shell The block's shell, read on every draw since a birthdate replaces it.
+ * @param rooms What the frame draws of rooms, for the room's title and kind.
+ * @param campuses The church's campuses, for a person's campus in Add people's search.
+ *
+ * @returns Each part's props.
+ */
+function membersPanelViews(shell: Readonly<Ref<ChatShell>>, rooms: Pick<ReturnType<typeof useRoomsView>, "roomTitles" | "roomKinds">, campuses: Array<{ guid: string, name?: string | null }>) {
+    const { roomTitles, roomKinds } = rooms;
+
+    /** The church's campus names by guid in lower case, for a person's campus in Add people's search. */
+    const campusNames: Record<string, string> = Object.fromEntries(campuses.map(campus => [campus.guid.toLowerCase(), campus.name ?? ""]));
+
+    /** The room the roster is of: its name, whether it is a channel, and its head count once its facts are read. */
+    const room = computed(() => {
+        const channelId = shell.value.members.state.channelId ?? "";
+        return {
+            channelName: roomTitles.value[channelId] ?? "",
+            isChannel: roomKinds.value[channelId] === "channel",
+            memberCount: shell.value.rooms.factsOf(channelId)?.member_count ?? null
+        };
+    });
+
+    const membersView = computed(() => {
+        const members = shell.value.members.state;
+        const isQuery = members.query.trim() !== "";
+        return {
+            ...room.value,
+            members: shownMembers(members),
+            hasMore: isQuery ? members.search.hasMore : members.hasMore,
+            // The list never waits on Rock: only Add people's place is held until it answers.
+            isLoading: members.isLoading,
+            isAddPending: members.isReadingRights,
+            isLoadingMore: members.isLoadingMore,
+            error: members.error,
+            moreError: members.moreError,
+            refusal: members.refusal,
+            query: members.query,
+            searchStatus: searchStatus(members),
+            canManageMembers: members.canManageMembers,
+            isChatAdministrator: members.isChatAdministrator,
+            removals: members.removals
+        };
+    });
+
+    const removeView = computed(() => {
+        const members = shell.value.members.state;
+        const confirming = members.confirming;
+        return {
+            channelName: room.value.channelName,
+            isChannel: room.value.isChannel,
+            member: confirming,
+            isLastLeader: !!confirming && members.isSuccessorAsked,
+            choices: successorChoices(members),
+            query: members.successorQuery,
+            refusal: members.successorRefusal,
+            isRemoving: !!confirming && members.removals[confirming.person_alias_guid]?.kind === "removing"
+        };
+    });
+
+    const addView = computed(() => {
+        const adding = shell.value.members.state.adding;
+        return {
+            ...room.value,
+            campusNames,
+            isOpen: adding.isOpen,
+            query: adding.query,
+            people: adding.people,
+            isSearching: adding.isSearching,
+            error: adding.error,
+            isAdding: adding.isAdding,
+            refusal: adding.refusal
+        };
+    });
+
+    return { membersView, removeView, addView };
+}
+
+/**
+ * The threads list and the thread drawer's wiring to the shell: the list's tab, refresh and
+ * paging, a follow change from either and where its refusal is said, and the drawer's older
+ * replies. Which panel shows is the frame's; this is what the two panels ask of the shell.
+ *
+ * @param shell The block's shell, read on every use since a birthdate replaces it.
+ * @param activeChannelId The open conversation.
+ * @param drawnThread The thread the drawer draws, whose follow change and replies are the drawer's.
+ * @param showNotice Shows a toast that is not a failure, one per code.
+ *
+ * @returns The panels' values and handlers.
+ */
+function threadsPanelWiring(shell: Readonly<Ref<ChatShell>>, activeChannelId: Readonly<Ref<string | null>>, drawnThread: Readonly<Ref<OpenThreadState | null>>, showNotice: (notice: ToastNotice) => void) {
+    /** The threads list the panel draws, as the shell's threads hold it. */
+    const threadList = computed((): ThreadListState => shell.value.threads.state.list);
+
+    /**
+     * A refused follow change is said once: by the drawer while it holds that thread, the drawer
+     * it went back from included, and otherwise by the list's row.
+     */
+    const drawerFollowError = computed((): FollowError | null => {
+        const error = shell.value.threads.state.followError;
+        return error && error.rootId === drawnThread.value?.rootId ? error : null;
+    });
+    const listFollowError = computed((): FollowError | null => drawerFollowError.value ? null : shell.value.threads.state.followError);
+
+    function onThreadsTab(tab: ThreadListTab): void {
+        // A thread opened from the All tab may have moved the conversation, so the list's own
+        // tab is opened for the conversation open now.
+        if (tab === "channel" && activeChannelId.value && threadList.value.channelId !== activeChannelId.value) {
+            void shell.value.threads.openList(activeChannelId.value, tab);
+            return;
+        }
+
+        void shell.value.threads.switchTab(tab);
+    }
+
+    function onThreadsRefresh(): void {
+        void shell.value.threads.refresh();
+    }
+
+    /** The list's loader, whose promise the list's paging waits on. */
+    function loadMoreThreads(): Promise<void> {
+        return shell.value.threads.loadMore();
+    }
+
+    /**
+     * A follow change from a row or the drawer: the bell changes at once and a refusal comes back
+     * beside it. Following says nothing more; an unfollow that lands says what it means.
+     */
+    async function onFollowFromList(rootId: number, isFollowing: boolean): Promise<void> {
+        if (!await shell.value.threads.follow(rootId, isFollowing) || isFollowing) {
+            return;
+        }
+
+        showNotice(unfollowNotice);
+    }
+
+    /** The drawer's toggle, saved as the list's is. */
+    function onFollowThread(isFollowing: boolean): void {
+        if (drawnThread.value) {
+            void onFollowFromList(drawnThread.value.rootId, isFollowing);
+        }
+    }
+
+    function onLoadOlderReplies(): void {
+        void shell.value.threads.loadOlderReplies();
+    }
+
+    return { threadList, drawerFollowError, listFollowError, onThreadsTab, onThreadsRefresh, loadMoreThreads, onFollowFromList, onFollowThread, onLoadOlderReplies };
 }

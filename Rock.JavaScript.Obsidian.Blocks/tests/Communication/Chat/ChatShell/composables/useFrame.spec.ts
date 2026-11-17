@@ -23,8 +23,8 @@
 // The frame is mounted in a bare host whose template holds only the elements focus is aimed at,
 // over a stand-in shell holding just what the frame calls.
 import { mount, VueWrapper } from "@vue/test-utils";
-import { computed, defineComponent, h, reactive, ref, shallowRef } from "vue";
-import { Frame, useFrame } from "../../../../../src/Communication/Chat/ChatShell/composables/useFrame.partial";
+import { computed, defineComponent, h, nextTick, reactive, ref, shallowRef } from "vue";
+import { Frame, useFrameView } from "../../../../../src/Communication/Chat/ChatShell/composables/useFrameView.partial";
 import { ChatShell } from "../../../../../src/Communication/Chat/ChatShell/shell.partial";
 
 const team = "c0000001-0000-4000-8000-000000000000";
@@ -129,7 +129,6 @@ type Mounted = {
  */
 function mountFrame(): Mounted {
     const calls: Calls = [];
-    const forgetReplyLanding = (): void => void calls.push("forgetReplyLanding");
     const { shell, state } = fakeShell(calls);
     const hasJoinBar = ref(false);
     const hasPanelField = ref(false);
@@ -138,30 +137,30 @@ function mountFrame(): Mounted {
     const Host = defineComponent({
         setup() {
             const rootElement = ref<HTMLElement>();
-            frame = useFrame({
+            frame = useFrameView({
                 shell: shallowRef(shell),
                 activeChannelId: computed(() => state.activeChannelId),
                 rootElement,
                 linkedReply: null,
-                landOnReply: async () => undefined,
-                forgetReplyLanding
+                campuses: [],
+                showNotice: () => undefined
             });
 
             return () => h("div", { ref: rootElement }, [
                 h("button", { "data-testid": "browse-channels" }, "Browse channels"),
-                h("section", { "data-testid": "frame-main" }, [
+                h("section", { ref: frame.mainElement, "data-testid": "frame-main" }, [
                     h("button", { "data-testid": "header-title", "data-header-focus": "" }, "Title"),
-                    h("button", { "data-testid": "header-threads" }, "Threads"),
+                    h("button", { "data-testid": "header-threads", "data-focus-stop": "threads-button" }, "Threads"),
                     hasJoinBar.value
-                        ? h("button", { "data-testid": "join-channel" }, "Join channel")
-                        : h("textarea", { "data-testid": "composer-input" }),
+                        ? h("button", { "data-testid": "join-channel", "data-focus-stop": "join" }, "Join channel")
+                        : h("textarea", { "data-testid": "composer-input", "data-focus-stop": "composer" }),
                     frame.mainView.value
-                        ? h("div", { "data-testid": "main-view" }, [h("input", { "data-autofocus": "" })])
+                        ? h("div", { ref: frame.mainViewElement, "data-testid": "main-view" }, [h("input", { "data-autofocus": "" })])
                         : null
                 ]),
                 h("aside", { ref: frame.panelElement }, [
                     hasPanelField.value ? h("input", { "data-testid": "panel-field", "data-autofocus": "" }) : null,
-                    h("button", { "data-testid": "panel-close" }, "Close")
+                    h("button", { "data-testid": "panel-close", "data-focus-stop": "panel-close" }, "Close")
                 ])
             ]);
         }
@@ -685,5 +684,185 @@ describe("focus into what is opening", () => {
         await frame.openMainView(kind);
 
         expect(focuses).toEqual([{ target: "autofocus", options: { preventScroll: true } }]);
+    });
+});
+
+// One helper puts focus on the first stop of an order that is drawn, each found by its own mark,
+// so no lookup reads a test id. A phone skips the composer, whose focus would raise the keyboard.
+// The host here draws its stops with their marks alone, as nothing in production is found by a test id.
+describe("the one focus helper", () => {
+    type Drawn = { join: boolean, composer: boolean, threadsButton: boolean, more: boolean, message: boolean, summary: boolean };
+
+    function mountMarked(): { frame: Frame, state: ReturnType<typeof fakeShell>["state"], wrapper: VueWrapper, drawn: Drawn } {
+        const { shell, state } = fakeShell([]);
+        const drawn = reactive<Drawn>({ join: false, composer: true, threadsButton: true, more: false, message: true, summary: true });
+        let frame!: Frame;
+
+        const Host = defineComponent({
+            setup() {
+                const rootElement = ref<HTMLElement>();
+                frame = useFrameView({
+                    shell: shallowRef(shell),
+                    activeChannelId: computed(() => state.activeChannelId),
+                    rootElement,
+                    linkedReply: null,
+                    campuses: [],
+                    showNotice: () => undefined
+                });
+
+                return () => h("div", { ref: rootElement }, [
+                    h("button", { "data-focus-stop": "new-message" }, "New message"),
+                    h("section", { ref: frame.mainElement }, [
+                        h("b", { tabindex: -1, "data-header-focus": "" }, "Title"),
+                        drawn.threadsButton ? h("button", { "data-focus-stop": "threads-button" }, "Threads") : null,
+                        drawn.more ? h("span", { "data-focus-stop": "more" }, [h("button", "More")]) : null,
+                        drawn.message
+                            ? h("div", { "data-message-id": "40", tabindex: -1 }, [drawn.summary ? h("button", { "data-focus-stop": "thread-summary" }, "3 replies") : null])
+                            : null,
+                        drawn.join ? h("button", { "data-focus-stop": "join" }, "Join channel") : null,
+                        drawn.composer ? h("div", { contenteditable: "true", tabindex: 0, "data-focus-stop": "composer" }) : null,
+                        frame.mainView.value ? h("div", { ref: frame.mainViewElement }, [h("input", { "data-autofocus": "" })]) : null
+                    ]),
+                    h("aside", { ref: frame.panelElement }, [h("button", { "data-focus-stop": "panel-close" }, "Close")])
+                ]);
+            }
+        });
+
+        const wrapper = mount(Host, { attachTo: document.body });
+        mounted = { frame, calls: [], state, wrapper, hasJoinBar: { value: false }, hasPanelField: { value: false } };
+        return { frame, state, wrapper, drawn };
+    }
+
+    /** The stop focus is on, by its mark, or the header or the root message it fell back to. */
+    function focusedStop(): string | null {
+        const active = document.activeElement;
+        if (!active || active === document.body) {
+            return null;
+        }
+
+        return active.closest("[data-focus-stop]")?.getAttribute("data-focus-stop")
+            ?? (active.hasAttribute("data-header-focus") ? "header" : active.hasAttribute("data-message-id") ? "message" : null);
+    }
+
+    test("focuses Join when drawn, the composer on desktop when not, the header otherwise, and on a phone skips the composer", async () => {
+        const { frame, drawn } = mountMarked();
+        drawn.join = true;
+        await nextTick();
+
+        frame.focusStop(["join", "composer", "header"]);
+        expect(focusedStop()).toBe("join");
+
+        drawn.join = false;
+        await nextTick();
+        frame.focusStop(["join", "composer", "header"]);
+        expect(focusedStop()).toBe("composer");
+
+        resize(frame, 390);
+        frame.focusStop(["join", "composer", "header"]);
+        expect(focusedStop()).toBe("header");
+
+        resize(frame, 1200);
+        drawn.composer = false;
+        await nextTick();
+        frame.focusStop(["join", "composer", "header"]);
+        expect(focusedStop()).toBe("header");
+    });
+
+    test("a room opened from a full view lands on Join, else the composer on desktop, else the title", async () => {
+        const { frame, state, drawn } = mountMarked();
+        state.activeChannelId = team;
+        await settle();
+
+        drawn.join = true;
+        await frame.openMainView("directory");
+        await frame.openFromMainView(volunteers);
+        await settle();
+        expect(focusedStop()).toBe("join");
+
+        drawn.join = false;
+        await frame.openMainView("directory");
+        await frame.openFromMainView(team);
+        await settle();
+        expect(focusedStop()).toBe("composer");
+
+        resize(frame, 390);
+        await frame.openMainView("directory");
+        await frame.openFromMainView(volunteers);
+        await settle();
+        expect(focusedStop()).toBe("header");
+    });
+
+    test("a full view closing gives focus to the composer, else what opened it, else the title", async () => {
+        const { frame, state, wrapper, drawn } = mountMarked();
+        state.activeChannelId = team;
+        await settle();
+        const newMessage = wrapper.get("[data-focus-stop='new-message']").element as HTMLElement;
+
+        newMessage.focus();
+        await frame.openMainView("newdm");
+        frame.closeMainView();
+        await settle();
+        expect(focusedStop()).toBe("composer");
+
+        drawn.composer = false;
+        newMessage.focus();
+        await frame.openMainView("newdm");
+        frame.closeMainView();
+        await settle();
+        expect(focusedStop()).toBe("new-message");
+
+        newMessage.focus();
+        await frame.openMainView("newdm");
+        newMessage.remove();
+        frame.closeMainView();
+        await settle();
+        expect(focusedStop()).toBe("header");
+    });
+
+    test("a panel closing gives focus to the header button that opened it, else More, else the title", async () => {
+        const { frame, state, drawn } = mountMarked();
+        state.activeChannelId = team;
+        await settle();
+
+        await frame.onListPanel("threads");
+        frame.closePanel();
+        await settle();
+        expect(focusedStop()).toBe("threads-button");
+
+        drawn.threadsButton = false;
+        drawn.more = true;
+        await frame.onListPanel("threads");
+        frame.closePanel();
+        await settle();
+        expect(focusedStop()).toBe("more");
+
+        drawn.more = false;
+        await frame.onListPanel("threads");
+        frame.closePanel();
+        await settle();
+        expect(focusedStop()).toBe("header");
+    });
+
+    test("a drawer closing gives focus to the root's thread pill, else the root message, else the title", async () => {
+        const { frame, state, drawn } = mountMarked();
+        state.activeChannelId = team;
+        await settle();
+
+        await frame.openThreadDrawer(team, 40, null);
+        frame.closeThreadDrawer();
+        await settle();
+        expect(focusedStop()).toBe("thread-summary");
+
+        drawn.summary = false;
+        await frame.openThreadDrawer(team, 40, null);
+        frame.closeThreadDrawer();
+        await settle();
+        expect(focusedStop()).toBe("message");
+
+        drawn.message = false;
+        await frame.openThreadDrawer(team, 40, null);
+        frame.closeThreadDrawer();
+        await settle();
+        expect(focusedStop()).toBe("header");
     });
 });
