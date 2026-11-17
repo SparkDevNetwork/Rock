@@ -472,6 +472,25 @@ describe("the full picker's sections", () => {
 });
 
 describe("the search", () => {
+    // Typing swaps the category tabs for the results' count in the same strip, which stays drawn at
+    // its height, so neither the search field above it nor the grid under it moves.
+    test("swaps the tabs for the results' count in their own strip, which stays drawn", async () => {
+        await open();
+        const tablist = document.querySelector("[role='tablist']") as HTMLElement;
+        const strip = tablist.parentElement as HTMLElement;
+        const results = (): string | null => strip.querySelector("[data-testid='emoji-results']")?.textContent?.trim() ?? null;
+        expect(strip.classList.contains("chat-picker")).toBe(false);
+
+        await typeSearch("heart");
+        expect([isShown(strip), isShown(tablist), results()]).toEqual([true, false, "3 results"]);
+
+        await typeSearch("zzzq");
+        expect([isShown(strip), results()]).toEqual([true, "Search results"]);
+
+        await typeSearch("");
+        expect([isShown(strip), isShown(tablist), results()]).toEqual([true, true, null]);
+    });
+
     test("matches names across every section, each glyph once though it sits in two, and says how many", async () => {
         await open();
 
