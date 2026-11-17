@@ -24,6 +24,7 @@ import Attachments from "../../../../../src/Communication/Chat/ChatShell/compone
 import SettingNote from "../../../../../src/Communication/Chat/ChatShell/ui/settingNote.partial.obs";
 import { AttachmentTray, attachmentViewsKey, createAttachments, TrayFile } from "../../../../../src/Communication/Chat/ChatShell/composables/useAttachments.partial";
 import { AttachmentItem, FileItem, GifItem } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
+import { pageRevealKey } from "../../../../../src/Communication/Chat/ChatShell/pageLoad.partial";
 import { harness, Harness, projectUrl, settle, tenant } from "../attachmentFakes";
 
 function image(n: number, extra: Partial<FileItem> = {}): FileItem {
@@ -147,6 +148,31 @@ describe("a photo's blurred preview", () => {
         const { wrapper } = await mountFiles([image(1)]);
 
         expect(wrapper.find("[data-testid='attachment-preview']").exists()).toBe(false);
+    });
+
+    // The first screen's reveal waits, within its grace, for what the history page carries: the
+    // previews. It never waits for a photo, whose link is signed after the page (D-832, option A).
+    test("on the first load, the page's reveal waits for the preview's decode and never for the photo's", async () => {
+        const decodes = holdDecodes();
+        try {
+            const held: Array<Promise<unknown>> = [];
+            const state = reactive({ isReleased: false });
+            const page = { state, holdFace: (decoded: Promise<unknown>) => held.push(decoded) };
+            const attachments = createAttachments(harness().dependencies);
+            wrapper = mount(Attachments, {
+                props: { items: [image(1, { preview })] },
+                global: { provide: { [attachmentViewsKey as symbol]: attachments, [pageRevealKey as symbol]: page } }
+            });
+            await settle();
+            await nextTick();
+
+            expect(wrapper.find("[data-testid='attachment-photo']").exists()).toBe(true);
+            expect(held).toHaveLength(1);
+            expect(wrapper.get("[data-testid='attachment-preview']").classes()).toContain("chat-img-hold");
+        }
+        finally {
+            decodes.restore();
+        }
     });
 
     // A preview is only ever a data URL of a webp or jpeg; anything else the wire carries is not drawn.
