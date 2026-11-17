@@ -448,7 +448,17 @@ namespace Rock.Blocks.Engagement
             };
             tempTypeRequest.LoadAttributes();
 
-            foreach ( var attribute in tempTypeRequest.Attributes.Values.Where( a => a.IsGridColumn ) )
+            /*
+                11/16/2026 - MSE
+
+                Only attributes the current person can view are offered as
+                column choices (and as attribute filters where the block has
+                them), so a denied attribute's name and edit definition are
+                never sent to the browser.
+
+                Reason: Grid attribute choices must honor attribute VIEW security.
+            */
+            foreach ( var attribute in tempTypeRequest.Attributes.Values.Where( a => a.IsGridColumn && a.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) ) )
             {
                 attributesByKey[attribute.Key] = attribute;
                 typeLevelAttributeKeys.Add( attribute.Key );
@@ -463,7 +473,7 @@ namespace Rock.Blocks.Engagement
                 };
                 tempOpportunityRequest.LoadAttributes();
 
-                foreach ( var attribute in tempOpportunityRequest.Attributes.Values.Where( a => a.IsGridColumn ) )
+                foreach ( var attribute in tempOpportunityRequest.Attributes.Values.Where( a => a.IsGridColumn && a.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) ) )
                 {
                     // Type-level attributes are unconditionally shown, so we do not narrow
                     // their scope by adding any opportunity Guids to them.
@@ -6748,7 +6758,20 @@ WHERE 1 = 1" );
                     }
                 }
 
-                _gridAttributes = availableAttributes;
+                /*
+                    11/16/2026 - MSE
+
+                    Keep only the attributes the current person can view. Every
+                    consumer reads this cached list (the row attribute loader, the
+                    grid columns and any attribute filters), so a denied attribute
+                    is never loaded into the grid, shown as a column or used to
+                    filter the requests.
+
+                    Reason: Grid attribute values must honor attribute VIEW security.
+                */
+                _gridAttributes = availableAttributes
+                    .Where( a => a.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+                    .ToList();
             }
 
             return _gridAttributes;
