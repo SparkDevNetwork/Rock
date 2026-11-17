@@ -9,7 +9,7 @@
                      data-testid="attachment-tray-file"
                      :data-status="file.status">
                     <span class="chat-attach-chip-thumb" aria-hidden="true">
-                        <img v-if="file.previewUrl" :src="file.previewUrl" alt="" />
+                        <img v-if="file.localCopyUrl" :src="file.localCopyUrl" alt="" />
                         <Icon v-else name="file" />
                     </span>
                     <span class="chat-attach-chip-main">
@@ -926,7 +926,7 @@ a.chat-attach-file:focus-visible {
 
     /** What a photo draws from: the person's own copy where this page sent it, else its link. */
     function imageSource(item: FileItem): string | null {
-        return views?.previewOf(item.id) ?? linkOf(item)?.url ?? null;
+        return views?.localCopyOf(item.id) ?? linkOf(item)?.url ?? null;
     }
 
     /** A failed file's words, the short ones beside its Try again. */

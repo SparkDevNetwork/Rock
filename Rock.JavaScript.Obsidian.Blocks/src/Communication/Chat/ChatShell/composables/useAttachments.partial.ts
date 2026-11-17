@@ -284,7 +284,7 @@ export function isStoredPreview(value: string | null | undefined): value is stri
  * write webp (its canvas writes a PNG instead). A preview that fails, is a PNG or reaches the cap
  * is left out, since a preview the platform refuses would refuse the photo with it.
  */
-async function previewOf(image: DecodedImage, codec: ImageCodec): Promise<string | null> {
+async function drawPreview(image: DecodedImage, codec: ImageCodec): Promise<string | null> {
     const scale = previewSide / Math.max(image.width, image.height);
     const width = Math.max(1, Math.round(image.width * scale));
     const height = Math.max(1, Math.round(image.height * scale));
@@ -347,7 +347,7 @@ async function prepare(file: File, limits: AttachmentLimits, codec: ImageCodec):
         const blob = await codec.encode(image, width, height, redrawn.type, redrawn.type === "image/jpeg" ? photoQuality : undefined);
         const dot = file.name.lastIndexOf(".");
         const name = `${dot > 0 ? file.name.slice(0, dot) : file.name}.${redrawn.extension}`;
-        const preview = await previewOf(image, codec);
+        const preview = await drawPreview(image, codec);
 
         return { blob, name, type: redrawn.type, kind: "image", width, height, preview };
     }
@@ -375,7 +375,7 @@ export type TrayFile = {
     height: number | null;
 
     /** A photo's local copy, drawn before anything is uploaded; null for a file. */
-    previewUrl: string | null;
+    localCopyUrl: string | null;
     status: "preparing" | "uploading" | "uploaded" | "failed";
 
     /** How much of the file Storage has taken, from 0 to 1. */
@@ -484,7 +484,7 @@ export type Attachments = {
      * The local copy of a photo this person sent from this page, so it never waits on a link; let
      * go once its link is signed, which draws it from then.
      */
-    previewOf: (id: string) => string | null;
+    localCopyOf: (id: string) => string | null;
     links: AttachmentLinks;
 
     /** Lets go of the bytes kept for a send's files, once the platform has stored the message. */
@@ -525,7 +525,7 @@ export type AttachmentDependencies = {
 };
 
 /** What a row and the viewer read: local copies and the session's links. */
-export type AttachmentViews = Pick<Attachments, "previewOf" | "links">;
+export type AttachmentViews = Pick<Attachments, "localCopyOf" | "links">;
 
 /** Where a row finds the session's attachment views, provided once by the chat. */
 export const attachmentViewsKey: InjectionKey<AttachmentViews> = Symbol("chat-attachment-views");
@@ -594,7 +594,7 @@ export function createAttachments(dependencies: AttachmentDependencies): Attachm
     // The person's own uploads by id, to upload again while the send is unconfirmed, and the local
     // copy of each photo until its link draws it.
     const kept = new Map<string, KeptFile>();
-    const previews = reactive(new Map<string, string>());
+    const localCopies = reactive(new Map<string, string>());
     let localIds = 0;
 
     // #region Uploading
@@ -747,7 +747,7 @@ export function createAttachments(dependencies: AttachmentDependencies): Attachm
         }
 
         if (prepared.kind === "image") {
-            file.previewUrl = objectUrls.create(prepared.blob);
+            file.localCopyUrl = objectUrls.create(prepared.blob);
         }
         pending.set(file.localId, { blob: markRaw(prepared.blob), preview: prepared.preview, channelId, begunAt: 0, request: null });
         await send(tray, file);
@@ -776,7 +776,7 @@ export function createAttachments(dependencies: AttachmentDependencies): Attachm
                         size: one.size,
                         width: null,
                         height: null,
-                        previewUrl: null,
+                        localCopyUrl: null,
                         status: "preparing",
                         progress: 0,
                         failure: null,
@@ -795,8 +795,8 @@ export function createAttachments(dependencies: AttachmentDependencies): Attachm
                 const [file] = tray.files.splice(index, 1);
                 pending.get(localId)?.request?.abort();
                 pending.delete(localId);
-                if (file.previewUrl) {
-                    objectUrls.revoke(file.previewUrl);
+                if (file.localCopyUrl) {
+                    objectUrls.revoke(file.localCopyUrl);
                 }
                 tray.notice = null;
             },
@@ -947,10 +947,10 @@ export function createAttachments(dependencies: AttachmentDependencies): Attachm
             links.set(item.id, { link: { url, downloadUrl, isUnavailable: false }, endsAt });
 
             // The photo draws from its link from now on, so its local copy is let go.
-            const preview = previews.get(item.id);
-            if (preview) {
-                previews.delete(item.id);
-                objectUrls.revoke(preview);
+            const copy = localCopies.get(item.id);
+            if (copy) {
+                localCopies.delete(item.id);
+                objectUrls.revoke(copy);
             }
         }
     }
@@ -1110,8 +1110,8 @@ export function createAttachments(dependencies: AttachmentDependencies): Attachm
                 if (held) {
                     kept.set(item.id, { blob: held.blob, item });
                 }
-                if (file.previewUrl) {
-                    previews.set(item.id, file.previewUrl);
+                if (file.localCopyUrl) {
+                    localCopies.set(item.id, file.localCopyUrl);
                 }
                 pending.delete(file.localId);
                 return item;
@@ -1146,16 +1146,16 @@ export function createAttachments(dependencies: AttachmentDependencies): Attachm
             renewed.forEach((item, index) => {
                 kept.delete(items[index].id);
                 kept.set(item.id, { blob: files[index].blob, item });
-                const preview = previews.get(items[index].id);
-                if (preview) {
-                    previews.delete(items[index].id);
-                    previews.set(item.id, preview);
+                const copy = localCopies.get(items[index].id);
+                if (copy) {
+                    localCopies.delete(items[index].id);
+                    localCopies.set(item.id, copy);
                 }
             });
             return renewed;
         },
 
-        previewOf: (id: string): string | null => previews.get(id) ?? null,
+        localCopyOf: (id: string): string | null => localCopies.get(id) ?? null,
 
         links: linkCache,
 
@@ -1172,14 +1172,14 @@ export function createAttachments(dependencies: AttachmentDependencies): Attachm
             asked.clear();
             watched.clear();
 
-            const urls = new Set(previews.values());
+            const urls = new Set(localCopies.values());
             trays.forEach(tray => tray.files.forEach(file => {
-                if (file.previewUrl) {
-                    urls.add(file.previewUrl);
+                if (file.localCopyUrl) {
+                    urls.add(file.localCopyUrl);
                 }
             }));
             urls.forEach(url => objectUrls.revoke(url));
-            previews.clear();
+            localCopies.clear();
             kept.clear();
             pending.clear();
         }
