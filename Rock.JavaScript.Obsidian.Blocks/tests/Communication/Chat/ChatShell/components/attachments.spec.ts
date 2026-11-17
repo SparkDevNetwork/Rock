@@ -194,12 +194,30 @@ describe("a photo's blurred preview", () => {
         expect(wrapper.find("[data-testid='attachment-preview']").exists()).toBe(false);
     });
 
-    test("is drawn blurred and fades out as the photo sharpens over it, and the tile's fill goes once the photo shows", () => {
+    // The photo fades in from nothing, so whatever is under it shows through its fade: the preview
+    // and the tile's fill stay whole for the fade's length, and the photo sharpens over them, never
+    // over the row behind. Both go after it, so a photo with clear areas ends on the row alone. Only
+    // a photo that loaded clears the fill: one that failed keeps its neutral tile.
+    test("is drawn blurred and stays whole through the photo's fade, then goes with the tile's fill, which only a loaded photo clears", () => {
         const file = "components/attachments.partial.obs";
         expect(ruleOf(file, ".chat-attach-blur")["filter"]).toMatch(/^blur\(/);
-        expect(ruleOf(file, ".chat-attach-blur")["transition"]).toBe("opacity var(--chat-d-img-in) var(--chat-ease-state)");
+        expect(ruleOf(file, ".chat-attach-blur")["transition"]).toBe("opacity var(--chat-d-img-in) var(--chat-ease-state) var(--chat-d-img-in)");
         expect(ruleOf(file, ".chat-attach-pic:has(> .chat-attach-shot:not(.chat-img-hold)) > .chat-attach-blur")["opacity"]).toBe("0");
-        expect(ruleOf(file, ".chat-attach-tile:has(> .chat-attach-pic > .chat-attach-shot:not(.chat-img-hold))")["background"]).toBe("transparent");
+        expect(ruleOf(file, ".chat-attach-tile")["transition"]).toBe("background-color var(--chat-d-img-in) var(--chat-ease-state) var(--chat-d-img-in)");
+        expect(ruleOf(file, ".chat-attach-tile:has(> .chat-attach-pic > .chat-attach-shot:not(.chat-img-hold):not([data-broken]))")["background-color"]).toBe("transparent");
+        expect(ruleOf(file, ".chat-attach-tile:has(> .chat-attach-pic > .chat-attach-shot:not(.chat-img-hold))")).toEqual({});
+    });
+
+    // The reveal shows a broken photo as the browser draws one, so being shown is not being loaded;
+    // the photo itself says it failed, which keeps its tile's fill.
+    test("a photo that failed to load is marked as failed, and one that has not is not", async () => {
+        const { wrapper } = await mountFiles([image(1, { preview }), image(2)]);
+        const [failed, fine] = wrapper.findAll("[data-testid='attachment-photo']");
+
+        await failed.trigger("error");
+
+        expect(failed.attributes("data-broken")).toBe("true");
+        expect(fine.attributes("data-broken")).toBeUndefined();
     });
 
     // The tile is still while it waits (the loading rule): its photo sits in the picture's own
