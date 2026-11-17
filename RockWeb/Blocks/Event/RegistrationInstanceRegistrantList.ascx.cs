@@ -785,10 +785,12 @@ namespace RockWeb.Blocks.Event
                     var feeDesc = new List<string>();
                     foreach ( var fee in registrant.Fees )
                     {
+                        // The Excel export strips tags but does not decode entities, so only encode for the page.
+                        var feeName = fee.Quantity > 1 ? fee.RegistrationTemplateFee.Name.Pluralize() : fee.RegistrationTemplateFee.Name;
                         feeDesc.Add( string.Format(
                             "{0}{1} ({2})",
                             fee.Quantity > 1 ? fee.Quantity.ToString( "N0" ) + " " : string.Empty,
-                            fee.Quantity > 1 ? fee.RegistrationTemplateFee.Name.Pluralize() : fee.RegistrationTemplateFee.Name,
+                            _isExporting ? feeName : feeName.EncodeHtml(),
                             fee.Cost.FormatAsCurrency() ) );
                     }
 
@@ -1018,8 +1020,8 @@ namespace RockWeb.Blocks.Event
                             @"<a class='{0}' href='{1}' title='{2}'><i class='{3}'></i>{4}</a>",
                             btnClass, // {0}
                             groupPlacementUrl, // {1}
-                            toolTip, // {2}
-                            iconCssClass, // {3}
+                            toolTip.EncodeHtml(), // {2}
+                            iconCssClass.EncodeHtml(), // {3}
                             groupCountText ) ); // {4}
                 }
             }

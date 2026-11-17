@@ -2857,7 +2857,7 @@ The logged-in person's information will be used to complete the registrar inform
             hlType.Visible = registrationTemplate.Category != null;
             hlType.Text = registrationTemplate.Category != null ? registrationTemplate.Category.Name : string.Empty;
             lGroupType.Text = registrationTemplate.GroupType != null ? registrationTemplate.GroupType.Name : string.Empty;
-            lDescription.Text = registrationTemplate.Description;
+            lDescription.Text = registrationTemplate.Description.EncodeHtml();
             lRequiredSignedDocument.Text = registrationTemplate.RequiredSignatureDocumentTemplate != null ? registrationTemplate.RequiredSignatureDocumentTemplate.Name : string.Empty;
             lRequiredSignedDocument.Visible = lRequiredSignedDocument.Text.IsNotNullOrWhiteSpace();
             lWorkflowType.Text = registrationTemplate.RegistrationWorkflowType != null ? registrationTemplate.RegistrationWorkflowType.Name : string.Empty;
@@ -2874,7 +2874,7 @@ The logged-in person's information will be used to complete the registrar inform
 
                     foreach ( var formField in form.Fields.OrderBy( a => a.Order ) )
                     {
-                        var formFieldName = ( formField.Attribute != null ) ? formField.Attribute.Name : formField.PersonFieldType.ConvertToString();
+                        var formFieldName = ( formField.Attribute != null ) ? formField.Attribute.Name.EncodeHtml() : formField.PersonFieldType.ConvertToString();
                         var fieldTypeName = ( formField.Attribute != null ) ? FieldTypeCache.GetName( formField.Attribute.FieldTypeId ) : string.Empty;
                         formFieldTextBuilder.Append(
                             $@"<div class='row'>
@@ -2885,7 +2885,7 @@ The logged-in person's information will be used to complete the registrar inform
                             </div>" );
                     }
 
-                    formsSummaryTextBuilder.Append( $"<br/><strong>{form.Name}</strong>{formFieldTextBuilder}" );
+                    formsSummaryTextBuilder.Append( $"<br/><strong>{form.Name.EncodeHtml()}</strong>{formFieldTextBuilder}" );
                 }
 
                 lRegistrantFormsSummary.Text = formsSummaryTextBuilder.ToString();
@@ -2914,7 +2914,7 @@ The logged-in person's information will be used to complete the registrar inform
                 registrationAttributeTextBuilder.Append(
                     $@"<div class='row'>
                         <div class='col-sm-1'></div>
-                        <div class='col-sm-4'>{registrationAttribute.Name}</div>
+                        <div class='col-sm-4'>{registrationAttribute.Name.EncodeHtml()}</div>
                         <div class='col-sm-7'>{registrationAttribute.FieldType.Name}</div>
                     </div>" );
             }
@@ -4014,7 +4014,7 @@ The logged-in person's information will be used to complete the registrar inform
             var feeItemsHtml = new List<string>();
             foreach ( var feeItem in feeItems )
             {
-                var feeItemHtml = $"{feeItem.Name}-{feeItem.Cost.FormatAsCurrency()}";
+                var feeItemHtml = $"{feeItem.Name.EncodeHtml()}-{feeItem.Cost.FormatAsCurrency()}";
                 if ( feeItem.MaximumUsageCount.HasValue )
                 {
                     feeItemHtml += $" ( max: {feeItem.MaximumUsageCount.Value} )";
@@ -4093,7 +4093,7 @@ The logged-in person's information will be used to complete the registrar inform
             }
 
             var lPlacementName = e.Row.FindControl( "lPlacementName" ) as Literal;
-            lPlacementName.Text = registrationTemplatePlacement.Name;
+            lPlacementName.Text = registrationTemplatePlacement.Name.EncodeHtml();
 
             var lGroupTypeName = e.Row.FindControl( "lGroupTypeName" ) as Literal;
             lGroupTypeName.Text = GroupTypeCache.Get( registrationTemplatePlacement.GroupTypeId ).Name;
@@ -4105,7 +4105,7 @@ The logged-in person's information will be used to complete the registrar inform
                 .Select( a => a.Name )
                 .ToList();
 
-            lSharedGroupNames.Text = sharedGroupNameList.AsDelimited( ", ", " and " );
+            lSharedGroupNames.Text = sharedGroupNameList.Select( a => a.EncodeHtml() ).ToList().AsDelimited( ", ", " and " );
         }
 
         /// <summary>

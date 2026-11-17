@@ -1,4 +1,5 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="RegistrationTemplateDetail.ascx.cs" Inherits="RockWeb.Blocks.Event.RegistrationTemplateDetail" %>
+<%@ Import Namespace="Rock" %>
 
 <script type="text/javascript">
 
@@ -302,7 +303,7 @@
                                 <Rock:ReorderField />
                                 <Rock:RockBoundField DataField="Name" HeaderText="Fee" />
                                 <Rock:EnumField DataField="FeeType" HeaderText="Options" />
-                                <Rock:RockBoundField DataField="Cost" HeaderText="Cost" ItemStyle-Wrap="true" />
+                                <Rock:RockBoundField DataField="Cost" HeaderText="Cost" ItemStyle-Wrap="true" HtmlEncode="false" />
                                 <Rock:BoolField DataField="AllowMultiple" HeaderText="Enable<br />Quantity" HtmlEncode="false" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center" />
                                 <Rock:BoolField DataField="DiscountApplies" HeaderText="Discount<br />Applies" HtmlEncode="false" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center" />
                                 <Rock:BoolField DataField="IsActive" HeaderText="Is<br />Active" HtmlEncode="false" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center" />
@@ -491,7 +492,7 @@
                                 <asp:Repeater ID="rFees" runat="server">
                                     <ItemTemplate>
                                         <div class="row">
-                                            <div class="col-xs-4"><%# Eval("Name") %></div>
+                                            <div class="col-xs-4"><%# ( Eval( "Name" ) as string ).EncodeHtml() %></div>
                                             <div class="col-xs-8"><%# FormatFeeItems( Eval("FeeItems") as ICollection<Rock.Model.RegistrationTemplateFeeItem> ) %></div>
                                         </div>
                                     </ItemTemplate>
