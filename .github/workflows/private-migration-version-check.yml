@@ -1,0 +1,62 @@
+name: Migration Version Check
+
+# Checks the hotfix plugin migrations (Rock/Plugin/HotFixes) a PR adds:
+#   - the version in [MigrationNumber( n, "x.y" )] is the Rock release of the
+#     branch the PR targets (hotfix-19.9 -> "19.9", release-20.0 -> "20.0",
+#     develop -> its version file), not copied from the previous migration
+#     file, and
+#   - the migration number isn't used on any branch in MERGE_CHAIN.
+# The rules and the PR comment (one, edited in place) are in
+# .github/scripts/migration-version-check.mjs.
+#
+# It uses pull_request, not pull_request_target: the job runs the checked-out
+# PR merge commit, like the other private workflows, with a token that can only
+# read the repo and comment on the PR. The script reads the PR's files as git
+# data and never builds or executes them. There is no paths filter on purpose:
+# when a PR removes its bad migration, the check has to run again to clear its
+# comment, and a paths filter would skip that run.
+#
+# This file also exists in the public repo (the mirror copies develop), but the
+# repository check below keeps it from ever running there.
+#
+# Required in the private repo:
+#   vars.MERGE_CHAIN  The merge-up paths, shared with private-merge-up-check.yml.
+#                     The branches in it are the ones checked for used numbers.
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, edited]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+# A newer run for the same PR cancels the older one, so re-runs never race on
+# the comment. An edit that isn't a base change gets its own group, so it can't
+# cancel a check that is running (the job below skips it).
+concurrency:
+  group: ${{ (github.event.action == 'edited' && github.event.changes.base == null) && format('migration-version-check-noop-{0}', github.run_id) || format('migration-version-check-{0}', github.event.pull_request.number) }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    # An edit only matters when the PR's base branch changed, not a new title or body.
+    if: >-
+      github.repository == 'SparkStealth/Rock-Mirror'
+      && (github.event.action != 'edited' || github.event.changes.base != null)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Check the added migrations
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BASE: ${{ github.event.pull_request.base.ref }}
+          PR: ${{ github.event.pull_request.number }}
+          MERGE_CHAIN: ${{ vars.MERGE_CHAIN }}
+        run: node .github/scripts/migration-version-check.mjs
