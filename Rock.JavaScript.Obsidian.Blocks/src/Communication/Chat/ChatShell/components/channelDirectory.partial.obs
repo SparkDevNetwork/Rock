@@ -196,7 +196,8 @@
                  data-testid="directory-preview"
                  :data-channel-id="previewRow.id">
             <header v-if="!isSplit" class="chat-fd-hdr" data-testid="directory-preview-head">
-                <IconButton class="chat-fd-back"
+                <IconButton ref="previewBack"
+                            class="chat-fd-back"
                             icon="left"
                             label="Back to Browse channels"
                             data-testid="directory-preview-back"
@@ -760,11 +761,10 @@
 </style>
 
 <script setup lang="ts">
-    import { computed, onBeforeUnmount, onMounted, PropType, ref, watch } from "vue";
+    import { computed, nextTick, onBeforeUnmount, onMounted, PropType, ref, watch } from "vue";
     import { newGuid } from "@Obsidian/Utility/guid";
     import { ChatCampusBag } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatShell/chatCampusBag";
     import { useAnnouncer } from "../ui/announcer.partial";
-    import Button from "../ui/button.partial.obs";
     import ChannelMark from "../ui/channelMark.partial.obs";
     import EmptyState from "../ui/emptyState.partial.obs";
     import Icon from "../ui/icon.partial.obs";
@@ -875,6 +875,10 @@
     const searchInput = ref<HTMLInputElement>();
     const scrollElement = ref<HTMLElement>();
     const chipsElement = ref<HTMLElement>();
+    const previewBack = ref<InstanceType<typeof IconButton>>();
+
+    /** The row whose preview lies over the list, which takes focus back as the preview closes. */
+    let coveringRowId: string | null = null;
 
     /**
      * The view's width at which the preview fits beside the list: the list's 400px column and a
@@ -1130,6 +1134,11 @@
         return id ? props.campuses.find(campus => campus.guid.toLowerCase() === id)?.name ?? null : null;
     }
 
+    /** A row's button, while the list draws it. */
+    function rowButtonOf(channelId: string | null): HTMLElement | null {
+        return channelId ? viewElement.value?.querySelector<HTMLElement>(`.chat-fd-row[data-channel-id="${channelId}"] .chat-fd-open`) ?? null : null;
+    }
+
     function isChipPressed(campus: DirectoryCampus): boolean {
         const chosen = props.directory.campus;
         return chosen.kind === campus.kind && (chosen.kind !== "campus" || (campus.kind === "campus" && chosen.campusId === campus.campusId));
@@ -1154,6 +1163,27 @@
             emit("preview", ids[0]);
         }
     });
+
+    // Over the list, the row pressed goes out of reach under the preview: focus that was in the view
+    // moves to the preview's Back, and as the preview closes it comes back to that row, or to the
+    // search where the row is gone. Read before the view redraws, while what held focus is drawn.
+    watch(isCovered, async covered => {
+        const hadFocus = !!viewElement.value && viewElement.value.contains(document.activeElement);
+        if (covered) {
+            coveringRowId = props.previewId;
+        }
+        if (!hadFocus) {
+            return;
+        }
+
+        await nextTick();
+        if (covered) {
+            previewBack.value?.focus();
+        }
+        else {
+            (rowButtonOf(coveringRowId) ?? searchInput.value)?.focus();
+        }
+    }, { flush: "pre" });
 
     // The chip row's cut is read as the row is drawn and each time its width changes, since a
     // narrower window cuts chips that fit before; a browser's observer reads it once on start.
