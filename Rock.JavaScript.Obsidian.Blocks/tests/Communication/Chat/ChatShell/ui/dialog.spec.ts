@@ -153,7 +153,9 @@ describe("a panel turned into another page", () => {
         const close = dialog.querySelector<HTMLElement>("[data-testid='settings-close']");
         expect(Array.from(title?.parentElement?.children ?? [])).toEqual([back, title, close]);
         expect(dialog.contains(document.querySelector("[data-testid='unblock']"))).toBe(true);
-        expect(document.activeElement).toBe(back);
+        // focus is on the page itself, named by its title, so a screen reader says where the person is
+        expect(document.activeElement).toBe(dialog.querySelector("[role='group'][aria-label='Blocked people']"));
+        expect(document.activeElement?.contains(document.querySelector("[data-testid='unblock']"))).toBe(true);
 
         back?.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true, cancelable: true }));
         await nextTick();

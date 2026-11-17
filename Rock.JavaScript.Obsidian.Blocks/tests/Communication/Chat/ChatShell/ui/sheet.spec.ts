@@ -259,11 +259,24 @@ describe("a sheet turned into another page", () => {
         expect(first?.getAttribute("aria-hidden")).toBe("true");
     });
 
-    it("puts focus on Back as it turns, or on what the page marks to start on", async () => {
+    // Focus on the page itself, named by its title, is what makes a screen reader say where the
+    // person is now; on Back, outside the page, it would hear only "Back".
+    it("puts focus on the page itself as it turns, named by its title, or on what the page marks to start on", async () => {
         turning();
         await settle();
         await turn();
+        const page = document.activeElement as HTMLElement;
+        expect(page.getAttribute("data-testid")).toBe("surface-page");
+        expect(page.getAttribute("role")).toBe("group");
+        expect(page.getAttribute("aria-label")).toBe("GIF");
+        expect(page.contains(find("gif-search"))).toBe(true);
+
+        // Tab from the page goes on to the head's Back, the first control, and stays inside
+        page.dispatchEvent(new KeyboardEvent("keydown", { key: "Tab", bubbles: true, cancelable: true }));
         expect(document.activeElement).toBe(find("page-back"));
+
+        // the page holding focus draws no ring around itself, as a dialog holding focus draws none
+        expect(ruleOf(styleOf("surfacePage.partial.obs"), ".chat-surface-page:focus")).toMatch(/outline:\s*none/);
 
         wrapper?.unmount();
         document.body.innerHTML = "";
@@ -301,6 +314,40 @@ describe("a sheet turned into another page", () => {
 
         opener.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true, cancelable: true }));
         expect(sheet?.emitted("dismiss")).toHaveLength(1);
+    });
+
+    // Whatever is out of front is out of reach: the page going back lies over the uncovered one
+    // for its whole leave, where it would catch a tap or a Tab meant for the page under.
+    it("keeps the page going back out of reach and unheard while it leaves", async () => {
+        turning({ isMoving: true });
+        await settle();
+        const opener = await turn();
+
+        (find("page-back") as HTMLElement).click();
+        await settle();
+
+        const leaving = Array.from(document.querySelectorAll<HTMLElement>("[data-testid='surface-page']")).find(page => page.contains(find("gif-tile")));
+        expect(leaving?.classList.contains("is-leaving")).toBe(true);
+        expect(leaving?.hasAttribute("inert")).toBe(true);
+        expect(leaving?.getAttribute("aria-hidden")).toBe("true");
+        expect(opener.closest("[inert]")).toBeNull();
+    });
+
+    // The surface's close closes its pages with it, by their owners, top first, so it opens again
+    // on its own first page rather than turned.
+    it("closes every page as it closes, so it opens again on its first page", async () => {
+        const { isGif, isOpen } = turning();
+        await settle();
+        await turn();
+
+        isOpen.value = false;
+        await settle();
+        expect(isGif.value).toBe(false);
+
+        isOpen.value = true;
+        await settle();
+        expect(find("page-back")).toBeNull();
+        expect(find("to-gif")?.closest("[inert]")).toBeNull();
     });
 
     it("keeps Tab inside the turned page", async () => {

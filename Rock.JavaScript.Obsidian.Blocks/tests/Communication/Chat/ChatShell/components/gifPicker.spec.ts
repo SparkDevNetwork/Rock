@@ -518,10 +518,11 @@ describe("the GIF picker as a page of a turned sheet", () => {
         expect(document.activeElement).toBe(search());
     });
 
-    test("on a touch screen leaves focus to the page's Back, so no keyboard rises over the GIFs", async () => {
+    test("on a touch screen leaves focus on the page itself, named GIF, so no keyboard rises over the GIFs", async () => {
         await turned(fakeGifs(), true);
 
-        expect(document.activeElement).toBe(document.querySelector("[data-testid='page-back']"));
+        expect(document.activeElement?.getAttribute("aria-label")).toBe("GIF");
+        expect(document.activeElement?.contains(picker())).toBe(true);
     });
 
     test("a pick hands the GIF over and leaves closing to the sheet's owner", async () => {
