@@ -23,6 +23,11 @@
 //
 // The save goes out with fetch and keepalive so that one made as the page closes still arrives;
 // a beacon cannot carry the person's token.
+//
+// Since the save waits, the person's other tabs in the same browser are told of each message read
+// as it is read, over the browser's own line between tabs, and apply it as a read saved on another
+// device: a room read in one tab is read in the others at once, with nothing added at the
+// platform. Another device learns at the save, as before.
 import { createPlatformCall } from "../platformCall.partial";
 import { MarkReadResult } from "../types.partial";
 
@@ -36,6 +41,12 @@ export type ReadTrackerDependencies<K = string, A = MarkReadResult> = {
 
     /** A save came back with its answer: the position as stored, and what it says of the unread. */
     onSaved: (key: K, answer: A) => void;
+
+    /**
+     * A message newer than the position the platform holds was read in what is open; told once per
+     * turn, with the newest, so the person's other tabs read it too.
+     */
+    tell?: (key: K, messageId: number) => void;
 };
 
 /** The parts of the page the tracker listens to. */
@@ -87,6 +98,32 @@ export function createReadTracker<K = string, A = MarkReadResult>(dependencies: 
     let newestSeen: number | null = null;
     let lastSaved: number | null = null;
 
+    // How far the other tabs know this was read: the stored position once it is known, then each
+    // message told. Null until the open has learned the stored position, since a message seen
+    // before then may be one already read, which would tell them nothing true.
+    let told: number | null = null;
+    let isTellQueued = false;
+
+    /**
+     * Tells the other tabs of the newest message read, once the turn's seen messages are in: a room
+     * opened onto many new messages reports each as it comes into view, all in one turn, and one
+     * word of the newest says the same as many.
+     */
+    function queueTell(): void {
+        if (!dependencies.tell || isTellQueued) {
+            return;
+        }
+
+        isTellQueued = true;
+        queueMicrotask(() => {
+            isTellQueued = false;
+            if (activeKey !== null && told !== null && newestSeen !== null && newestSeen > told) {
+                told = newestSeen;
+                dependencies.tell?.(activeKey, newestSeen);
+            }
+        });
+    }
+
     /** Saves the open position if something newer than the last save was seen. */
     async function flush(): Promise<void> {
         const key = activeKey;
@@ -126,6 +163,7 @@ export function createReadTracker<K = string, A = MarkReadResult>(dependencies: 
             activeKey = key;
             newestSeen = null;
             lastSaved = null;
+            told = null;
         },
 
         open: (key: K, storedCursor: number | null): void => {
@@ -133,11 +171,15 @@ export function createReadTracker<K = string, A = MarkReadResult>(dependencies: 
             activeKey = key;
             lastSaved = isShown ? newer(lastSaved, storedCursor) : storedCursor;
             newestSeen = isShown ? newer(newestSeen, storedCursor) : storedCursor;
+            // a room with no stored position is told from its first message
+            told = newer(isShown ? told : null, storedCursor) ?? 0;
+            queueTell();
         },
 
         seen: (messageId: number): void => {
             if (activeKey !== null && (newestSeen === null || messageId > newestSeen)) {
                 newestSeen = messageId;
+                queueTell();
             }
         },
 
@@ -153,6 +195,7 @@ export function createReadTracker<K = string, A = MarkReadResult>(dependencies: 
             activeKey = null;
             newestSeen = null;
             lastSaved = null;
+            told = null;
 
             if (key === null || messageId === null || (saved !== null && messageId <= saved)) {
                 return;
@@ -183,6 +226,82 @@ export function createReadTracker<K = string, A = MarkReadResult>(dependencies: 
                 targets.window.removeEventListener("blur", onLeave);
                 targets.window.removeEventListener("pagehide", onLeave);
             };
+        }
+    };
+}
+
+/** The part of the browser's line between tabs, a BroadcastChannel, that the tabs' reads use. */
+export type TabLineLike = {
+    postMessage: (message: unknown) => void;
+    onmessage: ((event: { data: unknown }) => void) | null;
+    close: () => void;
+};
+
+/** What the person's tabs in this browser share of their reads. */
+export type TabReadsOptions = {
+    /** Opens the line of this name, or answers null in a browser without one. */
+    open: (name: string) => TabLineLike | null;
+    tenantId: string;
+    personAliasGuid: string;
+
+    /** Another of the person's tabs read the room up to this message. */
+    onRead: (channelId: string, readCursor: number) => void;
+};
+
+/** The person's other tabs in this browser, told of each read. */
+export type TabReads = {
+    /** Tells the other tabs the room was read up to this message. */
+    tell: (channelId: string, readCursor: number) => void;
+
+    /** Stops telling and hearing, at sign-out. */
+    close: () => void;
+};
+
+/**
+ * Opens the line the person's tabs in this browser share their reads on. It is named for the
+ * church and the person, as the page's own browser keys are, so only their tabs hear it; a word
+ * names the room, how far it was read and the person, and a tab drops any word that is not a read
+ * of its own person's, whatever line it came on.
+ *
+ * @param options The line, the person, and what a read from another tab is handed to.
+ *
+ * @returns The tabs' reads.
+ */
+export function createTabReads(options: TabReadsOptions): TabReads {
+    const person = options.personAliasGuid.toLowerCase();
+    const line = options.open(`rock-chat:reads:${options.tenantId.toLowerCase()}:${person}`);
+
+    if (line) {
+        line.onmessage = event => {
+            // the word's own key names
+            /* eslint-disable-next-line @typescript-eslint/naming-convention */
+            const read = event.data as { person_alias_guid?: unknown, channel_id?: unknown, read_cursor?: unknown } | null;
+            if (typeof read?.person_alias_guid !== "string" || read.person_alias_guid.toLowerCase() !== person
+                || typeof read.channel_id !== "string" || typeof read.read_cursor !== "number") {
+                return;
+            }
+
+            options.onRead(read.channel_id, read.read_cursor);
+        };
+    }
+
+    let isClosed = false;
+
+    return {
+        tell: (channelId: string, readCursor: number): void => {
+            if (!isClosed) {
+                // the word's own key names, as the platform's read signal spells them
+                /* eslint-disable-next-line @typescript-eslint/naming-convention */
+                line?.postMessage({ person_alias_guid: person, channel_id: channelId, read_cursor: readCursor });
+            }
+        },
+
+        close: (): void => {
+            isClosed = true;
+            if (line) {
+                line.onmessage = null;
+                line.close();
+            }
         }
     };
 }
