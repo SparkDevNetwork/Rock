@@ -1,6 +1,6 @@
 // Comments explain in place. This gate fails when a chat file refers to planning material that
 // lives outside this repository: decision, guardrail or open-item numbers (D-12, G-03, BP-07,
-// SY-17), work-item ids (P0-S1), the planning file names, section signs, or the lane names the
+// SY-17), work-item, findings and design pick ids (P0-S1, J-08, E1-A), the planning file names, section signs, or the lane names the
 // plan gave the two syncs. A reader of this repository has none of those to open, so the reason
 // belongs in the comment itself.
 //
@@ -87,6 +87,11 @@ const BINARY = /\.(png|jpe?g|gif|ico|woff2?|ttf|otf|pdf|zip|wasm|dll|exe)$/i;
 export const PATTERNS = [
   { name: 'decision, guardrail or open-item number', re: /\b(?:D|BP|G|SY|OQ)-\d{1,3}\b/ },
   { name: 'work-item id', re: /\bP\d{1,2}-S\d{1,2}\b/ },
+  // The findings list and the design picks name a row or a variant the same way (J-08, A-22,
+  // E1-A). Specs carried them in comments, so a cell's reason was a code only the ledger could
+  // read. One or two capitals and two digits, or a capital, a digit and a pick letter; the
+  // numbered families above are matched by their own pattern and left out here.
+  { name: 'finding or design pick id', re: /\b(?!(?:D|BP|G|SY|OQ)-)[A-Z]{1,2}-\d{2}\b|\b[A-Z]\d-[A-Z]\b/ },
   {
     name: 'planning file name',
     re: /\b(?:STRUCTURE|PHASES|DECISIONS|OPEN|GUARDRAILS|EVIDENCE|PROVENANCE)\.md\b/,
