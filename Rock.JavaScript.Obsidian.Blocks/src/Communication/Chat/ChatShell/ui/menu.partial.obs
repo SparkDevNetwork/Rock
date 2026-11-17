@@ -18,7 +18,6 @@
         </IconButton>
     </template>
 
-    <!-- As a page, the list is drawn in place, on the surface the page already is; else on its own popover or sheet. -->
     <component :is="isPage ? 'div' : Popover"
                ref="listHost"
                v-bind="isPage ? { 'aria-label': label } : { popover: pop, label }"
