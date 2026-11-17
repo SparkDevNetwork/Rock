@@ -86,7 +86,12 @@
                             data-testid="member-row">
                             <ListRow interactive
                                      :label="labelOf(row)"
-                                     :hitAttrs="{ 'data-testid': 'member-who', 'data-person': row.guid, 'data-member': row.guid }"
+                                     :hitAttrs="{
+                                         'data-testid': 'member-who',
+                                         'data-person': row.guid,
+                                         'data-member': row.guid,
+                                         'data-autofocus': row.guid === phoneFocusGuid ? '' : undefined
+                                     }"
                                      :actionsShown="row.isRemoving || isHot(row)"
                                      :instant="hover.isInstant.value"
                                      :dimmed="row.isRemoving"
@@ -97,17 +102,16 @@
                                 <span class="chat-mb-name">
                                     <b data-testid="member-name">{{ row.name }}</b>
                                     <span v-if="row.isSelf" class="chat-mb-you" data-testid="member-you">(you)</span>
-                                    <Badge v-if="row.isLeader" label="Leader" tone="neutral" isSpoken data-testid="member-leader" />
                                 </span>
                                 <template #actions>
                                     <span v-if="row.isRemoving" class="chat-mb-busy" role="status" data-testid="member-removing"><span class="chat-spinner" aria-hidden="true"></span>Removing</span>
                                     <template v-else>
-                                        <Button v-if="row.canMessage"
-                                                size="sm"
-                                                icon="message"
-                                                data-testid="member-message"
-                                                :aria-label="`Message ${row.name}`"
-                                                @click="emit('message', row.guid)">Message</Button>
+                                        <IconButton v-if="row.canMessage"
+                                                    icon="message"
+                                                    :label="`Message ${row.name}`"
+                                                    tooltip="Message"
+                                                    data-testid="member-message"
+                                                    @click="emit('message', row.guid)" />
                                         <Menu v-if="row.menu"
                                               icon="dots"
                                               :label="`More for ${row.name}`"
@@ -141,7 +145,6 @@
                              :isLoading="isLoadingMore"
                              :isFailed="!!moreError"
                              failure="Couldn't load more." />
-                <div v-else-if="isEndShown" class="chat-mb-end" data-testid="members-end">That's everyone.</div>
             </div>
         </div>
 
@@ -338,20 +341,12 @@
     text-align: center;
 }
 
-.chat-mb-end {
-    padding: 16px 0 4px;
-    font-size: var(--chat-fs-small);
-    color: var(--chat-muted);
-    text-align: center;
-}
-
 </style>
 
 <script setup lang="ts">
     import { computed, nextTick, onBeforeUnmount, PropType, ref, watch } from "vue";
     import { newGuid } from "@Obsidian/Utility/guid";
     import Avatar from "../ui/avatar.partial.obs";
-    import Badge from "../ui/badge.partial.obs";
     import Button from "../ui/button.partial.obs";
     import EmptyState from "../ui/emptyState.partial.obs";
     import Field from "../ui/field.partial.obs";
@@ -600,7 +595,11 @@
     /** Browsing pages on while more wait; a search pages on only once its own answer filled a page. */
     const isMoreShown = computed((): boolean => props.hasMore && (!isQuery.value || props.searchStatus === "answered"));
 
-    const isEndShown = computed((): boolean => props.isChannel && !isQuery.value && !props.hasMore);
+    /**
+     * The row a phone opens on, the list's first; a desktop opens in the filter, while a phone
+     * would raise its keyboard over the list.
+     */
+    const phoneFocusGuid = computed((): string | null => isPhone.value ? sections.value[0]?.rows[0]?.guid ?? null : null);
 
     const isGroupFull = computed((): boolean => !props.isChannel && (props.memberCount ?? 0) >= groupCapacity);
 
