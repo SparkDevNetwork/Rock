@@ -243,6 +243,7 @@ describe("the name line", () => {
         const w = mountCard(profile({ is_leader: true }));
 
         expect(w.get("[data-testid='profile-leader']").text()).toBe("Leader");
+        expect(w.get("[data-testid='profile-leader']").classes()).toContain("is-tag");
     });
 
     test("carries no pill for anyone else", () => {

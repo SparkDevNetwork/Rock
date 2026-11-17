@@ -150,7 +150,7 @@ describe("a row", () => {
         const rows = w.findAll("[data-testid='member-row']");
 
         expect(rows[0].get("[data-testid='member-leader']").text()).toBe("Leader");
-        expect(rows[0].get("[data-testid='member-leader']").classes()).toContain("chat-badge");
+        expect(rows[0].get("[data-testid='member-leader']").classes()).toEqual(expect.arrayContaining(["chat-badge", "is-tag"]));
         expect(rows[2].find("[data-testid='member-leader']").exists()).toBe(false);
         expect(rows[4].get("[data-testid='member-you']").text()).toBe("(you)");
         expect(rows[0].find("[data-testid='member-you']").exists()).toBe(false);

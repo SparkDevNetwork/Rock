@@ -15,8 +15,8 @@
 // </copyright>
 //
 // The badge: a count, or a short label such as Leader or GIF. A mention count is the church's soft
-// tint, a "+N" or a label neutral, a muted room's count quiet, a label over a photo on the photo's
-// scrim. What it says is read from the row or button it sits in, so the badge itself is hidden
+// tint, a "+N" neutral, a tag such as Leader on the pill fill, a muted room's count quiet, a label
+// over a photo on the photo's scrim. What it says is read from the row or button it sits in, so the badge itself is hidden
 // from a screen reader.
 import { mount } from "@vue/test-utils";
 import Badge from "../../../../../src/Communication/Chat/ChatShell/ui/badge.partial.obs";
@@ -39,7 +39,7 @@ describe("the badge", () => {
         expect(mount(Badge, { props: { count: 250 } }).text()).toBe("99+");
     });
 
-    test.each(["brand", "neutral", "muted", "media"])("draws the %s tone", tone => {
+    test.each(["brand", "neutral", "muted", "media", "tag"])("draws the %s tone", tone => {
         expect(mount(Badge, { props: { count: 2, tone } }).classes()).toContain(`is-${tone}`);
     });
 
@@ -65,7 +65,7 @@ describe("the badge", () => {
     // A role such as Leader or Announcement is words nothing else on the row says, so it is read
     // where it stands; a count or a GIF mark repeats what holds it, and stays hidden.
     test("reads its words when they say what nothing else does, as a role label's do", () => {
-        const role = mount(Badge, { props: { label: "Leader", tone: "neutral", isSpoken: true } });
+        const role = mount(Badge, { props: { label: "Leader", tone: "tag", isSpoken: true } });
 
         expect(role.attributes("aria-hidden")).toBeUndefined();
         expect(role.text()).toBe("Leader");
@@ -100,6 +100,14 @@ describe("the badge's look", () => {
         expect(ruleOf(style, ".chat-badge.is-neutral")).toMatch(/background:\s*var\(--chat-line-strong\)/);
         expect(ruleOf(style, ".chat-badge.is-muted")).toMatch(/background:\s*var\(--chat-hover\)/);
         expect(ruleOf(style, ".chat-badge.is-media")).toMatch(/background:\s*var\(--chat-media-scrim\)/);
+    });
+
+    // The approved look draws a tag such as Leader on the pill fill, lighter than the "+N" disc's
+    // line fill; one neutral for both made Leader the disc's darker grey.
+    test("a tag such as Leader on the pill fill in the second text colour, apart from the +N disc's fill", () => {
+        expect(ruleOf(style, ".chat-badge.is-tag")).toMatch(/background:\s*var\(--chat-pill-bg\)/);
+        expect(ruleOf(style, ".chat-badge.is-tag")).toMatch(/color:\s*var\(--chat-text-2\)/);
+        expect(ruleOf(style, ".chat-badge.is-neutral")).not.toMatch(/--chat-pill-bg/);
     });
 
     test("holds no motion, priority, reach or capitals of its own", () => {
