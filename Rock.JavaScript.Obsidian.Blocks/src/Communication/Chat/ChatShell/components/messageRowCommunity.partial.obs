@@ -231,7 +231,8 @@
     opacity: 0;
 }
 
-.chat-msg:hover .chat-cm-gutter-time,
+/* Shown on the row the column's bar is on, as its tint is, not under any pointer, so one time shows at once. */
+.chat-msg.is-hot .chat-cm-gutter-time,
 .chat-msg:focus-within .chat-cm-gutter-time {
     opacity: 1;
 }
