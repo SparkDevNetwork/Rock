@@ -71,6 +71,29 @@ test('it refuses a findings id or a design pick id in a spec comment, and keeps 
   assert.match(hits[2], /:3:.*F8-A/);
 });
 
+test('it refuses a four-digit decision id, a mobile work-item id and a fix-pass id', () => {
+  const planted = [
+    '// this cites D-1042, which a reader here cannot open',
+    '// this one names the mobile item M0-S4',
+    '// this one names the fix pass FP-W1',
+    '// UTF-16 text and ISO-8859-1 are plain words',
+  ].join('\n');
+
+  const hits = scan('Rock/Communication/Chat/Platform/Example.cs', planted);
+
+  assert.equal(hits.length, 3, `expected one hit per planted id, got ${hits.length}: ${hits.join(' | ')}`);
+  assert.match(hits[0], /:1:.*D-1042/);
+  assert.match(hits[1], /:2:.*M0-S4/);
+  assert.match(hits[2], /:3:.*FP-W1/);
+});
+
+test('it reads the chat shell source', () => {
+  assert.ok(
+    chatFiles().some((file) => file.startsWith('Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/')),
+    'a chat shell source file is among the files read',
+  );
+});
+
 test('it reads the chat specs this branch tracks and no file of the outer ledger', () => {
   const files = chatFiles();
 
