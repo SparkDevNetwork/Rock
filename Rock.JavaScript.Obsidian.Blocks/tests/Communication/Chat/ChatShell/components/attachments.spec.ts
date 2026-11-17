@@ -596,6 +596,14 @@ function ruleOf(file: string, selector: string): Record<string, string> {
     return declarations;
 }
 
+// A tray chip's remove is the icon button at one of its own sizes; the tray gives it none of its own,
+// so it stays the 32px button it has always been drawn as, now that a holder's rules reach the button.
+describe("a tray chip's remove", () => {
+    test("takes its size from the icon button alone", () => {
+        expect(ruleOf("components/attachments.partial.obs", ".chat-attach-chip-remove")).toEqual({});
+    });
+});
+
 // The viewer's body is the photo's frame. Its one cell has a definite size, so the photo's limits
 // are read against it: a tall photo is drawn whole rather than running past the dialog's foot, a
 // wide one whole across it, and a small one at its own size, never stretched.
