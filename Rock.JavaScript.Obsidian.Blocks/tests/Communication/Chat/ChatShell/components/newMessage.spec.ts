@@ -35,6 +35,7 @@ import { DirectMessageDraft, DirectMessageLookup, PersonRow } from "../../../../
 import { TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 import Avatar from "../../../../../src/Communication/Chat/ChatShell/ui/avatar.partial.obs";
 import EmptyState from "../../../../../src/Communication/Chat/ChatShell/ui/emptyState.partial.obs";
+import { readFileSync } from "fs";
 import { join } from "path";
 import { away } from "../statusShapes";
 import { providedSession } from "../sessionShapes";
@@ -564,6 +565,21 @@ describe("the body", () => {
 
         await w.get("[data-testid='nd-open']").trigger("click");
         expect(w.emitted("open")).toEqual([[existing]]);
+    });
+
+    // The view's words stand where a conversation's key hint does, in the composer's own foot, so
+    // the box sits as it does in a conversation and nothing here restyles the composer's insides.
+    test("says its hint in the composer's own foot, with no second foot of its own", () => {
+        const w = mountView({ chosen: [anna], lookup: found, foundTitle: "Anna Reyes" });
+
+        const foot = w.get(".chat-composer-foot");
+        expect(plain(foot.get("[data-testid='composer-hint']").text())).toBe("Enter sends to your conversation with Anna Reyes");
+        expect(foot.find("[data-testid='nd-hint']").exists()).toBe(true);
+        expect(w.findAll(".chat-composer-foot")).toHaveLength(1);
+        expect(w.find(".chat-nd-foot").exists()).toBe(false);
+
+        const style = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/newMessage.partial.obs"), "utf8").split("<style")[1];
+        expect(style).not.toContain(".chat-composer");
     });
 
     test("for a group they already have, draws its mark in a person's 36px slot", () => {

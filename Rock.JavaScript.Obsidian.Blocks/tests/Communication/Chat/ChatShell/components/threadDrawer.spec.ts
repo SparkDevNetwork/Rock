@@ -51,6 +51,12 @@ import ThreadDrawer from "../../../../../src/Communication/Chat/ChatShell/compon
 import { providedSession } from "../sessionShapes";
 import Composer from "../../../../../src/Communication/Chat/ChatShell/components/composer.partial.obs";
 import MessageRow from "../../../../../src/Communication/Chat/ChatShell/components/messageRow.partial.obs";
+import LoadMoreRow from "../../../../../src/Communication/Chat/ChatShell/ui/loadMoreRow.partial.obs";
+import Pill from "../../../../../src/Communication/Chat/ChatShell/ui/pill.partial.obs";
+import SettingNote from "../../../../../src/Communication/Chat/ChatShell/ui/settingNote.partial.obs";
+import Skeleton from "../../../../../src/Communication/Chat/ChatShell/ui/skeleton.partial.obs";
+import { readFileSync } from "fs";
+import { join } from "path";
 import { unfollowNotice } from "../../../../../src/Communication/Chat/ChatShell/composables/useThreads.partial";
 import { sendFailure } from "../../../../../src/Communication/Chat/ChatShell/composables/useSend.partial";
 import { TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
@@ -654,7 +660,8 @@ describe("the Follow toggle", () => {
 
         const error = w.get("[data-testid='thread-follow-error']");
         expect(plain(error.text())).toBe("You're offline. Try again");
-        expect(error.attributes("role")).toBe("alert");
+        // said at once through the announcer, the one home of what is said
+        expect(document.querySelector("[data-testid='announcer-assertive']")?.textContent).toBe("You're offline.");
 
         await error.get("[data-testid='note-retry']").trigger("click");
 
@@ -1289,6 +1296,8 @@ describe("loading older replies", () => {
         window.IntersectionObserver = original;
     });
 
+    // The row stands only once the thread is placed at its newest, so the drawer's top, in view
+    // as it opens, never asks before; placed with the top still in view, the browser says so.
     test("asks for nothing before the thread is placed, and asks once it is placed with the top still in view", async () => {
         const w = draw({ root: null, replies: [], hasMore: true });
         await afterOpen();
@@ -1297,6 +1306,174 @@ describe("loading older replies", () => {
 
         await w.setProps({ root: rootWith(3), replies: replies(3) });
         await afterOpen();
+        report(true);
         expect(w.emitted("loadOlder")).toHaveLength(1);
     });
+
+    test("is the shared load-more row, standing at the start of a list that grows upward", async () => {
+        const w = draw({ hasMore: true });
+        await afterOpen();
+
+        const row = w.getComponent(LoadMoreRow);
+        expect(row.props("edge")).toBe("start");
+        expect(row.props("label")).toBe("Load older replies");
+    });
+
+    // A page that lands short leaves the top in view, which the observer never reports again.
+    test("given its loader, asks again at once when a page lands and leaves the top in view", async () => {
+        const loadOlder = jest.fn((): Promise<void> => Promise.resolve());
+        loadOlder.mockImplementationOnce(() => Promise.resolve()).mockImplementation(() => new Promise(() => undefined));
+        const w = draw({ hasMore: true, loadOlder });
+        await afterOpen();
+
+        report(true);
+        await afterOpen();
+
+        expect(loadOlder).toHaveBeenCalledTimes(2);
+        expect(w.emitted("loadOlder")).toBeUndefined();
+    });
+
+    test("a failed page is the one inline notice, said once, and its Try again asks again", async () => {
+        document.body.replaceChildren();
+        const loadOlder = jest.fn((): Promise<void> => new Promise(() => undefined));
+        const w = draw({ hasMore: true, loadOlder });
+        await afterOpen();
+
+        await w.setProps({ olderError: { code: "net.offline", severity: "degraded", text: null } });
+        await nextTick();
+
+        const notice = w.getComponent(SettingNote);
+        expect(notice.attributes("data-testid")).toBe("thread-error");
+        expect(w.findComponent(LoadMoreRow).exists()).toBe(false);
+        expect(document.querySelector("[data-testid='announcer-assertive']")?.textContent).toBe(plain(notice.find(".chat-set-note-words").text()));
+
+        await notice.get("[data-testid='note-retry']").trigger("click");
+        expect(loadOlder).toHaveBeenCalledTimes(1);
+    });
+
+    // A failure the retry meets again keeps the same words, and is said again all the same.
+    test("a page that fails again with the same words is said again", async () => {
+        document.body.replaceChildren();
+        const w = draw({ hasMore: true, loadOlder: jest.fn((): Promise<void> => new Promise(() => undefined)) });
+        await afterOpen();
+        await w.setProps({ olderError: { code: "net.offline", severity: "degraded", text: null } });
+        await new Promise(resolve => setTimeout(resolve, 10));
+
+        const region = document.querySelector("[data-testid='announcer-assertive']")!;
+        const writes: MutationRecord[] = [];
+        const observer = new MutationObserver(records => writes.push(...records));
+        observer.observe(region, { childList: true, characterData: true, subtree: true });
+        await w.setProps({ olderError: { code: "net.offline", severity: "degraded", text: null } });
+        await new Promise(resolve => setTimeout(resolve, 10));
+        observer.disconnect();
+
+        expect(writes.length).toBeGreaterThan(0);
+        expect(region.textContent).toBe(plain(w.get("[data-testid='thread-error'] .chat-set-note-words").text()));
+    });
+
+    // The row, or a notice's Try again, can be taken away by the page it asked for; the keyboard
+    // carries on where the thread grew instead of falling to the page's body.
+    describe("hands focus on as its control goes", () => {
+        const offline = { code: "net.offline", severity: "degraded", text: null };
+
+        function olderReplies(): TimelineMessage[] {
+            return [36, 37].map(id => message(id, { parent_id: 40, person_alias_guid: ben, sender_nick_name: "Ben", sender_last_name: "Okafor" }));
+        }
+
+        async function pressRow(w: VueWrapper): Promise<void> {
+            const button = w.get("[data-testid='thread-older-more']");
+            (button.element as HTMLElement).focus();
+            await button.trigger("click");
+        }
+
+        test("a page asked from the row that fails, to the notice's Try again", async () => {
+            const w = draw({ hasMore: true, loadOlder: jest.fn((): Promise<void> => new Promise(() => undefined)) });
+            await afterOpen();
+            await pressRow(w);
+
+            await w.setProps({ olderError: offline });
+            await nextTick();
+
+            expect(document.activeElement).toBe(w.get("[data-testid='thread-error'] [data-testid='note-retry']").element);
+        });
+
+        test("the last page, asked from the row, to the first reply it brought", async () => {
+            const w = draw({ hasMore: true, loadOlder: jest.fn((): Promise<void> => new Promise(() => undefined)) });
+            await afterOpen();
+            await pressRow(w);
+
+            await w.setProps({ replies: [...olderReplies(), ...replies(3)], hasMore: false });
+            await nextTick();
+
+            expect(document.activeElement).toBe(w.get("[data-reply-id='36']").element);
+        });
+
+        test("a Try again that brings a page, to the row while more wait", async () => {
+            const w = draw({ hasMore: true, loadOlder: jest.fn((): Promise<void> => new Promise(() => undefined)) });
+            await afterOpen();
+            await w.setProps({ olderError: offline });
+            const retry = w.get("[data-testid='thread-error'] [data-testid='note-retry']");
+            (retry.element as HTMLElement).focus();
+            await retry.trigger("click");
+
+            await w.setProps({ olderError: null, replies: [...olderReplies(), ...replies(3)] });
+            await nextTick();
+
+            expect(document.activeElement).toBe(w.get("[data-testid='thread-older-more']").element);
+        });
+
+        test("a page asked by scrolling leaves focus where it is", async () => {
+            const w = draw({ hasMore: true, loadOlder: jest.fn((): Promise<void> => new Promise(() => undefined)) });
+            await afterOpen();
+            const composer = document.querySelector<HTMLElement>("[contenteditable], textarea")!;
+            composer.focus();
+            report(true);
+
+            await w.setProps({ olderError: offline });
+            await nextTick();
+
+            expect(document.activeElement).toBe(composer);
+        });
+    });
 });
+
+describe("the drawer's states, drawn by the shared parts", () => {
+    const source = (): string => readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/threadDrawer.partial.obs"), "utf8");
+
+    test("a thread on its way draws skeleton rows of the look its conversation draws", () => {
+        const channel = draw({ root: null, replies: [], isLoading: true, isChannel: true });
+        expect(channel.findAllComponents(Skeleton).map(row => row.props("shape"))).toEqual(Array(3).fill("group"));
+        channel.unmount();
+
+        const direct = draw({ root: null, replies: [], isLoading: true, isChannel: false, isDirectMessage: true });
+        expect(direct.findAllComponents(Skeleton).map(row => row.props("shape"))).toEqual(Array(3).fill("bubble"));
+        expect(source()).not.toMatch(/chat-th-sk\b|class="chat-skeleton/);
+    });
+
+    test("a first page that failed is the inline notice, said through the announcer", async () => {
+        document.body.replaceChildren();
+        const w = draw({ root: null, replies: [], isLoading: true });
+        await w.setProps({ isLoading: false, error: { code: "net.offline", severity: "degraded", text: null } });
+        await nextTick();
+
+        const notice = w.getComponent(SettingNote);
+        expect(notice.attributes("data-testid")).toBe("thread-error");
+        expect(document.querySelector("[data-testid='announcer-assertive']")?.textContent).toBe(plain(notice.find(".chat-set-note-words").text()));
+    });
+
+    test("keeps no live region of its own", () => {
+        expect(source()).not.toMatch(/role="(status|alert)"|aria-live/);
+    });
+
+    test("draws Follow as the shared pill, pressed while following, with its tip", async () => {
+        const w = draw({ isFollowing: true });
+
+        const pill = w.getComponent(Pill);
+        expect(pill.attributes("data-testid")).toBe("thread-follow");
+        expect(pill.props("selected")).toBe(true);
+        await w.setProps({ isFollowing: false });
+        expect(pill.props("selected")).toBe(false);
+        expect(source()).not.toMatch(/\.chat-th-follow/);
+    });
+});
+

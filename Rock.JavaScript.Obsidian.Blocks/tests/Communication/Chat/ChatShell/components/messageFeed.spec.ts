@@ -32,6 +32,7 @@ import { providedSession } from "../sessionShapes";
 import ActionBar from "../../../../../src/Communication/Chat/ChatShell/components/actionBar.partial.obs";
 import MessageRow from "../../../../../src/Communication/Chat/ChatShell/components/messageRow.partial.obs";
 import Skeleton from "../../../../../src/Communication/Chat/ChatShell/ui/skeleton.partial.obs";
+import LoadMoreRow from "../../../../../src/Communication/Chat/ChatShell/ui/loadMoreRow.partial.obs";
 import { pageRevealKey } from "../../../../../src/Communication/Chat/ChatShell/pageLoad.partial";
 import { createMessageMotion, messageMotionKey } from "../../../../../src/Communication/Chat/ChatShell/messageMotion.partial";
 import { createSender, SendResult } from "../../../../../src/Communication/Chat/ChatShell/composables/useSend.partial";
@@ -203,6 +204,7 @@ type FeedProps = {
     typing?: Typing | null;
     readCursor?: number | null;
     loadOlder?: () => Promise<void>;
+    landOnId?: number | null;
 };
 
 /** Anna typing, as the presence gives it. */
@@ -871,7 +873,9 @@ describe("day sections", () => {
         expect(float.text()).toBe("Today");
     });
 
-    test("no day pill sticks inside the feed, and the feed's fade hides all of the band the label sits over", () => {
+    // A fade over the top hid a message's bubble but left its reactions and time showing, so the
+    // feed meets the header at a clean edge; its foot still fades under Jump to latest.
+    test("no day pill sticks inside the feed, and nothing fades over the feed's top, only its foot", () => {
         const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/messageFeed.partial.obs"), "utf8");
         const style = source.slice(source.indexOf("<style"), source.indexOf("</style>"));
         const pill = /\.chat-day-pill\s*\{([^}]*)\}/.exec(style)?.[1] ?? "";
@@ -880,8 +884,41 @@ describe("day sections", () => {
 
         expect(pill).not.toMatch(/position:\s*sticky/);
         expect(float).toMatch(/top:\s*var\(--chat-day-top\)/);
-        // Clear through the label's bottom edge, so no text shows beside or under it.
-        expect(mask).toMatch(/mask-image:\s*linear-gradient\(to bottom,\s*transparent 0,\s*transparent var\(--chat-day-bottom\)/);
+        expect(mask).toMatch(/mask-image:\s*linear-gradient\(to bottom,\s*var\(--chat-mask-solid\) 0,\s*var\(--chat-mask-solid\) calc\(100% - var\(--chat-feed-bottom-mask\)\),\s*transparent 100%\)/);
+        expect(style).not.toMatch(/--chat-feed-top-mask|--chat-day-fade|--chat-day-bottom/);
+    });
+
+    // Once scrolled, a line and a soft shadow mark the edge the messages go under, the strip's own
+    // edge; at rest the feed meets the header clean.
+    test("draws a line and a soft shadow at its top once scrolled off its start, and none at rest", async () => {
+        const wrapper = draw({ timeline: timeline([message(1, anna, at(9, 0)), message(2, anna, at(9, 5))]) });
+
+        placeScroll(wrapper, 0);
+        await nextTick();
+        expect(wrapper.classes()).not.toContain("is-scrolled");
+
+        placeScroll(wrapper, 120);
+        await nextTick();
+        expect(wrapper.classes()).toContain("is-scrolled");
+
+        placeScroll(wrapper, 0);
+        await nextTick();
+        expect(wrapper.classes()).not.toContain("is-scrolled");
+
+        const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/messageFeed.partial.obs"), "utf8");
+        const style = source.slice(source.indexOf("<style"), source.indexOf("</style>"));
+        const edge = /\.chat-feed-frame::before\s*\{([^}]*)\}/.exec(style)?.[1] ?? "";
+        const scrolled = /\.chat-feed-frame\.is-scrolled::before\s*\{([^}]*)\}/.exec(style)?.[1] ?? "";
+        expect(edge).toMatch(/border-bottom:\s*1px solid var\(--chat-line\)/);
+        expect(edge).toMatch(/box-shadow:\s*var\(--chat-shadow-strip\)/);
+        expect(edge).toMatch(/opacity:\s*0/);
+        expect(scrolled).toMatch(/opacity:\s*1/);
+    });
+
+    test("finds its day pills itself, never by a test id", () => {
+        const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/messageFeed.partial.obs"), "utf8");
+
+        expect(source.slice(source.indexOf("<script"))).not.toMatch(/data-testid/);
     });
 
     /**
@@ -1027,14 +1064,14 @@ describe("day sections", () => {
         expect(shown(wrapper)).toEqual({ label: "Yesterday", offset: "37px", carried: [true, false] });
     });
 
-    test("the label's box spans the band, it moves only by the carried pill's offset, and the carried pill stays readable to assistive technology", () => {
+    test("the label's box is the pill's own height, it moves only by the carried pill's offset, and the carried pill stays readable to assistive technology", () => {
         const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/messageFeed.partial.obs"), "utf8");
         const style = source.slice(source.indexOf("<style"), source.indexOf("</style>"));
         const float = /\.chat-day-float\s*\{([^}]*)\}/.exec(style)?.[1] ?? "";
         const floatLabel = /\.chat-day-float span\s*\{([^}]*)\}/.exec(style)?.[1] ?? "";
         const carried = /\.chat-day-pill\.is-carried\s*\{([^}]*)\}/.exec(style)?.[1] ?? "";
 
-        expect(float).toMatch(/height:\s*calc\(var\(--chat-day-height\) \+ var\(--chat-day-fade\)\)/);
+        expect(float).toMatch(/height:\s*var\(--chat-day-height\);/);
         expect(float).toMatch(/align-items:\s*flex-start/);
         expect(floatLabel).toMatch(/transform:\s*translateY\(var\(--chat-day-offset\)\)/);
         // Hidden by opacity, not visibility, so the pill still names its day to a screen reader.
@@ -1218,6 +1255,35 @@ describe("the New divider and the unread strip", () => {
 
         expect(wrapper.emitted("markRead")).toEqual([[3]]);
     });
+
+    // Announcing has one home, so the feed's words never talk over another part's.
+    test("Mark as read is said through the announcer, and the feed keeps no live region of its own", async () => {
+        // The announcer speaks from the page, so the cell starts with nothing said there.
+        document.body.replaceChildren();
+        const wrapper = draw({
+            timeline: timeline([message(1, anna, at(11, 0)), message(2, anna, at(11, 30))], { readCursor: 1, unreadCount: 1, firstUnreadId: 2 })
+        });
+        FakeIntersectionObserver.report(wrapper.get("[data-testid='unread-divider']").element, false);
+        await nextTick();
+
+        await wrapper.get("[data-testid='mark-read']").trigger("click");
+
+        expect(document.querySelector("[data-testid='announcer-polite']")?.textContent).toBe("Marked as read");
+        expect(wrapper.find("[role='status']").exists()).toBe(false);
+        expect(wrapper.find("[aria-live]").exists()).toBe(false);
+    });
+
+    // The strip's arrow takes its colour from its button, as every icon does, so the feed never
+    // restyles the inside of the icon.
+    test("the strip's arrow is the jump's own colour, and the feed restyles no part from outside it", () => {
+        const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/messageFeed.partial.obs"), "utf8");
+        const style = source.slice(source.indexOf("<style"), source.indexOf("</style>"));
+        const jump = /\.chat-strip-jump\s*\{([^}]*)\}/.exec(style)?.[1] ?? "";
+
+        expect(jump).toMatch(/color:\s*var\(--chat-danger-ink\)/);
+        expect(style).not.toMatch(/:deep\(/);
+    });
+
 
     test("the reader's own send takes the divider and the strip away, and saves no read position", async () => {
         const wrapper = unread();
@@ -1942,6 +2008,143 @@ describe("a feed holding its reader at the newest message", () => {
         expect(requested).toEqual([1500 - 700 - (500 - 40) / 2]);
     });
 
+    // A row in Mentions or Threads opens its conversation at the message. Until the timeline holds
+    // it the room keeps its skeleton, so the newest page is never painted first and then left.
+    describe("a landing named as the room opens", () => {
+        /** Lays message 1's row out 700px above the feed's top once it is drawn, 40px tall. */
+        function placeLanding(): jest.SpyInstance {
+            const real = HTMLElement.prototype.getBoundingClientRect;
+            return jest.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockImplementation(function (this: HTMLElement) {
+                return this.dataset.messageId === "1"
+                    ? { top: -700, bottom: -660, height: 40, left: 0, right: 100, width: 100, x: 0, y: -700, toJSON: () => ({}) }
+                    : real.call(this);
+            });
+        }
+
+        function isFlashing(wrapper: VueWrapper, id: number): boolean {
+            return wrapper.findAllComponents(MessageRow).some(row => row.props("message")?.id === id && row.props("isFlashing"));
+        }
+
+        async function ticks(): Promise<void> {
+            for (let i = 0; i < 4; i++) {
+                await nextTick();
+            }
+        }
+
+        test("not yet held, keeps the skeleton and paints no message row", async () => {
+            const wrapper = draw({ timeline: timeline([2, 3].map(id => message(id, anna, at(14, id))), { hasMore: true }), landOnId: 1 });
+            await ticks();
+
+            expect(wrapper.find("[data-testid='history-skeleton']").exists()).toBe(true);
+            expect(wrapper.findAll("[data-message-id]")).toHaveLength(0);
+            expect(wrapper.emitted("firstShown")).toBeUndefined();
+        });
+
+        test("once held, the first paint already has the message in view with no glide, then flashes it", async () => {
+            const spy = placeLanding();
+            try {
+                const state = timeline([2, 3].map(id => message(id, anna, at(14, id))), { hasMore: true });
+                const wrapper = draw({ timeline: state, landOnId: 1 });
+                const sizes = { scrollHeight: 2000, clientHeight: 500, scrollTop: 0 };
+                layOut(wrapper, sizes);
+                const requested = holdSmoothScrolls(wrapper);
+
+                state.messages.unshift(message(1, anna, at(14, 1)));
+                await ticks();
+
+                expect(wrapper.find("[data-testid='history-skeleton']").exists()).toBe(false);
+                expect(sizes.scrollTop).toBe(1500 - 700 - (500 - 40) / 2);
+                expect(requested).toEqual([]);
+                expect(isFlashing(wrapper, 1)).toBe(true);
+                expect(wrapper.emitted("firstShown")).toBeTruthy();
+            }
+            finally {
+                spy.mockRestore();
+            }
+        });
+
+        test("mounted with its message already held, opens at it with no glide", async () => {
+            const spy = placeLanding();
+            try {
+                const wrapper = draw({ timeline: timeline([1, 2, 3].map(id => message(id, anna, at(14, id)))), landOnId: 1 });
+                const sizes = { scrollHeight: 2000, clientHeight: 500, scrollTop: 0 };
+                layOut(wrapper, sizes);
+                const requested = holdSmoothScrolls(wrapper);
+                await ticks();
+
+                expect(sizes.scrollTop).toBe(1500 - 700 - (500 - 40) / 2);
+                expect(requested).toEqual([]);
+                expect(isFlashing(wrapper, 1)).toBe(true);
+            }
+            finally {
+                spy.mockRestore();
+            }
+        });
+
+        // Another row's flash or greeting ending, a live mention's among them, says nothing about
+        // the landed message's: only its own flash ending lets it go.
+        test("keeps the landed message's flash until that message's own flash ends", async () => {
+            const spy = placeLanding();
+            try {
+                const wrapper = draw({ timeline: timeline([1, 2, 3].map(id => message(id, anna, at(14, id)))), landOnId: 1 });
+                layOut(wrapper, { scrollHeight: 2000, clientHeight: 500, scrollTop: 0 });
+                await ticks();
+                expect(isFlashing(wrapper, 1)).toBe(true);
+
+                await wrapper.get("[data-message-id='2']").trigger("animationend", { animationName: "chat-flash" });
+                expect(isFlashing(wrapper, 1)).toBe(true);
+
+                await wrapper.get("[data-message-id='1']").trigger("animationend", { animationName: "chat-flash" });
+                expect(isFlashing(wrapper, 1)).toBe(false);
+            }
+            finally {
+                spy.mockRestore();
+            }
+        });
+
+        // A timeline replaced after a reconnect far behind, or an older range let go, lets the
+        // landed message go; the person scrolling back past it later reads it there, and the feed
+        // neither glides them to it nor flashes it again.
+        test("lands once: the message let go and held again is not landed on again", async () => {
+            const spy = placeLanding();
+            try {
+                const state = timeline([1, 2, 3].map(id => message(id, anna, at(14, id))));
+                const wrapper = draw({ timeline: state, landOnId: 1 });
+                layOut(wrapper, { scrollHeight: 2000, clientHeight: 500, scrollTop: 0 });
+                await ticks();
+                await wrapper.get("[data-message-id='1']").trigger("animationend", { animationName: "chat-flash" });
+                const requested = holdSmoothScrolls(wrapper);
+
+                state.messages.splice(0, 3, ...[7, 8, 9].map(id => message(id, anna, at(14, id))));
+                await ticks();
+                state.messages.unshift(...[1, 2, 3].map(id => message(id, anna, at(14, id))));
+                await ticks();
+
+                expect(isFlashing(wrapper, 1)).toBe(false);
+                expect(requested).toEqual([]);
+            }
+            finally {
+                spy.mockRestore();
+            }
+        });
+
+        test("that stops, paints the newest page at the newest message with no flash", async () => {
+            const wrapper = draw({ timeline: timeline([2, 3].map(id => message(id, anna, at(14, id))), { hasMore: true }), landOnId: 1 });
+            const sizes = { scrollHeight: 2000, clientHeight: 500, scrollTop: 0 };
+            layOut(wrapper, sizes);
+            sizes.scrollTop = 0;
+
+            await wrapper.setProps({ landOnId: null });
+            await ticks();
+
+            expect(wrapper.find("[data-testid='history-skeleton']").exists()).toBe(false);
+            expect(wrapper.findAll("[data-message-id]")).toHaveLength(2);
+            expect(sizes.scrollTop).toBe(1500);
+            expect(isFlashing(wrapper, 2) || isFlashing(wrapper, 3)).toBe(false);
+            expect(wrapper.emitted("firstShown")).toBeTruthy();
+        });
+    });
+
     test("the unread strip's jump up to the New divider is not pulled back to the newest message as rows settle on the way", async () => {
         const wrapper = draw({
             timeline: timeline([1, 2, 3, 4, 5].map(id => message(id, anna, at(14, id))), { readCursor: 1, unreadCount: 4, firstUnreadId: 2 })
@@ -1968,13 +2171,13 @@ describe("a feed holding its reader at the newest message", () => {
         const wrapper = draw({ timeline: timeline([message(1, anna, at(14, 0)), message(2, anna, at(14, 1))]) });
         const sizes = { scrollHeight: 2000, clientHeight: 500, scrollTop: 0 };
         layOut(wrapper, sizes);
-        scrollReader(wrapper, 400);
+        scrollReader(wrapper, 1000);
         await nextTick();
         const requested = holdSmoothScrolls(wrapper);
 
         await wrapper.get("[data-testid='jump-latest']").trigger("click");
         // the scroll down has begun, and a photo above decodes
-        sizes.scrollTop = 450;
+        sizes.scrollTop = 1050;
         echoScroll(wrapper);
         sizes.scrollHeight = 2300;
         await resize();
@@ -1982,6 +2185,37 @@ describe("a feed holding its reader at the newest message", () => {
         expect(sizes.scrollTop).toBe(1800);
         expect(isShown(wrapper, "[data-testid='jump-latest']")).toBe(false);
         expect(requested).toEqual([1500]);
+    });
+
+    // A glide across many screens is a blur that takes too long, so from far back the reader is
+    // put one screen from the end at once and glides the rest, as the jump's design has it.
+    test("Jump to latest from five screens up moves one screen from the end at once, then glides", async () => {
+        const wrapper = draw({ timeline: timeline([message(1, anna, at(14, 0)), message(2, anna, at(14, 1))]) });
+        const sizes = { scrollHeight: 3000, clientHeight: 500, scrollTop: 0 };
+        layOut(wrapper, sizes);
+        scrollReader(wrapper, 0);
+        await nextTick();
+        const requested = holdSmoothScrolls(wrapper);
+
+        await wrapper.get("[data-testid='jump-latest']").trigger("click");
+
+        expect(sizes.scrollTop).toBe(2000);
+        expect(requested).toEqual([2500]);
+    });
+
+    test("Jump to latest from one screen up only glides", async () => {
+        const wrapper = draw({ timeline: timeline([message(1, anna, at(14, 0)), message(2, anna, at(14, 1))]) });
+        const sizes = { scrollHeight: 3000, clientHeight: 500, scrollTop: 0 };
+        layOut(wrapper, sizes);
+        scrollReader(wrapper, 2000);
+        scrollReader(wrapper, 1900);
+        await nextTick();
+        const requested = holdSmoothScrolls(wrapper);
+
+        await wrapper.get("[data-testid='jump-latest']").trigger("click");
+
+        expect(sizes.scrollTop).toBe(1900);
+        expect(requested).toEqual([2500]);
     });
 
     test("a reader just above the bottom whom shrinking content leaves at the end is at the newest message, so Jump to latest hides and an arrival is followed", async () => {
@@ -2236,7 +2470,7 @@ describe("loading older messages", () => {
         await landed();
         expect(loadOlder).toHaveBeenCalledTimes(1);
 
-        const again = wrapper.get("[data-testid='feed-older-load']");
+        const again = wrapper.get("[data-testid='feed-older-more']");
         expect(again.text()).toBe("Try again");
         await again.trigger("click");
         expect(loadOlder).toHaveBeenCalledTimes(2);
@@ -2248,12 +2482,12 @@ describe("loading older messages", () => {
         const wrapper = draw({ timeline: timeline([message(5, anna, at(14, 50))], { hasMore: true }), loadOlder });
         await nextTick();
 
-        const load = wrapper.get("[data-testid='feed-older-load']");
+        const load = wrapper.get("[data-testid='feed-older-more']");
         expect(load.text()).toBe("Load older messages");
         expect(wrapper.get("[data-testid='feed-older']").element.contains(load.element)).toBe(true);
         await load.trigger("click");
         expect(loadOlder).toHaveBeenCalledTimes(1);
-        expect(wrapper.get("[data-testid='feed-older-load']").text()).toBe("Loading");
+        expect(wrapper.get("[data-testid='feed-older-more']").text()).toBe("Loading");
     });
 
     // A found conversation's preview is drawn with nothing to act on, so it pages nothing.
@@ -2261,7 +2495,19 @@ describe("loading older messages", () => {
         const wrapper = draw({ timeline: timeline([message(5, anna, at(14, 50))], { hasMore: true }) });
         await nextTick();
 
-        expect(wrapper.find("[data-testid='feed-older-load']").exists()).toBe(false);
+        expect(wrapper.find("[data-testid='feed-older-more']").exists()).toBe(false);
+    });
+
+    // Loading more is one part, so the feed's older messages page as every list does.
+    test("is the shared load-more row, standing at the start of a list that grows upward", async () => {
+        const loadOlder = loader();
+        const wrapper = draw({ timeline: timeline([message(5, anna, at(14, 50))], { hasMore: true }), loadOlder });
+        await nextTick();
+
+        const row = wrapper.getComponent(LoadMoreRow);
+        expect(row.props("edge")).toBe("start");
+        expect(row.props("label")).toBe("Load older messages");
+        expect(row.attributes("data-testid")).toBe("feed-older");
     });
 
     test("an older page landing above keeps the reader where they were", async () => {

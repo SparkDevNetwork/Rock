@@ -49,6 +49,13 @@ describe("the chip", () => {
         expect(chip.emitted("click")).toHaveLength(1);
     });
 
+    // A caller that hangs a tip on the chip, as the thread's Follow does, reaches its element.
+    test("exposes its element", () => {
+        const chip = mount(Pill, { slots: { default: "Follow" } });
+
+        expect((chip.vm as unknown as { element: HTMLElement | undefined }).element).toBe(chip.element);
+    });
+
     test("takes its test id and data from where it is drawn", () => {
         const chip = mount(Pill, { attrs: { "data-testid": "x-chip", "data-campus": "north" } });
 

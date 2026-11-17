@@ -167,6 +167,26 @@ describe("loading more as the reader scrolls", () => {
         expect(observers[0].isDisconnected).toBe(true);
     });
 
+    // A list that went, as a conversation's feed does when the person opens another, asks nothing
+    // once its last page settles: the loader reads the conversation open now, not the one the
+    // page was for.
+    it("asks nothing more once the list has gone, when its last page settles", async () => {
+        let land: () => void = () => undefined;
+        const loadMore = jest.fn(() => new Promise<void>(resolve => {
+            land = resolve;
+        }));
+        list(loadMore);
+        await settle();
+        observers[0].see(true);
+        wrapper?.unmount();
+        wrapper = null;
+
+        land();
+        await settle();
+
+        expect(loadMore).toHaveBeenCalledTimes(1);
+    });
+
     it("does nothing in a browser with no observer", async () => {
         window.IntersectionObserver = undefined as unknown as typeof IntersectionObserver;
         const loadMore = jest.fn();

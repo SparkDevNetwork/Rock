@@ -33,7 +33,7 @@ import { presenceStatusKey } from "../../../../../src/Communication/Chat/ChatShe
 import { ChatPerson, FaceStatus, GifResult } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 import { harness, Harness, picked, settle } from "../attachmentFakes";
 import { providedSession } from "../sessionShapes";
-import { busyNow, createStatusStore, onlineNow, shellFolder, StatusStore, styleRules, told, viewer } from "../statusStore";
+import { busyNow, chatSheet, createStatusStore, onlineNow, shellFolder, StatusStore, styleRules, told, viewer } from "../statusStore";
 
 /** The composer's own style block, for the rules jsdom cannot lay out. */
 function composerStyle(): string {
@@ -257,6 +257,30 @@ describe("the composer's key hint", () => {
 
         expect(wrapper.find("[data-testid='composer-hint']").exists()).toBe(false);
     });
+
+    // A view that says something else where Enter sends, as New message does, gives its words to
+    // the composer's own foot rather than drawing a second foot under the box.
+    test("takes a view's own words in its place, in the same foot, a key's name drawn as its own are", () => {
+        const wrapper = mountComposer({
+            props: { title: "Anna Reyes" },
+            slots: { hint: "<kbd>Enter</kbd> sends to your conversation with Anna Reyes" }
+        });
+
+        const foot = wrapper.get(".chat-composer-foot");
+        expect(foot.get("[data-testid='composer-hint']").text()).toBe("Enter sends to your conversation with Anna Reyes");
+        expect(styleRules(join(shellFolder, "components/composer.partial.obs"), /^\.chat-composer-hint :slotted\(kbd\)$/).join(";")).toMatch(/font-weight: 600;/);
+    });
+
+    test("leaves a view's words out on a phone too", () => {
+        const wrapper = mountComposer({
+            props: { title: "Anna Reyes" },
+            slots: { hint: "Your first message starts the conversation." },
+            global: { provide: providedSession({ isPhone: true }) }
+        });
+
+        expect(wrapper.find("[data-testid='composer-hint']").exists()).toBe(false);
+        expect(wrapper.text()).not.toContain("Your first message starts the conversation.");
+    });
 });
 
 // Someone else typing is drawn in the feed where their reply will land, so the composer draws
@@ -338,6 +362,31 @@ describe("the composer's send button", () => {
         await type(wrapper, "hello");
 
         expect(send.classes()).toContain("is-ready");
+    });
+
+    // Send is the one control in the row with no word beside it, so it says what it does on a
+    // rest, as every other control there does, in the shared tip.
+    test("shows its tip, Send, once the pointer rests on it, and takes it away as the pointer leaves", async () => {
+        jest.useFakeTimers();
+        const wrapper = mountComposer({ attachTo: document.body });
+        try {
+            await type(wrapper, "hello");
+            const send = wrapper.get("[data-testid='composer-send']");
+
+            await send.trigger("mouseenter");
+            jest.advanceTimersByTime(600);
+            await nextTick();
+
+            expect(document.querySelector("[role='tooltip']")?.textContent?.trim()).toBe("Send");
+            expect(document.querySelector("[role='tooltip']")?.classList.contains("chat-tip")).toBe(true);
+
+            await send.trigger("mouseleave");
+            expect(document.querySelector("[role='tooltip']")).toBeNull();
+        }
+        finally {
+            wrapper.unmount();
+            jest.useRealTimers();
+        }
     });
 });
 
@@ -539,6 +588,22 @@ describe("the composer's emoji button", () => {
         expect(document.querySelector("[role='grid']")).not.toBeNull();
         expect(mounted.emitted("emojiPickerOpen")).toEqual([[]]);
         expect(document.querySelector("[role='gridcell'][aria-pressed='true']")).toBeNull();
+    });
+
+    // One voice along the row: what each control does, as "Add a GIF or file" beside it says.
+    test("shows its tip in the row's one voice, Add emoji", async () => {
+        jest.useFakeTimers();
+        mounted = mountComposer({ props: { title: "Anna Reyes", emojiSource } as Record<string, unknown>, attachTo: document.body });
+        try {
+            await mounted.get("[data-testid='composer-emoji']").trigger("mouseenter");
+            jest.advanceTimersByTime(600);
+            await nextTick();
+
+            expect(document.querySelector("[role='tooltip']")?.textContent?.trim()).toBe("Add emoji");
+        }
+        finally {
+            jest.useRealTimers();
+        }
     });
 
     test("puts the chosen emoji's glyph in the box at the caret, and leaves the person typing", async () => {
@@ -1029,8 +1094,10 @@ describe("the composer's strip for a failed send", () => {
         expect(announced(wrapper)).toBe("");
     });
 
-    // Its going takes the space it held back smoothly, so the feed above does not jump.
-    test("leaves through its own exit, which only fades under reduced motion", async () => {
+    // Its going takes the space it held back smoothly, so the feed above does not jump. Under
+    // reduced motion the collapse is a row collapse as every other is, the sheet taking its time to
+    // nothing, so the strip answers it through the token and never by a query of its own.
+    test("leaves through its own exit, its collapse timed by the row collapse the sheet stills under reduced motion", async () => {
         const wrapper = mountComposer({ props: { sendFailure: offline }, global: { stubs: { transition: false } } });
 
         await wrapper.setProps({ sendFailure: null });
@@ -1040,9 +1107,12 @@ describe("the composer's strip for a failed send", () => {
         expect(leaving.element.parentElement?.classList.contains("chat-strip-leave-active")).toBe(true);
 
         const style = composerStyle();
-        const reduced = style.slice(style.indexOf("@media (prefers-reduced-motion: reduce)"));
-        expect(style).toMatch(/\.chat-strip-leave-active\s*\{[^}]*grid-template-rows var\(--chat-t-base\)/);
-        expect(reduced).toMatch(/\.chat-strip-leave-to\s*\{[^}]*grid-template-rows: 1fr/);
+        expect(style).not.toContain("prefers-reduced-motion");
+        expect(style).toMatch(/\.chat-strip-leave-active\s*\{[^}]*grid-template-rows var\(--chat-d-row-collapse\)/);
+        expect(style).toMatch(/\.chat-strip-leave-active\s*\{[^}]*margin-bottom var\(--chat-d-row-collapse\)/);
+        const sheet = readFileSync(chatSheet, "utf8");
+        const reduced = sheet.slice(sheet.indexOf("@media (prefers-reduced-motion: reduce)"));
+        expect(reduced).toMatch(/--chat-d-row-collapse: 0ms;/);
     });
 
     // The strip belongs to the place it was raised in: moving to another place takes it away with

@@ -90,7 +90,6 @@
                 <IconButton ref="emojiButton"
                             icon="smile"
                             label="Add emoji"
-                            tooltip="Emoji"
                             aria-haspopup="dialog"
                             :aria-expanded="isEmojiOpen ? 'true' : 'false'"
                             :isTooltipDisabled="isEmojiOpen"
@@ -140,13 +139,33 @@
                             @send="onSubmit"
                             @upWhenEmpty="emit('editLast')"
                             @mentionQuery="onMentionQuery" />
-                <button type="submit"
+                <!--
+                    Send keeps its own control, the form's submit in the church's fill, and says
+                    what it does in the shared tip, drawn in the chat's overlay layer.
+                -->
+                <button ref="sendElement"
+                        type="submit"
                         class="chat-composer-send"
                         :class="{ 'is-ready': isReady }"
                         aria-label="Send"
                         data-testid="composer-send"
-                        :disabled="isDisabled || !isReady">
+                        :disabled="isDisabled || !isReady"
+                        @mouseenter="onSendPointerEnter"
+                        @mouseleave="hideSendTip"
+                        @pointerdown="onSendPointerDown"
+                        @focus="onSendFocus"
+                        @blur="onSendBlur"
+                        @click="hideSendTip">
                     <Icon name="arrow-up" />
+                    <Teleport :to="sendTipHost ?? 'body'" :disabled="!sendTipHost">
+                        <div v-if="isSendTipShown"
+                             ref="sendTipElement"
+                             class="chat-tip"
+                             role="tooltip"
+                             :style="sendTipStyles">
+                            Send
+                        </div>
+                    </Teleport>
                 </button>
             </form>
 
@@ -156,7 +175,8 @@
                     <Switch size="sm" :isOn="isAlsoSent" @click="setAlsoSent(!isAlsoSent)" />
                     <span class="chat-composer-also-text">Also send to <b v-if="alsoName">{{ alsoName }}</b><template v-else>the conversation</template></span>
                 </label>
-                <span v-else-if="!isPhone" class="chat-composer-hint" data-testid="composer-hint"><kbd>Enter</kbd> to send, <kbd>Shift + Enter</kbd> for a new line</span>
+                <!-- How Enter sends, unless the view gives its own words for it, as New message does. -->
+                <span v-else-if="!isPhone" class="chat-composer-hint" data-testid="composer-hint"><slot name="hint"><kbd>Enter</kbd> to send, <kbd>Shift + Enter</kbd> for a new line</slot></span>
                 <span class="chat-composer-count" data-testid="composer-count" :data-tone="count?.tone">{{ count?.text ?? "" }}</span>
             </div>
 
@@ -213,7 +233,8 @@
 
 /*
  * The strip's holder, one grid row that gives the strip's height back as it leaves; the bottom
- * margin takes back the column's gap with it.
+ * margin takes back the column's gap with it. The give-back is a row collapse, so it is timed by
+ * that token, which the sheet takes to nothing under reduced motion.
  */
 .chat-composer-failed-wrap {
     display: grid;
@@ -226,7 +247,7 @@
 
 .chat-strip-leave-active {
     overflow: hidden;
-    transition: grid-template-rows var(--chat-t-base) var(--chat-ease-out), margin-bottom var(--chat-t-base) var(--chat-ease-out), opacity var(--chat-t-fast) var(--chat-ease-out);
+    transition: grid-template-rows var(--chat-d-row-collapse) var(--chat-ease-out), margin-bottom var(--chat-d-row-collapse) var(--chat-ease-out), opacity var(--chat-t-fast) var(--chat-ease-out);
 }
 
 .chat-strip-leave-to {
@@ -406,8 +427,12 @@
     white-space: nowrap;
 }
 
-/* Rock's theme draws a kbd as a dark key cap; here it is only the key's name in a heavier weight. */
-.chat-composer-hint kbd {
+/*
+ * Rock's theme draws a kbd as a dark key cap; here it is only the key's name in a heavier weight,
+ * in the composer's own words and in a view's given in their place.
+ */
+.chat-composer-hint kbd,
+.chat-composer-hint :slotted(kbd) {
     padding: 0;
     font: inherit;
     font-weight: 600;
@@ -553,18 +578,6 @@
     display: inline-flex;
     color: var(--chat-icon);
 }
-
-@media (prefers-reduced-motion: reduce) {
-    /* The strip only fades as it goes, and gives its space back once gone. */
-    .chat-strip-leave-active {
-        transition: opacity var(--chat-t-fast) var(--chat-ease-out);
-    }
-
-    .chat-strip-leave-to {
-        grid-template-rows: 1fr;
-        margin-bottom: 0;
-    }
-}
 </style>
 
 <script setup lang="ts">
@@ -591,6 +604,7 @@
     import SettingNote, { Note } from "../ui/settingNote.partial.obs";
     import Menu, { MenuItem } from "../ui/menu.partial.obs";
     import Switch from "../ui/switch.partial.obs";
+    import { overlayHostOf, useTooltip } from "../ui/tooltip.partial";
 
     const props = defineProps({
         isDisabled: {
@@ -793,6 +807,7 @@
     const isGifOpen = ref(false);
 
     const boxElement = ref<HTMLFormElement>();
+    const sendElement = ref<HTMLButtonElement>();
     const fileInput = ref<HTMLInputElement>();
     const stripElement = ref<HTMLElement>();
     const lockedElement = ref<HTMLElement>();
@@ -813,6 +828,21 @@
 
     /** The Busy note's sentence, which describes the box; its own per composer, as a thread's can show beside the conversation's. */
     const busyNoteId = `chat-busy-note-${newGuid()}`;
+
+    /** Send's tip, shown on a rest or a keyboard focus as every icon button's is. */
+    const {
+        tipElement: sendTipElement,
+        isTipShown: isSendTipShown,
+        floatingStyles: sendTipStyles,
+        hideTip: hideSendTip,
+        onPointerEnter: onSendPointerEnter,
+        onPointerDown: onSendPointerDown,
+        onFocus: onSendFocus,
+        onBlur: onSendBlur
+    } = useTooltip(sendElement);
+
+    /** The chat's root, which Send's tip is drawn in; null where the composer is drawn alone. */
+    const sendTipHost = ref<HTMLElement | null>(null);
 
     // #endregion Values
 
@@ -1183,6 +1213,11 @@
                 props.tray.removeGif("GIFs were turned off, so the GIF was taken out.");
             }
         }
+    });
+
+    // Send is drawn with the box, which a locked composer leaves out, so its tip finds the chat's root as it comes.
+    watch(sendElement, element => {
+        sendTipHost.value = overlayHostOf(element);
     });
 
     // #endregion Watchers

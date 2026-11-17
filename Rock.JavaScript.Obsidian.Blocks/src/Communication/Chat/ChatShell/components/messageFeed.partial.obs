@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div class="chat-feed-frame" :class="{ 'is-community': layout === 'community', 'is-phone': isPhone, 'has-strip': isStripShown, 'has-strip-room': isStripRoomKept, 'has-jump': isJumpShown, 'is-pair': isDirectMessage }">
+    <div class="chat-feed-frame" :class="{ 'is-community': layout === 'community', 'is-phone': isPhone, 'has-strip': isStripShown, 'has-strip-room': isStripRoomKept, 'has-jump': isJumpShown, 'is-pair': isDirectMessage, 'is-scrolled': isScrolled }">
         <!-- Always drawn, so it fades out the way it came in; out of reach while it is off. -->
         <div class="chat-unread-strip"
              :class="{ 'is-on': isStripShown }"
@@ -16,10 +16,10 @@
         </div>
 
         <!--
-            The day of the messages at the feed's top, over the band where the feed fades out rather
-            than stuck inside the feed, where it would sit on the text scrolling under it. Its box is
-            that band; the label stands where the pill it carries is, and parks at the band's top.
-            Each day's own pill says it for assistive technology. Always drawn, so the band can be read.
+            The day of the messages at the feed's top, over the feed rather than stuck inside it,
+            where it would sit on the text scrolling under it. Its box is the pill's place; the label
+            stands where the pill it carries is, and parks at that place. Each day's own pill says it
+            for assistive technology. Always drawn, so its place can be read.
         -->
         <div ref="dayFloat"
              class="chat-day-float"
@@ -48,12 +48,13 @@
             -->
             <div ref="content" class="chat-feed-content" data-testid="feed-content">
                 <!-- Older messages are asked for as this comes into view at the top; pressed, it asks too, and after a failure only a press asks again. -->
-                <div v-if="isOlderShown" ref="olderElement" class="chat-feed-older" data-testid="feed-older">
-                    <Button size="sm"
-                            data-testid="feed-older-load"
-                            :busy="isLoadingOlder"
-                            @click="onLoadOlder">{{ isLoadingOlder ? "Loading" : isOlderFailed ? "Try again" : "Load older messages" }}</Button>
-                </div>
+                <LoadMoreRow v-if="isOlderShown"
+                             edge="start"
+                             name="feed-older"
+                             data-testid="feed-older"
+                             label="Load older messages"
+                             :load="loadOlderPage"
+                             :isFailed="isOlderFailed" />
 
                 <!-- What the channel is, at its very start: drawn once nothing older is left to load. -->
                 <ChannelIntro v-if="isIntroShown && facts"
@@ -164,7 +165,7 @@
             jumps when the page lands: the final frame of a room still loading, drawn at once and
             still. Over the feed rather than in it, so the first page lands under it in place.
         -->
-        <div v-if="isSkeletonShown" class="chat-feed-skeleton" data-testid="history-skeleton" aria-hidden="true">
+        <div v-if="!isDrawn" class="chat-feed-skeleton" data-testid="history-skeleton" aria-hidden="true">
             <template v-if="layout === 'community'">
                 <!-- Every other row shorter, so the column reads as messages rather than stripes. -->
                 <Skeleton v-for="index in 5" :key="index" shape="group" :widths="index % 2 === 0 ? [46, 30] : [64, 40]" data-testid="skeleton-row" />
@@ -184,8 +185,6 @@
                 @click="onJump">
             <Icon name="arrow-down" size="sm" />{{ jumpText }}
         </button>
-
-        <span class="chat-sr-only" role="status">{{ announcement }}</span>
     </div>
 </template>
 
@@ -199,20 +198,15 @@
     --chat-strip-height: 38px;
 
     /*
-        The day label stands 8px under the feed's top, or under the strip while it shows. The feed is
-        clear through the label's bottom edge and fades in over the next 12px, so no text is ever
-        seen beside or under the label. The height is the pill's, 12px text at the sheet's line
-        height with its padding and border, rounded up.
+        The day label stands 8px under the feed's top, or under the strip while it shows. The height
+        is the pill's, 12px text at the sheet's line height with its padding and border, rounded up.
     */
     --chat-day-inset: 8px;
     --chat-day-height: 26px;
-    --chat-day-fade: 12px;
     --chat-day-top: var(--chat-day-inset);
-    --chat-day-bottom: calc(var(--chat-day-top) + var(--chat-day-height));
-    --chat-feed-top-mask: calc(var(--chat-day-bottom) + var(--chat-day-fade));
 
-    /* Where the content starts, scrolled to the very top: below that band, and the strip while it may show. */
-    --chat-feed-top-room: calc(var(--chat-day-inset) + var(--chat-day-height) + var(--chat-day-fade));
+    /* Where the content starts, scrolled to the very top: the inset, under the strip while it may show. */
+    --chat-feed-top-room: var(--chat-day-inset);
     --chat-feed-bottom-mask: 14px;
 
     /*
@@ -236,7 +230,31 @@
 }
 
 .chat-feed-frame.has-strip-room {
-    --chat-feed-top-room: calc(var(--chat-day-inset) + var(--chat-strip-height) + var(--chat-day-height) + var(--chat-day-fade));
+    --chat-feed-top-room: calc(var(--chat-day-inset) + var(--chat-strip-height));
+}
+
+/*
+    The feed's top edge once it is scrolled off its start: the line and soft shadow the strip draws
+    at its own edge, on the frame's top, where the header's rule is. A box the strip's height above
+    the frame, since the shadow's spread pulls it in from each side of the box that casts it.
+*/
+.chat-feed-frame::before {
+    position: absolute;
+    right: 0;
+    bottom: 100%;
+    left: 0;
+    z-index: var(--chat-z-sticky);
+    height: var(--chat-strip-height);
+    pointer-events: none;
+    content: "";
+    border-bottom: 1px solid var(--chat-line);
+    box-shadow: var(--chat-shadow-strip);
+    opacity: 0;
+    transition: opacity var(--chat-t-base) var(--chat-ease-state);
+}
+
+.chat-feed-frame.is-scrolled::before {
+    opacity: 1;
 }
 
 .chat-feed-frame.has-jump {
@@ -254,13 +272,13 @@
 }
 
 /*
-    The edges fade, so text goes out of sight under the day label and runs under Jump to latest
-    rather than into them; the history skeleton drawn over the feed fades at the same edges.
+    The foot fades, so text runs under Jump to latest rather than into it; the top meets the header
+    at a clean edge. The history skeleton drawn over the feed fades at the same foot.
 */
 .chat-feed,
 .chat-feed-skeleton {
-    -webkit-mask-image: linear-gradient(to bottom, transparent 0, transparent var(--chat-day-bottom), var(--chat-mask-solid) var(--chat-feed-top-mask), var(--chat-mask-solid) calc(100% - var(--chat-feed-bottom-mask)), transparent 100%);
-    mask-image: linear-gradient(to bottom, transparent 0, transparent var(--chat-day-bottom), var(--chat-mask-solid) var(--chat-feed-top-mask), var(--chat-mask-solid) calc(100% - var(--chat-feed-bottom-mask)), transparent 100%);
+    -webkit-mask-image: linear-gradient(to bottom, var(--chat-mask-solid) 0, var(--chat-mask-solid) calc(100% - var(--chat-feed-bottom-mask)), transparent 100%);
+    mask-image: linear-gradient(to bottom, var(--chat-mask-solid) 0, var(--chat-mask-solid) calc(100% - var(--chat-feed-bottom-mask)), transparent 100%);
 }
 
 /*
@@ -287,13 +305,6 @@
 */
 .chat-feed.is-entering {
     animation: chat-feed-enter var(--chat-d-view) var(--chat-ease-in);
-}
-
-/* Load older messages, centred over the oldest held, as the members list centres Load more. */
-.chat-feed-older {
-    display: flex;
-    justify-content: center;
-    padding: 12px 8px 4px;
 }
 
 /* Each day is its own section, its pill where the day starts. */
@@ -324,8 +335,8 @@
 
 /*
     The day on top, over the feed and centred on its column, the scrollbar left out. Its box is the
-    band the feed fades in under, so the pill the label carries is measured against it; the label
-    stands where that pill is and parks at the band's top.
+    pill's place, so the pill the label carries is measured against it; the label stands where that
+    pill is and parks at the place's top.
 */
 .chat-day-float {
     position: absolute;
@@ -336,7 +347,7 @@
     display: flex;
     align-items: flex-start;
     justify-content: center;
-    height: calc(var(--chat-day-height) + var(--chat-day-fade));
+    height: var(--chat-day-height);
     pointer-events: none;
     visibility: hidden;
 }
@@ -463,7 +474,7 @@
     padding: 0 8px;
     margin-left: -8px;
     overflow: hidden;
-    color: var(--chat-text-2);
+    color: var(--chat-danger-ink);
     white-space: nowrap;
     background: none;
     border: 0;
@@ -472,11 +483,6 @@
 
 .chat-strip-jump b {
     font-weight: 650;
-    color: var(--chat-danger-ink);
-}
-
-.chat-strip-jump :deep(.chat-ic) {
-    color: var(--chat-danger-ink);
 }
 
 .chat-strip-jump span {
@@ -582,7 +588,9 @@
     import TypingBubble from "./typingBubble.partial.obs";
     import Button from "../ui/button.partial.obs";
     import Icon from "../ui/icon.partial.obs";
+    import LoadMoreRow from "../ui/loadMoreRow.partial.obs";
     import Skeleton from "../ui/skeleton.partial.obs";
+    import { useAnnouncer } from "../ui/announcer.partial";
     import { TimelineState } from "../composables/useHistory.partial";
     import { useChatSession } from "../chatSession.partial";
     import { pageRevealKey } from "../pageLoad.partial";
@@ -590,7 +598,7 @@
     import { useFeedTail } from "../composables/useFeedTail.partial";
     import { useNewestEnd } from "../composables/useNewestEnd.partial";
     import { useActionBar } from "../composables/useActionBar.partial";
-    import { usePagingTrigger } from "../composables/usePagingTrigger.partial";
+
     import { usePlaceInView, useSeenObserver } from "../composables/useSeenObserver.partial";
     import { MessageActionRequest } from "../composables/useMessageActions.partial";
     import { Typing } from "../composables/usePresence.partial";
@@ -694,7 +702,11 @@
             default: false
         },
 
-        /** The message a quote's jump asked for, once the timeline holds it; scrolled to and flashed. */
+        /**
+         * The message a landing asked for: a quote's jump, once the timeline holds it, or a row in
+         * Mentions named as its room opens, which the feed paints at once it is held; scrolled to
+         * and flashed.
+         */
         landOnId: {
             type: Number as PropType<number | null>,
             default: null
@@ -765,26 +777,34 @@
     /** The feed's one action bar, on the message the pointer rests on or a keyboard reaches. */
     const actionBar = useActionBar(() => feed.value);
 
-    /** The row at the top of what is held, while older messages remain. */
-    const olderElement = ref<HTMLElement>();
+    const announcer = useAnnouncer();
 
-    /** The older page on its way, which a second ask, by scroll or by press, waits on rather than repeats. */
-    let olderLoad: Promise<void> | null = null;
-    const isLoadingOlder = ref(false);
+    /**
+     * Whether the feed draws its rows: once its first page is in and any landing it was opened at
+     * is held, so a room opened at a message never paints its newest page first and leaves it.
+     * Held from then on, so a later landing in the open room never takes the rows away.
+     */
+    const isDrawn = ref(false);
+    watch(() => props.timeline.isLoaded && (props.landOnId === null || isHeld(props.landOnId)), isReady => {
+        if (isReady) {
+            isDrawn.value = true;
+        }
+    }, { immediate: true, flush: "sync" });
+
+    /** Whether the rows were painted and the reader placed, which the timeline's growth then moves from. */
+    let isPainted = false;
+
+    /** Whether the feed is scrolled off its start, which draws the line at its top. */
+    const isScrolled = ref(false);
+
+    /** Whether the last older page failed: the row says Try again and asks again only when pressed. */
     const isOlderFailed = ref(false);
 
     /** Whether older messages remain for this feed to load; a feed only shown loads none. */
-    const isOlderShown = computed((): boolean => !!props.loadOlder && props.timeline.hasMore);
+    const isOlderShown = computed((): boolean => !!props.loadOlder && props.timeline.hasMore && isDrawn.value);
 
     // A row counts as seen once any of it is on screen, which is what the read position is saved from.
     const seen = useSeenObserver(() => feed.value, row => emit("seen", Number(row.dataset.messageId)));
-
-    // Scrolling up to the top asks for the page before it. Its promise lets the trigger ask again
-    // at once after a page that leaves the top in view; after a failure only a press asks.
-    usePagingTrigger(olderElement, loadOlderPage, {
-        enabled: () => isOlderShown.value && props.timeline.isLoaded && !isLoadingOlder.value && !isOlderFailed.value,
-        root: () => feed.value
-    });
 
     let dividerElement: Element | null = null;
 
@@ -832,23 +852,27 @@
     /** The newest id the timeline held when the feed last looked, which what arrives since is counted from. */
     let newestSeenInTimeline: number | null = null;
 
-    const announcement = ref("");
-
     /** The message flashing now, cleared once its flash ends so a row drawn again does not replay it. */
     const flashingId = ref<number | null>(null);
+
+    /**
+     * The message already landed on, so a landing scrolls and flashes once: the timeline letting
+     * the message go and holding it again later, as a reader scrolling back past it, is not asked.
+     */
+    let landedId: number | null = null;
 
     /**
      * Whether the feed plays its entrance. A feed whose page is held enters only on a switch, read
      * as it mounts so no later change replays it; one that mounts before its first page enters as
      * that page is drawn, so the rise plays on its content and never over an empty box.
      */
-    const isEnteringDrawn = ref(props.isEntering && props.timeline.isLoaded);
+    const isEnteringDrawn = ref(props.isEntering && isDrawn.value);
 
     /** How many pages the timeline had read as the feed mounted, which its open's first read moves past. */
     const pagesReadAtOpen = props.timeline.pagesRead;
 
-    /** Whether the feed mounted before its first page, so its entrance waits for that page; played once. */
-    let isEntrancePending = !props.timeline.isLoaded;
+    /** Whether the feed mounted before its rows were drawn, so its entrance waits for them; played once. */
+    let isEntrancePending = !isDrawn.value;
 
     /**
      * The first load's reveal, absent where the feed is drawn alone. While it has not revealed
@@ -885,8 +909,8 @@
     const justSentKeys = useSentHold(() => channelPending.value, feed);
     const slowSendKeys = useSlowSend(() => channelPending.value);
 
-    /** Who is typing as the feed draws it: no one until the first page is drawn, so nothing types under the skeleton. */
-    const drawnTyping = computed((): Typing | null => props.timeline.isLoaded ? props.typing : null);
+    /** Who is typing as the feed draws it: no one until the rows are drawn, so nothing types under the skeleton. */
+    const drawnTyping = computed((): Typing | null => isDrawn.value ? props.typing : null);
 
     // the typing row's run ending changes where the bubble stands, though no input of the layout moves
     const runEnded = useLayoutAgain(() => laidOut.value.typing?.endsAt ?? null);
@@ -904,7 +928,7 @@
         });
     });
 
-    const sections = computed((): FeedSection[] => laidOut.value.sections);
+    const sections = computed((): FeedSection[] => isDrawn.value ? laidOut.value.sections : []);
 
     /** The folded lines drawn, by key, for their tail to claim every message each stands for. */
     const blockedRuns = computed((): ReadonlyMap<string, TimelineMessage[]> => new Map(sections.value
@@ -946,10 +970,14 @@
         return names;
     });
 
-    const isSkeletonShown = computed((): boolean => !props.timeline.isLoaded);
-
     /** A channel's intro stands at its true start only, so not while older pages remain; a direct message has none. */
-    const isIntroShown = computed((): boolean => props.isChannel && props.timeline.isLoaded && !props.timeline.hasMore);
+    const isIntroShown = computed((): boolean => props.isChannel && isDrawn.value && !props.timeline.hasMore);
+
+    /** The landing's message once the rows are drawn and hold it, which the feed scrolls to and flashes. */
+    const heldLandingId = computed((): number | null => {
+        const id = props.landOnId;
+        return id !== null && isDrawn.value && isHeld(id) ? id : null;
+    });
 
     /** Shown only while the divider is off screen, and gone once the person marks the channel read. */
     const isStripShown = computed((): boolean => dividerBeforeId.value !== null && isDividerOffScreen.value && !isMarkedRead.value);
@@ -979,6 +1007,7 @@
     // #region Event Handlers
 
     function onScroll(): void {
+        isScrolled.value = (feed.value?.scrollTop ?? 0) > 0;
         actionBar.onScroll();
         placeTopDay();
         reader.read();
@@ -996,7 +1025,7 @@
 
         emit("markRead", messages[messages.length - 1].id);
         isMarkedRead.value = true;
-        announcement.value = "Marked as read";
+        announcer.announce("Marked as read");
     }
 
     function onStripJump(): void {
@@ -1009,9 +1038,17 @@
         reader.moveTo(feed.value.scrollTop + dividerElement.getBoundingClientRect().top - feed.value.getBoundingClientRect().top - 52);
     }
 
-    /** A row's flash plays once: the flash goes from the row as it ends. */
+    /**
+     * A row's flash plays once: the flash goes from the row as it ends. Only the flashed message's
+     * own flash says so; another row's ending, a live mention's greeting among them, is not it.
+     */
     function onAnimationEnd(event: AnimationEvent): void {
-        if (flashingId.value !== null && event.animationName.includes("flash")) {
+        if (flashingId.value === null || !event.animationName.includes("flash")) {
+            return;
+        }
+
+        const row = event.target instanceof Element ? event.target.closest("[data-message-id]") : null;
+        if (row?.getAttribute("data-message-id") === String(flashingId.value)) {
             flashingId.value = null;
         }
     }
@@ -1028,42 +1065,58 @@
         }
     }
 
-    /** The control at the top: a failure shows on it, so nothing more is done with one here. */
-    function onLoadOlder(): void {
-        loadOlderPage().catch(() => undefined);
-    }
-
     // #endregion Event Handlers
 
     // #region Functions
 
-    /** Asks for the page before the oldest held, or waits on the one already on its way. */
+    /**
+     * Asks for the page before the oldest held. The row holds itself busy on the promise, and a
+     * failure it rejects with is the row's to say as Try again.
+     */
     function loadOlderPage(): Promise<void> {
-        if (olderLoad || !props.loadOlder) {
-            return olderLoad ?? Promise.resolve();
+        isOlderFailed.value = false;
+        return props.loadOlder().catch(error => {
+            isOlderFailed.value = true;
+            throw error;
+        });
+    }
+
+    /** Whether the timeline holds a message. */
+    function isHeld(id: number): boolean {
+        return props.timeline.messages.some(message => message.id === id);
+    }
+
+    /**
+     * The rows drawn and the reader placed: at the newest message, or, opened at a landing, where
+     * the landing puts them. The page the rows came with is not news, and the rows are watched.
+     */
+    function paint(): void {
+        isPainted = true;
+        newestSeenInTimeline = newestId();
+        observeRows();
+        if (props.landOnId === null) {
+            reader.toNewest();
         }
 
-        isLoadingOlder.value = true;
-        isOlderFailed.value = false;
-        const load = props.loadOlder()
-            .catch(error => {
-                isOlderFailed.value = true;
-                throw error;
-            })
-            .finally(() => {
-                olderLoad = null;
-                isLoadingOlder.value = false;
-            });
-        olderLoad = load;
-        return load;
+        if (props.timeline.messages.length > 0) {
+            emit("firstShown");
+        }
+
+        playPendingEntrance();
     }
 
     /**
      * Brings a jumped-to message to the middle of the feed, flashes it and gives it focus, so a
      * keyboard carries on from the original. The flash is let go first, so a second jump to the
-     * message still flashing plays it again.
+     * message still flashing plays it again. On the feed's first paint the message is simply
+     * there; in an open feed the reader glides to it.
      */
-    async function land(id: number): Promise<void> {
+    async function land(id: number, isFirstPaint: boolean): Promise<void> {
+        if (id === landedId) {
+            return;
+        }
+
+        landedId = id;
         flashingId.value = null;
         await nextTick();
         flashingId.value = id;
@@ -1077,7 +1130,13 @@
         }
 
         const box = row.getBoundingClientRect();
-        reader.moveTo(scroller.scrollTop + box.top - scroller.getBoundingClientRect().top - (scroller.clientHeight - box.height) / 2);
+        const top = scroller.scrollTop + box.top - scroller.getBoundingClientRect().top - (scroller.clientHeight - box.height) / 2;
+        if (isFirstPaint) {
+            reader.placeAt(top);
+        }
+        else {
+            reader.moveTo(top);
+        }
         row.focus({ preventScroll: true });
     }
 
@@ -1103,7 +1162,7 @@
 
         const bandTop = float.offsetTop - scroller.offsetTop;
         const bandBottom = bandTop + float.offsetHeight;
-        const pills = scroller.querySelectorAll<HTMLElement>("[data-testid='day-pill']");
+        const pills = scroller.querySelectorAll<HTMLElement>(".chat-day-pill");
         let day: { key: string, label: string, offset: number } | null = null;
         for (let index = 0; index < pills.length; index++) {
             // its place in the frame, up the boxes it is laid out in, less how far the feed is scrolled
@@ -1176,6 +1235,11 @@
     // of the same size when more than a page arrived meanwhile, and its rows still need watching,
     // counting and following.
     watch(() => `${props.timeline.messages[0]?.id}:${newestId()}`, async (ends, oldEnds) => {
+        // the rows' first paint places the reader itself
+        if (!isPainted) {
+            return;
+        }
+
         const [first, newest] = ends.split(":");
         const [oldFirst, oldNewest] = oldEnds.split(":");
 
@@ -1228,16 +1292,30 @@
     // changes which day is on top without a scroll.
     watch([sections, isStripShown], placeTopDay, { flush: "post" });
 
+    watch(isDrawn, isNow => {
+        if (isNow) {
+            paint();
+        }
+    }, { flush: "post" });
+
+    // A landing the shell lets go of is done, so the next one, on the same message too, lands again.
     watch(() => props.landOnId, id => {
-        if (id !== null) {
-            void land(id);
+        if (id === null) {
+            landedId = null;
         }
     });
+
+    // The rows' first paint already holds the landing in view; a landing in the open feed glides.
+    watch([heldLandingId, isDrawn], ([id], [, wasDrawn]) => {
+        if (id !== null) {
+            void land(id, !wasDrawn);
+        }
+    }, { flush: "post" });
 
     // The conversation coming back into view is a switch's entrance too. The class goes and
     // returns across a render, since an animation only restarts when its class is added anew.
     watch(() => props.isCovered, async isCovered => {
-        if (isCovered || !props.timeline.isLoaded) {
+        if (isCovered || !isDrawn.value) {
             return;
         }
 
@@ -1247,9 +1325,9 @@
         isEnteringDrawn.value = true;
     });
 
-    /** Plays the entrance a feed mounted before its page was holding, once the page is drawn and the column revealed. */
+    /** Plays the entrance a feed mounted before its rows were drawn, once they are and the column is revealed. */
     function playPendingEntrance(): void {
-        if (isEntrancePending && props.timeline.isLoaded && (!page || page.state.isMainRevealed)) {
+        if (isEntrancePending && isDrawn.value && (!page || page.state.isMainRevealed)) {
             isEntrancePending = false;
             isEnteringDrawn.value = true;
         }
@@ -1257,25 +1335,18 @@
 
     watch(() => page?.state.isMainRevealed, playPendingEntrance);
 
-    watch(() => props.timeline.isLoaded, isLoaded => {
-        if (!isLoaded) {
-            return;
-        }
-
-        playPendingEntrance();
-    });
-
     // #endregion Watchers
 
     // #region Lifecycle Hooks
 
     onMounted(() => {
-        newestSeenInTimeline = newestId();
+        if (!isDrawn.value) {
+            return;
+        }
 
-        observeRows();
-        if (props.timeline.messages.length > 0) {
-            reader.toNewest();
-            emit("firstShown");
+        paint();
+        if (heldLandingId.value !== null) {
+            void land(heldLandingId.value, true);
         }
     });
 

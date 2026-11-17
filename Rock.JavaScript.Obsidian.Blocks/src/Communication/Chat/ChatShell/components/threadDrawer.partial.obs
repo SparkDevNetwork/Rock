@@ -10,20 +10,18 @@
         <template #actions>
             <template v-if="!isLoading && root && !error">
                 <!-- Whether the reader follows arrives with the first page, so until it has answered there is nothing true to offer. -->
-                <button ref="followElement"
-                        type="button"
-                        class="chat-th-follow"
-                        :aria-pressed="isFollowing ? 'true' : 'false'"
-                        :aria-describedby="followTipId"
-                        data-testid="thread-follow"
-                        @mouseenter="onFollowPointerEnter"
-                        @mouseleave="hideFollowTip"
-                        @pointerdown="onFollowPointerDown"
-                        @focus="onFollowFocus"
-                        @blur="onFollowBlur"
-                        @click="onFollow">
+                <Pill ref="followPill"
+                      :selected="isFollowing"
+                      :aria-describedby="followTipId"
+                      data-testid="thread-follow"
+                      @mouseenter="onFollowPointerEnter"
+                      @mouseleave="hideFollowTip"
+                      @pointerdown="onFollowPointerDown"
+                      @focus="onFollowFocus"
+                      @blur="onFollowBlur"
+                      @click="onFollow">
                     <Icon :name="isFollowing ? 'bell' : 'bell-off'" size="sm" />{{ isFollowing ? "Following" : "Follow" }}
-                </button>
+                </Pill>
                 <!-- What following means, read with the button and shown as its tooltip; the tip is for the eye only, so it is not read twice. -->
                 <span :id="followTipId" class="chat-sr-only">{{ followText }}</span>
                 <Teleport :to="followTipHost ?? 'body'" :disabled="!followTipHost">
@@ -48,25 +46,38 @@
              @pointermove="actionBar.onPointerMove"
              @focusin="actionBar.onFocusIn"
              @focusout="actionBar.onFocusOut">
-            <div v-if="hasMore" ref="topElement" class="chat-th-topmark" aria-hidden="true"></div>
+            <!-- Older replies are asked for as this comes into view at the top, once the thread is placed at its newest. -->
+            <LoadMoreRow v-if="pagingControl === 'row'"
+                         ref="olderRow"
+                         edge="start"
+                         name="thread-older"
+                         label="Load older replies"
+                         :load="loadOlderPage" />
 
-            <div v-if="error || olderError" class="chat-th-err" role="status" data-testid="thread-error">
-                <Icon name="alert" size="sm" />
-                <span>{{ errorSentence }}</span>
-            </div>
+            <!-- A failed page, the one notice, where the replies it would have brought stand; said at once. -->
+            <SettingNote v-if="pageNote"
+                         ref="pageNotePart"
+                         class="chat-th-err"
+                         :note="pageNote"
+                         data-testid="thread-error" />
 
             <!-- A refused follow change, beside the bell it put back; said at once. -->
             <SettingNote v-if="followNote"
                          class="chat-th-err"
-                         role="alert"
                          :note="followNote"
                          data-testid="thread-follow-error"
                          @retry="onFollowRetry" />
 
             <template v-if="!root && isLoading">
                 <span class="chat-sr-only">Loading thread</span>
+                <!-- Rows of the look the thread will draw, as the conversation's feed draws its own. -->
                 <div class="chat-th-skeleton" aria-hidden="true">
-                    <span v-for="index in 3" :key="index" class="chat-skeleton chat-th-sk"></span>
+                    <template v-if="isChannel">
+                        <Skeleton v-for="index in 3" :key="index" shape="group" :widths="index % 2 === 0 ? [46, 30] : [64, 40]" />
+                    </template>
+                    <template v-else>
+                        <Skeleton v-for="index in 3" :key="index" shape="bubble" :widths="[index % 2 === 0 ? 100 : 72]" />
+                    </template>
                 </div>
             </template>
 
@@ -159,63 +170,16 @@
 </template>
 
 <style scoped>
-/* The design's Follow pill: an outline at rest, the church's tint once following. */
-.chat-th-follow {
-    display: inline-flex;
-    flex: none;
-    gap: 6px;
-    align-items: center;
-    height: 30px;
-    padding: 0 12px 0 10px;
-    font-size: var(--chat-fs-ui);
-    font-weight: 600;
-    color: var(--chat-text-2);
-    background: none;
-    border: 1px solid var(--chat-line-strong);
-    border-radius: var(--chat-r-full);
-    transition: background-color var(--chat-t-fast) var(--chat-ease-state), border-color var(--chat-t-fast) var(--chat-ease-state), color var(--chat-t-fast) var(--chat-ease-state);
-}
-
-/* Following: the church's tint, its ink, and a border of the church color at 45 percent. */
-.chat-th-follow[aria-pressed="true"] {
-    color: var(--chat-brand-ink);
-    background: var(--chat-brand-tint);
-    border-color: var(--chat-brand-line);
-}
-
-/* Older replies are asked for as this comes into view at the top of the scroller. */
-.chat-th-topmark {
-    height: 1px;
-}
-
+/* Where a notice stands in the thread; how it looks is the notice's own. */
 .chat-th-err {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-    padding: 8px 8px 8px 11px;
     margin: 8px 14px 6px;
-    font-size: var(--chat-fs-ui);
-    line-height: 1.4;
-    color: var(--chat-danger-ink);
-    background: var(--chat-danger-soft);
-    border-radius: var(--chat-r-control);
 }
 
 .chat-th-skeleton {
     display: flex;
     flex-direction: column;
-    gap: 12px;
-    padding: 20px 16px;
-}
-
-.chat-th-sk {
-    display: block;
-    width: 70%;
-    height: 34px;
-}
-
-.chat-th-sk:nth-child(2n) {
-    width: 52%;
+    gap: 14px;
+    padding: 20px 0;
 }
 
 /* "3 replies", a rule running from the words to the panel's edge. */
@@ -291,8 +255,12 @@
     import MessageRow from "./messageRow.partial.obs";
     import TypingBubble from "./typingBubble.partial.obs";
     import Icon from "../ui/icon.partial.obs";
+    import LoadMoreRow from "../ui/loadMoreRow.partial.obs";
     import PanelHost from "../ui/panelHost.partial.obs";
+    import Pill from "../ui/pill.partial.obs";
     import SettingNote, { Note } from "../ui/settingNote.partial.obs";
+    import Skeleton from "../ui/skeleton.partial.obs";
+    import { useAnnouncer } from "../ui/announcer.partial";
     import { overlayHostOf, useTooltip } from "../ui/tooltip.partial";
     import { isMotionReduced } from "../ui/viewport.partial";
     import { failureNote } from "../composables/saveRule.partial";
@@ -306,7 +274,7 @@
     import { useViewArrivals } from "../messageMotion.partial";
     import { useFeedTail } from "../composables/useFeedTail.partial";
     import { useNewestEnd } from "../composables/useNewestEnd.partial";
-    import { usePagingTrigger } from "../composables/usePagingTrigger.partial";
+
     import { useSeenObserver } from "../composables/useSeenObserver.partial";
     import { FeedItem, FeedLayoutResult, layoutFeed, replyCountText, useLayoutAgain } from "../feedLayout.partial";
     import { useChatSession } from "../chatSession.partial";
@@ -420,6 +388,16 @@
             default: null
         },
 
+        /**
+         * Fetches the page of replies before the oldest held, settling once it is in or its failure
+         * is said; a page that leaves the top in view is then asked for again. Without it the
+         * drawer asks its owner through loadOlder.
+         */
+        loadOlder: {
+            type: Function as PropType<() => Promise<void>>,
+            default: null
+        },
+
         /** Who else is typing a reply in this thread, drawn as its newest row; null for no one. */
         typing: {
             type: Object as PropType<Typing | null>,
@@ -489,7 +467,8 @@
     let scrollElement: HTMLElement | null = null;
 
     const bodyElement = ref<HTMLElement | null>(null);
-    const topElement = ref<HTMLElement>();
+
+    const announcer = useAnnouncer();
 
     /**
      * Whether the reader is at the newest reply, as the conversation keeps its own: kept there
@@ -508,16 +487,10 @@
     const { arrives } = useViewArrivals(() => blockedRuns.value);
 
     /**
-     * Set once the thread has been scrolled to its newest reply, so the top mark asks for nothing
-     * before; reactive, so a mark already in view as the thread is placed asks then.
+     * Set once the thread has been scrolled to its newest reply, so the load-more row, drawn only
+     * then, asks for nothing before; a row already in view as the thread is placed asks then.
      */
     const isPlaced = ref(false);
-
-    // Scrolling up to the top mark asks for older replies, once the thread has been placed.
-    usePagingTrigger(topElement, () => emit("loadOlder"), {
-        enabled: () => isPlaced.value && props.hasMore,
-        root: scroller
-    });
 
     /** The reply flashing now, cleared once its flash ends so a row drawn again does not replay it. */
     const flashingId = ref<number | null>(null);
@@ -525,7 +498,14 @@
     /** The reply already landed on, so it is scrolled to and flashed only once per landing. */
     let landedId: number | null = null;
 
-    const followElement = ref<HTMLButtonElement>();
+    const olderRow = ref<InstanceType<typeof LoadMoreRow>>();
+
+    const pageNotePart = ref<InstanceType<typeof SettingNote>>();
+
+    const followPill = ref<InstanceType<typeof Pill>>();
+
+    /** Follow's button, which its tip hangs on. */
+    const followElement = computed((): HTMLButtonElement | undefined => followPill.value?.element);
 
     /** A refused follow change as its note, with Try again asking the same change once more where that can pass. */
     const followNote = computed((): Note | null => {
@@ -626,9 +606,25 @@
         return replyCountText(count);
     });
 
-    const errorSentence = computed((): string => {
-        const error = props.error ?? props.olderError;
-        return error ? messageForError(error) : "";
+    /** A failed page as its notice: the first page's alone, an older page's with Try again. */
+    const pageNote = computed((): Note | null => {
+        if (props.error) {
+            return { kind: "error", text: messageForError(props.error) };
+        }
+
+        return props.olderError ? { kind: "error", text: messageForError(props.olderError), retry: () => void loadOlderPage() } : null;
+    });
+
+    /**
+     * What asks for older replies now: the row while more wait once the thread is placed, a
+     * failed page's notice, whose Try again asks, or nothing.
+     */
+    const pagingControl = computed((): "row" | "note" | null => {
+        if (props.olderError) {
+            return "note";
+        }
+
+        return props.hasMore && isPlaced.value ? "row" : null;
     });
 
     /** Each sender's name this thread holds, so a mention in a reply not stored yet can show who it names. */
@@ -690,6 +686,15 @@
     /** The panel host's scroller, which holds this body. */
     function scroller(): HTMLElement | null {
         return bodyElement.value?.closest<HTMLElement>(".chat-panel-body") ?? null;
+    }
+
+    /** Asks for the page of replies before the oldest held, through the loader when given it. */
+    function loadOlderPage(): Promise<void> | void {
+        if (props.loadOlder) {
+            return props.loadOlder();
+        }
+
+        emit("loadOlder");
     }
 
     function newestReplyId(): number | null {
@@ -758,6 +763,43 @@
     watch(followElement, element => {
         followTipHost.value = overlayHostOf(element);
     });
+
+    // A failed page and a refused follow change are said at once, each as it first shows. Each
+    // failure is its own error, so a retry that fails again with the same words is said again.
+    watch(() => props.error ?? props.olderError, error => {
+        if (error && pageNote.value) {
+            announcer.announce(pageNote.value.text, "assertive");
+        }
+    }, { immediate: true });
+
+    // The row and a failed page's notice can each be taken away by the page they asked for. Read
+    // before the render that removes it, focus held in the one going carries on where the thread
+    // grew, as the lists hand it on: to the notice's Try again for a failure, to the row while
+    // more wait, else to the first reply the page brought.
+    watch(pagingControl, async (control, was) => {
+        const noteElement: HTMLElement | undefined = pageNotePart.value?.$el;
+        const wasHeld = was === "row" ? !!olderRow.value?.hasFocus() : was === "note" && !!noteElement?.contains(document.activeElement);
+        if (!wasHeld || !isPlaced.value) {
+            return;
+        }
+
+        await nextTick();
+        if (control === "note") {
+            (pageNotePart.value?.$el as HTMLElement | undefined)?.querySelector<HTMLElement>("button")?.focus();
+        }
+        else if (control === "row") {
+            olderRow.value?.focus();
+        }
+        else if (props.replies.length > 0) {
+            bodyElement.value?.querySelector<HTMLElement>(`[data-reply-id='${props.replies[0].id}']`)?.focus({ preventScroll: true });
+        }
+    });
+
+    watch(() => followNote.value?.text, text => {
+        if (text) {
+            announcer.announce(text, "assertive");
+        }
+    }, { immediate: true });
 
     // Older replies go in above without moving what the reader is looking at; newer ones, and
     // someone starting to type, are followed when the reader is at the bottom, and the reader's own

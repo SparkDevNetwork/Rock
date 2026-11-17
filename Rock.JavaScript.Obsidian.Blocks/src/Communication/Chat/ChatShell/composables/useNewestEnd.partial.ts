@@ -61,8 +61,15 @@ export type NewestEnd = {
      */
     goingTo: (top: number) => void;
 
-    /** Takes the reader to a place, smoothly unless the person asked for less motion. */
+    /**
+     * Takes the reader to a place, smoothly unless the person asked for less motion. From more than
+     * two screens away they are put one screen short of it at once and glide the rest, since a glide
+     * across many screens is a long blur that shows nothing.
+     */
     moveTo: (top: number) => void;
+
+    /** Puts the reader at a place at once, as a view first painted at a landing opens there. */
+    placeAt: (top: number) => void;
 };
 
 /**
@@ -167,8 +174,22 @@ export function useNewestEnd(scroller: () => HTMLElement | null, content: Ref<HT
                 return;
             }
             const target = Math.min(Math.max(0, top), endOfScroller(element));
+            const away = target - element.scrollTop;
+            if (Math.abs(away) > 2 * element.clientHeight) {
+                element.scrollTop = target - Math.sign(away) * element.clientHeight;
+            }
             goingTo(target);
             element.scrollTo?.({ top: target, behavior: isMotionReduced() ? "auto" : "smooth" });
+        },
+
+        placeAt: top => {
+            const element = scroller();
+            if (!element) {
+                return;
+            }
+            const target = Math.min(Math.max(0, top), endOfScroller(element));
+            element.scrollTop = target;
+            goingTo(target);
         }
     };
 }
