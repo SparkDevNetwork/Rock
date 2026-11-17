@@ -28,7 +28,7 @@
             :class="{ 'is-phone': isPhone }"
             :aria-label="listLabel"
             @keydown="onListKeydown">
-            <li v-for="(drawn, index) in drawnRows"
+            <li v-for="drawn in drawnRows"
                 :key="drawn.rootId"
                 class="chat-ls-row chat-enter"
                 :class="{ 'is-unread': drawn.isUnread, 'is-off': drawn.isOff }"
@@ -48,7 +48,6 @@
                              'data-focus-stop': 'threads-row',
                              'data-root-id': drawn.rootId,
                              'aria-describedby': `${uid}-hint`,
-                             'data-autofocus': index === 0 ? '' : undefined,
                              ...listKeys.itemAttrs(drawn.rootId)
                          }"
                          :hitRef="listKeys.itemRef(drawn.rootId)"

@@ -522,10 +522,20 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
         }
         panelKind.value = kind;
         shownPanel.value = kind;
-        openList(kind);
+        const opened = openList(kind);
 
         await nextTick();
-        focusPanelStart();
+        const start = focusPanelStart();
+
+        // A first control that comes with the list's first page, as a phone's first member, takes
+        // focus once that page is drawn, while focus is still where the panel opened it.
+        if (start && !start.hasAttribute("data-autofocus")) {
+            void opened.then(() => nextTick()).then(() => {
+                if (document.activeElement === start) {
+                    firstDrawn(panelElement.value, "[data-autofocus]")?.focus({ preventScroll: true });
+                }
+            });
+        }
     }
 
     /** Activity's Segmented chose a tab: its list takes the other's place. */
@@ -536,7 +546,7 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
 
         releasePanel();
         activityTab.value = tab;
-        openList("activity");
+        void openList("activity");
     }
 
     /** The panel fading out is out of reach and unread while the next fades in over its place. */
@@ -824,15 +834,22 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
         }
     }
 
-    /** Asks the shell for a list the column now shows: Activity's by its tab, else the open conversation's. */
-    function openList(kind: ListPanelKind): void {
+    /**
+     * Asks the shell for a list the column now shows: Activity's by its tab, else the open
+     * conversation's. Resolves once its first page is in, or with nothing to ask for at once; the
+     * shell says a failure itself.
+     */
+    function openList(kind: ListPanelKind): Promise<void> {
         const channelId = activeChannelId.value;
         if (kind === "activity") {
-            void (activityTab.value === "mentions" ? shell.value.mentions.openInbox() : shell.value.threads.openList(channelId ?? "", "all"));
+            return activityTab.value === "mentions" ? shell.value.mentions.openInbox() : shell.value.threads.openList(channelId ?? "", "all");
         }
-        else if (channelId) {
-            void (kind === "threads" ? shell.value.threads.openList(channelId, "channel") : shell.value.members.open(channelId));
+
+        if (channelId) {
+            return kind === "threads" ? shell.value.threads.openList(channelId, "channel") : shell.value.members.open(channelId);
         }
+
+        return Promise.resolve();
     }
 
     /** Lets go of whatever the column holds: an open thread, and the list it was opened from or the list open. */
@@ -1210,7 +1227,7 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
         }
 
         const hadFocus = !!panelElement.value?.contains(document.activeElement);
-        openList(kind);
+        void openList(kind);
         if (hadFocus) {
             void nextTick(() => {
                 if (!panelElement.value?.contains(document.activeElement)) {
