@@ -946,6 +946,7 @@
     provide(gifsKey, {
         isOn: () => shell.value.gifs.isOn(),
         search: (query, page, signal) => shell.value.gifs.search(query, page, signal),
+        covers: () => shell.value.gifs.covers(),
         turnOff: () => shell.value.gifs.turnOff()
     });
 
