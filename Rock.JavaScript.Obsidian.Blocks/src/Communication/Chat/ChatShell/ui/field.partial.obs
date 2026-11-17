@@ -2,7 +2,7 @@
 <template>
     <div class="chat-fld" :class="[`is-${size}`, { 'is-invalid': invalid }, $attrs.class]" :style="$attrs.style as StyleValue">
         <!-- A label around a plain input, so a press anywhere in the box puts focus in it; a box holding its own controls is not one. -->
-        <component :is="$slots.content ? 'div' : 'label'" class="chat-fld-box">
+        <component :is="$slots.content ? 'div' : 'label'" class="chat-fld-box" :class="{ 'is-holding': !!$slots.content }">
             <Icon v-if="leadingIcon" :name="leadingIcon" size="sm" />
             <slot name="content">
                 <input ref="inputElement"
@@ -60,6 +60,14 @@
 
 .chat-fld.is-lg .chat-fld-box {
     min-height: 44px;
+}
+
+/* A box holding its own controls, as chips and an input, wraps them onto lines inside its border. */
+.chat-fld-box.is-holding {
+    flex-wrap: wrap;
+    row-gap: 6px;
+    padding-top: 6px;
+    padding-bottom: 6px;
 }
 
 /* Only where a pointer can hover: a touch screen keeps :hover on what was tapped until the next tap. */

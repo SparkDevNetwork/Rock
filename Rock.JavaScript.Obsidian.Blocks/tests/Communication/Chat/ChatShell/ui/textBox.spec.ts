@@ -68,7 +68,8 @@ function inputsOf(template: string): { tag: string, holders: string[] }[] {
             inputs.push({ tag: match[0], holders: [...stack] });
         }
         else if (!match[4] && !voids.includes(match[2].toLowerCase())) {
-            stack.push(classes);
+            // The shared field part draws the ringed box around what a screen puts in it.
+            stack.push(match[2] === "Field" ? "chat-fld-box" : classes);
         }
     }
 

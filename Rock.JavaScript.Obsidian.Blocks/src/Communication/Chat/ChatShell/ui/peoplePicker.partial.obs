@@ -1,54 +1,60 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <div class="chat-pk" :class="{ 'is-inline': isInline }" @focusout="onFocusout">
-        <div class="chat-pk-field chat-field" @mousedown="onFieldMousedown">
-            <span :id="labelId" class="chat-pk-label" :data-testid="labelTestId">{{ label }}</span>
-            <span class="chat-pk-chips" role="list" aria-label="Chosen people">
-                <span v-for="person in chosen"
-                      :key="person.person_alias_guid"
-                      class="chat-pk-chip"
-                      :class="{ 'is-new': newChipId === person.person_alias_guid }"
-                      role="listitem"
-                      :data-testid="`${prefix}-chip`">
-                    <Avatar :people="[faceOf(person)]" :size="22" />
-                    <span class="chat-pk-chip-n">{{ nameOf(person) }}</span>
-                    <button type="button"
-                            class="chat-pk-x"
-                            :aria-label="`Remove ${nameOf(person)}`"
-                            :disabled="isDisabled"
-                            :data-testid="`${prefix}-chip-remove`"
-                            @click="unchoose(person)">
-                        <Icon name="x" size="xs" />
-                    </button>
-                </span>
-            </span>
-            <!--
-                Over the page, at the cap there is no one left to type for, so the input goes and
-                leaves no empty row; inline, the list under it says the cap and the field keeps focus.
-            -->
-            <input v-if="isInline || !isFull"
-                   ref="inputElement"
-                   class="chat-pk-input chat-field-input"
-                   type="text"
-                   role="combobox"
-                   aria-autocomplete="list"
-                   :aria-expanded="isListboxShown ? 'true' : 'false'"
-                   :aria-controls="isListboxShown ? listId : undefined"
-                   :aria-labelledby="labelId"
-                   :aria-describedby="noteId"
-                   :aria-activedescendant="activeOptionId"
-                   autocomplete="off"
-                   spellcheck="false"
-                   :placeholder="chosen.length > 0 ? '' : placeholder"
-                   :value="query"
-                   :disabled="isDisabled"
-                   :data-autofocus="isAutofocus ? '' : undefined"
-                   :data-testid="inputTestId"
-                   @input="onInput"
-                   @focus="isFocused = true; isListClosed = false"
-                   @keydown="onKeydown" />
-            <span v-if="isSearching" class="chat-pk-busy" aria-hidden="true"><span class="chat-spinner"></span></span>
-            <span v-if="count" class="chat-pk-count" :data-testid="`${prefix}-count`">{{ count }}</span>
+        <!--
+            The one text box holds the chips and the input, so its border, hover and focus are the
+            field's own. Over the page, at the cap there is no one left to type for, so the input
+            goes and leaves no empty row; inline, the list under it says the cap and the field
+            keeps focus. A press on the box's empty space puts focus in the input.
+        -->
+        <div class="chat-pk-field" @mousedown="onFieldMousedown">
+            <Field size="lg">
+                <template #content>
+                    <span :id="labelId" class="chat-pk-label" :data-testid="labelTestId">{{ label }}</span>
+                    <span class="chat-pk-chips" role="list" aria-label="Chosen people">
+                        <span v-for="person in chosen"
+                              :key="person.person_alias_guid"
+                              class="chat-pk-chip"
+                              :class="{ 'is-new': newChipId === person.person_alias_guid }"
+                              role="listitem"
+                              :data-testid="`${prefix}-chip`">
+                            <Avatar :people="[faceOf(person)]" :size="22" />
+                            <span class="chat-pk-chip-n">{{ nameOf(person) }}</span>
+                            <button type="button"
+                                    class="chat-pk-x"
+                                    :aria-label="`Remove ${nameOf(person)}`"
+                                    :disabled="isDisabled"
+                                    :data-testid="`${prefix}-chip-remove`"
+                                    @click="unchoose(person)">
+                                <Icon name="x" size="xs" />
+                            </button>
+                        </span>
+                    </span>
+                    <input v-if="isInline || !isFull"
+                           ref="inputElement"
+                           class="chat-pk-input chat-field-input"
+                           type="text"
+                           role="combobox"
+                           aria-autocomplete="list"
+                           :aria-expanded="isListboxShown ? 'true' : 'false'"
+                           :aria-controls="isListboxShown ? listId : undefined"
+                           :aria-labelledby="labelId"
+                           :aria-describedby="noteId"
+                           :aria-activedescendant="activeOptionId"
+                           autocomplete="off"
+                           spellcheck="false"
+                           :placeholder="chosen.length > 0 ? '' : placeholder"
+                           :value="query"
+                           :disabled="isDisabled"
+                           :data-autofocus="isAutofocus ? '' : undefined"
+                           :data-testid="inputTestId"
+                           @input="onInput"
+                           @focus="isFocused = true; isListClosed = false"
+                           @keydown="onKeydown" />
+                    <span v-if="isSearching" class="chat-pk-busy" aria-hidden="true"><span class="chat-spinner"></span></span>
+                    <span v-if="count" class="chat-pk-count" :data-testid="`${prefix}-count`">{{ count }}</span>
+                </template>
+            </Field>
         </div>
 
         <!--
@@ -114,19 +120,6 @@
 */
 .chat-shell .chat-pk {
     position: relative;
-}
-
-.chat-shell .chat-pk-field {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    align-items: center;
-    min-height: 46px;
-    padding: 7px 10px 7px 14px;
-    cursor: text;
-    background: var(--chat-surface);
-    border: 1px solid var(--chat-line-strong);
-    border-radius: var(--chat-r-field);
 }
 
 .chat-shell .chat-pk-label {
@@ -383,6 +376,7 @@
     import { newGuid } from "@Obsidian/Utility/guid";
     import Avatar, { AvatarPerson } from "./avatar.partial.obs";
     import EmptyState from "./emptyState.partial.obs";
+    import Field from "./field.partial.obs";
     import Icon from "./icon.partial.obs";
     import MatchText from "./matchText.partial.obs";
     import { PersonRow } from "../types.partial";
