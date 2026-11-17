@@ -68,13 +68,41 @@ namespace Rock.Communication.Chat.Platform.Doors
                 .FirstOrDefault();
             if ( !targetId.HasValue )
             {
-                return Membership( "door.not_found", "That person could not be found." );
+                return PersonNotFound( personAliasGuid, "That person could not be found." );
             }
 
             // Leaving has its own door and its own line.
             if ( targetId.Value == caller.Id )
             {
                 return Membership( "door.bad_request", "Leave the conversation instead." );
+            }
+
+            int? replacementId = null;
+            if ( replacementPersonAliasGuid.HasValue )
+            {
+                replacementId = new PersonAliasService( rockContext ).Queryable()
+                    .Where( a => a.Guid == replacementPersonAliasGuid.Value )
+                    .Select( a => ( int? ) a.PersonId )
+                    .FirstOrDefault();
+                if ( !replacementId.HasValue )
+                {
+                    return PersonNotFound( replacementPersonAliasGuid.Value, "The person chosen to lead next could not be found." );
+                }
+            }
+
+            // The room is read once before its lock is taken, so a room the caller may not know of,
+            // or may not manage, is answered without waiting on a lock anyone could be holding, and
+            // no stranger takes or tests the lock of a room they cannot see.
+            var seen = ReadRoom( rockContext, context.Configuration, channelGuid, caller, Enumerable.Empty<int>() );
+            if ( seen == null )
+            {
+                return Membership( "door.not_found", "That channel could not be found." );
+            }
+
+            var seenRefusal = RefuseManaging( rockContext, seen, caller, gate, "You can't remove people from this channel." );
+            if ( seenRefusal != null )
+            {
+                return seenRefusal;
             }
 
             string line;
@@ -90,27 +118,16 @@ namespace Rock.Communication.Chat.Platform.Doors
                 }
 
                 var leaders = ReadLeaders( rockContext, channelGuid, targetId.Value );
-                int? replacementId = null;
-                if ( replacementPersonAliasGuid.HasValue )
-                {
-                    replacementId = new PersonAliasService( rockContext ).Queryable()
-                        .Where( a => a.Guid == replacementPersonAliasGuid.Value )
-                        .Select( a => ( int? ) a.PersonId )
-                        .FirstOrDefault();
-                    if ( !replacementId.HasValue )
-                    {
-                        return Membership( "door.not_found", "The person chosen to lead next could not be found." );
-                    }
-                }
 
-                // One projection call says which of these people chat still shows in the room.
-                var room = ReadRoom( rockContext, context.Configuration, channelGuid, PeopleToReadForRemoval( caller.Id, targetId.Value, replacementId, leaders ) );
+                // Read again under the lock, which the leader decision needs: one projection call says
+                // which of these people chat still shows in the room.
+                var room = ReadRoom( rockContext, context.Configuration, channelGuid, caller, PeopleToReadForRemoval( caller.Id, targetId.Value, replacementId, leaders ) );
                 if ( room == null )
                 {
                     return Membership( "door.not_found", "That channel could not be found." );
                 }
 
-                var refusal = RefuseManaging( rockContext, room, caller, "You can't remove people from this channel." );
+                var refusal = RefuseManaging( rockContext, room, caller, gate, "You can't remove people from this channel." );
                 if ( refusal != null )
                 {
                     return refusal;

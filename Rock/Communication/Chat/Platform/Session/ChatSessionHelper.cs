@@ -342,10 +342,19 @@ namespace Rock.Communication.Chat.Platform.Session
         /// sees, so the mark must end with it for the drafts to be forgotten.
         /// </summary>
         /// <param name="principal">Who the request is signed in as, or null.</param>
-        /// <returns><c>true</c> only for Rock's sign-in cookie with a persisted ticket.</returns>
+        /// <returns><c>true</c> only for Rock's sign-in cookie with a persisted ticket that lives a day or more.</returns>
+        /// <remarks>
+        /// A passwordless code sign-in writes a persisted ticket that lives two hours by default and
+        /// ends on its own, with no sign-out Rock sees, as a session sign-in ends when the browser
+        /// closes. So a ticket counts as kept only when it is persisted and was issued for a day or
+        /// more; Keep me logged in issues one for Rock's forms timeout, a month by default. Renewing
+        /// a ticket keeps the length it was issued for.
+        /// </remarks>
         internal static bool IsSignInPersisted( IPrincipal principal )
         {
-            return ( principal?.Identity as FormsIdentity )?.Ticket?.IsPersistent == true;
+            var ticket = ( principal?.Identity as FormsIdentity )?.Ticket;
+
+            return ticket?.IsPersistent == true && ticket.Expiration - ticket.IssueDate >= TimeSpan.FromDays( 1 );
         }
 
         /// <summary>
@@ -807,7 +816,8 @@ namespace Rock.Communication.Chat.Platform.Session
         /// <summary>
         /// Unregisters one push token for the person: signs the person's church token, exchanges
         /// it, and calls the platform's unregister under the person's own token, which removes the
-        /// token only where the person holds it. Never throws.
+        /// token in the person's church whoever registered it, since holding the token is holding
+        /// the browser. Never throws.
         /// </summary>
         /// <param name="person">The person signing out, or null.</param>
         /// <param name="deviceToken">The browser's push token.</param>
@@ -866,9 +876,10 @@ namespace Rock.Communication.Chat.Platform.Session
         #region Private Methods
 
         /// <summary>
-        /// Unregisters on the thread pool, so two calls to the platform never slow the sign-out; a
-        /// device left behind still drops out when the next person signs in on this browser or FCM
-        /// reports the token gone.
+        /// Unregisters on the thread pool, so two calls to the platform never slow the sign-out. The
+        /// cookie is expired whether or not this reaches the platform, so a device left behind drops
+        /// out when the next chat page on this browser that will not register lets go the token the
+        /// browser holds, or when FCM reports the token gone.
         /// </summary>
         /// <param name="personId">The person signing out.</param>
         /// <param name="deviceToken">The browser's push token.</param>
@@ -1138,7 +1149,7 @@ namespace Rock.Communication.Chat.Platform.Session
         Removed,
 
         /// <summary>
-        /// The platform held no such token for the person.
+        /// The platform held no such token in the person's church.
         /// </summary>
         NotHeld,
 

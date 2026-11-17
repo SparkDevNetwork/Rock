@@ -141,7 +141,7 @@ export type ShellOptions = {
     mark: (name: string) => void;
 
     /** The browser's push, or nothing where this browser has none. */
-    push?: Omit<PushDependencies, "settings" | "call" | "offFlag">;
+    push?: Omit<PushDependencies, "settings" | "call" | "choice">;
 
     /** Loads the page again; the browser's own reload when not given. */
     reloadPage?: () => void;
@@ -763,12 +763,29 @@ export function createChatShell(options: ShellOptions): ChatShell {
         return { ok: true, person: result.data as PersonProfile };
     }
 
+    /**
+     * A membership door's answer as the person reads it. Rock answers a room the person may not
+     * know of, one they were taken out of included, as one that does not exist, in a channel's
+     * words since the answer says nothing of the room; a conversation is never called a channel.
+     * A person the door could not find is named by the answer, and keeps the door's own words.
+     */
+    function inRoomWords<T extends { code?: string | null, message?: string | null, personAliasGuid?: string | null }>(channelId: string, answer: T): T {
+        const kind = roomKindOf(channelId);
+        return answer.code === "door.not_found" && !answer.personAliasGuid && (kind === "person" || kind === "group")
+            ? { ...answer, message: "That conversation could not be found." }
+            : answer;
+    }
+
+    const leaveChannel = options.leaveChannel;
+    const addMembers = options.addMembers;
+    const removeMember = options.removeMember;
+
     const rooms = createRooms({
         getChannel,
         listDirectory,
         getPerson,
         joinChannel: options.joinChannel,
-        leaveChannel: options.leaveChannel,
+        leaveChannel: leaveChannel && (async channelId => inRoomWords(channelId, await leaveChannel(channelId))),
         renameConversation: options.renameConversation,
         getMemberRights: options.getMemberRights,
         getProfileDetails: options.getProfileDetails,
@@ -791,7 +808,11 @@ export function createChatShell(options: ShellOptions): ChatShell {
     });
     const members = createMembers({
         call,
-        doors: { getRights: options.getMemberRights, addMembers: options.addMembers, removeMember: options.removeMember },
+        doors: {
+            getRights: options.getMemberRights,
+            addMembers: addMembers && (async (channelId, people) => inRoomWords(channelId, await addMembers(channelId, people))),
+            removeMember: removeMember && (async (channelId, person, replacement) => inRoomWords(channelId, await removeMember(channelId, person, replacement)))
+        },
         // a lost connection is told by its banner, and a door asked then would not be reached
         isOffline: () => state.connection !== null,
         notify: notice => options.notify?.(notice),
@@ -1204,10 +1225,15 @@ export function createChatShell(options: ShellOptions): ChatShell {
                     ...options.push,
                     settings: () => session.settings().push,
                     call: (name, args) => platform.call(name, args),
-                    // per church and person, so each person on a shared browser keeps their own Turn off
-                    offFlag: {
-                        read: () => options.storage?.getItem(pushOffKey) === "true",
-                        write: isOff => options.storage?.setItem(pushOffKey, isOff ? "true" : "false")
+                    // Per church and person, so each person on a shared browser keeps their own
+                    // choice. The key and its values are the ones a Turn off and Turn on always
+                    // wrote, "true" for off and "false" for on, so a yes given before is kept.
+                    choice: {
+                        read: () => {
+                            const stored = options.storage?.getItem(pushOffKey);
+                            return stored === "true" ? "off" : stored === "false" ? "on" : null;
+                        },
+                        write: choice => options.storage?.setItem(pushOffKey, choice === "off" ? "true" : "false")
                     }
                 });
                 // drawn now, as a browser's first registration can take half a minute
@@ -1272,14 +1298,17 @@ export function createChatShell(options: ShellOptions): ChatShell {
                 return;
             }
 
-            // only the browser's own box shows at once; on waits for the register to settle
+            // Busy from the click, the header's offer gone at once; on waits for the register to
+            // settle, and a register that fails is told.
             const turning = push.turnOn();
-            if (push.state() === "asking") {
-                state.push = "asking";
-            }
-            await turning;
             state.isPushOffered = push.isOffered();
             state.push = push.state();
+            const failure = await turning;
+            state.isPushOffered = push.isOffered();
+            state.push = push.state();
+            if (failure) {
+                report(failure);
+            }
         },
 
         turnOffPush: async (): Promise<void> => {

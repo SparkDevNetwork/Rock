@@ -3565,6 +3565,64 @@ describe("the live sidebar", () => {
             expect(h.shell.members.state.rows).toEqual([]);
         });
 
+        // Rock answers a room the person may no longer know of as one that does not exist, in a
+        // channel's words since it says nothing of the room; here, a group conversation the person
+        // was taken out of while its panel was open.
+        test("a door's not found in a conversation is said in a conversation's words, and a stale remove's row leaves once read", async () => {
+            const notFound = { code: "door.not_found", message: "That channel could not be found.", isPending: false } as never;
+            const h = await startedLive({
+                getMemberRights: async () => ({ canManageMembers: true, canRename: true, lastLeaderPersonAliasGuid: null }),
+                removeMember: async () => notFound,
+                addMembers: async () => notFound,
+                leaveChannel: async () => notFound
+            });
+            const annaRow = { person_alias_guid: anna, nick_name: "Anna", last_name: "Reyes", avatar_url: null, is_leader: false, details: null, can_message: true };
+
+            void h.shell.members.open(dmD);
+            await settle();
+            h.shell.members.state.rows = [annaRow];
+            h.shell.members.askRemove(anna);
+            await h.shell.members.remove();
+            expect(h.shell.members.state.removals[anna]).toEqual({ kind: "refused", text: "That conversation could not be found.", isStale: true });
+            h.shell.members.dismissRemoval(anna);
+            expect(h.shell.members.state.rows).toEqual([]);
+
+            h.shell.members.openAdd();
+            await h.shell.members.add([annaRow as never]);
+            expect(h.shell.members.state.adding.refusal).toEqual({ text: "That conversation could not be found.", personAliasGuid: null });
+
+            await h.shell.rooms.leave(dmD);
+            expect(h.shell.rooms.leaveOf(dmD)).toEqual({ kind: "refused", text: "That conversation could not be found." });
+
+            // a channel keeps a channel's words
+            await h.shell.rooms.leave(channelA);
+            expect(h.shell.rooms.leaveOf(channelA)).toEqual({ kind: "refused", text: "That channel could not be found." });
+        });
+
+        // A person the door could not find names that person; it says nothing of the room, so its
+        // words stand and the row it was asked about stays.
+        test("a person not found in a conversation keeps the door's own words and leaves no row stale", async () => {
+            const h = await startedLive({
+                getMemberRights: async () => ({ canManageMembers: true, canRename: true, lastLeaderPersonAliasGuid: null }),
+                removeMember: async () => ({ code: "door.not_found", message: "That person could not be found.", isPending: false, personAliasGuid: anna }) as never,
+                addMembers: async () => ({ code: "door.not_found", message: "One of the people chosen could not be found.", isPending: false, personAliasGuid: anna }) as never
+            });
+            const annaRow = { person_alias_guid: anna, nick_name: "Anna", last_name: "Reyes", avatar_url: null, is_leader: false, details: null, can_message: true };
+
+            void h.shell.members.open(dmD);
+            await settle();
+            h.shell.members.state.rows = [annaRow];
+            h.shell.members.askRemove(anna);
+            await h.shell.members.remove();
+            expect(h.shell.members.state.removals[anna]).toEqual({ kind: "refused", text: "That person could not be found.", isStale: false });
+            h.shell.members.dismissRemoval(anna);
+            expect(h.shell.members.state.rows).toEqual([annaRow]);
+
+            h.shell.members.openAdd();
+            await h.shell.members.add([annaRow as never]);
+            expect(h.shell.members.state.adding.refusal?.text).toMatch(/^One of the people chosen could not be found\./);
+        });
+
         test("without the doors, Leave and Rename are refused with a sentence and nothing else changes", async () => {
             const h = await startedLive();
 
@@ -3746,6 +3804,7 @@ function fakeBrowserPush(permission: { value: string }, token: () => Promise<str
     const worker = { state: "activated", addEventListener: () => undefined, removeEventListener: () => undefined } as unknown as ServiceWorker;
     return {
         pagePath: "/chat",
+        isSignInKept: true,
         permission: () => permission.value,
         requestPermission: async () => {
             permission.value = "granted";
@@ -3767,7 +3826,10 @@ function pushSettings(prompt: string): Record<string, unknown> {
     return { web: firebaseWeb, vapid_key: "v", prompt };
 }
 
-/** The key a person's Turn off is kept under on this browser. */
+/**
+ * The key a person's choice of push is kept under on this browser: "false" for their yes, as a Turn
+ * on has always written it, "true" for their Turn off, and nothing where they never chose.
+ */
 function pushOffKey(personAliasGuid: string): string {
     return `rock-chat:push-off:${tenant}:${personAliasGuid}`;
 }
@@ -3783,7 +3845,11 @@ describe("the browser row", () => {
 
     test("is drawn before a slow first registration settles, never as not set up", async () => {
         const token = deferred<string>();
-        const h = build({ push: fakeBrowserPush({ value: "granted" }, () => token.promise), pushSettings: pushSettings("off") });
+        const h = build({
+            stored: { [pushOffKey(person)]: "false" },
+            push: fakeBrowserPush({ value: "granted" }, () => token.promise),
+            pushSettings: pushSettings("off")
+        });
         const starting = h.shell.start();
         await settle();
         answerHistory(h, channelA, 10);
@@ -3800,40 +3866,87 @@ describe("the browser row", () => {
     });
 
     test("Turn on with the browser already allowing shows on only once the register settles", async () => {
-        const token = deferred<string>();
+        // the load's own release has the browser's token at once; the Turn on's waits
+        let token: () => Promise<string> = async () => "fcm-1";
         const h = await started({
             stored: { [pushOffKey(person)]: "true" },
-            push: fakeBrowserPush({ value: "granted" }, () => token.promise),
+            push: fakeBrowserPush({ value: "granted" }, () => token()),
             pushSettings: pushSettings("off")
         });
         expect(h.shell.state.push).toBe("offered");
+        expect(h.deviceCalls.map(c => c.name)).toEqual(["chat_unregister_device"]);
 
+        const held = deferred<string>();
+        token = () => held.promise;
         const turning = h.shell.turnOnPush();
+        // busy from the click, before anything settles
+        expect(h.shell.state.push).toBe("turning_on");
         await settle();
-        expect(h.shell.state.push).toBe("offered");
+        expect(h.shell.state.push).toBe("turning_on");
 
-        token.resolve("fcm-1");
+        held.resolve("fcm-1");
         await turning;
         expect(h.shell.state.push).toBe("on");
+        expect(h.deviceCalls.map(c => c.name)).toEqual(["chat_unregister_device", "chat_register_device"]);
     });
 
-    test("Turn off is kept per church and person, so another person on the browser still registers", async () => {
+    test("a Turn on takes the header's offer away at the click, and one that fails is told and Off again", async () => {
+        // Firebase will not give this browser a token
+        const h = await started({
+            push: fakeBrowserPush({ value: "granted" }, async () => {
+                throw new Error("messaging/permission-blocked");
+            }),
+            pushSettings: pushSettings("offer")
+        });
+        expect(h.shell.state.isPushOffered).toBe(true);
+
+        const turning = h.shell.turnOnPush();
+        expect(h.shell.state.isPushOffered).toBe(false);
+        await turning;
+
+        expect(h.shell.state.errors.map(e => e.code)).toContain("push.register_failed");
+        expect(h.shell.state.push).toBe("offered");
+    });
+
+    // Nothing is remembered of a release: a register whose answer was lost would leave such a
+    // memory standing, and the next person's load would skip the release it needed.
+    test("every load that will not register lets go the browser's token, even after an earlier load let it go", async () => {
         const stored: Record<string, string> = {};
+        const first = await started({ stored, push: fakeBrowserPush({ value: "granted" }), pushSettings: pushSettings("off") });
+        expect(first.deviceCalls.map(c => c.name)).toEqual(["chat_unregister_device"]);
+        first.shell.stop();
+
+        const next = await started({ stored, push: fakeBrowserPush({ value: "granted" }), pushSettings: pushSettings("off") });
+        expect(next.deviceCalls.map(c => c.name)).toEqual(["chat_unregister_device"]);
+    });
+
+    test("a choice is kept per church and person, so another person on the browser registers only on their own yes", async () => {
+        const stored: Record<string, string> = { [pushOffKey(person)]: "false" };
         const ada = await started({ stored, push: fakeBrowserPush({ value: "granted" }), pushSettings: pushSettings("off") });
+        expect(ada.deviceCalls.map(c => c.name)).toEqual(["chat_register_device"]);
         await ada.shell.turnOffPush();
         expect(ada.shell.state.push).toBe("offered");
         ada.shell.stop();
 
-        const other = "a0000009-0000-4000-8000-000000000000";
-        const ben = await started({ stored, personAliasGuid: other, push: fakeBrowserPush({ value: "granted" }), pushSettings: pushSettings("off") });
+        // Ben said yes on this browser before; Cy never chose here, so her load lets the token go
+        const ben = "a0000009-0000-4000-8000-000000000000";
+        stored[pushOffKey(ben)] = "false";
+        const benLoad = await started({ stored, personAliasGuid: ben, push: fakeBrowserPush({ value: "granted" }), pushSettings: pushSettings("off") });
+        expect(benLoad.deviceCalls.map(c => c.name)).toEqual(["chat_register_device"]);
+        expect(benLoad.shell.state.push).toBe("on");
+        benLoad.shell.stop();
 
-        expect(ben.deviceCalls.map(c => c.name)).toEqual(["chat_register_device"]);
-        expect(ben.shell.state.push).toBe("on");
+        const cy = "a000000e-0000-4000-8000-000000000000";
+        const cyLoad = await started({ stored, personAliasGuid: cy, push: fakeBrowserPush({ value: "granted" }), pushSettings: pushSettings("off") });
+        expect(cyLoad.deviceCalls.map(c => c.name)).toEqual(["chat_unregister_device"]);
+        expect(cyLoad.shell.state.push).toBe("offered");
+
         expect(stored[pushOffKey(person)]).toBe("true");
+        expect(stored[pushOffKey(cy)]).toBeUndefined();
     });
 
     test("an unregister the platform refuses is told, and the browser stays turned off", async () => {
-        const h = await started({ push: fakeBrowserPush({ value: "granted" }), pushSettings: pushSettings("off") });
+        const h = await started({ stored: { [pushOffKey(person)]: "false" }, push: fakeBrowserPush({ value: "granted" }), pushSettings: pushSettings("off") });
         h.deviceAnswer.value = { status: 500, body: { code: "rpc.unavailable", message: "x" } };
 
         await h.shell.turnOffPush();

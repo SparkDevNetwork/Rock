@@ -57,14 +57,14 @@
                         :data-state="push"
                         data-testid="push-row">
                 <span v-if="pushRow.status" class="chat-push-status" :data-state="push" data-testid="push-status">{{ pushRow.status }}</span>
-                <button v-if="push === 'offered' || push === 'asking'"
+                <button v-if="push === 'offered' || isPushTurningOn"
                         type="button"
                         class="chat-ms-btn is-brand"
                         aria-label="Turn on notifications for this browser"
-                        :disabled="push === 'asking'"
+                        :disabled="isPushTurningOn"
                         data-autofocus
                         @click="emit('pushOn')">
-                    <span v-if="push === 'asking'" class="chat-spinner"></span>Turn on
+                    <span v-if="isPushTurningOn" class="chat-spinner"></span>Turn on
                 </button>
                 <button v-else-if="push === 'on'"
                         type="button"
@@ -400,9 +400,12 @@
         `From your ${props.organizationName} profile`
     ]);
 
+    /** Whether a Turn on is on its way, the browser's box up or not: Turn on is held, with its spinner. */
+    const isPushTurningOn = computed((): boolean => props.push === "asking" || props.push === "turning_on");
+
     /**
      * What the browser row says in each of push's states: the state in words beside its dot, and a
-     * line under the label only where the person has something to do.
+     * line under the label only where the person has something to do or would wonder why.
      */
     const pushRow = computed((): { status: string | null, sub: string | null } => {
         switch (props.push) {
@@ -412,11 +415,19 @@
             case "asking":
                 return { status: null, sub: "Choose Allow in your browser" };
 
+            // the spinner on Turn on says it is on its way
+            case "turning_on":
+                return { status: null, sub: null };
+
             case "on":
                 return { status: "On", sub: null };
 
             case "blocked":
                 return { status: "Blocked", sub: "Allow it in browser settings, then reload" };
+
+            // Says why, and asks nothing: a phone-number sign-in has no Keep me logged in box.
+            case "not_kept":
+                return { status: "Off", sub: "Your sign-in here ends when the browser closes" };
 
             default:
                 return { status: "Not available", sub: `Not set up for ${props.organizationName} yet` };

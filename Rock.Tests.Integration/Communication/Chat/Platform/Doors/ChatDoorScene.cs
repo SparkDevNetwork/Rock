@@ -136,6 +136,16 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Doors
             Fixture.AddMember( Rock.SystemGuid.Group.GROUP_CHAT_ADMINISTRATORS.AsGuid(), personId );
         }
 
+        /// <summary>
+        /// Gives Direct Message Access to these people alone, through a Data View holding them
+        /// that the church's setting names; everyone else loses it.
+        /// </summary>
+        public void AdmitToDirectMessages( params int[] personIds )
+        {
+            Configuration.DirectMessageAccessDataViewGuid = Fixture.AddPersonDataView( personIds );
+            Fixture.StoreConfiguration( Configuration );
+        }
+
         public void MakeDeceased( int personId )
         {
             using ( var rockContext = new RockContext() )

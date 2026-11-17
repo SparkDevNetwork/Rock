@@ -203,16 +203,21 @@ namespace Rock.Communication.Chat.Platform.Sync
 
             /// <summary>
             /// Takes one push token out of push, under the person's platform token this client
-            /// exchanged for, so the platform removes it only where that person holds it.
+            /// exchanged for, so the platform removes it within that person's church, whoever
+            /// registered it there.
             /// </summary>
             /// <param name="deviceToken">The push token.</param>
-            /// <returns>True where it was removed, false where the person held no such token, null where the call failed.</returns>
+            /// <returns>True where it was removed, false where the church held no such token, null where the call failed.</returns>
             public bool? UnregisterDevice( string deviceToken )
             {
                 bool? removed = null;
                 var body = new JObject { ["p_token"] = deviceToken }.ToString( Formatting.None );
 
-                // Safe to repeat: a second unregister of the same token removes nothing.
+                // Retried as a sign-out's other calls are. A retry that lands after the next person on
+                // this browser registered the same token removes their registration too, since the
+                // platform removes a token by holding it; that fails closed, a browser with no push
+                // until its next page load registers it again, and never sends one person's
+                // notifications to another.
                 SendWithRetry(
                     () => BuildDataRequest( UnregisterDevicePath, new StringContent( body, Encoding.UTF8, "application/json" ) ),
                     ( response, statusCode, answer ) =>
