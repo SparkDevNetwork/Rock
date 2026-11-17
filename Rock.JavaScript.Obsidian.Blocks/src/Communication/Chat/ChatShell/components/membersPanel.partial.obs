@@ -195,7 +195,7 @@
     letter-spacing: 0;
     background: var(--chat-sidebar);
     border: 1px solid var(--chat-line);
-    border-radius: var(--chat-r-full);
+    border-radius: var(--chat-r-badge);
 }
 
 .chat-mb-rows {
