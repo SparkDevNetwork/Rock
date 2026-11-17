@@ -516,12 +516,16 @@ describe("Join on a row", () => {
         expect(rowOf(w, worship.channel_id).find("[data-testid='directory-join']").exists()).toBe(false);
     });
 
-    test("shows Joining with a spinner, busy and not pressable, while the door is out", () => {
+    // The approved row draws Join's own box holding only a spinner while the door is out, so the
+    // row never shifts; "Joining" beside the spinner was wider than Join and grew the button.
+    test("shows only a spinner in Join's place, named Joining, busy and not pressable, while the door is out", () => {
         const joins: Record<string, JoinState> = { [volunteers.channel_id]: { kind: "joining" } };
         const w = mountDirectory({ joins });
 
         const joining = rowOf(w, volunteers.channel_id).get("[data-testid='directory-joining']");
-        expect(joining.text()).toBe("Joining");
+        expect(joining.text()).toBe("");
+        expect(joining.attributes("aria-label")).toBe("Joining");
+        expect(joining.classes()).toContain("chat-fd-join");
         expect(joining.find(".chat-spinner").exists()).toBe(true);
         // held by aria-disabled rather than disabled, since a browser drops focus from a disabled button
         expect(joining.attributes("aria-disabled")).toBe("true");
