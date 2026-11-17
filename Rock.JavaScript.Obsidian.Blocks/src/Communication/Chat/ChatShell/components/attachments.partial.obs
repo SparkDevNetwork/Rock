@@ -64,7 +64,7 @@
                         decoded. A photo sent before previews has the tile's still fill alone.
                     -->
                     <span v-else-if="previewOf(item) || imageSource(item)" class="chat-attach-pic">
-                        <img v-if="previewOf(item)" class="chat-attach-blur" data-testid="attachment-preview" :src="previewOf(item)!" alt="" aria-hidden="true" />
+                        <img v-if="previewOf(item)" v-reveal="previewReveal" class="chat-attach-blur" data-testid="attachment-preview" :src="previewOf(item)!" alt="" aria-hidden="true" />
                         <img v-if="imageSource(item)"
                              v-reveal="reveal"
                              class="chat-attach-shot"
@@ -630,8 +630,10 @@ a.chat-attach-file:focus-visible {
     /** The session's local copies and links, provided once by the chat; none outside it. */
     const views = inject(attachmentViewsKey, null);
 
-    // One message's photos hide until decoded and reveal together.
-    const reveal = useImageReveal();
+    // One message's photos hide until decoded and reveal together. On the first load the page's
+    // reveal waits for their previews, which the history page carries, and never for the photos.
+    const reveal = useImageReveal({ isAwaited: false });
+    const previewReveal = useImageReveal();
 
     /** The photo the viewer shows, by its place among the message's photos; null while closed. */
     const viewerIndex = ref<number | null>(null);
