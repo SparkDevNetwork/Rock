@@ -248,7 +248,8 @@
     transition: background-color var(--chat-t-fast) var(--chat-ease-state), opacity var(--chat-t-base) var(--chat-ease-state);
 }
 
-.chat-msg:hover .chat-bubble:not(.is-jumbo):not(.is-tomb) {
+/* Tinted while the column's bar is on the message, not under any pointer, so one message is lit at a time. */
+.chat-msg.is-hot .chat-bubble:not(.is-jumbo):not(.is-tomb) {
     background-image: linear-gradient(var(--chat-bubble-hover), var(--chat-bubble-hover));
 }
 

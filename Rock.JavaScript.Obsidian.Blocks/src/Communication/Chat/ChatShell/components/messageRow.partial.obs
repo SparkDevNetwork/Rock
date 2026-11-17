@@ -5,7 +5,7 @@
          :class="rootClasses"
          :role="state === 'system' ? 'note' : 'article'"
          :aria-label="ariaLabel"
-         tabindex="-1"
+         :tabindex="isTabStop ? 0 : -1"
          :data-testid="pending ? 'pending-row' : 'message-row'"
          :data-status="pending ? pending.status : undefined"
          :data-state="state"
@@ -201,7 +201,8 @@
     border-radius: var(--chat-r-control);
 }
 
-.chat-msg.is-community:hover,
+/* Tinted while the column's bar is on the row, not under any pointer, so one message is lit at a time. */
+.chat-msg.is-community.is-hot,
 .chat-msg.is-community:focus-within {
     background-image: linear-gradient(var(--chat-hover), var(--chat-hover));
 }
@@ -647,6 +648,18 @@ img.chat-sheet-glyph {
     /** Whether the row lends the column's bar a dock: a message that can be acted on, on a pointer screen; a phone acts from a sheet instead. */
     const isBarOffered = computed((): boolean => canAct.value && !isTouchLayout.value);
 
+    /**
+     * The person's own message has no name or face to press, so the row itself is a Tab stop while
+     * it offers a bar: a keyboard reaching it shows the bar, as a pointer resting on it does.
+     */
+    const isTabStop = computed((): boolean => props.isOwn && isBarOffered.value);
+
+    /**
+     * Whether the column's bar is shown on this row. The row's hover tint follows it rather than the
+     * pointer, so a box held open on one message leaves the message under the pointer untinted.
+     */
+    const isBarHere = computed((): boolean => !!columnBar && columnBar.isShown.value && !!barDock.value && columnBar.dock.value?.element === barDock.value);
+
     /** The rows that hold a sheet at all, kept while it slides away whatever the message became. */
     const isSheetSurface = computed((): boolean => !!props.message && !props.pending && isTouchLayout.value);
 
@@ -730,6 +743,7 @@ img.chat-sheet-glyph {
         // An announcement owns its own tint and edge; one naming the reader keeps them and the words.
         "is-mention-me": !!readerMention.value && !isAnnouncement.value,
         "is-flashing": props.isFlashing,
+        "is-hot": isBarHere.value,
         "has-thread": hasThread.value,
         "has-reactions": hasReactions.value,
         "has-files": facts.files.value.length > 0 && !isEditorShown.value
