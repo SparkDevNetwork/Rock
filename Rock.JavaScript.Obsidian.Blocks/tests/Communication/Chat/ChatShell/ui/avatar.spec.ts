@@ -524,10 +524,11 @@ describe("a face's status badge", () => {
 
     // Where status shows is a short list; every other face of a person (message rows, the @
     // picker, reactions and who reacted, thread and mention faces, quotes, the typing bubble,
-    // face stacks, remove member, blocked people) draws none, so none of them asks the store.
+    // face stacks, remove member, blocked people) draws none, so none of them asks the store; the
+    // profile card and the profile panel both draw the person's status beside their words.
     // The composer asks it for the Busy note's words alone, so its faces still draw none.
     test("only the places that show status read it: every other face is passed none", () => {
-        const hosts = ["channelSidebar", "chatHeader", "chatSettings", "conversationDetails", "membersPanel", "newMessage", "profileCard", "peoplePicker", "statusMenu"];
+        const hosts = ["channelSidebar", "chatHeader", "chatSettings", "conversationDetails", "membersPanel", "newMessage", "profileCard", "profilePanel", "peoplePicker", "statusMenu"];
         const wordsOnly = ["composer"];
         const shell = join(__dirname, "../../../../../src/Communication/Chat/ChatShell");
         const parts = ["components", "ui"].flatMap(folder => readdirSync(join(shell, folder)).filter(name => name.endsWith(".obs")).map(name => join(shell, folder, name)));
