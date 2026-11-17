@@ -144,7 +144,7 @@
     color: var(--chat-muted);
 }
 
-/* A channel does not mirror the reader's own messages, so its row starts at the text's left edge, 4px below it. */
+/* A channel does not mirror the reader's own messages, so its row starts at the text's left edge, 6px below it. */
 .chat-msg.is-community .chat-reacts {
     position: relative;
     z-index: 1;
@@ -154,7 +154,7 @@
     gap: 4px;
     align-items: center;
     max-width: 100%;
-    margin-top: 4px;
+    margin-top: 6px;
     padding: 0;
 }
 

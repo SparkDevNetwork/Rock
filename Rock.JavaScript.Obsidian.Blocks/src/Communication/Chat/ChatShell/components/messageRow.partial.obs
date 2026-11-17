@@ -156,7 +156,8 @@
     grid-template-columns: var(--chat-cm-gut) minmax(0, 1fr);
     align-items: start;
     column-gap: var(--chat-cm-gap);
-    padding: 2px var(--chat-cm-pad);
+    /* The same above and below on every row, a head too; the space between people is the feed's. */
+    padding: var(--chat-cm-row-pad) var(--chat-cm-pad);
     border-radius: 0;
     /* How far a washed row stands in from the feed's edges. */
     --chat-cm-inset: 8px;
@@ -167,10 +168,6 @@
     --chat-cm-gap: 10px;
     --chat-cm-pad: 12px;
     --chat-cm-inset: 4px;
-}
-
-.chat-msg.is-community.is-head {
-    padding-top: 6px;
 }
 
 /* The ring sits inside the row, which runs edge to edge, so the scroller does not clip it. */
@@ -208,16 +205,12 @@
 .chat-msg.is-community.is-mention-me {
     --chat-cm-radius: var(--chat-r-row);
     margin-inline: var(--chat-cm-inset);
-    padding-block: 1px;
+    padding-block: calc(var(--chat-cm-row-pad) - 1px);
     padding-inline: calc(var(--chat-cm-pad) - var(--chat-cm-inset));
     background-color: var(--chat-row-mention);
     background-clip: padding-box;
     border-block: 1px solid transparent;
     border-radius: var(--chat-cm-radius);
-}
-
-.chat-msg.is-community.is-mention-me.is-head {
-    padding-top: 5px;
 }
 
 /* The chip that reached the reader, theirs or @all, takes a thin amber ring, so it stands off the wash. */

@@ -155,6 +155,14 @@
     /* A quoted message drawn inside a bubble, its corners the bubble's less its padding. */
     --chat-r-quote: 16px;
 
+    /*
+        A channel's spacing. Each row pads its content equally above and below, so a hover, a
+        mention's wash or a jump's flash covers the same air on both sides; the space between two
+        people sits outside the rows, between the feed's groups, where no highlight reaches.
+    */
+    --chat-cm-row-pad: 6px;
+    --chat-cm-person-gap: 8px;
+
     /* Type. */
     --chat-font: var(--font-family-body, "Segoe UI", -apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji");
 
