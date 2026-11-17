@@ -6,7 +6,6 @@
             door's own sentence and the way back to Browse channels.
         -->
         <SettingNote v-if="drawn === 'refused'"
-                     class="chat-joinbar-notice"
                      :note="{ kind: 'error', text: refusal }"
                      data-testid="join-bar"
                      :data-state="drawn">
@@ -24,7 +23,6 @@
         <template v-else>
             <!-- A Join that did not reach the door says why over the bar, whose Join channel asks again. -->
             <SettingNote v-if="drawn === 'failed'"
-                         class="chat-joinbar-notice"
                          :note="{ kind: 'error', text: failure }"
                          data-testid="join-bar-failure" />
 
