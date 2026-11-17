@@ -25,7 +25,7 @@ import SettingNote from "../../../../../src/Communication/Chat/ChatShell/ui/sett
 import { AttachmentTray, attachmentViewsKey, createAttachments, TrayFile } from "../../../../../src/Communication/Chat/ChatShell/composables/useAttachments.partial";
 import { AttachmentItem, FileItem, GifItem } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 import { pageRevealKey } from "../../../../../src/Communication/Chat/ChatShell/pageLoad.partial";
-import { harness, Harness, projectUrl, settle, tenant } from "../attachmentFakes";
+import { fakeCodec, harness, Harness, picked, projectUrl, settle, tenant } from "../attachmentFakes";
 
 function image(n: number, extra: Partial<FileItem> = {}): FileItem {
     const id = `d0000000-0000-4000-8000-${String(n).padStart(12, "0")}`;
@@ -127,16 +127,41 @@ describe("a photo's blurred preview", () => {
         expect(tile.get("[data-testid='attachment-preview']").attributes("src")).toBe(preview);
     });
 
-    // A photo the page sent draws from the person's own copy, then from the stored message when it
-    // lands; the second drawing starts on the preview, never on an empty box.
-    test("stands under the photo while the sent row is drawn again as stored", async () => {
+    // A photo the page sent draws from the person's own local copy, then from its signed link once
+    // the row is drawn as stored; the swap happens over the preview, never over an empty box.
+    test("stands under the photo while the sent row swaps the person's local copy for the photo's link", async () => {
         const decodes = holdDecodes();
         try {
-            const { wrapper } = await mountFiles([image(1, { preview })], harness(), { isPending: true });
+            const codec = fakeCodec();
+            const h = harness(codec);
+            const photo = picked("p.jpg", "image/jpeg");
+            codec.sizes.set(photo, { width: 400, height: 300 });
+            const attachments = createAttachments(h.dependencies);
+            const channel = "c0000001-0000-4000-8000-000000000000";
+            attachments.trayFor(channel, channel).add([photo]);
+            await settle();
+            h.requests[0].respond(200);
+            await settle();
+            const [sent] = attachments.take(channel) ?? [];
+            const copy = attachments.localCopyOf(sent.id);
+            expect(copy).toMatch(/^blob:/);
+
+            shell = document.createElement("div");
+            shell.className = "chat-shell";
+            document.body.appendChild(shell);
+            wrapper = mount(Attachments, {
+                props: { items: [{ ...sent, preview }], isPending: true },
+                attachTo: shell,
+                global: { provide: { [attachmentViewsKey as symbol]: attachments } }
+            });
+            await settle();
+            expect(wrapper.get("[data-testid='attachment-photo']").attributes("src")).toBe(copy);
             expect(wrapper.get("[data-testid='attachment-preview']").attributes("src")).toBe(preview);
 
             await wrapper.setProps({ isPending: false });
             await settle();
+            expect(wrapper.get("[data-testid='attachment-photo']").attributes("src")).toBe(`${projectUrl}/storage/v1/object/sign/chat-attachments/${sent.key}?token=t-${sent.key.slice(-4)}`);
+            expect(h.revoked).toEqual([copy]);
             expect(wrapper.get("[data-testid='attachment-preview']").attributes("src")).toBe(preview);
         }
         finally {
