@@ -427,13 +427,14 @@ describe("Blocked people", () => {
         expect(privacyRow(mountSettings({ blocked: list({ listState: "loading" }) })).find("[data-testid='setting-value']").exists()).toBe(false);
     });
 
-    test("turns the one dialog into the Blocked people page, with Back and its title, focus on Back; Escape returns to the row", async () => {
+    test("turns the one dialog into the Blocked people page, with Back and its title, focus on the page itself; Escape returns to the row", async () => {
         const w = mountSettings({ blocked: list() });
         await openPage(w);
 
         expect(document.querySelectorAll("[role='dialog']")).toHaveLength(1);
         expect(w.get("[data-testid='page-title']").text()).toBe("Blocked people");
-        expect(document.activeElement).toBe(w.get("[data-testid='page-back']").element);
+        // focus is on the page itself, named by its title, so a screen reader says where the person is
+        expect(document.activeElement).toBe(document.querySelector("[role='group'][aria-label='Blocked people']"));
         expect(w.findAll("[data-testid='blocked-row']").map(r => plain(r.get(".chat-sg-title").text()))).toEqual(["Sam Ortiz", "Someone no longer in chat"]);
 
         await w.get("[role='dialog']").trigger("keydown", { key: "Escape" });

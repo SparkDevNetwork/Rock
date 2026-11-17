@@ -26,8 +26,10 @@ import Sheet from "../../../../../src/Communication/Chat/ChatShell/ui/sheet.part
 import Scrim from "../../../../../src/Communication/Chat/ChatShell/ui/scrim.partial.obs";
 import SurfacePage from "../../../../../src/Communication/Chat/ChatShell/ui/surfacePage.partial.obs";
 import { provideAnnouncer, useAnnouncer } from "../../../../../src/Communication/Chat/ChatShell/ui/announcer.partial";
+import { SheetHeight } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 import { chatSheet } from "../statusStore";
 import { ruleOf, styleOf } from "./partStyle";
+import { panelMotion, standInHeights } from "./surfaceMotion";
 
 async function settle(): Promise<void> {
     await nextTick();
@@ -93,6 +95,50 @@ describe("the sheet", () => {
         sheet();
         await settle();
         expect(document.activeElement).toBe(find("one"));
+    });
+
+    // Focus goes back once, by one owner. A sheet gives it back to what had focus as it opened;
+    // a sheet whose owner gives it back itself, as a popover drawn as a sheet hands it to the
+    // composer's field after an emoji is put in, leaves it where its owner put it.
+    describe("as it closes", () => {
+        /** The composer's emoji button opening the sheet, and its field, which the owner may hand focus to on close. */
+        async function closing(props: Record<string, unknown>): Promise<{ opener: HTMLElement, field: HTMLElement }> {
+            const isOpen = ref(false);
+            const Host = defineComponent({
+                setup() {
+                    return () => [
+                        h("button", { "data-testid": "opener", onClick: () => {
+                            isOpen.value = true;
+                        } }, "Emoji"),
+                        h("textarea", { "data-testid": "field" }),
+                        h(Sheet, { isOpen: isOpen.value, label: "Emoji", ...props }, () => h("button", { "data-testid": "smile", onClick: () => {
+                            // the owner closes and puts focus where the person goes on typing
+                            (find("field") as HTMLElement).focus();
+                            isOpen.value = false;
+                        } }, "smile"))
+                    ];
+                }
+            });
+
+            wrapper = mount(Host, { attachTo: document.body });
+            const opener = find("opener") as HTMLElement;
+            opener.focus();
+            opener.click();
+            await settle();
+            (find("smile") as HTMLElement).click();
+            await settle();
+            return { opener, field: find("field") as HTMLElement };
+        }
+
+        it("gives focus back to what opened it", async () => {
+            const { opener } = await closing({});
+            expect(document.activeElement).toBe(opener);
+        });
+
+        it("leaves focus where its owner put it when its owner gives focus back itself", async () => {
+            const { field } = await closing({ isFocusReturnedByOwner: true });
+            expect(document.activeElement).toBe(field);
+        });
     });
 
     it("keeps Tab inside, wrapping from its last control to its first and back", async () => {
@@ -187,19 +233,33 @@ describe("a sheet turned into another page", () => {
         document.body.innerHTML = "";
     });
 
-    /** The plus menu's sheet, whose GIF row turns it into the GIF page, whose field asks for focus when asked to. */
-    function turning(hasAutofocus = false): { isGif: Ref<boolean>, wrapper: VueWrapper } {
+    /** How the plus menu's sheet is drawn for a cell. */
+    type Turning = {
+        /** Whether the GIF page's field asks for focus. */
+        hasAutofocus?: boolean;
+
+        /** The height the GIF page asks the sheet for. */
+        height?: SheetHeight;
+
+        /** Whether Vue's own transitions run, as on a page, so a page going back is still drawn as it leaves. */
+        isMoving?: boolean;
+    };
+
+    /** The plus menu's sheet, whose GIF row turns it into the GIF page. */
+    function turning(options: Turning = {}): { isGif: Ref<boolean>, isOpen: Ref<boolean>, wrapper: VueWrapper } {
+        const { hasAutofocus = false, height = "content", isMoving = false } = options;
         const isGif = ref(false);
+        const isOpen = ref(true);
         const Host = defineComponent({
             setup() {
-                return () => h(Sheet, { isOpen: true, label: "Add to your message" }, {
+                return () => h(Sheet, { isOpen: isOpen.value, label: "Add to your message" }, {
                     default: () => [
                         h("button", { "data-testid": "to-gif", onClick: () => {
                             isGif.value = true;
                         } }, "GIF"),
                         h("button", { "data-testid": "photo" }, "Photo or file")
                     ],
-                    pages: () => h(SurfacePage, { isOpen: isGif.value, title: "GIF", onBack: () => {
+                    pages: () => h(SurfacePage, { isOpen: isGif.value, title: "GIF", height, onBack: () => {
                         isGif.value = false;
                     } }, () => [
                         h("input", { "data-testid": "gif-search", "data-autofocus": hasAutofocus ? "" : undefined }),
@@ -209,8 +269,8 @@ describe("a sheet turned into another page", () => {
             }
         });
 
-        wrapper = mount(Host, { attachTo: document.body });
-        return { isGif, wrapper };
+        wrapper = mount(Host, { attachTo: document.body, global: { stubs: { transition: !isMoving } } });
+        return { isGif, isOpen, wrapper };
     }
 
     async function turn(): Promise<HTMLElement> {
@@ -243,15 +303,28 @@ describe("a sheet turned into another page", () => {
         expect(first?.getAttribute("aria-hidden")).toBe("true");
     });
 
-    it("puts focus on Back as it turns, or on what the page marks to start on", async () => {
+    // Focus on the page itself, named by its title, is what makes a screen reader say where the
+    // person is now; on Back, outside the page, it would hear only "Back".
+    it("puts focus on the page itself as it turns, named by its title, or on what the page marks to start on", async () => {
         turning();
         await settle();
         await turn();
+        const page = document.activeElement as HTMLElement;
+        expect(page.getAttribute("data-testid")).toBe("surface-page");
+        expect(page.getAttribute("role")).toBe("group");
+        expect(page.getAttribute("aria-label")).toBe("GIF");
+        expect(page.contains(find("gif-search"))).toBe(true);
+
+        // Tab from the page goes on to the head's Back, the first control, and stays inside
+        page.dispatchEvent(new KeyboardEvent("keydown", { key: "Tab", bubbles: true, cancelable: true }));
         expect(document.activeElement).toBe(find("page-back"));
+
+        // the page holding focus draws no ring around itself, as a dialog holding focus draws none
+        expect(ruleOf(styleOf("surfacePage.partial.obs"), ".chat-surface-page:focus")).toMatch(/outline:\s*none/);
 
         wrapper?.unmount();
         document.body.innerHTML = "";
-        turning(true);
+        turning({ hasAutofocus: true });
         await settle();
         await turn();
         expect(document.activeElement).toBe(find("gif-search"));
@@ -287,6 +360,40 @@ describe("a sheet turned into another page", () => {
         expect(sheet?.emitted("dismiss")).toHaveLength(1);
     });
 
+    // Whatever is out of front is out of reach: the page going back lies over the uncovered one
+    // for its whole leave, where it would catch a tap or a Tab meant for the page under.
+    it("keeps the page going back out of reach and unheard while it leaves", async () => {
+        turning({ isMoving: true });
+        await settle();
+        const opener = await turn();
+
+        (find("page-back") as HTMLElement).click();
+        await settle();
+
+        const leaving = Array.from(document.querySelectorAll<HTMLElement>("[data-testid='surface-page']")).find(page => page.contains(find("gif-tile")));
+        expect(leaving?.classList.contains("is-leaving")).toBe(true);
+        expect(leaving?.hasAttribute("inert")).toBe(true);
+        expect(leaving?.getAttribute("aria-hidden")).toBe("true");
+        expect(opener.closest("[inert]")).toBeNull();
+    });
+
+    // The surface's close closes its pages with it, by their owners, top first, so it opens again
+    // on its own first page rather than turned.
+    it("closes every page as it closes, so it opens again on its first page", async () => {
+        const { isGif, isOpen } = turning();
+        await settle();
+        await turn();
+
+        isOpen.value = false;
+        await settle();
+        expect(isGif.value).toBe(false);
+
+        isOpen.value = true;
+        await settle();
+        expect(find("page-back")).toBeNull();
+        expect(find("to-gif")?.closest("[inert]")).toBeNull();
+    });
+
     it("keeps Tab inside the turned page", async () => {
         turning();
         await settle();
@@ -307,5 +414,67 @@ describe("a sheet turned into another page", () => {
         expect(ruleOf(style, ".chat-surface-page.is-covered")).toMatch(/transform:\s*translateX\(calc\(var\(--chat-rise-sheet\) \/ -4\)\)/);
         expect(ruleOf(style, ".chat-surface-page")).toMatch(/transition:[^;]*transform var\(--chat-t-panel\)/);
         expect(style).not.toMatch(/@keyframes/);
+    });
+
+    // Visibility steps with the slide over the panel's own duration, seen at every step but a hidden
+    // end: a page set aside is seen as it slides away and hides once it is there, and a page coming
+    // back is seen from its first frame. No delay of its own can drift from the slide's duration.
+    it("hides a page set aside only once it has slid away, and shows it at once as it comes back", () => {
+        const style = styleOf("surfacePage.partial.obs");
+
+        expect(ruleOf(style, ".chat-surface-page")).toMatch(/transition:[^;]*visibility var\(--chat-t-panel\)/);
+        expect(ruleOf(style, ".chat-surface-page.is-covered")).toMatch(/visibility:\s*hidden/);
+        expect(ruleOf(style, ".chat-surface-page.is-covered")).not.toMatch(/transition/);
+    });
+
+    // A turn is one motion: as the pages slide, the same sheet grows or shrinks from the height of
+    // the page it leaves to the height of the page it turns to, the handle riding on its top edge.
+    describe("its height", () => {
+        let heights: ReturnType<typeof standInHeights>;
+        const original = window.matchMedia;
+
+        beforeEach(() => {
+            heights = standInHeights();
+        });
+
+        afterEach(() => {
+            heights.restore();
+            window.matchMedia = original;
+        });
+
+        it("grows to the picker height a page asks for over the panel's duration, and shrinks back to its content on Back", async () => {
+            turning({ height: "picker" });
+            await settle();
+            const sheet = find("sheet") as HTMLElement;
+            heights.size(sheet, () => sheet.classList.contains("is-picker") ? 600 : 137);
+
+            await turn();
+
+            expect(sheet.classList.contains("is-picker")).toBe(true);
+            expect(heights.played).toEqual([{ element: sheet, from: "137px", to: "600px", ...panelMotion }]);
+            expect(sheet.firstElementChild?.classList.contains("chat-sheet-handle")).toBe(true);
+
+            (find("page-back") as HTMLElement).click();
+            await settle();
+
+            expect(sheet.classList.contains("is-picker")).toBe(false);
+            expect(heights.played).toEqual([
+                { element: sheet, from: "137px", to: "600px", ...panelMotion },
+                { element: sheet, from: "600px", to: "137px", ...panelMotion }
+            ]);
+        });
+
+        it("changes its height at once where less motion is asked for, the pages only fading", async () => {
+            window.matchMedia = ((query: string) => ({ media: query, matches: query === "(prefers-reduced-motion: reduce)" })) as unknown as typeof window.matchMedia;
+            turning({ height: "picker" });
+            await settle();
+            const sheet = find("sheet") as HTMLElement;
+            heights.size(sheet, () => sheet.classList.contains("is-picker") ? 600 : 137);
+
+            await turn();
+
+            expect(sheet.classList.contains("is-picker")).toBe(true);
+            expect(heights.played).toEqual([]);
+        });
     });
 });

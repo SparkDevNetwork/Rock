@@ -18,14 +18,17 @@
                  @keydown="onKeydown">
                 <!-- A panel: a fixed head with its tools, and a body that scrolls under it. -->
                 <template v-if="isPanel">
-                    <!-- Turned to another page, the head is Back and the page's title, which names the dialog meanwhile; its own tools, as Close, stay on every page. -->
+                    <!--
+                        Turned to another page, the head gains Back before the page's title, which names the
+                        dialog meanwhile; its tools, Close among them, stay beside the title, so one tap still leaves.
+                    -->
                     <div class="chat-dialog-head" :class="{ 'is-turned': pages.isTurned.value }">
-                        <IconButton v-if="pages.isTurned.value" ref="backButton" icon="left" label="Back" data-testid="page-back" @click="pages.back()" />
+                        <IconButton v-if="pages.isTurned.value" icon="left" label="Back" data-testid="page-back" @click="pages.back()" />
                         <h3 :id="titleId" class="chat-dialog-title" :data-testid="pages.isTurned.value ? 'page-title' : undefined">{{ pages.isTurned.value ? pages.title.value : title }}</h3>
                         <slot name="tools" />
                     </div>
                     <!-- A panel whose rows lead to other pages draws its own body as the first of them. -->
-                    <div class="chat-dialog-scroll">
+                    <div ref="scrollElement" class="chat-dialog-scroll">
                         <div v-if="$slots.pages" class="chat-dialog-pages">
                             <SurfacePage isFirst>
                                 <slot />
@@ -339,11 +342,18 @@
 
     const dialogElement = ref<HTMLElement>();
     const cancelElement = ref<InstanceType<typeof Button>>();
-    const backButton = ref<InstanceType<typeof IconButton>>();
+    const scrollElement = ref<HTMLElement>();
     const titleId = `chat-dialog-${newGuid()}`;
 
-    /** The pages a panel's row turns it into, one at a time, in this one dialog. */
-    const pages = provideSurfacePages(() => props.isOpen, () => backButton.value?.buttonElement);
+    /**
+     * The pages a panel's row turns it into, one at a time, in this one dialog, which grows and
+     * shrinks to each, each page scrolled from its own top and the first kept at its place.
+     */
+    const pages = provideSurfacePages({
+        isOpen: () => props.isOpen,
+        surface: () => dialogElement.value,
+        scroller: () => scrollElement.value
+    });
 
     const session = useChatSession();
 
