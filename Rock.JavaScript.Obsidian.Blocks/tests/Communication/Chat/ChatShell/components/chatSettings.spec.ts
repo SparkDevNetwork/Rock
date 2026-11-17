@@ -510,14 +510,19 @@ describe("Blocked people", () => {
         expect(w.find("[data-testid='blocked-ask-yes']").exists()).toBe(false);
     });
 
-    test("the yes is held while the unblock is out", async () => {
+    test("after its yes the row's Unblock is held while the unblock is out, with focus on it", async () => {
         const w = mountSettings({ blocked: list() });
         await openPage(w);
         await unblockRow(w, 0);
 
+        expect(w.find("[data-testid='blocked-ask-yes']").exists()).toBe(false);
+        expect(document.activeElement).toBe(w.findAll("[data-testid='blocked-unblock']")[0].element);
         await w.setProps({ blocked: list({ busy: { [sam.person_alias_guid]: true } }) });
-        expect(w.get("[data-testid='blocked-ask-yes']").attributes("aria-busy")).toBe("true");
-        await w.get("[data-testid='blocked-ask-yes']").trigger("click");
+        const held = w.findAll("[data-testid='blocked-unblock']")[0];
+        expect(held.attributes("aria-busy")).toBe("true");
+        await held.trigger("click");
+        await settle();
+        expect(w.find("[data-testid='blocked-ask-yes']").exists()).toBe(false);
         expect(w.emitted("unblock")).toHaveLength(1);
     });
 
@@ -575,8 +580,7 @@ describe("Blocked people", () => {
         const w = mountSettings({ blocked: list({ people: [sam, ben, gone] }) });
         await openPage(w);
 
-        const list_ = w.get("[data-testid='blocked-list']");
-        expect(list_.attributes("role")).toBe("list");
+        const list_ = w.get("[data-testid='blocked-list'] [role='list']");
         const group = w.findAllComponents(SettingGroup).find(g => g.element.contains(list_.element));
         expect(group?.props("isList")).toBe(true);
     });
@@ -650,18 +654,18 @@ describe("online status", () => {
             const end = new Date(2026, 10, 10, 14, 5).toISOString();
             status.store.clockFrom(Date.now() / 1000 + 600);
             const ahead = mountSettings({ personAliasGuid: viewer, statusChoice: { busy_until: end, appear_offline: false } });
-            expect(plain(ahead.get("[data-testid='status-row'] .chat-sg-sub").text())).toBe("Automatic");
+            expect(plain(ahead.get("[data-testid='status-row'] .chat-sg-title").text())).toBe("Automatic");
             ahead.unmount();
 
             status.store.clockFrom(Date.now() / 1000 - 600);
             const behind = mountSettings({ personAliasGuid: viewer, statusChoice: { busy_until: end, appear_offline: false } });
-            expect(plain(behind.get("[data-testid='status-row'] .chat-sg-sub").text())).toMatch(/^Busy, notifications paused until 2:05\sPM$/u);
+            expect(plain(behind.get("[data-testid='status-row'] .chat-sg-title").text())).toMatch(/^Busy, notifications paused until 2:05\sPM$/u);
             jest.advanceTimersByTime(5 * 60_000 + 1000);
             await nextTick();
-            expect(plain(behind.get("[data-testid='status-row'] .chat-sg-sub").text())).toMatch(/^Busy/u);
+            expect(plain(behind.get("[data-testid='status-row'] .chat-sg-title").text())).toMatch(/^Busy/u);
             jest.advanceTimersByTime(10 * 60_000);
             await nextTick();
-            expect(plain(behind.get("[data-testid='status-row'] .chat-sg-sub").text())).toBe("Automatic");
+            expect(plain(behind.get("[data-testid='status-row'] .chat-sg-title").text())).toBe("Automatic");
         }
         finally {
             jest.useRealTimers();

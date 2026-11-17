@@ -3,6 +3,7 @@
     <Dialog :isOpen="isOpen"
             title="Chat settings"
             isPanel
+            placement="top"
             sheet="phone"
             @close="emit('close')">
         <template #tools>
@@ -13,18 +14,12 @@
             <Avatar :people="[{ name: personName, photoUrl: personPhotoUrl }]" :size="44" :status="ownStatus" own />
             <span class="chat-ms-main">
                 <b class="chat-ms-name" data-testid="settings-name">{{ personName }}</b>
-                <span class="chat-ms-meta" data-testid="settings-meta">
-                    <!-- The dot between the parts is drawn for the eye; a screen reader hears a comma. -->
-                    <template v-for="(item, index) in metaItems" :key="item">
-                        <span v-if="index > 0" class="chat-sr-only">, </span>
-                        <span class="chat-ms-meta-item" data-testid="settings-meta-item">{{ item }}</span>
-                    </template>
-                </span>
+                <span v-if="campusName" class="chat-ms-meta" data-testid="settings-meta">{{ campusName }}</span>
             </span>
         </div>
 
         <SettingGroup label="Status" data-testid="settings-status">
-            <SettingRow icon="clock" title="Your status" :sub="statusLine" :note="statusNote" data-testid="status-row">
+            <SettingRow icon="clock" :title="statusLine" :note="statusNote" data-testid="status-row">
                 <StatusMenu trigger="change"
                             :choice="statusChoice"
                             :closedReason="statusClosedReason"
@@ -37,17 +32,23 @@
             <SettingSwitch name="profile_details"
                            icon="id-card"
                            :title="meTitles.profile_details"
-                           description="Adds your email, mobile phone and badges to your card."
+                           description="Shows your email, mobile phone and badges on your card"
                            :isOn="me.show_profile_details"
                            :note="notes.profile_details ?? null"
                            @toggle="onToggle('profile_details', $event)" />
             <SettingSwitch name="open_dm"
                            icon="message"
                            :title="meTitles.open_dm"
-                           description="Off: only people in a private channel with you"
+                           description="When off, only people in a private channel with you"
                            :isOn="me.is_open_dm_allowed"
                            :note="notes.open_dm ?? null"
                            @toggle="onToggle('open_dm', $event)" />
+            <SettingRow icon="ban"
+                        title="Blocked people"
+                        :value="blockedCount"
+                        isLink
+                        data-testid="blocked-people"
+                        @click="isBlockedOpen = true" />
         </SettingGroup>
 
         <SettingGroup label="Notifications" data-testid="settings-notifications">
@@ -57,57 +58,70 @@
                         :data-state="push"
                         data-testid="push-row">
                 <span v-if="pushRow.status" class="chat-push-status" :data-state="push" data-testid="push-status">{{ pushRow.status }}</span>
-                <button v-if="push === 'offered' || isPushTurningOn"
-                        type="button"
-                        class="chat-ms-btn is-brand"
+                <Button v-if="push === 'offered' || isPushTurningOn"
+                        kind="brand"
+                        size="sm"
+                        :busy="isPushTurningOn"
                         aria-label="Turn on notifications for this browser"
-                        :disabled="isPushTurningOn"
                         data-autofocus
-                        @click="emit('pushOn')">
-                    <span v-if="isPushTurningOn" class="chat-spinner"></span>Turn on
-                </button>
-                <button v-else-if="push === 'on'"
-                        type="button"
-                        class="chat-ms-btn is-line"
+                        @click="emit('pushOn')">Turn on</Button>
+                <Button v-else-if="push === 'on'"
+                        size="sm"
                         aria-label="Turn off notifications for this browser"
-                        @click="emit('pushOff')">Turn off</button>
+                        @click="emit('pushOff')">Turn off</Button>
             </SettingRow>
             <SettingSwitch name="reaction_push"
                            icon="smile"
                            :title="meTitles.reaction_push"
-                           :description="push === 'on' ? null : 'Sent to your other devices'"
                            :isOn="me.reaction_push"
                            :note="notes.reaction_push ?? null"
                            @toggle="onToggle('reaction_push', $event)" />
         </SettingGroup>
-        <p class="chat-ms-foot" data-testid="settings-foot">Each conversation sets its own, from its name at the top.</p>
 
-        <SettingGroup ref="blockedGroup" label="Blocked people" data-testid="settings-blocked">
-            <SettingRow v-if="blocked.listState === 'failed'" sub="Couldn't load the people you blocked." data-testid="blocked-failed">
-                <button type="button" class="chat-ms-btn is-line" @click="emit('retryBlocked')">Try again</button>
-            </SettingRow>
-            <SettingRow v-else-if="blocked.listState !== 'loaded'" aria-busy="true" data-testid="blocked-loading">
-                <template #text>
-                    <i class="chat-skeleton chat-ms-sk" aria-hidden="true"></i>
-                </template>
-            </SettingRow>
-            <SettingRow v-else-if="blocked.people.length === 0" sub="You haven't blocked anyone." tabindex="-1" data-testid="blocked-empty" />
-            <SettingRow v-for="person in shownBlocked"
-                        :key="person.person_alias_guid"
-                        :title="blockedName(person)"
-                        :note="blocked.notes[person.person_alias_guid.toLowerCase()] ?? null"
-                        data-testid="blocked-row">
-                <template #lead>
-                    <Avatar :people="[personFace(person)]" :size="28" />
-                </template>
-                <button type="button"
-                        class="chat-ms-btn is-line"
-                        :aria-label="`Unblock ${blockedName(person)}`"
-                        :disabled="!!blocked.busy[person.person_alias_guid.toLowerCase()]"
-                        data-testid="blocked-unblock"
-                        @click="onUnblock(person)">Unblock</button>
-            </SettingRow>
-        </SettingGroup>
+        <template #pages>
+            <SurfacePage :isOpen="isBlockedOpen" title="Blocked people" @back="isBlockedOpen = false">
+                <EmptyState v-if="blocked.listState === 'failed'"
+                            tone="error"
+                            title="Couldn't load the people you blocked."
+                            actionLabel="Try again"
+                            data-testid="blocked-failed"
+                            @action="emit('retryBlocked')" />
+                <SettingGroup v-else-if="blocked.listState !== 'loaded'" ariaLabel="Blocked people" aria-busy="true" data-testid="blocked-loading">
+                    <Skeleton v-for="n in 3" :key="n" shape="person" />
+                </SettingGroup>
+                <EmptyState v-else-if="shownBlocked.length === 0"
+                            ref="blockedEmpty"
+                            title="No one blocked"
+                            tabindex="-1"
+                            data-testid="blocked-empty" />
+                <SettingGroup v-else ref="blockedList" ariaLabel="Blocked people" isList data-testid="blocked-list">
+                    <SettingRow v-for="person in shownBlocked"
+                                :key="keyOf(person)"
+                                :title="askingGuid === keyOf(person) ? askTitle(person) : blockedName(person)"
+                                :sub="askingGuid === keyOf(person) ? unblockSentence : null"
+                                :note="blocked.notes[keyOf(person)] ?? null"
+                                :isAsking="askingGuid === keyOf(person)"
+                                :data-person="keyOf(person)"
+                                data-testid="blocked-row"
+                                @keydown.esc="onRowEscape($event, person)">
+                        <template #lead>
+                            <Avatar :people="[personFace(person)]" :size="32" />
+                        </template>
+                        <template v-if="askingGuid === keyOf(person)">
+                            <Button size="sm" data-focus-stop="blocked-ask-no" data-testid="blocked-ask-no" @click="onAskCancel(person)">Cancel</Button>
+                            <Button kind="brand" size="sm" data-testid="blocked-ask-yes" @click="onUnblock(person)">Unblock</Button>
+                        </template>
+                        <Button v-else
+                                size="sm"
+                                :busy="!!blocked.busy[keyOf(person)]"
+                                :aria-label="`Unblock ${blockedName(person)}`"
+                                data-focus-stop="blocked-unblock"
+                                data-testid="blocked-unblock"
+                                @click="onAsk(person)">Unblock</Button>
+                    </SettingRow>
+                </SettingGroup>
+            </SurfacePage>
+        </template>
     </Dialog>
 </template>
 
@@ -139,37 +153,7 @@
 }
 
 .chat-ms-meta {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
     font-size: var(--chat-fs-ui);
-    color: var(--chat-muted);
-}
-
-/* The facts joined by 3px dots, as the details dialog joins them. */
-.chat-ms-meta-item ~ .chat-ms-meta-item::before {
-    display: inline-block;
-    width: 3px;
-    height: 3px;
-    margin: 0 7px;
-    vertical-align: middle;
-    content: "";
-    background: currentColor;
-    border-radius: var(--chat-r-full);
-    opacity: .55;
-}
-
-/* The list's one bar while it loads, a name's length, so the rows that land do not jump. */
-.chat-ms-sk {
-    display: block;
-    width: 45%;
-    height: 12px;
-    border-radius: var(--chat-r-full);
-}
-
-.chat-ms-foot {
-    margin: 14px 0 0 2px;
-    font-size: var(--chat-fs-small);
     color: var(--chat-muted);
 }
 
@@ -199,55 +183,10 @@
 .chat-push-status[data-state="blocked"]::before {
     background: var(--chat-warning);
 }
-
-/* The small buttons: in the church's color, or outlined. */
-.chat-ms-btn {
-    display: inline-flex;
-    flex: none;
-    gap: 5px;
-    align-items: center;
-    height: 28px;
-    padding: 0 10px;
-    font-size: var(--chat-fs-ui);
-    font-weight: 600;
-    color: var(--chat-text);
-    background: transparent;
-    border: 0;
-    border-radius: var(--chat-r-full);
-    transition: background-color var(--chat-t-fast) var(--chat-ease-state), border-color var(--chat-t-fast) var(--chat-ease-state);
-}
-
-.chat-ms-btn.is-brand {
-    color: var(--chat-on-brand);
-    background: var(--chat-brand-fill);
-}
-
-.chat-ms-btn.is-brand:hover:not(:disabled) {
-    background: color-mix(in srgb, var(--chat-brand-fill) 88%, var(--chat-shade));
-}
-
-.chat-ms-btn.is-line {
-    background: var(--chat-surface);
-    border: 1px solid var(--chat-line-strong);
-}
-
-.chat-ms-btn.is-line:hover {
-    border-color: var(--chat-icon);
-}
-
-.chat-ms-btn:disabled {
-    cursor: default;
-    opacity: .55;
-}
-
-.chat-ms-btn .chat-spinner {
-    width: 12px;
-    height: 12px;
-}
 </style>
 
 <script setup lang="ts">
-    import { computed, onBeforeUnmount, PropType, ref, watch } from "vue";
+    import { computed, nextTick, onBeforeUnmount, PropType, ref, watch } from "vue";
     import { busyEndOf, MeKey, MeSettings, meTitles, StatusChoice } from "../composables/usePrefs.partial";
     import { longestTimerMs, nextMidnight } from "../feedLayout.partial";
     import { BlocksState, unnamedBlocked } from "../composables/useBlocks.partial";
@@ -257,12 +196,16 @@
     import { PushState } from "../composables/usePush.partial";
     import { useAnnouncer } from "../ui/announcer.partial";
     import Avatar from "../ui/avatar.partial.obs";
+    import Button from "../ui/button.partial.obs";
     import Dialog from "../ui/dialog.partial.obs";
+    import EmptyState from "../ui/emptyState.partial.obs";
     import IconButton from "../ui/iconButton.partial.obs";
     import SettingGroup from "../ui/settingGroup.partial.obs";
     import { Note } from "../ui/settingNote.partial.obs";
     import SettingRow from "../ui/settingRow.partial.obs";
     import SettingSwitch from "../ui/settingSwitch.partial.obs";
+    import Skeleton from "../ui/skeleton.partial.obs";
+    import SurfacePage from "../ui/surfacePage.partial.obs";
     import StatusMenu from "./statusMenu.partial.obs";
     import { statusRetryingWords } from "../composables/statusTabs.partial";
 
@@ -293,12 +236,6 @@
         campusName: {
             type: String as PropType<string | null>,
             default: null
-        },
-
-        /** The church's name, which the person's name and photo come from. */
-        organizationName: {
-            type: String,
-            default: ""
         },
 
         /** The person's own switches as they stand. */
@@ -355,7 +292,7 @@
         (e: "pushOn"): void;
         (e: "pushOff"): void;
 
-        /** Unblock on a blocked person's row, which needs no confirmation; and Try again on a list that failed to load. */
+        /** Unblock on a blocked person's row, once the row has asked and had its yes; and Try again on a list that failed to load. */
         (e: "unblock", person: ChatPerson): void;
         (e: "retryBlocked"): void;
 
@@ -363,10 +300,26 @@
         (e: "status", choice: StatusChoice): void;
     }>();
 
+    // Anchored at the top, so a note coming or going below a row moves only the dialog's foot.
+    // Blocked people is a page the one dialog turns to and back from, where Unblock asks in the
+    // person's row, naming what changes, and only its yes unblocks.
+
     // #region Values
 
-    /** The Blocked people group, whose rows focus moves along as one leaves. */
-    const blockedGroup = ref<InstanceType<typeof SettingGroup>>();
+    /** The list of blocked people, whose rows focus moves along as one leaves. */
+    const blockedList = ref<InstanceType<typeof SettingGroup>>();
+
+    /** The empty page, which focus lands on once the last person is unblocked. */
+    const blockedEmpty = ref<InstanceType<typeof EmptyState>>();
+
+    /** Whether the dialog is turned to the Blocked people page. */
+    const isBlockedOpen = ref(false);
+
+    /** The one row asking whether to unblock its person, by alias guid in lower case; null for none. */
+    const askingGuid = ref<string | null>(null);
+
+    /** What the row's question names as the change, the one that surprises people. */
+    const unblockSentence = "They can message you, and you'll see their messages.";
 
     /** The viewer's clock as the status line last read it, moved on when the line's words would change. */
     const statusNow = ref(Date.now());
@@ -393,12 +346,6 @@
     // #region Computed Values
 
     const ownStatus = computed(() => props.personAliasGuid ? statusOf(props.personAliasGuid) : null);
-
-    /** The campus, then where the person's name and photo come from. */
-    const metaItems = computed((): string[] => [
-        ...(props.campusName ? [props.campusName] : []),
-        `From your ${props.organizationName} profile`
-    ]);
 
     /** Whether a Turn on is on its way, the browser's box up or not: Turn on is held, with its spinner. */
     const isPushTurningOn = computed((): boolean => props.push === "asking" || props.push === "turning_on");
@@ -429,8 +376,9 @@
             case "not_kept":
                 return { status: "Off", sub: "Your sign-in here ends when the browser closes" };
 
+            // the reason it is not set up is nothing the person can act on
             default:
-                return { status: "Not available", sub: `Not set up for ${props.organizationName} yet` };
+                return { status: "Not available", sub: null };
         }
     });
 
@@ -477,6 +425,14 @@
     /** The rows of blocked people, once the list is read and holds anyone. */
     const shownBlocked = computed((): ChatPerson[] => props.blocked.listState === "loaded" ? props.blocked.people : []);
 
+    /** The Privacy row's value: how many are blocked, None, or nothing before the list is read. */
+    const blockedCount = computed((): string | null => {
+        if (props.blocked.listState !== "loaded") {
+            return null;
+        }
+        return props.blocked.people.length > 0 ? props.blocked.people.length.toLocaleString() : "None";
+    });
+
     // #endregion Computed Values
 
     // #region Event Handlers
@@ -486,10 +442,50 @@
         return nameOf(person) || unnamedBlocked;
     }
 
+    /** The row's question, by the first name it knows: "Unblock Sam?". */
+    function askTitle(person: ChatPerson): string {
+        const name = person.nick_name || `${unnamedBlocked.charAt(0).toLowerCase()}${unnamedBlocked.slice(1)}`;
+        return `Unblock ${name}?`;
+    }
+
+    function keyOf(person: ChatPerson): string {
+        return person.person_alias_guid.toLowerCase();
+    }
+
+    /** A control in a person's row by its focus mark, focused once the row is drawn as it now stands. */
+    function focusInRow(guid: string, stop: string): void {
+        void nextTick(() => {
+            const list = blockedList.value?.$el as HTMLElement | undefined;
+            list?.querySelector<HTMLElement>(`[data-person='${guid}'] [data-focus-stop='${stop}']`)?.focus();
+        });
+    }
+
+    /** Unblock asks in the row first, on Cancel, so a stray Enter keeps them blocked; one row asks at a time. */
+    function onAsk(person: ChatPerson): void {
+        askingGuid.value = keyOf(person);
+        focusInRow(keyOf(person), "blocked-ask-no");
+    }
+
+    function onAskCancel(person: ChatPerson): void {
+        askingGuid.value = null;
+        focusInRow(keyOf(person), "blocked-unblock");
+    }
+
+    /** Escape in an asking row answers no; anywhere else it is the dialog's, which goes back. */
+    function onRowEscape(event: KeyboardEvent, person: ChatPerson): void {
+        if (askingGuid.value === keyOf(person)) {
+            event.stopPropagation();
+            onAskCancel(person);
+        }
+    }
+
+    /** The row's yes: the unblock is asked, the row's Unblock held with focus until it lands or is refused. */
     function onUnblock(person: ChatPerson): void {
-        const guid = person.person_alias_guid.toLowerCase();
+        const guid = keyOf(person);
+        askingGuid.value = null;
         unblocking.value = [...unblocking.value.filter(pressed => pressed.guid !== guid), { guid, name: blockedName(person) }];
         emit("unblock", person);
+        focusInRow(guid, "blocked-unblock");
     }
 
     function onToggle(key: MeKey, value: boolean): void {
@@ -500,9 +496,15 @@
 
     // #region Watchers
 
-    // Each opening starts with no unblock out.
+    // Each opening starts on the dialog's own page, with no unblock out.
     watch(() => props.isOpen, () => {
         unblocking.value = [];
+        isBlockedOpen.value = false;
+    });
+
+    // Leaving the page drops its question.
+    watch(isBlockedOpen, () => {
+        askingGuid.value = null;
     });
 
     // An unblock that lands takes its row, and the button focused with it, out of the list: it is
@@ -523,8 +525,11 @@
         }
 
         announce(landed.map(pressed => `Unblocked ${pressed.name}`).join(". "));
+        // Focus on a row that went, gone or still fading by the Leave motion, moves on; anywhere else it stays.
+        const gone = new Set(landed.map(pressed => pressed.guid));
+        const rowOf = (element: Element | null): string => element?.closest<HTMLElement>("[data-person]")?.dataset.person ?? "";
         const active = document.activeElement;
-        if (active && active !== document.body && active.isConnected) {
+        if (active && active !== document.body && active.isConnected && !gone.has(rowOf(active))) {
             return;
         }
 
@@ -532,9 +537,9 @@
         const previous = (before?.[0] ?? []).map(person => person.person_alias_guid.toLowerCase());
         const last = previous.indexOf(landed[landed.length - 1].guid);
         const index = previous.slice(0, Math.max(0, last)).filter(guid => shown.has(guid)).length;
-        const group = blockedGroup.value?.$el as HTMLElement | undefined;
-        const buttons = group?.querySelectorAll<HTMLElement>("[data-testid='blocked-unblock']") ?? [];
-        const next = buttons[Math.min(index, buttons.length - 1)] ?? group?.querySelector<HTMLElement>("[data-testid='blocked-empty']");
+        const list = blockedList.value?.$el as HTMLElement | undefined;
+        const buttons = Array.from(list?.querySelectorAll<HTMLElement>("[data-focus-stop='blocked-unblock']") ?? []).filter(button => !gone.has(rowOf(button)));
+        const next = buttons[Math.min(index, buttons.length - 1)] ?? blockedEmpty.value?.$el as HTMLElement | undefined;
         next?.focus();
     }, { flush: "post" });
 

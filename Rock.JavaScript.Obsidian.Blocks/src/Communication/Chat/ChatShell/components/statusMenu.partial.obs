@@ -184,10 +184,10 @@
             busyItem("busy-morning", untilLabel(morning, now), end === morning.getTime()),
             busyItem("busy-off", "Until I turn it off", end === Infinity)
         );
-        ends[0] = { ...ends[0], isSeparatorBefore: true, heading: "Busy · notifications paused" };
+        ends[0] = { ...ends[0], isSeparatorBefore: true, heading: "Busy, notifications paused" };
 
         const all: MenuItem[] = [
-            { key: "auto", label: "Automatic", description: "Online or away, from your activity", isChecked: isAuto },
+            { key: "auto", label: "Automatic", isChecked: isAuto },
             ...ends,
             { key: "appear_offline", label: "Appear offline", description: "You'll look offline. Messages still arrive.", isChecked: props.choice.appear_offline, isSeparatorBefore: true }
         ];
