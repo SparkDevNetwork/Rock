@@ -53,8 +53,9 @@
             </div>
 
             <template #actions>
-                <Button kind="ghost" data-testid="ap-cancel" @click="emit('close')">Cancel</Button>
+                <Button kind="ghost" size="lg" data-testid="ap-cancel" @click="emit('close')">Cancel</Button>
                 <Button kind="brand"
+                        size="lg"
                         data-testid="ap-add"
                         :disabled="chosen.length === 0"
                         :busy="isAdding"

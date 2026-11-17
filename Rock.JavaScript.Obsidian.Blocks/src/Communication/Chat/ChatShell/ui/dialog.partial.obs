@@ -40,9 +40,10 @@
                     </div>
                     <div class="chat-dialog-actions">
                         <slot name="actions">
-                            <Button ref="cancelElement" kind="line" data-testid="dialog-cancel" @click="emit('close')">Cancel</Button>
+                            <Button ref="cancelElement" kind="line" size="lg" data-testid="dialog-cancel" @click="emit('close')">Cancel</Button>
                             <Button v-if="confirmLabel"
                                     :kind="isDestructive ? 'danger' : 'brand'"
+                                    size="lg"
                                     data-testid="dialog-confirm"
                                     @click="emit('confirm')">{{ confirmLabel }}</Button>
                         </slot>

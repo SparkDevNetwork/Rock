@@ -64,8 +64,9 @@
             </div>
 
             <template #actions>
-                <Button kind="line" data-testid="dialog-cancel" @click="emit('close')">Cancel</Button>
+                <Button kind="line" size="lg" data-testid="dialog-cancel" @click="emit('close')">Cancel</Button>
                 <Button kind="danger"
+                        size="lg"
                         data-testid="leader-confirm"
                         :disabled="!pick"
                         :busy="isRemoving"

@@ -46,6 +46,12 @@
     padding: 0 10px;
 }
 
+/* A dialog's footer: the design's third height. */
+.chat-btn.is-lg {
+    height: 36px;
+    padding: 0 16px;
+}
+
 .chat-btn.is-block {
     width: 100%;
 }
@@ -137,9 +143,9 @@
             default: "default"
         },
 
-        /** Small sits in a row of a list or a strip; the middle size everywhere else. */
+        /** Small sits in a row of a list or a strip; large in a dialog's footer; the middle size everywhere else. */
         size: {
-            type: String as PropType<ControlSize>,
+            type: String as PropType<ControlSize | "lg">,
             default: "md"
         },
 

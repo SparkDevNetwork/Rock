@@ -138,11 +138,13 @@
                     <div class="chat-rd-actions">
                         <Button ref="leaveCancelButton"
                                 kind="line"
+                                size="lg"
                                 data-testid="leave-cancel"
                                 :aria-disabled="isLeaving ? 'true' : undefined"
                                 @click="onLeaveCancel">{{ leaveError ? "OK" : "Cancel" }}</Button>
                         <Button v-if="!leaveError"
                                 kind="danger"
+                                size="lg"
                                 :busy="isLeaving"
                                 data-testid="leave-go"
                                 @click="onLeaveGo">{{ isLeaving ? "Leaving" : "Leave" }}</Button>
