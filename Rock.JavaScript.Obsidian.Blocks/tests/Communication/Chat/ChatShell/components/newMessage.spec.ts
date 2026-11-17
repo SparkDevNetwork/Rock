@@ -531,14 +531,15 @@ describe("the keys in the To field", () => {
 });
 
 describe("the body", () => {
-    test("with nothing chosen, asks the person to start a conversation", () => {
+    // The approved New message draws nothing under the field before anyone is chosen: the focused
+    // field and the subtitle, "Choose up to 8 people", say it, and words there repeated the subtitle.
+    test("with nothing chosen, draws nothing under the field, the subtitle saying what to do", () => {
         const w = mountView();
 
-        // the shared empty state's words, with no tile
-        const empty = w.getComponent(EmptyState);
-        expect(empty.attributes("data-testid")).toBe("nd-empty");
-        expect(empty.props("title")).toBe("Start a conversation");
-        expect(empty.props("text")).toBe("Choose one person, or up to 8 for a group.");
+        const empty = w.get("[data-testid='nd-empty']");
+        expect(empty.text()).toBe("");
+        expect(empty.findComponent(EmptyState).exists()).toBe(false);
+        expect(w.get("[data-testid='nd-subtitle']").text()).toBe("Choose up to 8 people");
         expect(w.find(".chat-nd-empty-ic").exists()).toBe(false);
         expect(w.find("[data-testid='new-message-view'] [data-testid='composer-input']").exists()).toBe(false);
     });
