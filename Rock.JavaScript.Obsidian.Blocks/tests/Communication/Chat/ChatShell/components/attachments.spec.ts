@@ -67,6 +67,119 @@ async function mountFiles(items: AttachmentItem[], h: Harness = harness(), props
     return { wrapper, h };
 }
 
+describe("a photo's blurred preview", () => {
+    const preview = "data:image/webp;base64,UklGRhYAAABXRUJQVlA4IAoAAAAwAQCdASoBAAEAAkA=";
+
+    /** Holds every decode until the test lets it go, so a photo's wait is seen. */
+    function holdDecodes(): { release: () => void, restore: () => void } {
+        const decodes: Array<() => void> = [];
+        const original = Object.getOwnPropertyDescriptor(HTMLImageElement.prototype, "decode");
+        HTMLImageElement.prototype.decode = () => new Promise<void>(resolve => decodes.push(resolve));
+        return {
+            release: () => decodes.forEach(resolve => resolve()),
+            restore: () => {
+                if (original) {
+                    Object.defineProperty(HTMLImageElement.prototype, "decode", original);
+                }
+                else {
+                    delete (HTMLImageElement.prototype as { decode?: unknown }).decode;
+                }
+            }
+        };
+    }
+
+    // The photo's shape and colours are on screen from the first frame; the photo sharpens over
+    // it once decoded.
+    test("is drawn at once under the photo, decorative, and stays while the photo is held", async () => {
+        const decodes = holdDecodes();
+        try {
+            const { wrapper } = await mountFiles([image(1, { preview })]);
+            const tile = wrapper.get("[data-testid='attachment-image']");
+            const blur = tile.get("[data-testid='attachment-preview']");
+
+            expect(blur.attributes("src")).toBe(preview);
+            expect(blur.attributes("alt")).toBe("");
+            expect(blur.attributes("aria-hidden")).toBe("true");
+            const photo = tile.get("[data-testid='attachment-photo']");
+            expect(photo.classes()).toContain("chat-img-hold");
+
+            decodes.release();
+            await settle();
+            expect(photo.classes()).not.toContain("chat-img-hold");
+            expect(photo.classes()).toContain("chat-img-in");
+        }
+        finally {
+            decodes.restore();
+        }
+    });
+
+    // Before any link is signed the tile already shows the photo's shape and colours.
+    test("is drawn before the photo has a link, so the tile is never empty while it is signed", () => {
+        const attachments = createAttachments(harness().dependencies);
+        wrapper = mount(Attachments, {
+            props: { items: [image(1, { preview })] },
+            global: { provide: { [attachmentViewsKey as symbol]: attachments } }
+        });
+        const tile = wrapper.get("[data-testid='attachment-image']");
+
+        expect(tile.find("[data-testid='attachment-photo']").exists()).toBe(false);
+        expect(tile.get("[data-testid='attachment-preview']").attributes("src")).toBe(preview);
+    });
+
+    // A photo the page sent draws from the person's own copy, then from the stored message when it
+    // lands; the second drawing starts on the preview, never on an empty box.
+    test("stands under the photo while the sent row is drawn again as stored", async () => {
+        const decodes = holdDecodes();
+        try {
+            const { wrapper } = await mountFiles([image(1, { preview })], harness(), { isPending: true });
+            expect(wrapper.get("[data-testid='attachment-preview']").attributes("src")).toBe(preview);
+
+            await wrapper.setProps({ isPending: false });
+            await settle();
+            expect(wrapper.get("[data-testid='attachment-preview']").attributes("src")).toBe(preview);
+        }
+        finally {
+            decodes.restore();
+        }
+    });
+
+    test("a photo sent before previews keeps the neutral tile, with no preview drawn", async () => {
+        const { wrapper } = await mountFiles([image(1)]);
+
+        expect(wrapper.find("[data-testid='attachment-preview']").exists()).toBe(false);
+    });
+
+    // A preview is only ever a data URL of a webp or jpeg; anything else the wire carries is not drawn.
+    test.each(["https://elsewhere.example/a.webp", "data:image/svg+xml;base64,PHN2Zz4=", "javascript:alert(1)"])("a preview that is not a webp or jpeg data URL (%s) is not drawn", async bad => {
+        const { wrapper } = await mountFiles([image(1, { preview: bad })]);
+
+        expect(wrapper.find("[data-testid='attachment-preview']").exists()).toBe(false);
+    });
+
+    test("is drawn blurred and fades out as the photo sharpens over it, and the tile's fill goes once the photo shows", () => {
+        const file = "components/attachments.partial.obs";
+        expect(ruleOf(file, ".chat-attach-blur")["filter"]).toMatch(/^blur\(/);
+        expect(ruleOf(file, ".chat-attach-blur")["transition"]).toBe("opacity var(--chat-d-img-in) var(--chat-ease-state)");
+        expect(ruleOf(file, ".chat-attach-pic:not(:has(> .chat-img-hold)) > .chat-attach-blur")["opacity"]).toBe("0");
+        expect(ruleOf(file, ".chat-attach-tile:has(> .chat-attach-pic > img:not(.chat-img-hold))")["background"]).toBe("transparent");
+    });
+
+    // The tile is still while it waits (the loading rule): its photo sits in the picture's own
+    // layer, never as the tile's direct child that the old pulse looked for.
+    test("a held photo is never the tile's own child, so the tile does not pulse while it waits", async () => {
+        const decodes = holdDecodes();
+        try {
+            const { wrapper } = await mountFiles([image(1, { preview })]);
+            const photo = wrapper.get("[data-testid='attachment-photo']").element;
+
+            expect(photo.parentElement?.classList.contains("chat-attach-pic")).toBe(true);
+        }
+        finally {
+            decodes.restore();
+        }
+    });
+});
+
 describe("the photo grid", () => {
     test.each([
         [1, "1"],
