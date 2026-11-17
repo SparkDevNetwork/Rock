@@ -33,7 +33,7 @@
 // threads list and the drawer's older replies, since which panel shows and what it asks of the
 // shell change together.
 //
-// Size: about 1,260 lines. The next addition that takes this past 1,500 splits the landings back
+// Size: about 1,480 lines. The next addition that takes this past 1,500 splits the landings back
 // out to their own file, since they are the one part with a lifetime of their own (a landing
 // outlives the move that asked for it).
 
