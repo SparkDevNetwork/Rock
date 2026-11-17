@@ -151,4 +151,17 @@ describe("a panel turned into another page", () => {
         expect(document.getElementById(dialog.getAttribute("aria-labelledby") ?? "")?.textContent).toBe("Chat settings");
         expect(document.activeElement).toBe(opener);
     });
+
+    // A page set aside or going back is placed over the one on top; placed against the padded body
+    // itself, it would jump into the padding as it starts to move.
+    test("places its pages inside the body's padding, never against the padded body itself", async () => {
+        await turned({});
+
+        const page = document.querySelector<HTMLElement>("[data-testid='surface-page']") as HTMLElement;
+        expect(page.parentElement?.classList.contains("chat-dialog-pages")).toBe(true);
+        const style = styleOf("dialog.partial.obs");
+        expect(ruleOf(style, ".chat-dialog-pages")).toMatch(/position:\s*relative/);
+        expect(ruleOf(style, ".chat-dialog-scroll")).not.toMatch(/position:\s*relative/);
+        expect(ruleOf(style, ".chat-dialog-scroll")).toMatch(/overflow-x:\s*hidden/);
+    });
 });
