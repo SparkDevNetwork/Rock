@@ -477,6 +477,18 @@ describe("a row", () => {
         expect(rowOf(w, worship.channel_id).findAll("[data-testid='directory-row-meta'] > span").map(part => part.text())).toEqual(["Whole church"]);
     });
 
+    // A room made since the platform last counted (up to a minute) is sent with no count yet, null,
+    // which says nothing about how many are in it, so it is never drawn as 0.
+    test("draws its campus alone, in the row and the preview, for a new room the platform has not counted yet", () => {
+        // the row type still reads a count as present or absent; null is the platform's not-yet
+        const fresh = room({ channel_id: "c0000004-0000-4000-8000-000000000000", name: "Young Adults", member_count: null as unknown as number });
+        const w = mountDirectory({ directory: directory({ rows: [fresh, volunteers] }), previewId: fresh.channel_id });
+
+        expect(rowOf(w, fresh.channel_id).findAll("[data-testid='directory-row-meta'] > span").map(part => part.text())).toEqual(["Whole church"]);
+        expect(w.get("[data-testid='directory-preview-meta']").text()).toBe("Whole church");
+        expect(rowOf(w, fresh.channel_id).get("[data-testid='directory-row-open']").attributes("aria-label")).toBe("Young Adults, Whole church. Preview channel");
+    });
+
     test("says Whole church for a room with no campus, and draws no description line without one", () => {
         const w = mountDirectory();
 
