@@ -33,7 +33,8 @@
 </template>
 
 <style scoped>
-.chat-sg-sec {
+/* Space from what comes before, none at the top of what holds it: a page that opens on a group starts at its surface's padding. */
+.chat-sg-sec:not(:first-child) {
     margin-top: 16px;
 }
 
