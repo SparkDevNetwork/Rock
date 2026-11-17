@@ -683,8 +683,7 @@ img.chat-sheet-glyph {
         isInThread: props.isInThread,
         isCommunity: layout.value === "community",
         senderName: displayName.value,
-        favorites: props.reactionHost?.favorites ?? [],
-        pickerAnchor: props.message ? props.reactionHost?.pickerAnchorOf(props.message.id) ?? null : null
+        favorites: props.reactionHost?.favorites ?? []
     }));
 
     /**
@@ -757,7 +756,7 @@ img.chat-sheet-glyph {
     const lent: ReturnType<typeof useMessageRowView> & MessageRowSurface = {
         ...facts,
         isEditorShown,
-        isBarOffered,
+        isDockLent: canAct,
         editError: toRef(props, "editError"),
         isEditSaving: toRef(props, "isEditSaving"),
         reactionsProps,
@@ -899,9 +898,10 @@ img.chat-sheet-glyph {
 
     // #region Watchers
 
-    // The row lends the column's bar its dock while its message offers one, and takes it back as
-    // the message stops offering it or the row goes.
-    watch([isBarOffered, barDock, () => props.message?.id], ([isOffered, element, messageId], _before, onCleanup) => {
+    // The row lends the column's bar its dock while its message can be acted on, a phone's too, so
+    // a picker asked for from its sheet has a column to open in; it takes it back as the message
+    // stops being one or the row goes. Only a pointer's row marks itself for the bar to follow.
+    watch([canAct, barDock, () => props.message?.id], ([isOffered, element, messageId], _before, onCleanup) => {
         if (!columnBar || !isOffered || !element || messageId === undefined) {
             return;
         }

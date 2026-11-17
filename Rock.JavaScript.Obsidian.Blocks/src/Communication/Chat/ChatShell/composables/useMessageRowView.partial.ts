@@ -84,7 +84,7 @@ export type MessageRowSurface = {
     isEditorShown: Readonly<Ref<boolean>>;
 
     /** The row lends the column's bar a dock, so the look draws one. */
-    isBarOffered: Readonly<Ref<boolean>>;
+    isDockLent: Readonly<Ref<boolean>>;
 
     /** The refusal the editor's last save met. */
     editError: Readonly<Ref<ChatError | null>>;

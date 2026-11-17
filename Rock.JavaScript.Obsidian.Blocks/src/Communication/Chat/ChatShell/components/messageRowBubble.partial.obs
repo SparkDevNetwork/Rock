@@ -52,7 +52,7 @@
                     <MessageBody :text="view.text" :pieces="view.pieces" isConversation :isPersonOpenable="!!view.message" @person="on.person" />
                 </div>
                 <Attachments v-if="view.files.length > 0 && !view.isEditorShown" class="chat-msg-files" :data-tail="isBubbleShown ? undefined : 'box'" :items="view.files" :isOwn="view.isOwn" :isPending="view.isPending" />
-                <span v-if="view.isBarOffered" :ref="on.setDock" class="chat-tools-dock"></span>
+                <span v-if="view.isDockLent" :ref="on.setDock" class="chat-tools-dock"></span>
             </div>
         </div>
         <MessageReactions v-if="view.message && (view.hasThread || view.isReactable)" v-bind="view.reactionsProps" v-on="on.reactions">
