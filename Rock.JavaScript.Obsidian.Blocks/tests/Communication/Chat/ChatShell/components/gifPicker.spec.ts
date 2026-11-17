@@ -262,6 +262,29 @@ describe("the GIF picker", () => {
         expect(live()).toBe("GIF search is busy. Try again in a moment.");
     });
 
+    // Both failures draw the same error, so both are heard alike and both are reached alike: Down
+    // from the search goes into the body, to Try again where there are no tiles to move through.
+    test("covers that could not load are heard as a failed search is, and Down from the search reaches Try again in either", async () => {
+        const gifs = fakeGifs(async () => ({ ok: false }));
+        await open(gifs);
+        const live = (): string => document.querySelector("[data-testid='announcer-polite']")?.textContent?.trim() ?? "";
+
+        expect(live()).toBe("GIFs can't load right now");
+        search().dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowDown", bubbles: true }));
+        await nextTick();
+        expect(document.activeElement?.getAttribute("data-testid")).toBe("gif-retry");
+
+        search().focus();
+        search().value = "thanks";
+        search().dispatchEvent(new KeyboardEvent("keydown", { key: "Enter" }));
+        await nextTick();
+        gifs.asked[0].answer({ ok: false, error: { code: "rpc.unavailable", severity: "failed" }, retryAfterSeconds: null });
+        await flushPromises();
+        search().dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowDown", bubbles: true }));
+        await nextTick();
+        expect(document.activeElement?.getAttribute("data-testid")).toBe("gif-retry");
+    });
+
     test("the search ends as the picker starts to leave, so nothing is asked or written on its way out", async () => {
         jest.useFakeTimers();
         const gifs = fakeGifs();
