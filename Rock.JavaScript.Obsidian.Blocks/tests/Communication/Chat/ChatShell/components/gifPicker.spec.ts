@@ -238,6 +238,27 @@ describe("the GIF picker", () => {
         expect(gifs.asked.map(a => a.query)).toEqual(["thanks"]);
     });
 
+    // A wait is the still skeleton (no pulse): the shared part at GIF-like shapes in the grid's two
+    // columns; a GIF whose preview is on its way shows KLIPY's blur, still, until it sharpens.
+    test("the loading tiles are still skeletons at GIF-like shapes, and nothing in the picker pulses", async () => {
+        jest.useFakeTimers();
+        const gifs = fakeGifs();
+        await open(gifs);
+
+        search().value = "thanks";
+        search().dispatchEvent(new Event("input"));
+        await nextTick();
+
+        const loading = picker().querySelector("[data-testid='gif-loading']") as HTMLElement;
+        const tiles = Array.from(loading.querySelectorAll<HTMLElement>(".chat-skel.is-media"));
+        expect(tiles).toHaveLength(6);
+        expect(tiles.every(tile => tile.getAttribute("aria-hidden") === "true" && tile.style.aspectRatio !== "")).toBe(true);
+
+        const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/gifPicker.partial.obs"), "utf8");
+        const style = source.slice(source.indexOf("<style"), source.indexOf("</style>"));
+        expect(style).not.toMatch(/chat-skeleton-pulse|--chat-loop-stop|--chat-d-skeleton/);
+    });
+
     test("draws results in two columns, each GIF's preview with no referrer, blurred until it loads", async () => {
         const gifs = fakeGifs();
         await open(gifs);

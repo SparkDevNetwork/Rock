@@ -29,7 +29,7 @@ function bones(shape: string, extra: Record<string, unknown> = {}): HTMLElement[
 }
 
 describe("the skeleton", () => {
-    test.each(["channel", "person", "group", "bubble", "panel", "reactor"])("a %s row is hidden from a screen reader and carries its shape", shape => {
+    test.each(["channel", "person", "group", "bubble", "panel", "reactor", "media"])("a %s row is hidden from a screen reader and carries its shape", shape => {
         const row = mount(Skeleton, { props: { shape } });
 
         expect(row.attributes("aria-hidden")).toBe("true");
@@ -85,6 +85,15 @@ describe("the skeleton", () => {
         expect(drawn[0].style.height).toBe("28px");
     });
 
+    // A picture still to come, a GIF in the picker's grid, holds its place at the picture's own shape.
+    test("a media row is the place of a picture at the shape it is given, with no face or lines", () => {
+        const row = mount(Skeleton, { props: { shape: "media", ratio: "16 / 9" } });
+
+        expect((row.element as HTMLElement).style.aspectRatio).toBe("16 / 9");
+        expect(row.findAll(".chat-skel-bone")).toHaveLength(0);
+        expect(row.findAll(".chat-skel-lines")).toHaveLength(0);
+    });
+
     test("draws its lines at the widths it is given, so a column of rows reads as text rather than stripes", () => {
         const lines = bones("panel", { widths: [46, 92, 60] }).filter(bone => !bone.classList.contains("is-face"));
 
@@ -128,6 +137,11 @@ describe("the skeleton's look", () => {
         expect(ruleOf(style, ".chat-skel-bone")).toMatch(/background:\s*var\(--chat-bubble\)/);
         expect(ruleOf(style, ".chat-skel-bone.is-face")).toMatch(/border-radius:\s*var\(--chat-r-full\)/);
         expect(ruleOf(style, ".chat-skel-bone.is-tile")).toMatch(/border-radius:\s*var\(--chat-r-control\)/);
+    });
+
+    test("a media row is one fill from the token sheet in the sheet's control corners", () => {
+        expect(ruleOf(style, ".chat-skel.is-media")).toMatch(/background:\s*var\(--chat-bubble\)/);
+        expect(ruleOf(style, ".chat-skel.is-media")).toMatch(/border-radius:\s*var\(--chat-r-control\)/);
     });
 
     test("holds no motion, priority, reach or capitals of its own", () => {
