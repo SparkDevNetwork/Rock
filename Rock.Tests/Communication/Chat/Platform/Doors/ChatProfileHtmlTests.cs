@@ -39,11 +39,23 @@ namespace Rock.Tests.Communication.Chat.Platform.Doors
         #region What is kept
 
         [TestMethod]
-        public void KeepsTextStructureListsAndClasses()
+        public void KeepsTextStructureListsAndIconClasses()
         {
-            var html = "<div class=\"lh\">Serving in</div><ul><li><b>Worship</b> <span title=\"t\">9 AM</span></li></ul><p><strong>a</strong><em>b</em><i>c</i><small>d</small><br></p><h3>x</h3><ol><li>1</li></ol>";
+            var html = "<div>Serving in</div><ul><li><b>Worship</b> <span title=\"t\">9 AM</span></li></ul><p><strong>a</strong><em>b</em><i class=\"fa fa-music\">c</i><small>d</small><br></p><h3>x</h3><ol><li>1</li></ol>";
 
             Assert.AreEqual( html, Clean( html ) );
+        }
+
+        [TestMethod]
+        public void KeepsOnlyTheClassesThatDrawAnIconOrTintWords()
+        {
+            // Any other class is the page's own: the chat's, or Bootstrap's layout and display
+            // classes, with which a template could hide, move or cover the chat around the card.
+            Assert.AreEqual( "<i class=\"fas fa-home fa-fw\"></i>", Clean( "<i class=\"fas fa-home chat-pc position-fixed fa-fw\"></i>" ) );
+            Assert.AreEqual( "<i class=\"ti ti-users\"></i>", Clean( "<i class=\"ti ti-users\"></i>" ) );
+            Assert.AreEqual( "<span class=\"text-muted\">x</span>", Clean( "<span class=\"text-muted d-none\">x</span>" ) );
+            Assert.AreEqual( "<div>x</div>", Clean( "<div class=\"lh fixed-top modal show\">x</div>" ) );
+            Assert.AreEqual( "<p>x</p>", Clean( "<p class=\"FA Fa-Home\">x</p>" ) );
         }
 
         [TestMethod]
