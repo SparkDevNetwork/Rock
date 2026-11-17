@@ -59,4 +59,13 @@ describe("a settings group", () => {
     test("holds its leaving rows inside it while they fade", () => {
         expect(ruleOf(styleOf("settingGroup.partial.obs"), ".chat-sg")).toMatch(/position:\s*relative/);
     });
+
+    // A group spaces itself from what comes before it, so a page that opens on a group, as Blocked
+    // people does, starts at the surface's own padding rather than a gap twice as tall.
+    test("keeps its space above only after something else, none at the top of what holds it", () => {
+        const style = styleOf("settingGroup.partial.obs");
+
+        expect(ruleOf(style, ".chat-sg-sec")).not.toMatch(/margin-top/);
+        expect(ruleOf(style, ".chat-sg-sec:not(:first-child)")).toMatch(/margin-top:\s*16px/);
+    });
 });
