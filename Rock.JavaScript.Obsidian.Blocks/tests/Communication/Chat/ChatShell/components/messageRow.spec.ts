@@ -728,14 +728,62 @@ describe("Community, in a channel", () => {
         expect(rule).toMatch(/margin-top:\s*6px/);
     });
 
-    // The chip that reached the reader, theirs or @all, takes a thin amber ring in a washed row, so
-    // it stands off the wash.
-    test("the reader's chip and the @all chip in a washed row are ringed in the warning color", () => {
+    // The chip that reached the reader, theirs or @all, takes a thin ring in a washed row, so it
+    // stands off the wash; the ring is the church's line, as the wash is the church's tint.
+    test("the reader's chip and the @all chip in a washed row are ringed in the mention ring", () => {
         const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/messageRow.partial.obs"), "utf8");
         const style = source.slice(source.indexOf("<style"), source.indexOf("</style>"));
         const rule = /\.chat-msg\.is-community\.is-mention-me :deep\(\.chat-mn\.is-you\),\s*\.chat-msg\.is-community\.is-mention-me :deep\(\.chat-mn\.is-all\)\s*\{([^}]*)\}/.exec(style)?.[1] ?? "";
 
         expect(rule).toMatch(/box-shadow:\s*0 0 0 1px var\(--chat-mention-ring\)/);
+        expect(style).not.toMatch(/amber|warning/i);
+    });
+
+    // A mention and a jump are one idea, "this is for you, here": the jump flashes the wash's own
+    // inset, rounded shape at the flash's strength, under the words, held and then let go back to
+    // whatever the row is at rest, a wash or nothing.
+    test("a jump flashes the wash's shape under the words, held and let go", () => {
+        const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/messageRow.partial.obs"), "utf8");
+        const style = source.slice(source.indexOf("<style"), source.indexOf("</style>"));
+        const block = (selector: string): string => {
+            const at = style.search(new RegExp("(^|\\n)" + selector.replace(/[.():]/g, "\\$&") + "\\s*\\{"));
+            return at < 0 ? "" : style.slice(style.indexOf("{", at) + 1, style.indexOf("}", at));
+        };
+
+        const flash = block(".chat-msg.is-community.is-flashing::before");
+        expect(flash).toMatch(/inset:\s*1px var\(--chat-cm-inset\)/);
+        expect(flash).toMatch(/border-radius:\s*var\(--chat-r-row\)/);
+        expect(flash).toMatch(/background:\s*var\(--chat-flash\)/);
+        expect(flash).toMatch(/animation:\s*chat-flash var\(--chat-d-flash\)/);
+        expect(flash).toMatch(/z-index:\s*-1/);
+        expect(block(".chat-msg.is-community.is-flashing")).toMatch(/isolation:\s*isolate/);
+        // A washed row already stands in by the inset, so its flash fills it.
+        expect(block(".chat-msg.is-community.is-mention-me.is-flashing::before")).toMatch(/inset:\s*0/);
+        expect(style).not.toMatch(/chat-cm-flash/);
+    });
+
+    // In bubbles the flash is the same idea behind the bubble and its files, with 4px of air.
+    test("a bubble's jump flashes behind the bubble, 4px clear of it", () => {
+        const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/messageRowBubble.partial.obs"), "utf8");
+        const style = source.slice(source.indexOf("<style"), source.indexOf("</style>"));
+        const block = (selector: string): string => {
+            const at = style.search(new RegExp("(^|\\n)" + selector.replace(/[.():]/g, "\\$&") + "\\s*\\{"));
+            return at < 0 ? "" : style.slice(style.indexOf("{", at) + 1, style.indexOf("}", at));
+        };
+
+        const flash = block(".chat-msg.is-flashing .chat-bub-anchor::before");
+        expect(flash).toMatch(/inset:\s*-4px/);
+        expect(flash).toMatch(/z-index:\s*-1/);
+        expect(flash).toMatch(/animation:\s*chat-flash var\(--chat-d-flash\)/);
+        expect(block(".chat-msg.is-flashing .chat-bub-anchor")).toMatch(/isolation:\s*isolate/);
+        expect(style).not.toMatch(/\.chat-bubble\.is-flashing/);
+    });
+
+    test("the wash's words, Mentioned you, are in the church's ink", () => {
+        const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/messageRowCommunity.partial.obs"), "utf8");
+        const rule = /\.chat-cm-mention\s*\{([^}]*)\}/.exec(source.slice(source.indexOf("<style")))?.[1] ?? "";
+
+        expect(rule).toMatch(/color:\s*var\(--chat-brand-ink\)/);
     });
 
     // The row stands in from the feed's edge, and its bar, docked to the row, would follow it in;
