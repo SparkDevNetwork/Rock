@@ -2150,6 +2150,51 @@ describe("focus as the frame changes what it shows", () => {
         expect(document.activeElement).toBe(w.get("[data-testid='frame-main'] [data-focus-stop='header']").element);
     });
 
+    // Focus the person moves to the page is theirs: a change they did not make leaves it there.
+    test("a room change leaves focus on the page where the person clicked out of a member row", async () => {
+        const w = await openTeam();
+        (mockShell!.channels as { rows: SidebarRow[] }).rows.push(choir);
+        roomsOf().state.facts[choir.channel_id] = roomFacts({ channel_id: choir.channel_id, name: "Choir", member_count: 30 });
+        const members = mockShell!.members as { state: { channelId: string | null, rows: unknown[] }, open: jest.Mock };
+        await press(w, "[data-testid='frame-main'] [data-testid='header-members']");
+        members.state.rows = [annaMember];
+        await fadeOut();
+        const row = w.get("[data-testid='members-panel'] [data-testid='member-who']").element as HTMLElement;
+        row.focus();
+        row.blur();
+        expect(document.activeElement).toBe(document.body);
+        members.open.mockImplementation(async (channelId: string) => {
+            members.state.channelId = channelId;
+            members.state.rows = [];
+        });
+
+        await (mockShell!.selectChannel as jest.Mock)(choir.channel_id);
+        await settle();
+        await fadeOut();
+        expect(document.activeElement).toBe(document.body);
+    });
+
+    // Focus lost because its element was removed is not the person's move, and still falls back.
+    test("a room change still gives focus to the filter when the focused member row is removed", async () => {
+        const w = await openTeam();
+        (mockShell!.channels as { rows: SidebarRow[] }).rows.push(choir);
+        roomsOf().state.facts[choir.channel_id] = roomFacts({ channel_id: choir.channel_id, name: "Choir", member_count: 30 });
+        const members = mockShell!.members as { state: { channelId: string | null, rows: unknown[] }, open: jest.Mock };
+        await press(w, "[data-testid='frame-main'] [data-testid='header-members']");
+        members.state.rows = [annaMember];
+        await fadeOut();
+        (w.get("[data-testid='members-panel'] [data-testid='member-who']").element as HTMLElement).focus();
+        members.open.mockImplementation(async (channelId: string) => {
+            members.state.channelId = channelId;
+            members.state.rows = [];
+        });
+
+        await (mockShell!.selectChannel as jest.Mock)(choir.channel_id);
+        await settle();
+        await fadeOut();
+        expect(document.activeElement).toBe(w.get("[data-testid='members-filter']").element);
+    });
+
     type Shown = "closed" | "activity-mentions" | "activity-threads" | "threads" | "members" | "thread";
 
     const everyShown: Shown[] = ["closed", "activity-mentions", "activity-threads", "threads", "members", "thread"];
