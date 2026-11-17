@@ -1082,6 +1082,63 @@ describe("catching up when fetches fail or are overtaken", () => {
         expect(timelines.state(channel).isBehind).toBe(false);
     });
 
+    // Messages sent while the topic was down are missing until the catch-up reads them, which the
+    // header says as "Catching up" between "Reconnecting" and back online.
+    test("a rejoin after a drop says the room is behind from the join until its catch-up is in", async () => {
+        const platform = server([1, 2, 3]);
+        let isHeld = false;
+        const fetches = controlled(platform, options => isHeld && options.afterId !== undefined);
+        const timelines = createTimelines({ motion: createMessageMotion(), mask: platformMask, limits, fetchPage: fetches.fetchPage, sleep: waits().sleep });
+        await timelines.loadNewest(channel);
+        await timelines.onJoined(channel);
+        platform.add(4);
+        isHeld = true;
+
+        const joining = timelines.onJoined(channel, true);
+
+        expect(timelines.state(channel).isBehind).toBe(true);
+        await settle();
+        expect(timelines.state(channel).isBehind).toBe(true);
+        while (fetches.pending.length > 0) {
+            fetches.pending.shift()?.answer();
+            await settle();
+        }
+        await joining;
+        expect(timelines.state(channel).isBehind).toBe(false);
+        expectCaughtUp(timelines.state(channel), platform.ids());
+    });
+
+    test("a join with no drop before it says nothing of being behind while it catches up", async () => {
+        const platform = server([1, 2, 3]);
+        const fetches = controlled(platform, options => options.afterId !== undefined);
+        const timelines = createTimelines({ motion: createMessageMotion(), mask: platformMask, limits, fetchPage: fetches.fetchPage, sleep: waits().sleep });
+        await timelines.loadNewest(channel);
+
+        const joining = timelines.onJoined(channel);
+        await settle();
+
+        expect(fetches.pending.length).toBeGreaterThan(0);
+        expect(timelines.state(channel).isBehind).toBe(false);
+        while (fetches.pending.length > 0) {
+            fetches.pending.shift()?.answer();
+            await settle();
+        }
+        await joining;
+    });
+
+    test("a room left while its rejoin catches up is no longer behind", async () => {
+        const platform = server([1, 2, 3]);
+        const fetches = controlled(platform, options => options.afterId !== undefined);
+        const timelines = createTimelines({ motion: createMessageMotion(), mask: platformMask, limits, fetchPage: fetches.fetchPage, sleep: waits().sleep });
+        await timelines.loadNewest(channel);
+
+        void timelines.onJoined(channel, true).catch(() => undefined);
+        expect(timelines.state(channel).isBehind).toBe(true);
+
+        timelines.leave(channel);
+        expect(timelines.state(channel).isBehind).toBe(false);
+    });
+
     test("a join confirmed while a reload is read is still caught up when the reload fails", async () => {
         const platform = server([1, 2, 3]);
         let holdNewest = false;
