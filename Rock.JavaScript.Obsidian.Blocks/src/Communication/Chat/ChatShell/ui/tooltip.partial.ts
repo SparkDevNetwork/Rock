@@ -18,6 +18,7 @@
 import { ComputedRef, onBeforeUnmount, Ref, ref } from "vue";
 import { tokenDuration } from "./brand.partial";
 import { focusableSelector, focusQuietly, isDrawn, isFocusQuiet } from "./focusTrap.partial";
+import { isHoverless } from "./viewport.partial";
 import { usePopover } from "./popover.partial";
 
 /** A tooltip's state and the handlers its anchor binds, and an interactive tip's own. */
@@ -123,9 +124,13 @@ export function useTooltip(anchor: Ref<HTMLElement | undefined>, isDisabled: () 
         isDismissable: false
     });
 
-    /** Shows the tip once the pointer has rested, so passing over a row of buttons does not flicker tips. */
+    /**
+     * Shows the tip once the pointer has rested, so passing over a row of buttons does not flicker
+     * tips. Never where nothing can hover: a finger's tap arrives as the pointer entering, and a
+     * tip shown then stands over the screen; the anchor's name is still read aloud.
+     */
     function scheduleTip(): void {
-        if (isDisabled()) {
+        if (isDisabled() || isHoverless()) {
             return;
         }
 
