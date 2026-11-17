@@ -255,11 +255,6 @@ const tokens: Token[] = [
         light: "0 0 0 1px rgba(13,17,23,.06), 0 4px 8px rgba(13,17,23,.04), 0 16px 36px -8px rgba(30,36,52,.24)",
         dark: "0 0 0 1px rgba(255,255,255,.08), 0 16px 40px -8px rgba(0,0,0,.7)"
     },
-    {
-        name: "shadow-bar",
-        light: "0 0 0 1px var(--chat-line), 0 1px 2px rgba(13,17,23,.05), 0 6px 14px -4px rgba(30,36,52,.16)",
-        dark: "0 0 0 1px rgba(255,255,255,.08), 0 8px 18px -6px rgba(0,0,0,.65)"
-    },
 
     // Motion.
     { name: "ease-in", light: "cubic-bezier(.1,.9,.2,1)" },
