@@ -407,7 +407,7 @@ async function drawThread(w: Wired, root: TimelineMessage, replies: TimelineMess
     await w.threads.openThread(channelId, root.id);
     const Host = defineComponent({
         setup: () => () => w.threads.state.thread?.root
-            ? h(ThreadDrawer, { root: w.threads.state.thread.root, replies: w.threads.state.thread.replies, pending: [], isFollowing: true, isPhone: false, isFromList: false, personAliasGuid: me, conversationTitle: "Anna Reyes", isChannel: false, isDirectMessage: true, draft: { text: "", mentions: [] } })
+            ? h(ThreadDrawer, { root: w.threads.state.thread.root, replies: w.threads.state.thread.replies, pending: [], isFollowing: true, isPhone: false, isFromList: false, personAliasGuid: me, conversationTitle: "Anna Reyes", isChannel: false, isDirectMessage: true, loadOlder: w.threads.loadOlderReplies, draft: { text: "", mentions: [] } })
             : null
     });
     const drawer = mount(Host, { attachTo: document.body, global: { provide: w.provide } });
@@ -558,7 +558,7 @@ describe("what happens while a row is on screen plays once", () => {
         // the drawer as the shell draws it, from the moment the thread is asked, loading until its page lands
         const Host = defineComponent({
             setup: () => () => w.threads.state.thread
-                ? h(ThreadDrawer, { root: w.threads.state.thread.root, replies: w.threads.state.thread.replies, isLoading: w.threads.state.thread.isLoading, pending: [], isFollowing: true, isPhone: false, isFromList: false, personAliasGuid: me, conversationTitle: "Anna Reyes", isChannel: false, isDirectMessage: true, draft: { text: "", mentions: [] } })
+                ? h(ThreadDrawer, { root: w.threads.state.thread.root, replies: w.threads.state.thread.replies, isLoading: w.threads.state.thread.isLoading, pending: [], isFollowing: true, isPhone: false, isFromList: false, personAliasGuid: me, conversationTitle: "Anna Reyes", isChannel: false, isDirectMessage: true, loadOlder: w.threads.loadOlderReplies, draft: { text: "", mentions: [] } })
                 : null
         });
         const drawer = mount(Host, { attachTo: document.body, global: { provide: w.provide } });
@@ -720,7 +720,7 @@ describe("the thread drawer's reread plays nothing", () => {
         await w.threads.openThread(channelId, 40);
         const Host = defineComponent({
             setup: () => () => w.threads.state.thread?.root
-                ? h(ThreadDrawer, { root: w.threads.state.thread.root, replies: w.threads.state.thread.replies, pending: [], isFollowing: true, isPhone: false, isFromList: false, personAliasGuid: me, conversationTitle: "Anna Reyes", isChannel: false, isDirectMessage: true, draft: { text: "", mentions: [] } })
+                ? h(ThreadDrawer, { root: w.threads.state.thread.root, replies: w.threads.state.thread.replies, pending: [], isFollowing: true, isPhone: false, isFromList: false, personAliasGuid: me, conversationTitle: "Anna Reyes", isChannel: false, isDirectMessage: true, loadOlder: w.threads.loadOlderReplies, draft: { text: "", mentions: [] } })
                 : null
         });
         const drawer = mount(Host, { attachTo: document.body, global: { provide: w.provide } });

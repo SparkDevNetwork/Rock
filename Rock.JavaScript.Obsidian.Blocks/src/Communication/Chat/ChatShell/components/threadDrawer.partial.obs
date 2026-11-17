@@ -390,12 +390,12 @@
 
         /**
          * Fetches the page of replies before the oldest held, settling once it is in or its failure
-         * is said; a page that leaves the top in view is then asked for again. Without it the
-         * drawer asks its owner through loadOlder.
+         * is said; a page that leaves the top in view is then asked for again, which only a loader
+         * the drawer can wait on allows.
          */
         loadOlder: {
             type: Function as PropType<() => Promise<void>>,
-            default: null
+            required: true
         },
 
         /** Who else is typing a reply in this thread, drawn as its newest row; null for no one. */
@@ -446,7 +446,6 @@
         (e: "back"): void,
         (e: "follow", isFollowing: boolean): void,
         (e: "seen", messageId: number): void,
-        (e: "loadOlder"): void,
         /** A failed reply's own Try again: the replies to send again, oldest first. */
         (e: "retry", localIds: string[]): void,
         (e: "discard", localId: string): void,
@@ -688,13 +687,9 @@
         return bodyElement.value?.closest<HTMLElement>(".chat-panel-body") ?? null;
     }
 
-    /** Asks for the page of replies before the oldest held, through the loader when given it. */
-    function loadOlderPage(): Promise<void> | void {
-        if (props.loadOlder) {
-            return props.loadOlder();
-        }
-
-        emit("loadOlder");
+    /** Asks for the page of replies before the oldest held. */
+    function loadOlderPage(): Promise<void> {
+        return props.loadOlder();
     }
 
     function newestReplyId(): number | null {

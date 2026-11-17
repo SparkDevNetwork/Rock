@@ -27,7 +27,7 @@
 //          isChannel: boolean, isDirectMessage: boolean, isPhone: boolean, isFromList: boolean,
 //          personAliasGuid: string (required)
 //   slots: composer (the reply composer, filled by the drawer's owner)
-//   emits: close, back, follow(isFollowing: boolean), seen(messageId: number), loadOlder,
+//   emits: close, back, follow(isFollowing: boolean), seen(messageId: number),
 //          retry(localIds: string[]) (a failed reply's own Try again), discard(localId: string)
 //   marks: thread-divider, thread-follow (aria-pressed), and the composer's composer-input and
 //          composer-also (the foot's label around its switch).
@@ -150,6 +150,9 @@ function draw(props: Record<string, unknown> = {}, isTransitionKept = false, mot
         isPhone: false,
         isFromList: false,
         personAliasGuid: me,
+        // A page that never settles, as one still on its way: a loader settling at once would be asked
+        // again and again while the top stays in view.
+        loadOlder: jest.fn((): Promise<void> => new Promise(() => undefined)),
         ...props
     };
     composerProps = reactive({
@@ -618,7 +621,7 @@ describe("the Follow toggle", () => {
         // The production runtime logs a render that threw rather than rethrowing it.
         const logged = jest.spyOn(console, "error");
         const w = production.mount(production.drawer, {
-            props: { root: null, replies: [], isLoading: true, personAliasGuid: me },
+            props: { root: null, replies: [], isLoading: true, personAliasGuid: me, loadOlder: (): Promise<void> => new Promise(() => undefined) },
             attachTo: document.body
         });
         wrapper = w;
@@ -696,7 +699,7 @@ describe("the reply composer", () => {
     test("is what the drawer's composer slot holds, the drawer declaring none of a composer's props or events", () => {
         wrapper = mount(ThreadDrawer, inSession({
             global: { provide: { [messageMotionKey as symbol]: createMessageMotion() } },
-            props: { root: rootWith(3), replies: replies(3), personAliasGuid: me },
+            props: { root: rootWith(3), replies: replies(3), personAliasGuid: me, loadOlder: (): Promise<void> => new Promise(() => undefined) },
             slots: { composer: () => h("div", { "data-testid": "slotted-composer" }) },
             attachTo: document.body
         }));
@@ -1300,15 +1303,16 @@ describe("loading older replies", () => {
     // The row stands only once the thread is placed at its newest, so the drawer's top, in view
     // as it opens, never asks before; placed with the top still in view, the browser says so.
     test("asks for nothing before the thread is placed, and asks once it is placed with the top still in view", async () => {
-        const w = draw({ root: null, replies: [], hasMore: true });
+        const loadOlder = jest.fn((): Promise<void> => new Promise(() => undefined));
+        const w = draw({ root: null, replies: [], hasMore: true, loadOlder });
         await afterOpen();
         report(true);
-        expect(w.emitted("loadOlder")).toBeUndefined();
+        expect(loadOlder).not.toHaveBeenCalled();
 
         await w.setProps({ root: rootWith(3), replies: replies(3) });
         await afterOpen();
         report(true);
-        expect(w.emitted("loadOlder")).toHaveLength(1);
+        expect(loadOlder).toHaveBeenCalledTimes(1);
     });
 
     test("is the shared load-more row, standing at the start of a list that grows upward", async () => {

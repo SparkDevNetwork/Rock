@@ -387,6 +387,7 @@
                                       :isLoading="drawnThread.isLoading"
                                       :error="drawnThread.error"
                                       :olderError="drawnThread.olderError"
+                                      :loadOlder="shell.threads.loadOlderReplies"
                                       :landOnId="landingReplyId"
                                       :isPersonLeader="threadRow?.is_leader ?? false"
                                       :isPreviewing="isPreviewingRoom(drawnThread.channelId)"
@@ -400,7 +401,6 @@
                                       @back="onThreadBack"
                                       @follow="onFollowThread"
                                       @seen="shell.threads.seen"
-                                      @loadOlder="onLoadOlderReplies"
                                       @retry="onRetry"
                                       @discard="shell.sender.discard"
                                       @jump="onJump($event, true)"
@@ -1035,7 +1035,7 @@
         mainView, openMainView, closeMainView, openFromMainView, openAddPeople,
         landingReplyId, landingMessageId, onJump, landInConversation,
         membersView, removeView, addView,
-        threadList, drawerFollowError, listFollowError, onThreadsRefresh, loadMoreThreads, onFollowFromList, onFollowThread, onLoadOlderReplies
+        threadList, drawerFollowError, listFollowError, onThreadsRefresh, loadMoreThreads, onFollowFromList, onFollowThread
     } = frame;
 
     /** Activity's two lists, in the Segmented over whichever is shown. */

@@ -1391,9 +1391,5 @@ function threadsPanelWiring(shell: Readonly<Ref<ChatShell>>, activeChannelId: Re
         }
     }
 
-    function onLoadOlderReplies(): void {
-        void shell.value.threads.loadOlderReplies();
-    }
-
-    return { threadList, drawerFollowError, listFollowError, onThreadsRefresh, loadMoreThreads, onFollowFromList, onFollowThread, onLoadOlderReplies };
+    return { threadList, drawerFollowError, listFollowError, onThreadsRefresh, loadMoreThreads, onFollowFromList, onFollowThread };
 }
