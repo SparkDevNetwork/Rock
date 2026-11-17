@@ -26,7 +26,6 @@ import { ChatMembershipResultBag } from "@Obsidian/ViewModels/Blocks/Communicati
 import { ChatPersonSettingResultBag } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatShell/chatPersonSettingResultBag";
 import { ChatProfileDetailsBag } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatShell/chatProfileDetailsBag";
 import { DoorResult } from "./composables/useDirectMessage.partial";
-import { failedWords } from "./errors.partial";
 import { ChatShell, createChatShell, PlatformClientLike, ShellOptions } from "./shell.partial";
 
 /** What the block hands in once, for every shell it builds. */
@@ -174,24 +173,16 @@ export function createBrowserShellBuilder(options: BrowserShellOptions): (sessio
             }
 
             // Rock did not answer with a door result at all, so there is no sentence of its
-            // own to show and the draft stays for the person to try again.
+            // own; the draft stays, and the conversation's one error voice says what failed.
             return {
                 code: "door.unavailable",
                 channelGuid: null,
                 isPending: false,
-                message: result.errorMessage ?? failedWords("The conversation could not be started.").alone,
+                message: result.errorMessage ?? null,
                 personAliasGuid: null
             };
         },
-        joinChannel: async channelId => {
-            const result = await invokeBlockAction<ChatMembershipResultBag>("JoinChannel", { channelGuid: channelId });
-            if (result.isSuccess && result.data) {
-                return result.data;
-            }
-
-            // Rock did not answer with a door result, so the message fails and can be sent again.
-            return { code: "door.unavailable", message: result.errorMessage ?? null, isPending: false };
-        },
+        joinChannel: channelId => membershipDoor("JoinChannel", { channelGuid: channelId }),
         leaveChannel: channelId => membershipDoor("LeaveChannel", { channelGuid: channelId }),
         renameConversation: (channelId, name) => membershipDoor("RenameConversation", { channelGuid: channelId, name }),
         getMemberRights: async channelId => {
