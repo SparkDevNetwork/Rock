@@ -1013,6 +1013,23 @@ describe("a live message, which moves a row and never washes it", () => {
         expect(groups.every(group => group.props("moveClass") === "chat-move")).toBe(true);
     });
 
+    // A list's only motion is the move: a row that leaves its section goes in the same frame, so
+    // the rows under it glide into its place and no copy lingers where it was, starred or not.
+    test("a room starred goes from Channels in the same frame it arrives under Starred, no copy left behind", async () => {
+        wrapper = mount(ChannelSidebar, {
+            props: { rows: [team, youth], activeChannelId: null, isNewMessageShown: true },
+            global: { provide: providedSession({ isPhone: false, me: { personAliasGuid: "", name: "", photoUrl: null } }), stubs: { "transition-group": false } },
+            attachTo: document.body
+        });
+
+        await wrapper.setProps({ rows: [{ ...team, is_favorite: true }, youth] });
+        await nextTick();
+
+        expect(rowIdsIn(wrapper, "starred")).toEqual([team.channel_id]);
+        expect(rowIdsIn(wrapper, "channels")).toEqual([youth.channel_id]);
+        expect(wrapper.findAll(`[data-testid='channel-row'][data-channel-id='${team.channel_id}']`)).toHaveLength(1);
+    });
+
     test("not the conversation on screen, nor another reached at the same time", async () => {
         const w = mountSidebar({ rows: [dmRead, dmGroup, team], activeChannelId: dmRead.channel_id });
 
