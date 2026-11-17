@@ -62,7 +62,7 @@
 
                 <div v-else-if="view === 'loading'" class="chat-gif-masonry" data-testid="gif-loading" aria-hidden="true">
                     <div v-for="column in loadingColumns" :key="column[0]" class="chat-gif-column">
-                        <span v-for="shape in column" :key="shape" class="chat-gif-tile is-loading" :style="{ aspectRatio: shape }"></span>
+                        <Skeleton v-for="shape in column" :key="shape" shape="media" :ratio="shape" />
                     </div>
                 </div>
 
@@ -163,7 +163,7 @@
     min-width: 0;
 }
 
-/* KLIPY's blurred stand-in fills the tile while its preview loads, pulsing until it does. */
+/* KLIPY's blurred stand-in fills the tile, still, while its preview loads, and the preview fades in over it. */
 .chat-gif-tile {
     position: relative;
     display: block;
@@ -184,10 +184,6 @@
     height: 100%;
     object-fit: cover;
     transition: opacity var(--chat-t-base) var(--chat-ease-state);
-}
-
-.chat-gif-tile.is-loading {
-    animation: var(--chat-loop-stop, chat-skeleton-pulse) var(--chat-d-skeleton) var(--chat-ease-state) infinite alternate;
 }
 
 .chat-gif-tile.is-loading img {
@@ -276,6 +272,7 @@
     import EmptyState from "../ui/emptyState.partial.obs";
     import { usePopover } from "../ui/popover.partial";
     import Popover from "../ui/popoverSurface.partial.obs";
+    import Skeleton from "../ui/skeleton.partial.obs";
     import { isHoverless } from "../ui/viewport.partial";
     import { usePagingTrigger } from "../composables/usePagingTrigger.partial";
     import { createGifSearch, GifCover, gifHeight, Gifs, masonry, MasonryTile, nextInMasonry } from "../composables/useGifs.partial";

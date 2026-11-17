@@ -7,11 +7,12 @@
                    'is-bubble': shape === 'bubble',
                    'is-panel': shape === 'panel',
                    'is-reactor': shape === 'reactor',
+                   'is-media': shape === 'media',
                    'is-own': isOwn,
                    'is-phone': isPhone
-               }" aria-hidden="true">
+               }" :style="shape === 'media' ? { aspectRatio: ratio } : undefined" aria-hidden="true">
         <i v-if="plan.lead" class="chat-skel-bone" :class="`is-${plan.lead}`" :style="{ width: `${plan.leadSize}px`, height: `${plan.leadSize}px` }"></i>
-        <span class="chat-skel-lines">
+        <span v-if="plan.lines.length" class="chat-skel-lines">
             <i v-for="(line, index) in plan.lines"
                :key="index"
                class="chat-skel-bone"
@@ -46,6 +47,15 @@
 .chat-skel.is-reactor {
     height: 40px;
     padding: 0 10px;
+}
+
+/* A picture still to come is itself the one bone, at the picture's own shape. */
+.chat-skel.is-media {
+    display: block;
+    width: 100%;
+    padding: 0;
+    background: var(--chat-bubble);
+    border-radius: var(--chat-r-control);
 }
 
 .chat-skel.is-panel {
@@ -123,7 +133,7 @@
     // #region Types
 
     /** The row a skeleton stands in for. */
-    export type SkeletonShape = "channel" | "person" | "group" | "bubble" | "panel" | "reactor";
+    export type SkeletonShape = "channel" | "person" | "group" | "bubble" | "panel" | "reactor" | "media";
 
     type Bone = { width: string, height: number };
 
@@ -143,7 +153,8 @@
          * A channel row (44px, a tile and its name), a conversation row (52px, a face, a name, a
          * line and a time), a feed group (a face, a name and lines), a bubble of a two-person
          * conversation (no face, as its rows have none), a panel row (a face over three lines), or
-         * a reactor row (40px, a 28px face and a name, as the reactions list draws a person).
+         * a reactor row (40px, a 28px face and a name, as the reactions list draws a person), or
+         * a picture still to come (one fill at the picture's shape, as a GIF in the picker's grid).
          */
         shape: {
             type: String as PropType<SkeletonShape>,
@@ -154,6 +165,12 @@
         widths: {
             type: Array as PropType<number[]>,
             default: () => []
+        },
+
+        /** A picture's width over its height, such as "16 / 9", for a media row. */
+        ratio: {
+            type: String as PropType<string>,
+            default: "1 / 1"
         },
 
         /** A bubble the reader sent: at the far side. */
@@ -204,6 +221,9 @@
 
             case "reactor":
                 return { lead: "face", leadSize: 28, lines: [{ width: widthAt(0, 44), height: 10 }], trail: null };
+
+            case "media":
+                return { lead: null, leadSize: 0, lines: [], trail: null };
 
             default:
                 return {
