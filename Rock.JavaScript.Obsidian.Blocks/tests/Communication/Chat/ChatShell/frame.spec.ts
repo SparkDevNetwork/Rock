@@ -3687,7 +3687,9 @@ describe("reactions", () => {
         expect(pickerOf()?.querySelector("[role='grid'] [role='gridcell'][data-code='pray']")).not.toBeNull();
     });
 
-    test("asked for by a control that already shows quick reactions, as the bar's Add reaction, opens on a tray without them", async () => {
+    // The bar turns into the tray in place, so the tray leads with the bar's quick reactions, then
+    // the rest in their order (the Feed's E1-A, D-816: "the three quick reactions first, five more").
+    test("asked for by a bar's Add reaction, opens on a tray that leads with the bar's quick reactions", async () => {
         const w = await mountBlock(1200);
         await openRow(w, team.channel_id);
         const anchor = document.createElement("button");
@@ -3701,13 +3703,15 @@ describe("reactions", () => {
         await settle();
         expect(pickerOf()).toBeNull();
 
-        const offered = fullTray.slice(0, 1) as string[];
+        // The bar's own, as the last of the tray, so leading with it reorders the tray.
+        expect(fullTray.length).toBeGreaterThan(1);
+        const offered = fullTray.slice(-1) as string[];
         w.findComponent(MessageFeedComponent).vm.$emit("messageAction", { kind: "openPicker", message: storedMessage(7), anchor, opening: { offered } });
         await settle();
 
         const tray = Array.from(pickerOf()?.querySelectorAll<HTMLElement>("[role='toolbar'] [data-code]") ?? []).map(cell => cell.dataset.code);
         expect(offered).toHaveLength(1);
-        expect(tray).toEqual(fullTray.slice(1));
+        expect(tray).toEqual([...offered, ...fullTray.filter(code => !offered.includes(code as string))]);
     });
 
     test("asked for again by what opened it, closes", async () => {

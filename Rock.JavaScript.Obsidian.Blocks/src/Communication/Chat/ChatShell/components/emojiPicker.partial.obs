@@ -456,8 +456,7 @@ img.chat-picker-prev {
 
     /**
      * How a control opens the reaction picker: where it starts, the tray unless told, and the quick
-     * reactions the control already shows beside it, which the tray leaves out so nothing is
-     * offered twice.
+     * reactions of the bar the tray takes the place of, which the tray leads with so none is lost.
      */
     export type PickerOpening = { startsOn?: PickerStep, offered?: string[] };
 
@@ -480,7 +479,7 @@ img.chat-picker-prev {
             default: "full"
         },
 
-        /** The quick reactions the control that opened the tray already shows, which the tray leaves out. */
+        /** The quick reactions of the bar the tray takes the place of, which the tray leads with. */
         offered: {
             type: Array as PropType<string[]>,
             default: () => []
@@ -660,13 +659,14 @@ img.chat-picker-prev {
     const favoriteItems = computed((): PickerEmoji[] => props.source.favorites.map(item => byCode.value.get(item.code) ?? item));
 
     /**
-     * The tray: the reader's recents, then the church's favorites, each once, eight in all, past
-     * the quick reactions already shown beside what opened it.
+     * The tray: the quick reactions of the bar it took the place of first, so none is lost as the
+     * bar turns into it, then the reader's recents and the church's favorites, each once, eight in all.
      */
     const trayItems = computed((): PickerEmoji[] => {
-        return eachOnce([...recents.value, ...favoriteItems.value])
-            .filter(item => !props.offered.includes(item.code))
-            .slice(0, trayLength);
+        const offered = props.offered
+            .map(code => byCode.value.get(code))
+            .filter((item): item is PickerEmoji => !!item);
+        return eachOnce([...offered, ...recents.value, ...favoriteItems.value]).slice(0, trayLength);
     });
 
     const favoritesLabel = computed(() => `${props.source.churchName} favorites`);
