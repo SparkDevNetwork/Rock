@@ -77,8 +77,8 @@
                      data-testid="frame-main"
                      aria-label="Conversation"
                      :data-look="look ?? undefined"
-                     :aria-hidden="isConversationHidden ? 'true' : undefined"
-                     :inert="isConversationHidden || undefined"
+                     :aria-hidden="isMainInert ? 'true' : undefined"
+                     :inert="isMainInert || undefined"
                      :aria-busy="shell.reveal.state.isMainRevealed ? undefined : 'true'"
                      :style="isConversationGone ? goneStyle : undefined">
                 <!-- The first load's veil: the column's frame from mount, until the first screen is ready. -->
@@ -294,8 +294,8 @@
             <aside ref="panelElement"
                    class="chat-frame-panel"
                    data-testid="frame-panel"
-                   :aria-hidden="isPanelHidden ? 'true' : undefined"
-                   :inert="isPanelHidden || undefined"
+                   :aria-hidden="isPanelInert ? 'true' : undefined"
+                   :inert="isPanelInert || undefined"
                    :style="isPanelGone ? goneStyle : undefined">
                 <div class="chat-frame-panel-inner">
                     <!--
@@ -1034,7 +1034,7 @@
     });
 
     const {
-        isPhone, isPaneMotionOn, pane, isSidebarHidden, isConversationHidden, isPanelHidden, isSidebarGone, isConversationGone, isPanelGone, goneStyle,
+        isPhone, isPaneMotionOn, pane, isSidebarHidden, isMainInert, isPanelHidden, isPanelInert, isSidebarGone, isConversationGone, isPanelGone, goneStyle,
         panelKind, shownPanel, shownList, activityTab, sidebarFold, isMembersOffered, panelElement, sidebarElement, mainElement, mainViewElement, drawnThread, threadOrigin, focusStop,
         onResize, onFocusIn, onSelect, onBack, onListPanel, onActivityTab, onPanelLeave, onSidebarOver, onSidebarAway, onThreadsTab, openThreadFromList, onOpenThread, onThreadBack, onMentionOpen,
         openThreadFromMentions, openFromTap, closeThreadDrawer, closePanel,

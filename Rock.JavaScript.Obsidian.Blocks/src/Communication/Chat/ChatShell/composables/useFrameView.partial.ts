@@ -146,9 +146,16 @@ export type Frame = MembersPanelViews & ThreadsPanelWiring & {
 
     isSidebarHidden: ComputedRef<boolean>;
 
-    isConversationHidden: ComputedRef<boolean>;
+    /**
+     * Whether the conversation's column is out of reach: off a phone's screen, or under the
+     * sidebar laid over it, where it stays in view, so push still counts it seen.
+     */
+    isMainInert: ComputedRef<boolean>;
 
     isPanelHidden: ComputedRef<boolean>;
+
+    /** Whether the panel column is out of reach: hidden, or under the sidebar laid over the conversation. */
+    isPanelInert: ComputedRef<boolean>;
 
     isSidebarGone: Ref<boolean>;
 
@@ -458,6 +465,10 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
 
     /** A closed panel is out of reach everywhere; an open one only while a phone shows another pane. */
     const isPanelHidden = computed((): boolean => !panelKind.value || (isPhone.value && pane.value !== "panel"));
+
+    // The sidebar laid over the conversation is modal, as a sheet is: what it covers is out of reach.
+    const isMainInert = computed((): boolean => isConversationHidden.value || sidebarFold.value === "over");
+    const isPanelInert = computed((): boolean => isPanelHidden.value || sidebarFold.value === "over");
 
     // #endregion Computed Values
 
@@ -1304,8 +1315,9 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
         isPaneMotionOn,
         pane,
         isSidebarHidden,
-        isConversationHidden,
+        isMainInert,
         isPanelHidden,
+        isPanelInert,
         isSidebarGone,
         isConversationGone,
         isPanelGone,
