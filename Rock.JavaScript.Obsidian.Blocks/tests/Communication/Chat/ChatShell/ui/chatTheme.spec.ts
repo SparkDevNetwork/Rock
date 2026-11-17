@@ -773,15 +773,11 @@ describe("the components' own styles", () => {
         expect(declarationOf(introPath, ".chat-intro-desc", "overflow")).toBe("hidden");
     });
 
-    // The history skeleton hands over to the first page as a cross-fade: it fades out over the
-    // view's own duration while the page rises in beneath it, never leaving the feed blank between.
-    test("the history skeleton fades out over the first page's entrance", () => {
-        const feed = readSheet(feedPath);
-        const leaving = feed.rules.find(r => r.media === "" && r.selector === ".chat-feed-skeleton.is-leaving");
-        const gone = feed.rules.find(r => r.media === "" && r.selector === ".chat-feed-skeleton.is-gone");
-
-        expect(normalize(leaving?.declarations.get("transition") ?? "")).toBe(normalize("opacity var(--chat-d-view) var(--chat-ease-state)"));
-        expect(gone?.declarations.get("opacity")).toBe("0");
+    // The history skeleton is drawn from the first render and leaves the moment the first page is
+    // in, with no fade: a skeleton is still, and the page's own entrance is the only motion, so the
+    // sheet keeps no leaving or gone state for it.
+    test("the history skeleton leaves with no fade", () => {
+        expect(readSheet(feedPath).rules.filter(r => r.selector.startsWith(".chat-feed-skeleton.is-"))).toEqual([]);
     });
 
     // Drawn over the feed, the history skeleton keeps the feed's own bounds: the whole feed box,
