@@ -21,14 +21,11 @@ You are performing a thorough review of a completed Rock RMS Obsidian block conv
 
 ---
 
-## Exhaustiveness Mandate
+## Recall Bar
 
-**This is the ONLY review pass.** Every issue must be found in this execution. No follow-up review will happen.
+This is the only review pass, so favor recall. When unsure whether something is a defect, report it (as a Note if minor): a false positive costs a minute, a missed regression ships.
 
-- **When in doubt, flag it.** False positives are cheap. Missed bugs are not.
-- **Do not skim.** If you catch yourself summarizing a section as "looks fine", re-read it line by line.
 - **Do not stop at "method exists."** Trace the full logic: conditions, defaults, error paths, edge cases. A method that exists but filters differently is a bug.
-- **Sweep twice.** After the initial audit, re-read the WebForms source top to bottom. The second pass always finds something.
 
 ---
 
@@ -52,7 +49,7 @@ Otherwise, auto-detect from the branch name:
 ```bash
 git branch --show-current
 ```
-Extract the block name from `feature-v{version}-claude-{blocknamelower}`. Use `Glob` to find the matching C# block file under `Rock.Blocks/`.
+Extract the block name from the last hyphen-separated segment of the branch name (`feature-[developer initials]-[blocknamelower]`). Use `Glob` to find the matching C# block file under `Rock.Blocks/`.
 
 If the block cannot be resolved, ask the user. Do not guess.
 
@@ -355,6 +352,6 @@ Flow:
 
 ```
 User: "/review-conversion"  (auto-detect from branch)
-Branch: feature-v19-claude-followingbyentitylava
+Branch: feature-ab-followingbyentitylava
 Flow: Extract block name → same as above
 ```

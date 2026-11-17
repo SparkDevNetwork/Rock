@@ -26,8 +26,7 @@ See `.claude/rules/data-model.md` § "Block Type Methods" for the full safety wa
 
 ## `using` Statements
 
-- Always include `using System;`
-- Add `using Rock.Model;` if referencing `typeof()` for job types or entity types
+- Add a `using` only for types referenced by their short name (for example `using System;` for `Convert`). Fully qualified names such as `typeof( Rock.Jobs.PostUpdateJobs.PostV183UpdateAchievementTypes )` need none.
 
 ---
 
@@ -65,6 +64,6 @@ For large SQL scripts, consider using embedded resources via `HotFixMigrationRes
 ## Code Organization
 
 - Use descriptive private methods for logical groups of operations
-- Name private methods with developer initials and date: `NA_FixHtmlContent_Up()`
+- Name private methods with optional developer initials, a description, and `_Up`: `NA_FixHtmlContent_Up()`
 - Add XML doc comments on private methods explaining what they fix and why
 - Reference GitHub issues where applicable: `/// Fix for issue #6682`

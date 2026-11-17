@@ -153,7 +153,7 @@ Work through each category below. Check every item against both the WebForms sou
 - [ ] Block actions return `ActionBadRequest()` for invalid input, not exceptions
 
 ### Vue Component
-- [ ] Uses `defineComponent` with proper setup
+- [ ] Uses `<script setup lang="ts">` with the block order and region order in `.claude/rules/obsidian-conventions.md`
 - [ ] `useConfigurationValues` for options bag
 - [ ] `useInvokeBlockAction` for server calls
 - [ ] Template uses Obsidian UI components (not raw HTML where components exist)
@@ -206,7 +206,7 @@ These patterns are acceptable in WebForms but should be improved during conversi
 - [ ] No `string.Format()` — use string interpolation
 - [ ] No deep null-check nesting — use `?.`, `??`, and early returns
 - [ ] No empty `catch { }` without intentional-ignore comment
-- [ ] No `#region` blocks carried from WebForms (Obsidian blocks should be clean enough not to need them)
+- [ ] No WebForms lifecycle regions carried over (e.g. `Base Control Methods`, `Events`); `#region` sections follow the canonical Obsidian blocks (`Keys`, `Methods`, `Block Actions`)
 - [ ] No commented-out WebForms code
 - [ ] No `ViewState` or `IsPostBack` remnants or equivalents
 

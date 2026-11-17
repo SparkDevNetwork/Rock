@@ -1,6 +1,6 @@
 # Parallel Runs
 
-**Experimental.** This mode has never been run. Use it only when the user asks for it, and tell them it is untested. Watch the first run closely and record what went wrong in this file.
+**Experimental.** This mode has had one run (see First run notes below). Use it only when the user asks for it, and tell them it is still experimental. Watch each run closely and add what went wrong to the First run notes.
 
 For plans with hundreds of agent tests. One orchestrator (you) splits the work, workers run tests and write results to staging files, and the orchestrator merges them into the plan. Workers never edit the plan file.
 

@@ -56,8 +56,6 @@ WHERE [Guid] = '053C3F1D-8BF2-48B2-A8E6-55184F8A87F4';
 From migration 278 — run-once job to fix data:
 
 ```csharp
-using Rock.Model;  // needed for typeof()
-
 // In Up():
 RockMigrationHelper.AddPostUpdateServiceJob(
     name: "Rock Update Helper v18.3 - Fix Broken Achievement Types",
@@ -68,7 +66,7 @@ RockMigrationHelper.AddPostUpdateServiceJob(
 ```
 
 **Notes:**
-- `typeof().FullName` gives the assembly-qualified type name
+- `typeof().FullName` gives the namespace-qualified type name (no assembly), which is what `jobType` expects
 - Cron expression is mandatory but the job only runs once (post-update)
 - Use a SystemGuid constant for the job Guid so it can be referenced in startup code
 
@@ -149,7 +147,7 @@ public override void Up()
         "1EDAFDED-DFE6-4334-B019-6EECBA89E05A",  // fieldTypeGuid (Boolean)
         "Show Header",               // name
         "ShowHeader",                // key
-        "CustomSetting",             // category
+        "",                          // abbreviatedName
         "Whether to show the header panel.",  // description
         0,                           // order
         "True",                      // defaultValue
@@ -214,6 +212,7 @@ END
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
+//
 
 using System;
 
@@ -223,7 +222,8 @@ namespace Rock.Plugin.HotFixes
     /// [Description of what this migration does]
     /// </summary>
     /// <seealso cref="Rock.Plugin.Migration" />
-    [MigrationNumber( NNN, "XX.X" )]
+    // "X.Y" is the release of the target branch from its name, for example "19.9" on hotfix-19.9
+    [MigrationNumber( NNN, "19.9" )]
     public class DescriptiveClassName : Migration
     {
         /// <summary>
@@ -251,5 +251,5 @@ namespace Rock.Plugin.HotFixes
 
 - **Filename:** `{number}_{PascalCaseDescription}.cs` (e.g., `280_FixSqlRunnerWarningHtml.cs`)
 - **Class name:** Matches the PascalCase description (e.g., `FixSqlRunnerWarningHtml`)
-- **Private methods:** Developer initials + description + date: `NA_FixHtmlContent_Up_20260409()`
+- **Private methods:** Optional developer initials + description + `_Up`/`_Down`: `NA_FixHtmlContent_Up()`
 - **XML doc comments:** Always present on class and public methods

@@ -63,7 +63,7 @@ Run the preflight checks in `references/environment.md` and show the results as 
 
 ### 3. One at a time (parallel only on request)
 
-Run the tests one at a time. Parallel mode (`references/parallel.md`) is experimental and has never been tried, so use it only when the user asks for it (for example `parallel` in the input). When more than about 200 tests are selected and the user did not mention it, you may say once that an experimental parallel mode exists and ask whether to use it; default to one at a time and do not ask again.
+Run the tests one at a time. Parallel mode (`references/parallel.md`) is experimental (one run so far; see its First run notes), so use it only when the user asks for it (for example `parallel` in the input). When more than about 200 tests are selected and the user did not mention it, you may say once that an experimental parallel mode exists and ask whether to use it; default to one at a time and do not ask again.
 
 ### 4. Run each test
 

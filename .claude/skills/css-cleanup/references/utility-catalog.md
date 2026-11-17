@@ -2,7 +2,7 @@
 
 Quick-lookup reference for all available Rock and Bootstrap utility classes. Organized by CSS property.
 
-Source: `RockWeb/Styles/styles-v2/`
+Source: `Rock.Frontend.Styles/src/styles/styles-v2/` (compiled into the git-ignored `RockWeb/Styles/styles-v2/`)
 
 ---
 

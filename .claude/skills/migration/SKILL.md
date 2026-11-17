@@ -44,7 +44,7 @@ This is a hard gate. Before doing anything else:
 1. If `$ARGUMENTS` includes a migration name, search for it in `Rock.Migrations/Migrations/`
 2. Otherwise, find the most recently created .cs migration file (highest timestamp prefix):
    ```
-   Glob: Rock.Migrations/Migrations/*.cs (exclude *.Designer.cs)
+   Glob: Rock.Migrations/Migrations/**/*.cs (exclude *.Designer.cs; migrations live in per-version folders such as `Version 20.0/Version 20.0/`)
    ```
 3. Confirm the main .cs, .Designer.cs, and .resx files all exist for that migration
 
@@ -91,7 +91,7 @@ Before writing migration logic, you must understand the actual database schema. 
 - Look for: `[Required]` (NOT NULL), `[MaxLength(N)]` (string limits), FK navigation properties, enum-typed properties, default values
 
 **Understand Rock's standard column patterns:**
-- Every entity inheriting `Model<T>` has: `Id`, `Guid`, `IsSystem`, `CreatedDateTime`, `ModifiedDateTime`, `CreatedByPersonAliasId`, `ModifiedByPersonAliasId`
+- Every entity inheriting `Model<T>` has: `Id`, `Guid`, `CreatedDateTime`, `ModifiedDateTime`, `CreatedByPersonAliasId`, `ModifiedByPersonAliasId`, and the `Foreign*` columns. `IsSystem` is declared per entity, not on `Model<T>`; check the model before using it.
 - Audit FK columns reference `[PersonAlias]`, NOT `[Person]` — no cascade delete
 - Campus FK columns typically use `ON DELETE SET NULL`
 - `[Order]` columns should be calculated from existing max, not hardcoded to 0
@@ -175,7 +175,7 @@ Read `references/common-pitfalls.md` and run through this checklist before prese
 1. Up() and Down() are both non-empty (or Down() has an intentional comment explaining why it's empty)
 2. Down() reverses Up() in correct reverse order
 3. All `AddColumn` types match the model's `[Required]`, `[MaxLength]`, nullable attributes
-4. NOT NULL columns on existing tables have `defaultValue` or `defaultValueSql`
+4. NOT NULL columns added to existing tables give existing rows the right value (EF supplies the CLR default; pass `defaultValue` or `defaultValueSql` when that value is wrong)
 5. FK cascade behavior is correct (PersonAlias audit FKs: no cascade; Campus FKs: SET NULL)
 6. `Rock.SystemGuid` constants used instead of magic string GUIDs where available
 7. Raw SQL follows Rock formatting conventions — string escaping correct in `$@"..."` strings

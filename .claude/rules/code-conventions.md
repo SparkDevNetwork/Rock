@@ -60,7 +60,7 @@ When using interpolated verbatim strings for SQL in C#:
 
 ## Rock Domain Names
 
-Valid `[RockDomain]` values (also used for `[Enums.EnumDomain]` and commit message domains):
+Valid domain names for `Rock.Enums.[Domain]` folders and namespace placement. Commit message domains use the release-note list in `.claude/rules/rock-domains.md`. Attribute values don't always match this casing: `[RockDomain]` uses `CMS`, `CRM` and `LMS` (for example `Rock/Model/CRM/Badge/Badge.cs`), and `[Enums.EnumDomain]` uses `CRM` (for example `Rock.Enums/Crm/Gender.cs`). For either attribute, copy the casing of an existing attribute in the same domain:
 
 AI, Blocks, CheckIn, Cms, Communication, Connection, Controls, Core, Crm, Engagement, Event, Finance, Geography, Group, Lms, Mobile, Net, Observability, Reporting, Security, WebFarm, Workflow
 

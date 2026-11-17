@@ -23,7 +23,7 @@ metadata:
 
 # Remember: Auto-Memory Curation Workflow
 
-**CRITICAL: Enter plan mode immediately.** Do all reading and drafting in plan mode. Present the candidate memories via `ExitPlanMode`. Only after the user approves may you write to the memory folder.
+Enter plan mode before reading or drafting, and present the candidate memories via `ExitPlanMode`. Write to the memory folder only after the user approves, because memory shapes every future session and the user needs to see the exact text first.
 
 You are auditing the current session for cross-session memory. The memory folder is the one declared in your system prompt under the auto-memory section (path of the form `~/.claude/projects/{encoded-cwd}/memory/`). Do not hardcode the path; use the one already in your system prompt at runtime.
 
@@ -264,17 +264,14 @@ Auto mode is fine here; the user has approved.
 
 User: "We use SlidingDateRangePicker for grid date filters now, not the WebForms-style two-date thing."
 
-Plan body:
+If no existing memory covers it, the plan body is:
 
 ```
 ## NEW: feedback_use_sliding_date_range.md
 {full body with Why and How to apply}
-
-## SKIPPED
-(none)
 ```
 
-(In this case the existing memory already covers SlidingDateRange, so the skill should detect that and either UPDATE the existing file or SKIP with reason "covered by feedback_use_sliding_date_range.md".)
+If an existing memory already covers it, UPDATE that file when the correction adds a new facet; otherwise list it under SKIPPED with reason "covered by {filename}".
 
 ### Example 2: Long conversion session, partial compaction
 
@@ -297,7 +294,7 @@ null check that the WebForms original also lacks, that is not a finding.
 **Action requested:** Move into .claude/rules/data-model.md, or surface as a one-paragraph note in CLAUDE.md.
 
 ## SKIPPED
-- "always run /build before committing": covered by CLAUDE.md
+- "use RockDateTime instead of DateTime": covered by CLAUDE.md
 - "current PR branch is feature/xyz": session-specific task state
 ```
 

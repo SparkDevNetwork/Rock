@@ -59,7 +59,7 @@ These are temporary — they will be overwritten when the user runs Rock.CodeGen
 
 ## File-by-File Implementation Checklist
 
-Use this to verify completeness before finishing Phase 4.
+Use this to verify completeness before running the plan's Step 10 validation.
 
 ### C# Bags (`Rock.ViewModels/Blocks/[Category]/[BlockName]/`)
 - [ ] `[BlockName]OptionsBag.cs` created (always required)

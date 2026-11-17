@@ -8,27 +8,27 @@ End-to-end examples showing expected output for each phase and block type.
 
 ### Phase 1 Output
 
-> **Block:** `RockWeb/Blocks/Core/NoteTypeDetail.ascx.cs` (310 lines)
+> **Block:** `RockWeb/Blocks/Core/NoteTypeDetail.ascx.cs` (293 lines)
 >
 > **Classification:** Detail
 > - Displays a single `NoteType` entity with view and edit modes
-> - Fields: Name, EntityType picker, IconCssClass, Color, UserSelectable, RequiresApprovals, IsActive
-> - Uses breadcrumbs (`GetBreadCrumbs` override)
+> - Fields: Name, EntityType picker, IconCssClass, Color, UserSelectable
 > - Has `IsSystem` guard — system note types show a read-only warning and lock structural fields
-> - Edit requires entity-level `EDIT` authorization
-> - Entity attributes supported
 >
 > **Unsupported patterns:** None found.
 >
 > **Base class:** `RockEntityDetailBlockType<NoteType, NoteTypeBag>` (generic — standard IEntity with full CRUD)
 >
-> **Canonical reference:** `Rock.Blocks/Engagement/AchievementAttemptDetail.cs` (694 lines)
+> **Performance issues:** None found.
+>
+> **Page parameter lookups:** `NoteTypeId` (line 69) and `EntityTypeId` (line 225) are read with `.AsIntegerOrNull()`; resolve `NoteTypeId` with `Get( key, !PageCache.Layout.Site.DisablePredictableIds )`. `EntityTypeId` is a plain integer type id: keep `.AsIntegerOrNull()` and call `EntityTypeCache.Get( int )`, because `EntityTypeCache` hides the `Get( key, allowIntegerIdentifier )` overload.
+>
+> **Canonical reference:** `Rock.Blocks/Engagement/AchievementAttemptDetail.cs`
 
 ### Phase 2 Output
 
 > **Design proposal:**
 > - Standard detail block with view panel and edit panel
-> - `IBreadCrumbBlock` — yes, WebForms block sets breadcrumb to note type name
 > - `IsSystem` guard: view panel shows `<NotificationBox>` informational warning; edit panel locks Name and EntityType fields
 > - EntityType picker populated via `EntityTypeCache` filtered to entities that support notes
 > - Entity attributes supported (`LoadAttributesAndValuesForPublicView/Edit`)
@@ -37,18 +37,15 @@ End-to-end examples showing expected output for each phase and block type.
 >
 > **Questions:**
 > 1. The EntityType picker in WebForms shows all entity types. Should the Obsidian version filter to only entities that support notes, or show all?
-> 2. The Color field is a free-text hex input in WebForms. Should this become a `ColorPicker` control in Obsidian?
 
 ### Phase 2 — User Answers (example)
 
 > 1. Filter to entities that support notes — same behavior as the existing picker in other converted blocks.
-> 2. Yes, use a `ColorPicker`.
 
 ### Phase 3 Output
 
 > **Plan:**
-> - **Type:** Detail — `RockEntityDetailBlockType<NoteType, NoteTypeBag>` with `IBreadCrumbBlock`
-> - **Breadcrumbs:** Yes, resolves note type name via `NoteTypeService.GetSelect`
+> - **Type:** Detail — `RockEntityDetailBlockType<NoteType, NoteTypeBag>`
 > - **Security:** Entity-level `EDIT` for edit mode; `SecurityGrantToken` for attributes
 > - **IsSystem:** `<NotificationBox>` in view panel; locks Name and EntityType in edit panel
 > - **Entity attributes:** Yes — `LoadAttributesAndValuesForPublicView/Edit`, `SaveAttributeValues`
@@ -92,6 +89,10 @@ End-to-end examples showing expected output for each phase and block type.
 > **Unsupported patterns:** None found.
 >
 > **Base class:** `RockEntityListBlockType<SnippetType>`
+>
+> **Performance issues:** None found.
+>
+> **Page parameter lookups:** None found.
 >
 > **Canonical reference:** `Rock.Blocks/AI/AIAgentList.cs` (simple entity list with auth checks)
 
@@ -176,7 +177,7 @@ End-to-end examples showing expected output for each phase and block type.
 
 > **Plan:**
 > - **Type:** Custom — `RockBlockType`
-> - **Context:** Person via `RequestContext.CurrentPerson`
+> - **Context:** Person via `RequestContext.GetContextEntity<Person>()`
 >
 > **Files to create:**
 > 1. `Rock.ViewModels/Blocks/Crm/PersonalDevices/PersonalDevicesOptionsBag.cs`
