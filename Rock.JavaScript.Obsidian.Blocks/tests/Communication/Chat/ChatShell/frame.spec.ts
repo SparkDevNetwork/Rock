@@ -1968,7 +1968,7 @@ describe("the panel column", () => {
         await w.get("[data-testid='header-more'] button").trigger("click");
         await settle();
         const items = Array.from(document.querySelectorAll<HTMLElement>("[role='menu'] [role='menuitem']"));
-        expect(items.map(i => i.textContent?.trim())).toContain("Threads");
+        expect(items.map(i => i.textContent?.trim())).toContain("Threads in Worship Team");
     });
 
     test("on a phone, the panel is the third pane, left by its back chevron", async () => {
@@ -1977,7 +1977,7 @@ describe("the panel column", () => {
 
         await w.get("[data-testid='header-more'] button").trigger("click");
         await settle();
-        Array.from(document.querySelectorAll<HTMLElement>("[role='menu'] [role='menuitem']")).find(i => i.textContent?.trim() === "Threads")!.click();
+        Array.from(document.querySelectorAll<HTMLElement>("[role='menu'] [role='menuitem']")).find(i => i.textContent?.trim() === "Threads in Worship Team")!.click();
         await settle();
 
         expect(w.get("[data-testid='chat-frame']").attributes("data-pane")).toBe("panel");
