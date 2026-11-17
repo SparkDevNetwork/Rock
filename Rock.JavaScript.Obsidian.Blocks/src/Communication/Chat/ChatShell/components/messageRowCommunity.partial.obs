@@ -76,7 +76,6 @@
         </div>
         <span v-if="view.isDockLent" :ref="on.setDock" class="chat-tools-dock"></span>
     </template>
-    <!-- The head time's long form, in the chat's overlay layer so the feed's faded edges never cut it. -->
     <Teleport :to="tipHost ?? 'body'" :disabled="!tipHost">
         <span v-if="isTipShown"
               ref="tipElement"
@@ -430,7 +429,7 @@
     const timeElement = ref<HTMLElement>();
     const { tipElement, isTipShown, floatingStyles, onPointerEnter, onPointerLeave, onPointerDown } = useTooltip(timeElement);
 
-    /** The chat's overlay layer the tip is drawn in; none when the row is drawn alone. */
+    /** The chat's overlay layer the tip is drawn in, so the feed's faded edges never cut it; none when the row is drawn alone. */
     const tipHost = computed((): HTMLElement | null => overlayHostOf(timeElement.value));
 
     /**

@@ -276,8 +276,12 @@ button.chat-mn {
         emit("person", piece.guid ?? "", event.currentTarget as HTMLElement);
     }
 
-    /** The body's one tip moves to the emoji under the pointer and names it. */
-    function onEmojiEnter(event: MouseEvent, label: string): void {
+    /** The body's one tip moves to the emoji under the pointer and names it; an emoji with no name has no tip. */
+    function onEmojiEnter(event: MouseEvent, label: string | undefined): void {
+        if (!label) {
+            return;
+        }
+
         tipAnchor.value = event.currentTarget as HTMLElement;
         tipText.value = label;
         onPointerEnter();
