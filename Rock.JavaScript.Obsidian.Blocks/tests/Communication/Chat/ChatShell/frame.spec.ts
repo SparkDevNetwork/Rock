@@ -1402,6 +1402,10 @@ describe("the conversation's failed sends", () => {
             // the drawer's Try again asks for it alone, and Delete in one place cannot drop it from another
             await w.get("[data-testid='frame-panel'] [data-testid='composer-failed-retry']").trigger("click");
             expect((mockShell!.sender as { retryAll: jest.Mock }).retryAll.mock.calls).toEqual([[["r1"]]]);
+
+            // and its Delete drops that reply alone, from the drawer's own sends
+            await w.get("[data-testid='frame-panel'] [data-testid='composer-failed-discard']").trigger("click");
+            expect((mockShell!.sender as { discard: jest.Mock }).discard.mock.calls).toEqual([["r1"]]);
         });
 
         test("goes to the conversation's strip once its thread closes, without being said again", async () => {
