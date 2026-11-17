@@ -15,20 +15,19 @@
 // </copyright>
 //
 // The profile card, mounted: the person a name, a face or a chip names, as chat_get_person answers
-// them. Their face, name, the Leader pill in the room it was opened from or "You" on the person's
-// own card, and their campus by its name from the init box, whatever their setting. Message for
-// someone the person may message, a quiet box for someone they may not. Below the action, only when
-// they show their public profile details, a block under a rule: Rock's contact rows, the badges
-// chat holds, and the church's template, with Rock's rows reserved while Rock answers; a note when
-// someone keeps them private. The person's own card has the switch for them and Chat settings.
-// The card is a dialog named for the person, takes focus as it opens, and Escape gives focus back
-// to what opened it.
+// them. A glance that leaves the person's message readable: their face, name with no pill, the
+// status words and campus line, and one row of actions, Message and Details at equal widths and a
+// square More holding Block, or Unblock for someone blocked. The person's own card offers Chat
+// settings in Message's place and no More. Their contact, badges and the church's template are
+// the profile panel's, which Details opens. Opened from a message, it stands 8 px under the whole
+// row with its left edge on the face, and above the row only where there is no room below. The
+// card is a dialog named for the person, takes focus as it opens, and Escape gives focus back to
+// what opened it.
 /* eslint-disable @typescript-eslint/naming-convention */
 import { mount, VueWrapper } from "@vue/test-utils";
 import { nextTick } from "vue";
 import ProfileCard from "../../../../../src/Communication/Chat/ChatShell/components/profileCard.partial.obs";
-import { ChatBadge, PersonProfile } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
-import { ProfileRockState } from "../../../../../src/Communication/Chat/ChatShell/composables/useRooms.partial";
+import { PersonProfile } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 import { join } from "path";
 import { anna, badgesIn, carl, createStatusStore, provideStatus, setsBothRings, shellFolder, StatusStore, styleRules, swaps, viewer } from "../statusStore";
 
@@ -51,14 +50,6 @@ function profile(overrides: Partial<PersonProfile> = {}): PersonProfile {
         can_message: true,
         dm_channel_id: null,
         ...overrides
-    };
-}
-
-/** Rock's answer for Anna, who shows her details. */
-function answered(extra: Record<string, unknown> = {}): ProfileRockState {
-    return {
-        kind: "answered",
-        details: { isShown: true, email: "anna.reyes@gmail.com", mobilePhone: "(602) 555-0142", mobilePhoneUri: "tel:+16025550142", lavaHtml: null, ...extra }
     };
 }
 
@@ -88,6 +79,18 @@ function card(w: VueWrapper): HTMLElement {
 async function settle(): Promise<void> {
     await nextTick();
     await nextTick();
+}
+
+/** The test ids of the action row's controls, in order: its buttons and the More menu's button. */
+function actionIds(w: VueWrapper): string[] {
+    return w.findAll("[data-testid='profile-actions'] button").map(button => button.attributes("data-testid") ?? "");
+}
+
+/** Opens the card's More and answers its items' keys, in order. */
+async function openMore(w: VueWrapper): Promise<string[]> {
+    await w.get("[data-testid='profile-more']").trigger("click");
+    await settle();
+    return Array.from(document.querySelectorAll<HTMLElement>("[role='menu'] [data-key]")).map(item => item.dataset.key ?? "");
 }
 
 // #endregion Helpers
@@ -225,25 +228,14 @@ describe("the card", () => {
 
         expect(w.emitted("close")).toHaveLength(1);
     });
-
-    test("draws no badges without the church's list", () => {
-        const own = mountCard(profile({ is_self: true }));
-
-        expect(own.find("[data-testid='profile-badges']").exists()).toBe(false);
-        own.unmount();
-
-        const other = mountCard();
-        expect(other.find("[data-testid='profile-badges']").exists()).toBe(false);
-        expect(other.text()).not.toContain("Member");
-    });
 });
 
 describe("the name line", () => {
-    test("carries the Leader pill for a leader of the room the card was opened from", () => {
+    test("carries no Leader pill, even for a leader of the room the card was opened from", () => {
         const w = mountCard(profile({ is_leader: true }));
 
-        expect(w.get("[data-testid='profile-leader']").text()).toBe("Leader");
-        expect(w.get("[data-testid='profile-leader']").classes()).toContain("is-tag");
+        expect(w.find("[data-testid='profile-leader']").exists()).toBe(false);
+        expect(w.get("[data-testid='profile-name']").text()).toBe("Anna Reyes");
     });
 
     test("carries no pill for anyone else", () => {
@@ -253,10 +245,11 @@ describe("the name line", () => {
         expect(w.find("[data-testid='profile-you']").exists()).toBe(false);
     });
 
-    test("says You on the person's own card", () => {
+    test("carries no You pill on the person's own card", () => {
         const w = mountCard(profile({ is_self: true }));
 
-        expect(w.get("[data-testid='profile-you']").text()).toBe("You");
+        expect(w.find("[data-testid='profile-you']").exists()).toBe(false);
+        expect(w.get("[data-testid='profile-name']").text()).toBe("Anna Reyes");
     });
 });
 
@@ -297,172 +290,88 @@ describe("the look", () => {
         expect(identity.find("[data-testid='profile-campus']").exists()).toBe(true);
     });
 
-    test("puts the details after the action, so Rock's answer only lengthens the card's foot", () => {
-        const w = mountCard(profile(), { rock: answered() });
+    test("holds no details: Rock's rows, the badges and the church's template are the panel's", () => {
+        const w = mountCard(profile());
 
-        const actions = w.get("[data-testid='profile-actions']").element;
-        const details = w.get("[data-testid='profile-details']").element;
-        expect(actions.compareDocumentPosition(details) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    });
-});
-
-describe("the private note", () => {
-    test("says a person who keeps their details private does, by their first name, with no details block", () => {
-        const w = mountCard(profile({ details: null }), { rock: { kind: "answered", details: { isShown: false } } });
-
-        expect(w.get("[data-testid='profile-note']").text()).toBe("Anna keeps profile details private.");
         expect(w.find("[data-testid='profile-details']").exists()).toBe(false);
-    });
-
-    test("is left out for someone who shows their details", () => {
-        const w = mountCard(profile(), { rock: answered() });
-
         expect(w.find("[data-testid='profile-note']").exists()).toBe(false);
-    });
-
-    test("is left out of the person's own card, whose switch says it instead", () => {
-        const w = mountCard(profile({ is_self: true, details: null }), { showsOwnDetails: false });
-
-        expect(w.find("[data-testid='profile-note']").exists()).toBe(false);
+        expect(w.find(".chat-skeleton").exists()).toBe(false);
     });
 });
 
-// Rock's half: the contact rows and the church's template, read as the card opens.
-describe("Rock's details", () => {
-    test("draw the email as a mail link and the mobile phone as a call link", () => {
-        const w = mountCard(profile(), { rock: answered() });
+// Opened from a message, the card leaves the message readable: under the whole row, its left edge
+// on the face column, whether the face or the name was pressed; above the row only without room.
+describe("where it is placed", () => {
+    type Box = { left: number, top: number, width: number, height: number };
 
-        const email = w.get("[data-testid='profile-email']");
-        expect(email.element.tagName).toBe("A");
-        expect(email.attributes("href")).toBe("mailto:anna.reyes@gmail.com");
-        expect(email.text()).toBe("anna.reyes@gmail.com");
+    function boxed(element: HTMLElement, box: Box): void {
+        element.getBoundingClientRect = () => ({ ...box, x: box.left, y: box.top, right: box.left + box.width, bottom: box.top + box.height, toJSON: () => box }) as DOMRect;
+    }
 
-        const phone = w.get("[data-testid='profile-phone']");
-        expect(phone.attributes("href")).toBe("tel:+16025550142");
-        expect(phone.text()).toBe("(602) 555-0142");
+    /** Opens the card from a name inside a message row, in a window 1000 by 800; the card is 300 by 180. */
+    async function openFrom(row: Box, layout: "bubble" | "community"): Promise<HTMLElement> {
+        Object.defineProperty(document.documentElement, "clientWidth", { configurable: true, value: 1000 });
+        Object.defineProperty(document.documentElement, "clientHeight", { configurable: true, value: 800 });
+        const message = document.createElement("div");
+        message.dataset.messageId = "42";
+        const face = document.createElement("span");
+        face.className = layout === "bubble" ? "chat-msg-face" : "chat-cm-gutter";
+        const name = document.createElement("button");
+        message.append(face, name);
+        document.body.append(message);
+        boxed(message, row);
+        boxed(face, { left: row.left + 16, top: row.top + 4, width: 36, height: 36 });
+        boxed(name, { left: row.left + 64, top: row.top + 4, width: 80, height: 18 });
+
+        const sized = jest.spyOn(HTMLElement.prototype, "offsetWidth", "get").mockImplementation(function (this: HTMLElement) {
+            return this.classList.contains("chat-pc") ? 300 : 0;
+        });
+        const tall = jest.spyOn(HTMLElement.prototype, "offsetHeight", "get").mockImplementation(function (this: HTMLElement) {
+            return this.classList.contains("chat-pc") ? 180 : 0;
+        });
+
+        const w = mountCard(profile(), { anchor: name });
+        await settle();
+        await new Promise(resolve => setTimeout(resolve, 0));
+        await settle();
+        sized.mockRestore();
+        tall.mockRestore();
+
+        return card(w);
+    }
+
+    test.each(["bubble", "community"] as const)("in the %s layout it stands 8 px under the whole row, its left edge on the face", async layout => {
+        const placed = await openFrom({ left: 300, top: 200, width: 600, height: 60 }, layout);
+
+        expect(placed.style.left).toBe("316px");
+        expect(placed.style.top).toBe(`${200 + 60 + 8}px`);
     });
 
-    test("leave out a row Rock has nothing for, and the whole contact list when it has neither", () => {
-        const noPhone = mountCard(profile(), { rock: answered({ mobilePhone: null, mobilePhoneUri: null }) });
-        expect(noPhone.find("[data-testid='profile-phone']").exists()).toBe(false);
-        expect(noPhone.find("[data-testid='profile-email']").exists()).toBe(true);
-        noPhone.unmount();
+    test("with no room below the row it stands 8 px above it, its left edge still on the face", async () => {
+        const placed = await openFrom({ left: 300, top: 560, width: 600, height: 60 }, "bubble");
 
-        const neither = mountCard(profile(), { rock: answered({ email: null, mobilePhone: null, mobilePhoneUri: null }) });
-        expect(neither.find("[data-testid='profile-contact']").exists()).toBe(false);
-    });
-
-    test("an email address is never made into a link Rock did not give", () => {
-        const w = mountCard(profile(), { rock: answered({ email: "a@b.org?bcc=x@y.org" }) });
-
-        expect(w.get("[data-testid='profile-email']").attributes("href")).toBe("mailto:a@b.org%3Fbcc%3Dx@y.org");
-    });
-
-    test("are reserved while Rock answers: two contact rows, and the template's lines only when the church has one", () => {
-        const plain = mountCard(profile(), { rock: { kind: "loading" } });
-        expect(plain.get("[data-testid='profile-details']").attributes("aria-busy")).toBe("true");
-        expect(plain.findAll("[data-testid='profile-contact-skeleton']")).toHaveLength(2);
-        expect(plain.find("[data-testid='profile-lava-skeleton']").exists()).toBe(false);
-        plain.unmount();
-
-        const templated = mountCard(profile(), { rock: { kind: "loading" }, isLavaConfigured: true });
-        expect(templated.find("[data-testid='profile-lava-skeleton']").exists()).toBe(true);
-    });
-
-    test("reserve nothing for someone keeping details private", () => {
-        const w = mountCard(profile({ details: null }), { rock: { kind: "loading" }, isLavaConfigured: true });
-
-        expect(w.find("[data-testid='profile-contact-skeleton']").exists()).toBe(false);
-        expect(w.find("[data-testid='profile-lava-skeleton']").exists()).toBe(false);
-    });
-
-    test("Rock answering before the card is drawn draws it once, whole, with nothing reserved", () => {
-        const w = mountCard(profile(), { rock: answered({ lavaHtml: "<p>Serving in Kids</p>" }), isLavaConfigured: true });
-
-        expect(w.find("[data-testid='profile-contact-skeleton']").exists()).toBe(false);
-        expect(w.find("[data-testid='profile-lava-skeleton']").exists()).toBe(false);
-        expect(w.find(".is-arriving").exists()).toBe(false);
-        expect(w.get("[data-testid='profile-details']").attributes("aria-busy")).toBeUndefined();
-    });
-
-    test("Rock answering after the card is drawn fills the reserved rows in place", async () => {
-        const w = mountCard(profile(), { rock: { kind: "loading" }, isLavaConfigured: true });
-
-        await w.setProps({ rock: answered({ lavaHtml: "<p>Serving in Kids</p>" }) });
-
-        expect(w.find("[data-testid='profile-contact-skeleton']").exists()).toBe(false);
-        expect(w.get("[data-testid='profile-email']").classes()).toContain("is-arriving");
-        expect(w.get("[data-testid='profile-lava']").classes()).toContain("is-arriving");
-    });
-
-    test("Rock failing collapses its rows and keeps the badges chat holds", () => {
-        const badges = [{ badge_key: "member", name: "Member", icon_css: null, bg_color: null, fg_color: null, sort_order: 1 }];
-        const w = mountCard(profile(), { rock: { kind: "failed" }, isLavaConfigured: true, badges });
-
-        expect(w.find("[data-testid='profile-contact']").exists()).toBe(false);
-        expect(w.find("[data-testid='profile-contact-skeleton']").exists()).toBe(false);
-        expect(w.find("[data-testid='profile-lava']").exists()).toBe(false);
-        expect(w.findAll("[data-testid='profile-badge']").map(b => b.text())).toEqual(["Member"]);
-    });
-
-    test("Rock saying the person is not shown, while chat still says they are, collapses its rows", () => {
-        const badges = [{ badge_key: "member", name: "Member", icon_css: null, bg_color: null, fg_color: null, sort_order: 1 }];
-        const w = mountCard(profile(), { rock: { kind: "answered", details: { isShown: false } }, badges });
-
-        expect(w.find("[data-testid='profile-contact']").exists()).toBe(false);
-        expect(w.findAll("[data-testid='profile-badge']")).toHaveLength(1);
+        expect(placed.style.left).toBe("316px");
+        expect(placed.style.top).toBe(`${560 - 8 - 180}px`);
     });
 });
 
-describe("the church's template", () => {
-    test("is drawn from Rock's safe output in a box capped in height that scrolls and can be reached by keyboard", () => {
-        const w = mountCard(profile(), { rock: answered({ lavaHtml: "<div class=\"lh\">Serving in</div><ul><li><b>Kids</b></li></ul>" }) });
-
-        const lava = w.get("[data-testid='profile-lava']");
-        expect(lava.find("ul li b").text()).toBe("Kids");
-        expect(lava.attributes("tabindex")).toBe("0");
-        expect(lava.attributes("aria-label")).toBe("More about Anna");
-        expect(lava.attributes("role")).toBe("region");
-    });
-
-    test("is left out when Rock rendered nothing", () => {
-        const w = mountCard(profile(), { rock: answered({ lavaHtml: null }), isLavaConfigured: true });
-
-        expect(w.find("[data-testid='profile-lava']").exists()).toBe(false);
-    });
-});
-
+// The switch for a person's own details is Chat settings' alone; their own card is a way there.
 describe("the person's own switch", () => {
-    test("is on their own card, by its name, saying what others see either way", () => {
-        const on = mountCard(profile({ is_self: true, can_message: false }), { showsOwnDetails: true, rock: answered() });
-        const onRow = on.get("[data-testid='switch-profile_details']");
-        expect(onRow.text()).toContain("Show public profile details");
-        expect(onRow.text()).toContain("Others see what's below");
-        expect(onRow.get("[role='switch']").attributes("aria-checked")).toBe("true");
-        expect(on.find("[data-testid='profile-details']").exists()).toBe(true);
+    test("is not on their own card, whichever way it is set", () => {
+        const on = mountCard(profile({ is_self: true, can_message: false }));
+        expect(on.find("[data-testid='switch-profile_details']").exists()).toBe(false);
         on.unmount();
 
-        const off = mountCard(profile({ is_self: true, can_message: false, details: null }), { showsOwnDetails: false });
-        const offRow = off.get("[data-testid='switch-profile_details']");
-        expect(offRow.text()).toContain("Name, photo and campus only");
-        expect(offRow.get("[role='switch']").attributes("aria-checked")).toBe("false");
-        expect(off.find("[data-testid='profile-details']").exists()).toBe(false);
+        const off = mountCard(profile({ is_self: true, can_message: false, details: null }));
+        expect(off.find("[data-testid='switch-profile_details']").exists()).toBe(false);
     });
 
-    test("asks for the change, and the details follow the person's own setting at once", async () => {
-        const w = mountCard(profile({ is_self: true, can_message: false, details: null }), { showsOwnDetails: false });
+    test("leaves their own card Chat settings and Details at equal widths, with no More", () => {
+        const w = mountCard(profile({ is_self: true, can_message: false }));
 
-        await w.get("[data-testid='switch-profile_details'] [role='switch']").trigger("click");
-        expect(w.emitted("toggleDetails")).toEqual([[true]]);
-
-        await w.setProps({ showsOwnDetails: true, rock: { kind: "loading" } });
-        expect(w.findAll("[data-testid='profile-contact-skeleton']")).toHaveLength(2);
-    });
-
-    test("shows a failed save's sentence under it", () => {
-        const w = mountCard(profile({ is_self: true, can_message: false }), { showsOwnDetails: true, ownDetailsNote: { kind: "error", text: "Couldn't save. Try again in a moment.", retry: () => undefined } });
-
-        expect(w.get("[data-testid='switch-profile_details']").text()).toContain("Couldn't save. Try again in a moment.");
+        expect(actionIds(w)).toEqual(["profile-settings", "profile-details-open"]);
+        expect(w.findAll("[data-testid='profile-actions'] .chat-pc-wide")).toHaveLength(2);
+        expect(w.find("[data-testid='profile-more']").exists()).toBe(false);
     });
 
     test("is not on anyone else's card", () => {
@@ -503,74 +412,6 @@ describe("Message", () => {
 });
 
 // The church's badges as the bootstrap lists them; a person's details name theirs by key.
-describe("badges", () => {
-    /** One row of the bootstrap's badges, exactly its keys. */
-    function badge(key: string, name: string, sortOrder: number, extra: Partial<ChatBadge> = {}): ChatBadge {
-        return { badge_key: key, name, icon_css: null, bg_color: null, fg_color: null, sort_order: sortOrder, ...extra };
-    }
-
-    const member = badge("member", "Member", 2, { icon_css: "fa fa-home", bg_color: "#fdf1d8", fg_color: "#6b4a07" });
-    const baptized = badge("baptized", "Baptized", 1, { icon_css: "fa fa-tint", bg_color: "#dceefb", fg_color: "#0b4f7a" });
-    const serving = badge("serving", "Serving", 3);
-
-    /** The pills' names, in the order drawn. */
-    function pillNames(w: VueWrapper): string[] {
-        return w.findAll("[data-testid='profile-badge']").map(pill => pill.text().trim());
-    }
-
-    test("lists the person's badges under a rule in the church's order", () => {
-        const w = mountCard(profile({ details: { badge_keys: ["member", "serving", "baptized"] } }), { badges: [member, baptized, serving] });
-
-        const list = w.get("[data-testid='profile-badges']");
-        expect(list.element.tagName).toBe("UL");
-        expect(list.attributes("aria-label")).toBe("Badges");
-        expect(pillNames(w)).toEqual(["Baptized", "Member", "Serving"]);
-    });
-
-    test("drops a key the church's list does not know, and draws no list when none is left", async () => {
-        const w = mountCard(profile({ details: { badge_keys: ["retired", "member"] } }), { badges: [member] });
-        expect(pillNames(w)).toEqual(["Member"]);
-
-        await w.setProps({ person: profile({ details: { badge_keys: ["retired"] } }) });
-        expect(w.find("[data-testid='profile-badges']").exists()).toBe(false);
-    });
-
-    test("draws none for someone who keeps their details private", () => {
-        const w = mountCard(profile({ details: null }), { badges: [member, baptized] });
-
-        expect(w.find("[data-testid='profile-badges']").exists()).toBe(false);
-    });
-
-    test("tints each pill by its badge's colors, and leaves a badge with none plain", () => {
-        const w = mountCard(profile({ details: { badge_keys: ["member", "serving"] } }), { badges: [member, serving] });
-
-        const [tinted, plain] = w.findAll("[data-testid='profile-badge']").map(pill => pill.element as HTMLElement);
-        expect(tinted.style.getPropertyValue("--chat-badge-bg")).toBe("#fdf1d8");
-        expect(tinted.style.getPropertyValue("--chat-badge-fg")).toBe("#6b4a07");
-        expect(tinted.classList.contains("is-toned")).toBe(true);
-        expect(plain.style.getPropertyValue("--chat-badge-bg")).toBe("");
-        expect(plain.style.getPropertyValue("--chat-badge-fg")).toBe("");
-        expect(plain.classList.contains("is-toned")).toBe(false);
-    });
-
-    test("draws the badge's own icon class, and no icon where it has none", () => {
-        const w = mountCard(profile({ details: { badge_keys: ["member", "serving"] } }), { badges: [member, { ...serving, icon_css: "  " }] });
-
-        const [withIcon, without] = w.findAll("[data-testid='profile-badge']");
-        const icon = withIcon.get("i");
-        expect(icon.classes()).toEqual(expect.arrayContaining(["fa", "fa-home"]));
-        expect(icon.attributes("aria-hidden")).toBe("true");
-        expect(without.find("i").exists()).toBe(false);
-    });
-
-    test("never draws a badge for leading the room", () => {
-        const w = mountCard(profile({ is_leader: true, details: { badge_keys: [] } }), { badges: [member] });
-
-        expect(w.find("[data-testid='profile-badges']").exists()).toBe(false);
-        expect(w.get("[data-testid='profile-leader']").text()).toBe("Leader");
-    });
-});
-
 describe("Chat settings", () => {
     test("is offered on the person's own card, and asks for the settings", async () => {
         const w = mountCard(profile({ is_self: true, can_message: false }));
@@ -590,24 +431,66 @@ describe("Chat settings", () => {
     });
 });
 
+describe("the action row", () => {
+    test("is Message and Details at equal widths, then a square More", () => {
+        const w = mountCard();
+
+        expect(actionIds(w)).toEqual(["profile-message", "profile-details-open", "profile-more"]);
+        expect(w.findAll("[data-testid='profile-actions'] .chat-pc-wide")).toHaveLength(2);
+        expect(w.find("[data-testid='profile-actions'] .chat-pc-wide [data-testid='profile-more']").exists()).toBe(false);
+        expect(w.get("[data-testid='profile-more']").attributes("aria-label")).toBe("More");
+    });
+
+    test("shares the row's width equally between its wide buttons, the More keeping its square", () => {
+        const sheet = join(shellFolder, "components/profileCard.partial.obs");
+        const wide = styleRules(sheet, /^\.chat-pc-wide$/).join(";");
+
+        expect(styleRules(sheet, /^\.chat-pc-row$/).join(";")).toMatch(/display:\s*flex/);
+        expect(wide).toMatch(/flex:\s*1 1 0/);
+        expect(wide).toMatch(/min-width:\s*0/);
+    });
+
+    test("Details asks for the person's full profile", async () => {
+        const anna = profile();
+        const w = mountCard(anna);
+
+        const details = w.get("[data-testid='profile-details-open']");
+        expect(details.text()).toBe("Details");
+        await details.trigger("click");
+
+        expect(w.emitted("details")).toEqual([[anna]]);
+    });
+
+    test("for someone who cannot be messaged is Details and More under the words", () => {
+        const w = mountCard(profile({ can_message: false }));
+
+        expect(actionIds(w)).toEqual(["profile-details-open", "profile-more"]);
+        const words = w.get("[data-testid='profile-cannot-message']").element;
+        expect(words.compareDocumentPosition(w.get("[data-testid='profile-details-open']").element) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    });
+});
+
 describe("blocking from the card", () => {
-    test("someone else's card offers Block after Message, quietly, and asks for it", async () => {
+    test("someone else's card holds Block in its More, and asks for it", async () => {
         const w = mountCard(profile());
 
-        expect(w.findAll("[data-testid='profile-actions'] button").map(b => b.attributes("data-testid"))).toEqual(["profile-message", "profile-block"]);
-        await w.get("[data-testid='profile-block']").trigger("click");
+        expect(w.find("[data-testid='profile-block']").exists()).toBe(false);
+        expect(await openMore(w)).toEqual(["block"]);
+        document.querySelector<HTMLElement>("[data-key='block']")!.click();
+        await settle();
 
         expect(w.emitted("block")?.[0]?.[0]).toMatchObject({ person_alias_guid: "a0000002-0000-4000-8000-000000000000" });
     });
 
-    test("a card of someone the person blocked says so and offers Unblock, not Message nor Block", async () => {
+    test("a card of someone the person blocked says so in words, with only a More that holds Unblock", async () => {
         const w = mountCard(profile({ is_blocked: true, can_message: false }));
 
         expect(w.get("[data-testid='profile-blocked']").text()).toContain("You blocked Anna.");
-        expect(w.find("[data-testid='profile-message']").exists()).toBe(false);
-        expect(w.find("[data-testid='profile-block']").exists()).toBe(false);
+        expect(actionIds(w)).toEqual(["profile-more"]);
         expect(w.find("[data-testid='profile-cannot-message']").exists()).toBe(false);
-        await w.get("[data-testid='profile-unblock']").trigger("click");
+        expect(await openMore(w)).toEqual(["unblock"]);
+        document.querySelector<HTMLElement>("[data-key='unblock']")!.click();
+        await settle();
 
         expect(w.emitted("unblock")).toHaveLength(1);
     });
@@ -615,14 +498,33 @@ describe("blocking from the card", () => {
     test("the person's own card offers neither", () => {
         const w = mountCard(profile({ is_self: true }));
 
+        expect(w.find("[data-testid='profile-more']").exists()).toBe(false);
         expect(w.find("[data-testid='profile-block']").exists()).toBe(false);
         expect(w.find("[data-testid='profile-unblock']").exists()).toBe(false);
     });
 
-    test("a block or unblock still out holds its button", () => {
+    test("a block or unblock still out holds its item, and choosing it asks nothing", async () => {
         const w = mountCard(profile({ is_blocked: true, can_message: false }), { isBlockBusy: true });
 
-        expect(w.get("[data-testid='profile-unblock']").attributes("disabled")).toBeDefined();
+        await openMore(w);
+        const unblock = document.querySelector<HTMLElement>("[data-key='unblock']")!;
+        expect(unblock.getAttribute("aria-disabled")).toBe("true");
+        unblock.click();
+        await settle();
+
+        expect(w.emitted("unblock")).toBeUndefined();
+    });
+
+    test("stays open while focus is in its own More menu", async () => {
+        const w = mountCard(profile());
+        await settle();
+        await openMore(w);
+        const item = document.querySelector<HTMLElement>("[data-key='block']")!;
+
+        card(w).dispatchEvent(new FocusEvent("focusout", { bubbles: true, relatedTarget: item }));
+        await settle();
+
+        expect(w.emitted("close")).toBeUndefined();
     });
 });
 
