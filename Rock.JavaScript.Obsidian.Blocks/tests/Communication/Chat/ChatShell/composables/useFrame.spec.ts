@@ -430,6 +430,26 @@ describe("the narrow fold", () => {
         expect(frame.sidebarFold.value).toBe("folded");
         expect(frame.isSidebarHidden.value).toBe(true);
     });
+
+    // The row chosen folds away with the sidebar and out of reach, so focus goes to the
+    // conversation it opened, at its title, as a phone's row hands it over.
+    test("a conversation chosen from the sidebar over the conversation gives focus to its title as the sidebar folds", async () => {
+        mounted = mountFrame();
+        const { frame, state, wrapper } = mounted;
+        state.activeChannelId = team;
+        await settle();
+        resize(frame, 1100);
+        await frame.onListPanel("threads");
+        frame.onSidebarOver();
+        await settle();
+        (wrapper.get("[data-testid='browse-channels']").element as HTMLElement).focus();
+
+        await frame.onSelect(volunteers);
+        await settle();
+
+        expect(frame.sidebarFold.value).toBe("folded");
+        expect(focused()).toBe("header-title");
+    });
 });
 
 describe("a full view", () => {
@@ -821,11 +841,11 @@ describe("focus into what is opening", () => {
 // so no lookup reads a test id. A phone skips the composer, whose focus would raise the keyboard.
 // The host here draws its stops with their marks alone, as nothing in production is found by a test id.
 describe("the one focus helper", () => {
-    type Drawn = { join: boolean, composer: boolean, threadsButton: boolean, more: boolean, message: boolean, summary: boolean };
+    type Drawn = { join: boolean, composer: boolean, threadsButton: boolean, more: boolean, message: boolean, summary: boolean, isSidebarInert: boolean };
 
     function mountMarked(): { frame: Frame, state: ReturnType<typeof fakeShell>["state"], wrapper: VueWrapper, drawn: Drawn } {
         const { shell, state } = fakeShell([]);
-        const drawn = reactive<Drawn>({ join: false, composer: true, threadsButton: true, more: false, message: true, summary: true });
+        const drawn = reactive<Drawn>({ join: false, composer: true, threadsButton: true, more: false, message: true, summary: true, isSidebarInert: false });
         let frame!: Frame;
 
         const Host = defineComponent({
@@ -841,7 +861,11 @@ describe("the one focus helper", () => {
                 });
 
                 return () => h("div", { ref: rootElement }, [
-                    h("button", { "data-focus-stop": "new-message" }, "New message"),
+                    // the sidebar's head, out of reach as a phone's list behind the conversation is
+                    h("div", { inert: drawn.isSidebarInert || undefined }, [
+                        h("button", { "data-focus-stop": "activity-button" }, "Activity"),
+                        h("button", { "data-focus-stop": "new-message" }, "New message")
+                    ]),
                     h("section", { ref: frame.mainElement }, [
                         h("b", { tabindex: -1, "data-focus-stop": "header" }, "Title"),
                         drawn.threadsButton ? h("button", { "data-focus-stop": "threads-button" }, "Threads") : null,
@@ -970,6 +994,28 @@ describe("the one focus helper", () => {
         await frame.onListPanel("threads");
         frame.closePanel();
         await settle();
+        expect(focusedStop()).toBe("header");
+    });
+
+    // A stop in a pane out of reach, as the list behind a phone's conversation, cannot take focus,
+    // so the order goes on past it rather than ending on a focus that silently fails.
+    test("passes over a stop in a pane out of reach and goes on down its order", async () => {
+        const { frame, state, drawn } = mountMarked();
+        state.activeChannelId = team;
+        drawn.more = true;
+        await settle();
+
+        frame.focusStop(["activity-button", "more", "header"]);
+        expect(focusedStop()).toBe("activity-button");
+
+        drawn.isSidebarInert = true;
+        await nextTick();
+        frame.focusStop(["activity-button", "more", "header"]);
+        expect(focusedStop()).toBe("more");
+
+        drawn.more = false;
+        await nextTick();
+        frame.focusStop(["activity-button", "more", "header"]);
         expect(focusedStop()).toBe("header");
     });
 

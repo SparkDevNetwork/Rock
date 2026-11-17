@@ -2368,6 +2368,22 @@ describe("mentions", () => {
         expect(w.findComponent(MessageFeedComponent).props("landOnId")).toBe(30);
     });
 
+    // Activity's button is in the list's head, behind the conversation the jump brought forward
+    // and out of reach, so focus goes to the conversation's More, the next place in reach. A
+    // message the jump lands on takes focus itself; this one is not in the conversation's pages.
+    test("on a phone, a channel mention's row gives focus to the conversation it shows, not the list behind it", async () => {
+        const w = await mountBlock(390);
+        await openRow(w, team.channel_id);
+        await openInbox(w, [mention(dmAnna.channel_id, 30)]);
+
+        await w.get("[data-testid='mention-row-open']").trigger("click");
+        await settle();
+
+        expect(w.get("[data-testid='chat-frame']").attributes("data-pane")).toBe("conversation");
+        expect(document.activeElement?.closest("[inert]")).toBeNull();
+        expect(document.activeElement).toBe(w.get("[data-testid='header-more'] button").element);
+    });
+
     test("a reply's row opens its thread with a way back to the inbox and the row", async () => {
         const w = await mountBlock(1200);
         await openRow(w, team.channel_id);
