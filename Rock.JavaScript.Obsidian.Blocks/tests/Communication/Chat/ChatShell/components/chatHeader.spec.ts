@@ -1021,6 +1021,14 @@ describe("the header is this conversation", () => {
         expect(styleRules(file, /^button\.chat-header-name-row:hover::before$/).join(";")).toMatch(/background:\s*var\(--chat-hover\)/);
         expect(styleRules(file, /^button\.chat-header-name-row:active::before$/).join(";")).toMatch(/background:\s*var\(--chat-press\)/);
     });
+
+    // The conversation meets its header clean at rest; once scrolled the feed draws the line and
+    // soft shadow at its own top edge, so the header draws no line of its own under that.
+    test("draws no line under itself, the feed's top edge being the one once scrolled", () => {
+        const file = join(shellFolder, "components/chatHeader.partial.obs");
+
+        expect(styleRules(file, /^\.chat-header$/).join(";")).not.toMatch(/border/);
+    });
 });
 
 // A platform older than this client sends a room's facts without faces; the header still draws.
