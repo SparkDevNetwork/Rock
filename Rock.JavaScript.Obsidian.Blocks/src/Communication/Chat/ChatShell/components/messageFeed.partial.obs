@@ -1036,9 +1036,17 @@
         reader.moveTo(feed.value.scrollTop + dividerElement.getBoundingClientRect().top - feed.value.getBoundingClientRect().top - 52);
     }
 
-    /** A row's flash plays once: the flash goes from the row as it ends. */
+    /**
+     * A row's flash plays once: the flash goes from the row as it ends. Only the flashed message's
+     * own flash says so; another row's ending, a live mention's greeting among them, is not it.
+     */
     function onAnimationEnd(event: AnimationEvent): void {
-        if (flashingId.value !== null && event.animationName.includes("flash")) {
+        if (flashingId.value === null || !event.animationName.includes("flash")) {
+            return;
+        }
+
+        const row = event.target instanceof Element ? event.target.closest("[data-message-id]") : null;
+        if (row?.getAttribute("data-message-id") === String(flashingId.value)) {
             flashingId.value = null;
         }
     }
