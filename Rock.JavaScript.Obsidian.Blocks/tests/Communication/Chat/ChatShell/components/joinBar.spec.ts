@@ -294,6 +294,17 @@ describe("in the preview's footer", () => {
         expect(w.find("[data-testid='join-leave']").exists()).toBe(true);
     });
 
+    test("moves focus from Joining to Open channel, where it stood, once the join lands", async () => {
+        const w = mountFooter();
+        (w.get("[data-testid='join-channel']").element as HTMLElement).focus();
+        await w.setProps({ state: { kind: "joining" } });
+
+        await w.setProps({ state: { kind: "joined", isFresh: true }, isMember: true });
+        await nextTick();
+
+        expect(document.activeElement).toBe(w.get("[data-testid='join-open']").element);
+    });
+
     test("says the room is setting up while the platform catches up, with no button", () => {
         const w = mountFooter({ kind: "pending" });
 
