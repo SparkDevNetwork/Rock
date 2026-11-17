@@ -1519,14 +1519,57 @@ describe("the phone's action sheet", () => {
             expect(closes).toBe(6);
         });
 
-        test("is a modal dialog named Message actions, with focus on its first reaction", async () => {
+        // A tap's open puts focus on the reactions' row itself, so no reaction is ringed as if it
+        // were already chosen; a keyboard's open, Enter on the message, starts on the first reaction.
+        test("is a modal dialog named Message actions; a tap's open focuses the reactions' row, not a reaction", async () => {
             await openSheet({ message: message() });
 
             expect(sheet()?.getAttribute("role")).toBe("dialog");
             expect(sheet()?.getAttribute("aria-modal")).toBe("true");
             expect(sheet()?.getAttribute("aria-label")).toBe("Message actions");
-            expect(document.activeElement).toBe(reactions()[0]);
+            const row = sheet()?.querySelector("[data-testid='action-sheet-reactions']");
+            expect(document.activeElement).toBe(row);
+            expect(row?.getAttribute("role")).toBe("group");
+            expect(row?.getAttribute("aria-label")).toBe("Quick reactions");
+            expect(reactions()).not.toContain(document.activeElement);
             expect(reactions()[0].getAttribute("aria-label")).toBe("React with thumbs up");
+        });
+
+        test("a keyboard's open, Enter on the message, focuses the first reaction", async () => {
+            const w = onPhone({ reactionHost: host(favorites), message: message() });
+            root(w).focus();
+            root(w).dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true, cancelable: true }));
+            await nextTick();
+            await nextTick();
+
+            expect(sheet()).not.toBeNull();
+            expect(document.activeElement).toBe(reactions()[0]);
+        });
+
+        test("Enter from inside the message, as on a link, opens no sheet", async () => {
+            const w = onPhone({ reactionHost: host(favorites), message: message() });
+            w.get(".chat-message-body").element.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true, cancelable: true }));
+            await nextTick();
+
+            expect(sheet()).toBeNull();
+        });
+
+        test("its reactions are 44px rounded squares, the surface's corner", () => {
+            const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/messageRow.partial.obs"), "utf8");
+            const style = source.slice(source.indexOf("<style"), source.indexOf("</style>"));
+            const rule = /\n\.chat-sheet-react button\s*\{([^}]*)\}/.exec(style)?.[1] ?? "";
+
+            expect(rule).toMatch(/width:\s*44px/);
+            expect(rule).toMatch(/height:\s*44px/);
+            expect(rule).toMatch(/border-radius:\s*var\(--chat-r-surface\)/);
+        });
+
+        test("its Quote shows the quote mark, not the reply arrow", async () => {
+            const w = await openSheet({ message: message() });
+            const quote = sheetItem("Quote");
+            const icon = w.findAllComponents(Icon).find(found => quote.contains(found.element));
+
+            expect(icon?.props("name")).toBe("quote");
         });
 
         test("draws nothing while closed", async () => {
