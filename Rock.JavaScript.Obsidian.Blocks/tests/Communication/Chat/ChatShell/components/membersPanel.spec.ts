@@ -17,11 +17,11 @@
 // The members panel: who is in a room, in the shared panel host. A channel lists "Leaders" then
 // "Members", a group conversation "In this conversation"; a heading counts its rows only once the
 // loaded rows prove the count, since the roster carries no total. A row is the person's face and
-// name, "(you)" for the reader, the Leader pill in a channel, never a campus, and "Message" where
-// they can be messaged. The filter searches the whole room: a line
+// name and "(you)" for the reader, never a Leader pill (the Leaders heading says it) nor a campus,
+// and Message and More as icon buttons that show on hover or focus. The filter searches the whole room: a line
 // says it is searching, then how many it found, or that no one matches. Paging is "Load more",
-// "Loading" while busy, asked too as that row scrolls into view, "Couldn't load more." with Try again, and "That's everyone." at the end of
-// a channel. A room the reader has not joined, one that keeps its list from them, a failed first
+// "Loading" while busy, asked too as that row scrolls into view, "Couldn't load more." with Try again, and no line at the end. The
+// panel opens with focus in the filter, or on a phone on its first row. A room the reader has not joined, one that keeps its list from them, a failed first
 // page and the first load each draw a state of their own. A channel is named with no "#".
 //
 // The component these tests are written to, membersPanel.partial.obs:
@@ -145,13 +145,13 @@ describe("sections", () => {
 });
 
 describe("a row", () => {
-    test("draws the name, (you) and the Leader pill, and no campus, which only a person's card shows", () => {
+    // The Leaders heading already says who leads, so no row under it repeats it.
+    test("draws the name and (you), with no Leader pill and no campus, which only a person's card shows", () => {
         const w = draw();
         const rows = w.findAll("[data-testid='member-row']");
 
-        expect(rows[0].get("[data-testid='member-leader']").text()).toBe("Leader");
-        expect(rows[0].get("[data-testid='member-leader']").classes()).toContain("chat-badge");
-        expect(rows[2].find("[data-testid='member-leader']").exists()).toBe(false);
+        expect(w.find("[data-testid='member-leader']").exists()).toBe(false);
+        expect(rows[0].find(".chat-badge").exists()).toBe(false);
         expect(rows[4].get("[data-testid='member-you']").text()).toBe("(you)");
         expect(rows[0].find("[data-testid='member-you']").exists()).toBe(false);
         expect(w.find("[data-testid='member-campus']").exists()).toBe(false);
@@ -165,6 +165,9 @@ describe("a row", () => {
         expect(rows[4].find("[data-testid='member-message']").exists()).toBe(false);
         const message = rows[2].get("[data-testid='member-message']");
         expect(message.attributes("aria-label")).toBe("Message Anna Reyes");
+        // a 32px icon button beside More, its word in its tooltip rather than on the row
+        expect(message.classes()).toEqual(expect.arrayContaining(["chat-icon-btn", "is-md"]));
+        expect(message.text()).toBe("");
 
         await message.trigger("click");
         expect(w.emitted("message")).toEqual([[anna.person_alias_guid]]);
@@ -267,10 +270,12 @@ describe("paging", () => {
         }
     });
 
-    test("the end of a channel is That's everyone.", () => {
-        expect(text(draw(), "members-end")).toBe("That's everyone.");
-        wrapper?.unmount();
-        expect(draw({ hasMore: true }).find("[data-testid='members-end']").exists()).toBe(false);
+    // The list simply ends: a line saying so is one more thing to read and says nothing.
+    test("the end of a channel draws no line", () => {
+        const w = draw();
+
+        expect(w.find("[data-testid='members-end']").exists()).toBe(false);
+        expect(read(w.get("[data-testid='members-panel']").element)).not.toContain("everyone");
     });
 
     // Only the panel's first page waterfalls in; a later page is simply there, its first row
@@ -288,6 +293,26 @@ describe("paging", () => {
         const rows = w.findAll("[data-testid='member-row']");
         expect(rows.filter(r => r.attributes("data-chat-settled") !== undefined)).toHaveLength(2);
         expect(document.activeElement).toBe(w.findAll("[data-testid='member-who']")[3].element);
+    });
+});
+
+// A panel opens with focus where its work starts: the filter on a desktop, the first row on a
+// phone, where focusing the field would raise the keyboard over the list.
+describe("focus as it opens", () => {
+    test("is in the filter on a desktop, on no row", () => {
+        const w = draw();
+
+        expect(w.get("[data-testid='members-filter']").attributes("data-autofocus")).toBe("");
+        expect(w.findAll("[data-testid='member-who']").some(who => who.attributes("data-autofocus") !== undefined)).toBe(false);
+    });
+
+    test("is on the first row on a phone, not in the filter", () => {
+        const w = draw({ isPhone: true });
+
+        const who = w.findAll("[data-testid='member-who']");
+        expect(w.get("[data-testid='members-filter']").attributes("data-autofocus")).toBeUndefined();
+        expect(who[0].attributes("data-autofocus")).toBe("");
+        expect(who.slice(1).some(row => row.attributes("data-autofocus") !== undefined)).toBe(false);
     });
 });
 
