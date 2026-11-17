@@ -1174,3 +1174,13 @@ export type IconSize = "md" | "sm" | "xs";
 export type RowElement = "div" | "li";
 
 // #endregion Sizes the shared parts take
+
+// #region The message box
+
+/** What a message's one box draws: its actions, the quick tray they open, or the full emoji picker. */
+export type BoxLayer = "bar" | "tray" | "picker";
+
+/** A column of messages, with its own message box and composer: the conversation's feed or the thread drawer. */
+export type ColumnKind = "conversation" | "thread";
+
+// #endregion The message box

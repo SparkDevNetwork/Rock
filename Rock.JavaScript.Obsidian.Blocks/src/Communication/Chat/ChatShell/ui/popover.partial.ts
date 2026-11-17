@@ -18,14 +18,26 @@
 // The one way every menu, picker, card and tip floats beside what opened it, so they all place,
 // close and give focus back alike. A surface draws itself; this owns its coming and going.
 
-import { computed, ComputedRef, nextTick, onScopeDispose, Ref, ref } from "vue";
+import { computed, ComputedRef, nextTick, onScopeDispose, Ref, ref, shallowReactive } from "vue";
 import { autoUpdate, flip, offset, Placement, shift, useFloating } from "@Obsidian/Libs/floating-ui";
 import { EscapeLayer, focusableSelector, focusQuietly, isDrawn, pullEscapeLayer, pushEscapeLayer } from "./focusTrap.partial";
 
 /** How a popover is placed and closed. */
 export type PopoverOptions = {
-    placement?: Placement;
-    offset?: number;
+    /** Where it opens; a getter for a surface whose side follows what it is on, as the message box beside a bubble. */
+    placement?: Placement | (() => Placement);
+
+    /** How far off its anchor; a getter where that follows the placement, as a box moved inside a channel's row. */
+    offset?: number | (() => number);
+
+    /** Where it goes when its placement has no room, in order, read as it is placed. */
+    fallbackPlacements?: () => Placement[];
+
+    /**
+     * What it is kept inside, 4px in, as the message box is kept in its column; the window, 8px in,
+     * where none is given.
+     */
+    boundary?: () => Element | null | undefined;
 
     /** A box to place beside instead of the anchor, as a card under the whole row a face opened. */
     virtualAnchor?: () => DOMRect | null;
@@ -38,6 +50,9 @@ export type PopoverOptions = {
     /** False for a tip, which shows and hides on its own timers and is only placed here. */
     isDismissable?: boolean;
 };
+
+/** How far inside a boundary a popover is kept, as the message box inside its column. */
+export const boundaryInsetPx = 4;
 
 /** One popover's state and what changes it. */
 export type PopoverControl = {
@@ -62,7 +77,45 @@ export type PopoverControl = {
  * Oldest first. A press inside a newer popover counts as inside every older one: one opened from
  * another is drawn apart from it at the chat's root, and would otherwise close its parent.
  */
-const openStack: OpenPopover[] = [];
+const openStack: OpenPopover[] = shallowReactive([]);
+
+/**
+ * Whether any menu, picker, card or sheet is open. Only one floating layer shows at a time, so a
+ * message's bar rises for no hover while this is true. A tip is never on the stack, so never counts.
+ *
+ * @returns True while one is open.
+ */
+export function isFloatingLayerOpen(): boolean {
+    return openStack.length > 0;
+}
+
+/** Where a popover opens, for a surface that names its own sides, as the message box beside a bubble. */
+export type PopoverPlacement = Placement;
+
+/**
+ * Tab past either end of a surface drawn apart from its place in the page, as a popover at the
+ * chat's root or the message box beside its row: focus goes back to that place without the key
+ * being taken, so the browser goes on from there. Tab between the surface's own controls is left
+ * to the browser.
+ *
+ * @param event The key pressed inside the surface.
+ * @param tabbable The surface's controls Tab reaches, in order.
+ * @param leave Moves focus to the surface's place in the page.
+ *
+ * @returns True for a Tab, which nothing else should take.
+ */
+export function tabPastEnd(event: KeyboardEvent, tabbable: HTMLElement[], leave: () => void): boolean {
+    if (event.key !== "Tab") {
+        return false;
+    }
+
+    const edge = event.shiftKey ? tabbable[0] : tabbable[tabbable.length - 1];
+    if (tabbable.length === 0 || document.activeElement === edge) {
+        leave();
+    }
+
+    return true;
+}
 
 type OpenPopover = EscapeLayer & {
     contains: (node: Node) => boolean;
@@ -151,11 +204,22 @@ export function usePopover(anchor: Readonly<Ref<HTMLElement | undefined>>, float
             : element;
     });
 
+    const placement = options.placement;
+    const distance = options.offset ?? 8;
+    const boundary = (): { padding: number, boundary?: Element } => {
+        const element = options.boundary?.();
+        return element ? { padding: boundaryInsetPx, boundary: element } : { padding: 8 };
+    };
+
     const floated = useFloating(reference, floating, {
-        placement: options.placement ?? "bottom-end",
+        placement: computed((): Placement => (typeof placement === "function" ? placement() : placement) ?? "bottom-end"),
         strategy: "fixed",
         transform: false,
-        middleware: [offset(options.offset ?? 8), flip({ crossAxis: false, flipAlignment: false }), shift({ padding: 8 })],
+        middleware: [
+            offset(() => typeof distance === "function" ? distance() : distance),
+            flip(() => ({ crossAxis: false, flipAlignment: false, ...(options.fallbackPlacements ? { fallbackPlacements: options.fallbackPlacements() } : {}), ...boundary() })),
+            shift(() => boundary())
+        ],
         whileElementsMounted: autoUpdate
     });
 
@@ -194,13 +258,10 @@ export function usePopover(anchor: Readonly<Ref<HTMLElement | undefined>>, float
 
         const tabbable = Array.from(floating.value?.querySelectorAll<HTMLElement>(focusableSelector) ?? [])
             .filter(element => element.tabIndex >= 0 && isDrawn(element));
-        const edge = event.shiftKey ? tabbable[0] : tabbable[tabbable.length - 1];
-        if (tabbable.length > 0 && document.activeElement !== edge) {
-            return;
-        }
-
-        close({ isFocusReturned: false });
-        anchor.value?.focus({ preventScroll: true });
+        tabPastEnd(event, tabbable, () => {
+            close({ isFocusReturned: false });
+            anchor.value?.focus({ preventScroll: true });
+        });
     }
 
     async function open(): Promise<boolean> {
@@ -227,15 +288,42 @@ export function usePopover(anchor: Readonly<Ref<HTMLElement | undefined>>, float
         }
 
         isOpen.value = false;
-        if (isFocusReturned) {
-            // quietly: the person is leaving the surface, not reaching for its anchor, so no tip rises
-            const target = options.returnTo?.() ?? opener ?? anchor.value;
+        const openedFrom = opener;
+        opener = null;
+        if (!isFocusReturned) {
+            return;
+        }
+
+        // Quietly: the person is leaving the surface, not reaching for its anchor, so no tip rises.
+        // At once where the target is drawn, so a dialog a menu's choice opens takes the control
+        // the menu gave focus back to as its own way back.
+        const named = options.returnTo?.() ?? null;
+        if (!options.returnTo || named?.isConnected) {
+            const target = named ?? openedFrom ?? anchor.value;
             if (target?.isConnected) {
                 focusQuietly(target, { preventScroll: true });
             }
+
+            return;
         }
 
-        opener = null;
+        // A surface that turns back into the control it names, as the message box's tray into its
+        // bar's Add reaction, gives focus to that control once the patch the close causes draws it;
+        // unless what the close led to took focus first.
+        const surface = floating.value;
+        const focusedAtClose = document.activeElement;
+        void nextTick(() => {
+            const active = document.activeElement;
+            const isTaken = active !== focusedAtClose && active instanceof HTMLElement && active !== document.body && active.isConnected && !surface?.contains(active);
+            if (isTaken) {
+                return;
+            }
+
+            const target = options.returnTo?.() ?? openedFrom ?? anchor.value;
+            if (target?.isConnected) {
+                focusQuietly(target, { preventScroll: true });
+            }
+        });
     }
 
     async function toggle(): Promise<boolean> {

@@ -1,17 +1,11 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <Popover :key="step"
-             :popover="pop"
-             :label="mode === 'react' ? 'Add reaction' : 'Add emoji'"
-             :role="pop.isSheet.value ? '' : 'dialog'"
-             :isPill="step === 'tray'"
-             :sheetHeight="step === 'tray' ? 'content' : 'picker'"
-             tabindex="-1"
-             @keydown="onKeydown">
-        <div class="chat-picker" :class="{ 'is-tray': step === 'tray', 'is-sheet': pop.isSheet.value }">
+    <component :is="isHosted ? 'div' : Popover" v-bind="frameProps" @keydown="onKeydown">
+        <div ref="rootElement" class="chat-picker" :class="{ 'is-tray': step === 'tray', 'is-sheet': isSheet }" :tabindex="isHosted ? -1 : undefined">
             <!--
-                The popover is drawn afresh for each step, so the full picker pops in where the tray
-                was. A sheet on a phone is the dialog itself, and on a touch screen it takes focus.
+                One surface for both steps, so the tray grows into the full picker in place. Hosted
+                in the message box, the box is that surface; a sheet on a phone is the dialog itself,
+                and on a touch screen it takes focus.
             -->
             <div v-if="step === 'tray'" class="chat-picker-tray" role="toolbar" aria-label="Quick reactions" aria-orientation="horizontal">
                 <button v-for="(item, index) in trayItems"
@@ -27,14 +21,10 @@
                     <span v-else class="chat-picker-glyph" aria-hidden="true">{{ item.emoji }}</span>
                 </button>
                 <span class="chat-picker-tray-sep" aria-hidden="true"></span>
-                <button type="button"
-                        class="chat-picker-tray-more"
-                        aria-label="All emoji"
-                        title="All emoji"
-                        :tabindex="trayStop === trayItems.length ? 0 : -1"
-                        @click="showAll">
-                    <Icon name="plus" size="sm" />
-                </button>
+                <IconButton icon="plus"
+                            label="All emoji"
+                            :tabindex="trayStop === trayItems.length ? 0 : -1"
+                            @click="showAll" />
             </div>
 
             <template v-else>
@@ -57,14 +47,23 @@
                             type="button"
                             role="tab"
                             :aria-label="tab.label"
-                            :title="tab.label"
                             :aria-selected="tab.id === selectedTab ? 'true' : 'false'"
                             :aria-controls="gridId"
                             :tabindex="tab.id === tabStop ? 0 : -1"
+                            @mouseenter="onTabEnter($event, tab.label)"
+                            @mouseleave="onTabLeave"
+                            @pointerdown="onTabPointerDown"
+                            @focus="onTabFocus($event, tab.label)"
+                            @blur="onTabBlur"
                             @click="onTabClick(tab.id)">
                         <Icon v-if="tab.id === recentId" name="clock" size="sm" />
                         <span v-else class="chat-picker-tab-glyph" aria-hidden="true">{{ tab.glyph }}</span>
                     </button>
+
+                    <!-- One tip for the tabs, moved to whichever the pointer rests on or a key reaches. -->
+                    <Teleport :to="tipHost ?? 'body'" :disabled="!tipHost">
+                        <div v-if="isTipShown" ref="tipElement" class="chat-tip" role="tooltip" :style="floatingStyles">{{ tipText }}</div>
+                    </Teleport>
                 </div>
 
                 <div :id="gridId"
@@ -104,9 +103,8 @@
 
                     <!-- A category's place while the catalog loads; the recents and the favorites need none. -->
                     <div v-if="drawnSection === null" class="chat-picker-loading" aria-hidden="true">
-                        <div class="chat-skeleton chat-picker-loading-label"></div>
                         <div class="chat-picker-grid">
-                            <div v-for="index in 16" :key="index" class="chat-skeleton chat-picker-loading-cell"></div>
+                            <Skeleton v-for="index in 16" :key="index" shape="media" />
                         </div>
                     </div>
 
@@ -130,7 +128,7 @@
                 </div>
             </template>
         </div>
-    </Popover>
+    </component>
 </template>
 
 <style scoped>
@@ -152,31 +150,6 @@
     height: 20px;
     margin: 0 3px;
     background: var(--chat-line);
-}
-
-.chat-picker-tray-more {
-    display: grid;
-    flex: none;
-    place-items: center;
-    width: 36px;
-    height: 36px;
-    padding: 0;
-    color: var(--chat-icon);
-    cursor: pointer;
-    background: var(--chat-sidebar);
-    border: 0;
-    border-radius: var(--chat-r-full);
-    transition: background-color var(--chat-t-fast) var(--chat-ease-state), color var(--chat-t-fast) var(--chat-ease-state);
-}
-
-.chat-picker-tray-more:hover {
-    color: var(--chat-text);
-    background: var(--chat-hover);
-}
-
-.chat-picker-tray-more:focus-visible {
-    outline: none;
-    box-shadow: inset 0 0 0 2px var(--chat-brand-ring);
 }
 
 .chat-picker-head {
@@ -237,11 +210,6 @@
     transition: background-color var(--chat-t-fast) var(--chat-ease-state), box-shadow var(--chat-t-fast) var(--chat-ease-state);
 }
 
-/* The tray's glyphs are round, as the pill they sit in. */
-.chat-picker-tray .chat-picker-cell {
-    border-radius: var(--chat-r-full);
-}
-
 .chat-picker-glyph {
     display: block;
     transition: transform var(--chat-d-glyph) var(--chat-ease-spring);
@@ -285,15 +253,9 @@ img.chat-picker-glyph {
     box-shadow: inset 0 0 0 2px var(--chat-brand-ring), inset 0 0 0 1px var(--chat-brand-line);
 }
 
-.chat-picker-loading-label {
-    width: 96px;
-    height: 11px;
-    margin: 9px 4px 6px;
-}
-
-.chat-picker-loading-cell {
-    width: 36px;
-    height: 36px;
+/* The loading cells stand where a category's first rows will, under its label's line. */
+.chat-picker-loading {
+    padding-top: 26px;
 }
 
 .chat-picker-empty {
@@ -445,8 +407,7 @@ img.chat-picker-prev {
 
 /* A phone too narrow for eight glyphs at 36px keeps the eight, a little smaller. */
 @media (max-width: 380px) {
-    .chat-picker-tray .chat-picker-cell,
-    .chat-picker-tray-more {
+    .chat-picker-tray .chat-picker-cell {
         width: 32px;
         height: 32px;
     }
@@ -457,6 +418,9 @@ img.chat-picker-prev {
     import { computed, getCurrentInstance, nextTick, onBeforeUnmount, onMounted, PropType, ref, watch } from "vue";
     import Field from "../ui/field.partial.obs";
     import Icon from "../ui/icon.partial.obs";
+    import IconButton from "../ui/iconButton.partial.obs";
+    import Skeleton from "../ui/skeleton.partial.obs";
+    import { overlayHostOf, useTooltip } from "../ui/tooltip.partial";
     import { useAnnouncer } from "../ui/announcer.partial";
     import { usePopover } from "../ui/popover.partial";
     import Popover from "../ui/popoverSurface.partial.obs";
@@ -547,6 +511,21 @@ img.chat-picker-prev {
         opener: {
             type: Object as PropType<HTMLElement | null>,
             default: null
+        },
+
+        /**
+         * Drawn inside the message box, which is its surface: no popover of its own, the step it
+         * draws is the box's, and All emoji asks the box to grow.
+         */
+        isHosted: {
+            type: Boolean,
+            default: false
+        },
+
+        /** Hosted on a phone's sheet, opened by a keyboard: focus starts on the first emoji, ringed. */
+        isKeyboardOpened: {
+            type: Boolean,
+            default: false
         }
     });
 
@@ -554,6 +533,7 @@ img.chat-picker-prev {
         (e: "react", code: string): void;
         (e: "insert", text: string, code: string): void;
         (e: "close"): void;
+        (e: "showAll"): void;
     }>();
 
     // #region Values
@@ -599,14 +579,28 @@ img.chat-picker-prev {
      * bottom sheet instead, as every picker there is.
      */
     const session = useChatSession();
-    const pop = usePopover(computed(() => (props.opener ?? props.anchor) ?? undefined), ref<HTMLElement>(), {
+    const pop = props.isHosted ? null : usePopover(computed(() => (props.opener ?? props.anchor) ?? undefined), ref<HTMLElement>(), {
         placement,
         isSheet: () => session.isPhone.value,
         virtualAnchor: () => props.opener && props.anchor ? props.anchor.getBoundingClientRect() : null,
         returnTo: () => props.opener?.isConnected === false ? props.anchor?.closest<HTMLElement>(".chat-msg") ?? null : props.opener ?? props.anchor
     });
 
-    const pickerElement = computed((): HTMLElement | undefined => pop.floating.value);
+    /** The surface it is drawn on: its own popover's, or what the host draws it in. */
+    const frameProps = computed((): Record<string, unknown> => pop
+        ? { popover: pop, label: props.mode === "react" ? "Add reaction" : "Add emoji", role: pop.isSheet.value ? "" : "dialog", sheetHeight: step.value === "tray" ? "content" : "picker", tabindex: -1 }
+        : { class: "chat-picker-host" });
+
+    const isSheet = computed((): boolean => pop?.isSheet.value ?? session.isPhone.value);
+
+    const rootElement = ref<HTMLElement>();
+    const pickerElement = computed((): HTMLElement | undefined => pop?.floating.value ?? rootElement.value);
+
+    /** The tab the one tip names, moved to whichever the pointer rests on or a key reaches. */
+    const tipAnchor = ref<HTMLElement>();
+    const tipText = ref("");
+    const tipHost = computed((): HTMLElement | null => overlayHostOf(rootElement.value));
+    const { tipElement, isTipShown, floatingStyles, onPointerEnter: onTipEnter, onPointerLeave: onTabLeave, onPointerDown: onTabPointerDown, onFocus: onTipFocus, onBlur: onTabBlur } = useTooltip(tipAnchor);
 
     /** Watches for what the picker is placed beside leaving the page, which nothing else would tell it. */
     let anchorObserver: MutationObserver | null = null;
@@ -941,9 +935,27 @@ img.chat-picker-prev {
 
     /** All emoji: the full picker in the tray's place, the search focused as on any open. */
     async function showAll(): Promise<void> {
+        // Hosted, the box grows, and draws the picker in the tray's place.
+        if (props.isHosted) {
+            emit("showAll");
+            return;
+        }
+
         step.value = "full";
         await nextTick();
         focusOnOpen();
+    }
+
+    function onTabEnter(event: MouseEvent, label: string): void {
+        tipAnchor.value = event.currentTarget as HTMLElement;
+        tipText.value = label;
+        onTipEnter();
+    }
+
+    function onTabFocus(event: FocusEvent, label: string): void {
+        tipAnchor.value = event.currentTarget as HTMLElement;
+        tipText.value = label;
+        onTipFocus();
     }
 
     // #endregion Event Handlers
@@ -1034,6 +1046,12 @@ img.chat-picker-prev {
     }
 
     async function choose(item: PickerEmoji): Promise<void> {
+        // Hosted, the box gives the bar back on the choice.
+        if (!pop) {
+            emit("react", item.code);
+            return;
+        }
+
         if (!pop.isOpen.value) {
             return;
         }
@@ -1064,6 +1082,13 @@ img.chat-picker-prev {
     function focusOnOpen(): void {
         const isTouch = isHoverless();
         const first = step.value === "tray" ? pickerElement.value?.querySelector<HTMLElement>("[role='toolbar'] button") : searchElement.value;
+
+        // A keyboard opening a phone's sheet starts on the first emoji, so its ring says where the arrows begin.
+        if (isSheet.value && props.isKeyboardOpened && step.value === "full") {
+            focusCell(results.value[0]);
+            return;
+        }
+
         (isTouch ? pickerElement.value : first)?.focus({ preventScroll: true });
     }
 
@@ -1072,12 +1097,18 @@ img.chat-picker-prev {
     // #region Lifecycle Hooks
 
     onMounted(async () => {
+        // Hosted, the box is already drawn and placed; the picker only takes focus.
+        if (!pop) {
+            focusOnOpen();
+            return;
+        }
+
         // Only a removal anywhere on the page can take the anchor away, so that is all it watches:
         // placed beside a detached element the picker would float at the window's corner.
         if (props.anchor && typeof MutationObserver !== "undefined") {
             anchorObserver = new MutationObserver(() => {
                 if (props.anchor?.isConnected === false) {
-                    pop.close();
+                    pop?.close();
                 }
             });
             anchorObserver.observe(document.body, { childList: true, subtree: true });
@@ -1106,9 +1137,18 @@ img.chat-picker-prev {
 
     // However it closes, by a choice, a key, a press elsewhere or its anchor going, the host hears
     // it at once and may remove the picker; the surface plays its own way out on the page meanwhile.
-    watch(pop.isOpen, isOpen => {
-        if (!isOpen) {
+    watch(() => pop?.isOpen.value, isOpen => {
+        if (isOpen === false) {
             emit("close");
+        }
+    });
+
+    // Hosted, the box grows the tray into the picker in place, focus moving with it.
+    watch(() => props.startsOn, async next => {
+        if (props.isHosted && props.mode === "react" && step.value !== next) {
+            step.value = next;
+            await nextTick();
+            focusOnOpen();
         }
     });
 
