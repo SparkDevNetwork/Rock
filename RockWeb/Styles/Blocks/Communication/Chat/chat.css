@@ -1146,7 +1146,7 @@
     warning, and as another church's color.
 */
 .chat-mn.is-you {
-    box-shadow: 0 0 0 1px var(--chat-mention-ring);
+    box-shadow: inset 0 0 0 1px var(--chat-mention-ring);
 }
 
 /* A holder may ring the @all chip that reached the reader by --chat-mn-ring; a washed row does. */
