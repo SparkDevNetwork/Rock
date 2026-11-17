@@ -17,8 +17,9 @@
 // The record of what happened to each row: a send keeps its first arrival, a view claims each
 // arrival once, two writes in one turn wake a row once, what no open view can play is let go, and
 // once stopped it records nothing. It keeps no time, so it schedules nothing.
-import { nextTick, watch } from "vue";
-import { createMessageMotion } from "../../../../src/Communication/Chat/ChatShell/messageMotion.partial";
+import { mount } from "@vue/test-utils";
+import { defineComponent, nextTick, watch } from "vue";
+import { createMessageMotion, messageMotionKey, RowMotion, useRowMotion } from "../../../../src/Communication/Chat/ChatShell/messageMotion.partial";
 
 const mine = { id: 2, client_key: "K1" };
 const annas = { id: 3, client_key: null };
@@ -266,5 +267,37 @@ describe("the record", () => {
         finally {
             jest.useRealTimers();
         }
+    });
+});
+
+// A row reads whether its message was heard arriving live, rather than sent here or loaded with
+// a page, so a row can greet live news, as a mention's flash, once it is drawn.
+describe("a row's live arrival", () => {
+    function rowOf(motion: ReturnType<typeof createMessageMotion>, key: string): RowMotion {
+        let row: RowMotion | null = null;
+        mount(defineComponent({
+            setup() {
+                row = useRowMotion(() => key);
+                return () => null;
+            }
+        }), { global: { provide: { [messageMotionKey as symbol]: motion } } });
+        return row as unknown as RowMotion;
+    }
+
+    test("is told for a message heard live, and its handoff out of typing, never for one sent here or loaded", async () => {
+        const motion = createMessageMotion();
+
+        motion.arrived(annas, place);
+        motion.sent("k1", place);
+        motion.arrived(mine, place);
+
+        expect(rowOf(motion, "k:3").isArrivedLive.value).toBe(true);
+        expect(rowOf(motion, "k:k1").isArrivedLive.value).toBe(false);
+        expect(rowOf(motion, "k:99").isArrivedLive.value).toBe(false);
+
+        const later = rowOf(motion, "k:4");
+        motion.arrived({ id: 4, client_key: null }, place);
+        await nextTick();
+        expect(later.isArrivedLive.value).toBe(true);
     });
 });
