@@ -788,12 +788,12 @@ img.chat-tool-glyph {
 
     /**
      * Reveals a box that changed size from its old edges out, placed once at its new size: a clip
-     * rather than a height, so it is never placed again mid-grow. Reduced motion takes the duration
-     * to nothing through its token.
+     * rather than a height, so it is never placed again mid-grow. Its edges glide over the block's
+     * one move, which reduced motion takes to nothing, so there the new size is simply there.
      */
     function reveal(box: HTMLElement, before: DOMRect): void {
         const after = box.getBoundingClientRect();
-        const duration = parseFloat(getComputedStyle(box).getPropertyValue("--chat-t-base"));
+        const duration = parseFloat(getComputedStyle(box).getPropertyValue("--chat-d-move"));
         if (typeof box.animate !== "function" || !duration) {
             return;
         }
