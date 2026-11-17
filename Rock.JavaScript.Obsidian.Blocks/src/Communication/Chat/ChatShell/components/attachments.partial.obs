@@ -73,7 +73,8 @@
                              :alt="item.name"
                              :width="item.width ?? undefined"
                              :height="item.height ?? undefined"
-                             decoding="async" />
+                             decoding="async"
+                             @error="brokenPhotos.add(item.id)" />
                     </span>
                     <span v-if="index === shownImages.length - 1 && images.length > shownImages.length" class="chat-attach-more"><Badge tone="neutral" :label="`+${images.length - shownImages.length}`" data-testid="attachment-more" /></span>
                 </button>
@@ -658,6 +659,9 @@ a.chat-attach-file:focus-visible {
     /** Whether the person asked for less motion, which holds every GIF still until it is played. */
     const isMotionReduced = useIsMotionReduced();
 
+    /** The photos that failed to load, which drop their previews. */
+    const brokenPhotos = reactive(new Set<string>());
+
     /** The GIFs whose media could not be loaded, drawn as unavailable. */
     const deadGifs = reactive(new Set<string>());
 
@@ -868,9 +872,12 @@ a.chat-attach-file:focus-visible {
         return props.isPending ? null : views?.links.linkOf(item) ?? null;
     }
 
-    /** The photo's stored blurred preview, when it carries one in the one form a preview may take. */
+    /**
+     * The photo's stored blurred preview, when it carries one in the one form a preview may take;
+     * none once the photo failed to load, so a stand-in never outlives a photo that cannot be drawn.
+     */
     function previewOf(item: FileItem): string | null {
-        return isStoredPreview(item.preview) ? item.preview : null;
+        return isStoredPreview(item.preview) && !brokenPhotos.has(item.id) ? item.preview : null;
     }
 
     /** What a photo draws from: the person's own copy where this page sent it, else its link. */

@@ -77,8 +77,8 @@ const photoQuality = 0.82;
 
 /**
  * A photo's blurred preview: drawn within 16 pixels on its longest side, about 600 bytes as a
- * data URL (an estimate), and never more than the platform's cap of 1,024 characters, which
- * refuses anything longer. Its quality hardly shows once blurred, so it is low.
+ * data URL (an estimate), and always under the platform's cap of 1,024 characters: one at the cap
+ * refuses the whole upload, so it is left out instead. Its quality hardly shows once blurred.
  */
 const previewSide = 16;
 const previewQuality = 0.6;
@@ -275,13 +275,14 @@ type PreparedFile = {
  * carries is ever drawn as one.
  */
 export function isStoredPreview(value: string | null | undefined): value is string {
-    return typeof value === "string" && value.length <= previewCap && previewForm.test(value);
+    return typeof value === "string" && value.length < previewCap && previewForm.test(value);
 }
 
 /**
- * Draws a photo's blurred preview from the photo already decoded: a webp, or a jpeg where this
- * browser cannot write webp (its canvas writes a PNG instead). A preview that fails or is past the
- * cap is left out, since the photo goes either way.
+ * Draws a photo's blurred preview from the photo already decoded, so it is made of the canvas's
+ * pixels and never of a thumbnail the file carries: a webp, or a jpeg where this browser cannot
+ * write webp (its canvas writes a PNG instead). A preview that fails, is a PNG or reaches the cap
+ * is left out, since a preview the platform refuses would refuse the photo with it.
  */
 async function previewOf(image: DecodedImage, codec: ImageCodec): Promise<string | null> {
     const scale = previewSide / Math.max(image.width, image.height);
