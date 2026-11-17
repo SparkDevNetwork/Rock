@@ -402,7 +402,7 @@ describe("the popover surface", () => {
     });
 
     const SurfaceHost = defineComponent({
-        props: { isSheet: { type: Boolean, default: false }, isPill: { type: Boolean, default: false } },
+        props: { isSheet: { type: Boolean, default: false } },
         setup(props, { expose }) {
             const anchor = ref<HTMLElement>();
             const floating = ref<HTMLElement>();
@@ -410,23 +410,23 @@ describe("the popover surface", () => {
             expose({ pop });
             return () => [
                 h("button", { ref: anchor, "data-testid": "anchor" }, "open"),
-                h(Popover, { popover: pop, label: "Things", isPill: props.isPill }, () => h("button", { "data-testid": "inside" }, "inside"))
+                h(Popover, { popover: pop, label: "Things" }, () => h("button", { "data-testid": "inside" }, "inside"))
             ];
         }
     });
 
-    // The emoji tray's quick reactions sit on a pill as wide as they are, the surface's own shape.
-    it("draws a pill when asked, with the pill's corners, and the surface's own corners otherwise", async () => {
-        const wrapper = mount(SurfaceHost, { props: { isPill: true }, attachTo: document.body });
+    // One family of floating surfaces, each with the surface's own corners: the emoji tray is now
+    // the message box's own layer, so no surface is drawn as a pill any more (E1-A, one 12 px box).
+    it("draws every surface with the surface's own corners, never a pill", async () => {
+        const wrapper = mount(SurfaceHost, { attachTo: document.body });
         const pop = (wrapper.vm as unknown as { pop: PopoverControl }).pop;
         await pop.open();
         const surface = find("popover");
+        const style = styleOf("popoverSurface.partial.obs");
 
-        expect(surface.classList.contains("is-pill")).toBe(true);
-        expect(surface.hasAttribute("ispill")).toBe(false);
-        expect(ruleOf(styleOf("popoverSurface.partial.obs"), ".chat-popover.is-pill")).toMatch(/border-radius:\s*var\(--chat-r-full\)/);
-        await wrapper.setProps({ isPill: false });
         expect(surface.classList.contains("is-pill")).toBe(false);
+        expect(ruleOf(style, ".chat-popover")).toMatch(/border-radius:\s*var\(--chat-r-surface\)/);
+        expect(style).not.toMatch(/is-pill|--chat-r-full/);
         wrapper.unmount();
     });
 

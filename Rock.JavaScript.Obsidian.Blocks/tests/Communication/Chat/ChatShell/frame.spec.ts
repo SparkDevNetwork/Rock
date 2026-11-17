@@ -2448,7 +2448,7 @@ describe("the thread drawer", () => {
         await w.get("[data-testid='frame-main'] [data-hot-id='41']").trigger("pointerover");
         await new Promise(resolve => setTimeout(resolve, 170));
         await settle();
-        (w.get("[data-testid='frame-main'] [data-testid='action-bar'] button[aria-label='Reply in thread']").element as HTMLElement).click();
+        (w.get("[data-testid='message-box'] [data-testid='action-bar'] button[aria-label='Reply in thread']").element as HTMLElement).click();
         await settle();
         await settle();
 
@@ -2465,7 +2465,7 @@ describe("the thread drawer", () => {
         await w.get("[data-testid='frame-main'] [data-hot-id='40']").trigger("pointerover");
         await new Promise(resolve => setTimeout(resolve, 170));
         await settle();
-        (w.get("[data-testid='frame-main'] [data-testid='action-bar'] button[aria-label='Reply in thread']").element as HTMLElement).click();
+        (w.get("[data-testid='message-box'] [data-testid='action-bar'] button[aria-label='Reply in thread']").element as HTMLElement).click();
         await settle();
         await settle();
 
@@ -3875,7 +3875,7 @@ describe("the message box", () => {
 
         // Off the feed and onto the box, which the chat's root holds apart from the feed.
         await w.get("[data-testid='frame-main'] [data-testid='message-feed']").trigger("pointerleave");
-        box.dispatchEvent(new PointerEvent("pointerover", { bubbles: true, pointerType: "mouse" }));
+        box.dispatchEvent(new MouseEvent("pointerover", { bubbles: true }));
         await new Promise(resolve => setTimeout(resolve, 300));
         await settle();
         expect(boxes()).toEqual([box]);
@@ -3883,7 +3883,7 @@ describe("the message box", () => {
         // A keyboard's focus inside it holds it after the pointer has gone.
         focusIsFromKeyboard(true);
         box.querySelector<HTMLElement>("[data-testid='action-bar'] button")?.focus();
-        box.dispatchEvent(new PointerEvent("pointerleave", { pointerType: "mouse" }));
+        box.dispatchEvent(new MouseEvent("pointerleave"));
         await new Promise(resolve => setTimeout(resolve, 300));
         await settle();
         expect(boxes()).toEqual([box]);
@@ -3909,7 +3909,11 @@ describe("the message box", () => {
     test("a room switch with focus in the tray takes the box away and leaves focus on something drawn and in reach", async () => {
         const w = await mountBlock(1200, true);
         await openWithMessages(w, [7]);
-        await rest(w, 7);
+
+        // A keyboard reaches the message, then its box, then the tray.
+        focusIsFromKeyboard(true);
+        w.get<HTMLElement>("[data-testid='frame-main'] [data-message-id='7']").element.focus();
+        await settle();
         await press(boxes()[0]?.querySelector("[data-testid='action-bar'] button[aria-label='More reactions']"));
         expect(document.activeElement?.closest("[data-testid='message-box']")).not.toBeNull();
 
@@ -3924,6 +3928,7 @@ describe("the message box", () => {
     test("on a phone, the thread's sheet plus opens the thread's own box as a picker sheet; a touch rings nothing, a keyboard the first emoji", async () => {
         window.matchMedia = ((query: string) => ({ matches: query.includes("hover: none"), media: query })) as unknown as typeof window.matchMedia;
         const w = await mountBlock(375, true);
+        focusIsFromKeyboard(false);
         await openWithMessages(w, []);
         timelineOf(team.channel_id).messages.push(storedMessage(40, { reply_count: 2, last_reply_at: new Date().toISOString(), repliers: [] } as Partial<TimelineMessage>));
         await settle();
@@ -3944,6 +3949,7 @@ describe("the message box", () => {
 
         sheet?.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
         await fadeOut();
+        focusVisible?.mockRestore();
         focusIsFromKeyboard(true);
         anchor.focus();
         drawer.vm.$emit("messageAction", { kind: "openPicker", message: storedMessage(40), anchor, opening: { startsOn: "full" } });
@@ -4066,7 +4072,7 @@ describe("delete confirm", () => {
         await w.get("[data-testid='frame-main'] [data-hot-id='7']").trigger("pointerover");
         await new Promise(resolve => setTimeout(resolve, 170));
         await settle();
-        (w.get("[data-testid='frame-main'] [data-testid='action-bar'] button[aria-label='More actions']").element as HTMLElement).click();
+        (w.get("[data-testid='message-box'] [data-testid='action-bar'] button[aria-label='More actions']").element as HTMLElement).click();
         await settle();
         const item = Array.from(document.querySelectorAll<HTMLElement>("[role='menu'] [role='menuitem']")).find(i => i.textContent?.includes("Delete message"));
         item!.click();
@@ -4076,7 +4082,7 @@ describe("delete confirm", () => {
         // The pointer leaves the message for the dialog; the bar is still up for its grace.
         await w.get("[data-testid='frame-main'] [data-testid='message-feed']").trigger("pointerleave");
         await settle();
-        expect(w.find("[data-testid='frame-main'] [data-testid='action-bar']").exists()).toBe(true);
+        expect(w.find("[data-testid='message-box'] [data-testid='action-bar']").exists()).toBe(true);
         return w;
     }
 
@@ -4094,7 +4100,7 @@ describe("delete confirm", () => {
         await barLeaves();
 
         expect(messages().cancelDelete).toHaveBeenCalledTimes(1);
-        expect(w.find("[data-testid='frame-main'] [data-testid='action-bar']").exists()).toBe(false);
+        expect(w.find("[data-testid='message-box'] [data-testid='action-bar']").exists()).toBe(false);
         expect(document.activeElement).toBe(w.get("[data-testid='frame-main'] [data-message-id='7']").element);
     });
 

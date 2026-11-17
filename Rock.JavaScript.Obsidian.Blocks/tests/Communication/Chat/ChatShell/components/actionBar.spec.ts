@@ -48,7 +48,7 @@
 import { mount, VueWrapper } from "@vue/test-utils";
 import { readFileSync } from "fs";
 import { join } from "path";
-import { defineComponent, effect, nextTick, reactive, shallowRef } from "vue";
+import { defineComponent, effect, h, nextTick, reactive, shallowRef } from "vue";
 import ActionBar from "../../../../../src/Communication/Chat/ChatShell/components/actionBar.partial.obs";
 import Icon from "../../../../../src/Communication/Chat/ChatShell/ui/icon.partial.obs";
 import { ActionBars, provideActionBars } from "../../../../../src/Communication/Chat/ChatShell/composables/useActionBar.partial";
@@ -475,7 +475,9 @@ describe("the bar's quick reactions", () => {
         expect(w.emitted("react")).toEqual([[target, "thumbsup"], [target, "heart"]]);
     });
 
-    test("Add reaction opens the picker from itself, its tooltip saying Add reaction", async () => {
+    // The box is placed against its place in the message's row, a guard of no size, which the
+    // grown box stays beside (the box design's A1); so Add reaction asks from there.
+    test("Add reaction opens the picker from the box's own place, its tooltip saying Add reaction", async () => {
         const target = message();
         const w = await shown({ message: target });
         const add = w.get("[data-testid='action-bar'] button[aria-label='More reactions']");
@@ -487,31 +489,61 @@ describe("the bar's quick reactions", () => {
         expect(Array.from(document.querySelectorAll("[role='tooltip']")).map(tip => (tip.textContent ?? "").trim())).toEqual(["Add reaction"]);
 
         await add.trigger("click");
-        expect(w.emitted("openPicker")).toEqual([[target, add.element, { offered: favorites.slice(0, 3).map(favorite => favorite.code) }]]);
+        const guard = document.querySelector("[data-testid='action-bar-guard']");
+        expect(guard).not.toBeNull();
+        expect(w.emitted("openPicker")).toEqual([[target, guard, { offered: favorites.slice(0, 3).map(favorite => favorite.code) }]]);
     });
 
-    test("the bar stays while the picker its More reactions opened is up, and goes once it closes", async () => {
-        const w = await shown({ message: message() });
-        const add = w.get("[data-testid='action-bar'] button[aria-label='More reactions']").element as HTMLElement;
+    /** Mounts the bar inside a block's boxes, as its column shows it, and hands back both. */
+    async function shownInBlock(): Promise<{ w: VueWrapper, bars: ActionBars }> {
+        let bars: ActionBars | null = null;
+        const shell = shallowRef({
+            reactions: { favorites, state: reactive({ catalog: null, recents: [] }), loadCatalog: jest.fn(async () => null), recordRecent: jest.fn(), toggleCode: jest.fn() },
+            timelines: { state: () => ({ messages: [] }) },
+            threads: { state: { thread: null } }
+        } as unknown as ChatShell);
+        const Host = defineComponent({
+            props: { isShown: { type: Boolean, default: true } },
+            setup(props) {
+                bars = provideActionBars(shell, "Cedar Hill", () => undefined);
+                return () => h(ActionBar, { message: message(), isShown: props.isShown, favorites });
+            }
+        });
+        wrapper = mount(Host, { attachTo: document.body });
+        await settle();
+        return { w: wrapper, bars: bars as unknown as ActionBars };
+    }
 
-        await w.setProps({ pickerAnchor: add, isShown: false });
+    function box(): HTMLElement | null {
+        return document.querySelector<HTMLElement>("[data-testid='message-box']");
+    }
+
+    test("the box stays while the tray its Add reaction opened is up, and goes once it closes", async () => {
+        const { w, bars } = await shownInBlock();
+        const guard = document.querySelector<HTMLElement>("[data-testid='action-bar-guard']") as HTMLElement;
+        const add = document.querySelector<HTMLElement>("[data-testid='action-bar'] button[aria-label='More reactions']") as HTMLElement;
+
+        bars.openReactionPicker("conversation", "c1", message(), guard, add, { offered: ["thumbsup", "heart", "joy"] });
+        await w.setProps({ isShown: false });
         jest.advanceTimersByTime(500);
         await settle();
-        expect(bar(w).exists()).toBe(true);
+        expect(box()?.getAttribute("data-layer")).toBe("tray");
 
-        await w.setProps({ pickerAnchor: null });
+        bars.closeReactionPicker();
         await settle();
-        expect(bar(w).exists()).toBe(false);
+        expect(box()).toBeNull();
     });
 
-    test("a picker placed beside something else does not hold the bar", async () => {
-        const w = await shown({ message: message() });
+    test("a box grown in the other column does not hold this one", async () => {
+        const { w, bars } = await shownInBlock();
+        const elsewhere = document.createElement("button");
 
-        await w.setProps({ pickerAnchor: document.createElement("button"), isShown: false });
+        bars.openReactionPicker("thread", "c1", message(), elsewhere, elsewhere);
+        await w.setProps({ isShown: false });
         jest.advanceTimersByTime(500);
         await settle();
 
-        expect(bar(w).exists()).toBe(false);
+        expect(box()).toBeNull();
     });
 
     test("are set apart from the tools by a separator", async () => {
@@ -570,9 +602,11 @@ function barRules(): Map<string, Record<string, string>> {
 // A direct message's bar sits beside the bubble it acts on, its top on the bubble's top, on the
 // side away from the face: right of another person's bubble, left of the reader's own. It takes the
 // widest form that fits there: three quick reactions and the separator, then the first quick
-// reaction alone, then the tools alone. Only where even that does not fit does it stand above the
-// bubble's top, at the bubble's own edge, in the column's form; and below the bubble where the
-// column's top leaves no room above. It is never drawn over its own message's text.
+// reaction alone, then the tools alone. Only where even that does not fit does it stand over the
+// bubble's top, at the bubble's own edge, in the column's form; and under the bubble where the
+// column's top leaves no room over it. It is never drawn over its own message's text. The box is
+// kept 4px inside its column (E6-A: the bar is drawn in its own layer, kept 4 px inside the feed),
+// so the room it fits in is measured from 4px inside the column's edges.
 describe("the bar beside a bubble", () => {
     /** The bar's width as these tests lay it out: 6px of padding, 32px a quick reaction, 28px a tool, 9px the separator, 2px between. */
     function widthOf(glyphs: number, tools: number, hasSeparator: boolean): number {
@@ -585,43 +619,61 @@ describe("the bar beside a bubble", () => {
     const one = widthOf(1, 4, false);
     const bare = widthOf(0, 4, false);
 
-    /** How far the bar stands off the bubble beside it, and its height, as its styles draw them. */
+    /** How far the bar stands off the bubble beside it, and over or under it, its height, and how far inside its column it is kept. */
     const gap = 6;
+    const overGap = 4;
     const height = 34;
+    const inset = 4;
+
+    /** The bubbles these tests draw are this tall. */
+    const bubbleHeight = 60;
 
     const offsetWidth = Object.getOwnPropertyDescriptor(HTMLElement.prototype, "offsetWidth");
     const offsetHeight = Object.getOwnPropertyDescriptor(HTMLElement.prototype, "offsetHeight");
 
     beforeEach(() => {
-        // jsdom lays nothing out, so the bar is given the width its drawn tools would take.
+        // jsdom lays nothing out, so the box is given the width its drawn tools would take.
         Object.defineProperty(HTMLElement.prototype, "offsetWidth", {
             configurable: true,
             get(this: HTMLElement): number {
-                if (this.getAttribute("data-testid") !== "action-bar") {
+                const tools = this.getAttribute("data-testid") === "message-box" ? this.querySelector("[data-testid='action-bar']") : null;
+                if (!tools) {
                     return 0;
                 }
-                return widthOf(this.querySelectorAll(".chat-tool.is-glyph").length, this.querySelectorAll(".chat-tool:not(.is-glyph)").length, !!this.querySelector("[data-testid='action-bar-separator']"));
+                const glyphs = tools.querySelectorAll(".chat-tool-quick").length;
+                return widthOf(glyphs, tools.querySelectorAll("button").length - glyphs, !!tools.querySelector("[data-testid='action-bar-separator']"));
             }
         });
         Object.defineProperty(HTMLElement.prototype, "offsetHeight", {
             configurable: true,
             get(this: HTMLElement): number {
-                return this.getAttribute("data-testid") === "action-bar" ? height : 0;
+                return this.getAttribute("data-testid") === "message-box" ? height : 0;
             }
         });
+
+        // The window, which a box is kept inside as well as its column.
+        Object.defineProperty(document.documentElement, "clientWidth", { configurable: true, value: 1200 });
+        Object.defineProperty(document.documentElement, "clientHeight", { configurable: true, value: 800 });
     });
 
     afterEach(() => {
         Object.defineProperty(HTMLElement.prototype, "offsetWidth", offsetWidth as PropertyDescriptor);
         Object.defineProperty(HTMLElement.prototype, "offsetHeight", offsetHeight as PropertyDescriptor);
+        delete (document.documentElement as unknown as Record<string, unknown>).clientWidth;
+        delete (document.documentElement as unknown as Record<string, unknown>).clientHeight;
     });
 
+    type Bubble = { left: number, right: number, top: number };
+
     /** Mounts the bar in a bubble's dock, the bubble and the column at the boxes given. */
-    async function shownBeside(bubble: { left: number, right: number, top: number }, isOwn = false, columnWidth = 900): Promise<VueWrapper> {
-        const box = (left: number, right: number, top: number, bottom: number): DOMRect => ({ x: left, y: top, top, left, right, bottom, width: right - left, height: bottom - top, toJSON: () => ({}) }) as DOMRect;
+    async function shownBeside(bubble: Bubble, isOwn = false, columnWidth = 900): Promise<VueWrapper> {
+        const rect = (left: number, right: number, top: number, bottom: number): DOMRect => ({ x: left, y: top, top, left, right, bottom, width: right - left, height: bottom - top, toJSON: () => ({}) }) as DOMRect;
         const scroller = document.createElement("div");
         scroller.setAttribute("data-chat-scroller", "");
-        scroller.getBoundingClientRect = () => box(0, columnWidth, 0, 600);
+        scroller.getBoundingClientRect = () => rect(0, columnWidth, 0, 600);
+        // The column's inner box too, which the box is kept inside.
+        Object.defineProperty(scroller, "clientWidth", { value: columnWidth });
+        Object.defineProperty(scroller, "clientHeight", { value: 600 });
         const host = document.createElement("div");
         scroller.append(host);
         document.body.append(scroller);
@@ -631,113 +683,147 @@ describe("the bar beside a bubble", () => {
 
         // The row's dock draws no box, so the bar is placed against the box holding its dock, the
         // bubble's; the bar is placed again as it moves to the next message.
-        const anchor = (bar(wrapper).element as HTMLElement).parentElement?.parentElement as HTMLElement;
-        anchor.getBoundingClientRect = () => box(bubble.left, bubble.right, bubble.top, bubble.top + 60);
+        const guard = wrapper.get("[data-testid='action-bar-guard']").element as HTMLElement;
+        const anchor = guard.parentElement?.parentElement as HTMLElement;
+        anchor.getBoundingClientRect = () => rect(bubble.left, bubble.right, bubble.top, bubble.top + bubbleHeight);
         await wrapper.setProps({ message: isOwn ? own({ id: 43 }) : message({ id: 43 }) });
-        for (let i = 0; i < 6; i++) {
+        // Placing is a chain of promises, settled a turn at a time.
+        for (let i = 0; i < 40; i++) {
             await settle();
         }
         return wrapper;
     }
 
+    /** Where the box stands against the bubble, read from where it is drawn. */
+    function standing(w: VueWrapper, bubble: Bubble, isOwn = false): "beside" | "over" | "under" | string {
+        const box = w.get("[data-testid='message-box']").element as HTMLElement;
+        const left = parseFloat(box.style.left);
+        const top = parseFloat(box.style.top);
+        const width = box.offsetWidth;
+        const isBeside = isOwn ? left + width === bubble.left - gap : left === bubble.right + gap;
+        const isAtOwnEdge = isOwn ? left === bubble.left : left + width === bubble.right;
+        if (isBeside && top === bubble.top) {
+            return "beside";
+        }
+        if (isAtOwnEdge && top + height === bubble.top - overGap) {
+            return "over";
+        }
+        if (isAtOwnEdge && top === bubble.top + bubbleHeight + overGap) {
+            return "under";
+        }
+        return `at ${left}, ${top}`;
+    }
+
     /** Another person's bubble leaving this much room to the column's right edge. */
-    function leaving(room: number, top = 200): { left: number, right: number, top: number } {
+    function leaving(room: number, top = 200): Bubble {
         return { left: 60, right: 900 - room, top };
     }
 
-    test("is drawn at the bubble's top beside it, and above the bubble's top, or below it, only at its own edge", () => {
-        const rules = barRules();
+    test("is drawn at the bubble's top beside it, away from the face, on either side", async () => {
+        const others = leaving(full + gap + inset + 100);
+        const beside = await shownBeside(others);
+        expect(standing(beside, others)).toBe("beside");
+        beside.unmount();
+        document.body.innerHTML = "";
 
-        expect(rules.get(".chat-tools")?.top).toBe("0");
-        expect(rules.get(".chat-tools:not(.is-own)")).toMatchObject({ left: "100%", right: "auto" });
-        expect(rules.get(".chat-tools.is-own")).toMatchObject({ right: "100%", left: "auto" });
-        expect(rules.get(".chat-tools.is-low")).toBeUndefined();
-        expect(rules.get(".chat-tools.is-flush")).toMatchObject({ top: "auto", bottom: "100%" });
-        expect(rules.get(".chat-tools.is-flush.is-low")).toMatchObject({ top: "100%", bottom: "auto" });
+        const yours = { left: full + gap + inset + 100, right: 900, top: 200 };
+        const ownBeside = await shownBeside(yours, true);
+        expect(standing(ownBeside, yours, true)).toBe("beside");
     });
 
     test("keeps all three quick reactions where they fit beside the bubble, to the pixel", async () => {
-        const w = await shownBeside(leaving(full + gap));
+        const bubble = leaving(full + gap + inset);
+        const w = await shownBeside(bubble);
 
         expect(toolLabels(w)).toEqual([...reactionLabels, "Reply in thread", "Quote", "More actions"]);
-        expect(bar(w).classes()).not.toContain("is-flush");
+        expect(standing(w, bubble)).toBe("beside");
     });
 
     test("a pixel short of that keeps the first quick reaction alone, with no separator, still beside the bubble", async () => {
-        const w = await shownBeside(leaving(full + gap - 1));
+        const bubble = leaving(full + gap + inset - 1);
+        const w = await shownBeside(bubble);
 
         expect(toolLabels(w)).toEqual(["React with thumbs up", "More reactions", "Reply in thread", "Quote", "More actions"]);
         expect(w.find("[data-testid='action-bar-separator']").exists()).toBe(false);
-        expect(bar(w).classes()).not.toContain("is-flush");
+        expect(standing(w, bubble)).toBe("beside");
     });
 
     test("keeps that one where it just fits, and the tools alone a pixel short of it", async () => {
-        const fits = await shownBeside(leaving(one + gap));
+        const roomy = leaving(one + gap + inset);
+        const fits = await shownBeside(roomy);
         expect(toolLabels(fits)[0]).toBe("React with thumbs up");
-        expect(bar(fits).classes()).not.toContain("is-flush");
+        expect(standing(fits, roomy)).toBe("beside");
         fits.unmount();
         document.body.innerHTML = "";
 
-        const short = await shownBeside(leaving(one + gap - 1));
+        const tight = leaving(one + gap + inset - 1);
+        const short = await shownBeside(tight);
         expect(toolLabels(short)).toEqual(["More reactions", "Reply in thread", "Quote", "More actions"]);
-        expect(bar(short).classes()).not.toContain("is-flush");
+        expect(standing(short, tight)).toBe("beside");
     });
 
     test("the tools alone stay beside the bubble where they just fit", async () => {
-        const w = await shownBeside(leaving(bare + gap));
+        const bubble = leaving(bare + gap + inset);
+        const w = await shownBeside(bubble);
 
         expect(toolLabels(w)).toEqual(["More reactions", "Reply in thread", "Quote", "More actions"]);
-        expect(bar(w).classes()).not.toContain("is-flush");
+        expect(standing(w, bubble)).toBe("beside");
     });
 
-    test("where even the tools alone do not fit, it stands above the bubble's top with all three quick reactions", async () => {
-        const w = await shownBeside(leaving(bare + gap - 1));
+    test("where even the tools alone do not fit, it stands over the bubble's top with all three quick reactions", async () => {
+        const bubble = leaving(bare + gap + inset - 1);
+        const w = await shownBeside(bubble);
 
-        expect(bar(w).classes()).toContain("is-flush");
-        expect(bar(w).classes()).not.toContain("is-low");
+        expect(standing(w, bubble)).toBe("over");
         expect(toolLabels(w)).toEqual([...reactionLabels, "Reply in thread", "Quote", "More actions"]);
     });
 
-    test("above a bubble too near the column's top for it, it stands below the bubble instead, never over its text", async () => {
-        const room = await shownBeside(leaving(0, height + 4));
-        expect(bar(room).classes()).toContain("is-flush");
-        expect(bar(room).classes()).not.toContain("is-low");
+    test("over a bubble too near the column's top for it, it stands under the bubble instead, never over its text", async () => {
+        const roomy = leaving(inset, height + overGap + inset);
+        const room = await shownBeside(roomy);
+        expect(standing(room, roomy)).toBe("over");
         room.unmount();
         document.body.innerHTML = "";
 
-        const near = await shownBeside(leaving(0, height + 3));
-        expect(bar(near).classes()).toEqual(expect.arrayContaining(["is-flush", "is-low"]));
+        const tight = leaving(inset, height + overGap + inset - 1);
+        const near = await shownBeside(tight);
+        expect(standing(near, tight)).toBe("under");
     });
 
     test("does the same on the reader's own side, by the room left of the bubble", async () => {
-        const beside = await shownBeside({ left: one + gap, right: 900, top: 200 }, true);
+        const roomy = { left: one + gap + inset, right: 900, top: 200 };
+        const beside = await shownBeside(roomy, true);
         expect(toolLabels(beside)[0]).toBe("React with thumbs up");
         expect(toolLabels(beside)[1]).toBe("More reactions");
-        expect(bar(beside).classes()).not.toContain("is-flush");
+        expect(standing(beside, roomy, true)).toBe("beside");
         beside.unmount();
         document.body.innerHTML = "";
 
-        const above = await shownBeside({ left: bare + gap - 1, right: 900, top: 200 }, true);
-        expect(bar(above).classes()).toContain("is-flush");
+        const tight = { left: bare + gap + inset - 1, right: 900, top: 200 };
+        const above = await shownBeside(tight, true);
+        expect(standing(above, tight, true)).toBe("over");
     });
 
-    test("in a narrow column never takes more than the first quick reaction, beside or above", async () => {
-        const beside = await shownBeside({ left: 60, right: 200, top: 200 }, false, 560);
+    test("in a narrow column never takes more than the first quick reaction, beside or over", async () => {
+        const roomy = { left: 60, right: 200, top: 200 };
+        const beside = await shownBeside(roomy, false, 560);
         expect(toolLabels(beside)[0]).toBe("React with thumbs up");
         expect(toolLabels(beside)[1]).toBe("More reactions");
+        expect(standing(beside, roomy)).toBe("beside");
         beside.unmount();
         document.body.innerHTML = "";
 
-        const above = await shownBeside({ left: 60, right: 560, top: 200 }, false, 560);
-        expect(bar(above).classes()).toContain("is-flush");
+        const tight = { left: 60, right: 560 - inset, top: 200 };
+        const above = await shownBeside(tight, false, 560);
+        expect(standing(above, tight)).toBe("over");
         expect(toolLabels(above)[1]).toBe("More reactions");
     });
 
-    test("a bubble beside which it fits is not dropped near the column's top, since it never rises above the bubble", async () => {
-        const w = await shownBeside(leaving(full + gap, 4));
+    test("a bubble beside which it fits is not dropped near the column's top, since it never rises over the bubble", async () => {
+        const bubble = leaving(full + gap + inset, inset);
+        const w = await shownBeside(bubble);
 
-        expect(bar(w).classes()).not.toContain("is-low");
-        expect(bar(w).classes()).not.toContain("is-flush");
+        expect(standing(w, bubble)).toBe("beside");
     });
 });
 

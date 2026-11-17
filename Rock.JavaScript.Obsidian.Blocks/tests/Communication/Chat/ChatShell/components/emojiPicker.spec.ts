@@ -695,7 +695,7 @@ describe("its names and its host", () => {
         await settle();
         await settle();
         expect(tabs().filter(t => t.hasAttribute("title"))).toHaveLength(0);
-        tabs()[1].dispatchEvent(new MouseEvent("mouseenter"));
+        tabs()[0].dispatchEvent(new MouseEvent("mouseenter"));
         await new Promise(resolve => setTimeout(resolve, 600));
         await settle();
         expect(Array.from(document.querySelectorAll("[role='tooltip']")).map(tip => (tip.textContent ?? "").trim())).toContain("Cedar Hill favorites");
