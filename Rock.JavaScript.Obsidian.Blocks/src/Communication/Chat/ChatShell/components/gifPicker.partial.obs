@@ -371,13 +371,14 @@
     /** The tiles the arrows move through in the view shown. */
     const shownColumns = computed((): MasonryTile<unknown>[][] => view.value === "topics" ? topicColumns.value : columns.value);
 
-    /** What a screen reader hears as a search settles. */
+    /**
+     * What a screen reader hears as the body settles, read from what is drawn, so a failure is
+     * heard alike whether the search or the topics failed.
+     */
     const liveLine = computed((): string => {
-        if (search.status === "results") {
-            return `${search.items.length} ${search.items.length === 1 ? "GIF" : "GIFs"}`;
-        }
-
-        switch (search.status) {
+        switch (view.value) {
+            case "results":
+                return `${search.items.length} ${search.items.length === 1 ? "GIF" : "GIFs"}`;
             case "empty":
                 return "No GIFs found";
             case "busy":
@@ -398,7 +399,7 @@
         search.setQuery(query);
     }
 
-    /** Enter searches at once; Down goes to the first GIF. */
+    /** Enter searches at once; Down goes into the body, to the first tile, or to Try again on a failure. */
     function onSearchKeydown(event: KeyboardEvent): void {
         if (event.key === "Enter") {
             event.preventDefault();
@@ -407,6 +408,10 @@
         else if (event.key === "ArrowDown" && (view.value === "results" || view.value === "topics")) {
             event.preventDefault();
             focusTile(0);
+        }
+        else if (event.key === "ArrowDown" && (view.value === "error" || view.value === "busy")) {
+            event.preventDefault();
+            bodyElement.value?.querySelector<HTMLElement>("button")?.focus();
         }
     }
 
