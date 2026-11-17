@@ -242,9 +242,9 @@
     padding: 0;
 }
 
-/* Community's rows come 4px in from the panel's edges, except on a phone, which keeps its 12px. */
-.chat-th-body.is-community:not(.is-phone) :deep(.chat-msg.is-community) {
-    --chat-cm-pad: 16px;
+/* Community's rows come 4px in from the panel's edges, except on a phone, where the row keeps its 12px. */
+.chat-th-body.is-community:not(.is-phone) {
+    --chat-cm-column-pad: 16px;
 }
 </style>
 

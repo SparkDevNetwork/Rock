@@ -184,12 +184,13 @@
 
 /*
     Community. The gutter, its gap to the text and the row's side padding are one set, shared with
-    the system line, and narrower on a phone so the text keeps its width.
+    the system line, and narrower on a phone so the text keeps its width. The side padding is the
+    column's to say, since a narrower column such as the thread drawer pads its rows less.
 */
 .chat-msg.is-community {
     --chat-cm-gut: 36px;
     --chat-cm-gap: 12px;
-    --chat-cm-pad: 20px;
+    --chat-cm-pad: var(--chat-cm-column-pad, 20px);
     display: grid;
     grid-template-columns: var(--chat-cm-gut) minmax(0, 1fr);
     align-items: start;
