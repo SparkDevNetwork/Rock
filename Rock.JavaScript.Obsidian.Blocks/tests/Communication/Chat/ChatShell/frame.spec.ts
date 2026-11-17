@@ -30,6 +30,7 @@ import { nextTick, reactive } from "vue";
 import { ChannelFacts, MentionRow, SidebarRow, TimelineMessage } from "../../../../src/Communication/Chat/ChatShell/types.partial";
 import { ShellOptions } from "../../../../src/Communication/Chat/ChatShell/shell.partial";
 import ChannelSidebarComponent from "../../../../src/Communication/Chat/ChatShell/components/channelSidebar.partial.obs";
+import EmojiPickerComponent from "../../../../src/Communication/Chat/ChatShell/components/emojiPicker.partial.obs";
 import ComposerComponent from "../../../../src/Communication/Chat/ChatShell/components/composer.partial.obs";
 import MessageFeedComponent from "../../../../src/Communication/Chat/ChatShell/components/messageFeed.partial.obs";
 import ProfileCardComponent from "../../../../src/Communication/Chat/ChatShell/components/profileCard.partial.obs";
@@ -3789,6 +3790,167 @@ describe("reactions", () => {
         await settle();
 
         expect(pickerOf()).toBeNull();
+    });
+});
+
+// A message's actions, its quick tray and its emoji picker are one box: the bar turns into the
+// tray, the tray grows into the picker, and each step moves focus into what is now drawn. The box
+// is drawn in the chat's root, so the feed's edges never cut it, yet it belongs to its message's
+// row: the pointer or a keyboard's focus on it holds it there. Only one floating layer shows at a
+// time, and a box whose column goes leaves focus on something drawn.
+describe("the message box", () => {
+    const boxes = (): HTMLElement[] => Array.from(document.querySelectorAll<HTMLElement>("[data-testid='message-box']"));
+    let focusVisible: jest.SpyInstance | null = null;
+
+    afterEach(() => {
+        focusVisible?.mockRestore();
+        focusVisible = null;
+        delete (window as { matchMedia?: unknown }).matchMedia;
+    });
+
+    /** Tells jsdom, which cannot, whether focus came from a keyboard, as :focus-visible says in a browser. */
+    function focusIsFromKeyboard(isKeyboard: boolean): void {
+        const matches = Element.prototype.matches;
+        focusVisible = jest.spyOn(Element.prototype, "matches").mockImplementation(function (this: Element, selector: string) {
+            return selector === ":focus-visible" ? isKeyboard : matches.call(this, selector);
+        });
+    }
+
+    async function openWithMessages(w: VueWrapper, ids: number[]): Promise<void> {
+        await openRow(w, team.channel_id);
+        timelineOf(team.channel_id).messages.push(...ids.map(id => storedMessage(id)));
+        await settle();
+    }
+
+    /** The pointer rests on a message until its bar shows. */
+    async function rest(w: VueWrapper, id: number): Promise<void> {
+        await w.get(`[data-testid='frame-main'] [data-hot-id='${id}']`).trigger("pointerover");
+        await new Promise(resolve => setTimeout(resolve, 170));
+        await settle();
+    }
+
+    async function press(element: Element | null | undefined): Promise<void> {
+        (element as HTMLElement).click();
+        await settle();
+        await settle();
+    }
+
+    function isInert(element: Element | null): boolean {
+        return !!element?.closest("[inert]");
+    }
+
+    test("Add reaction turns the bar into the tray and All emoji the tray into the picker, one box throughout; Escape gives the bar back with focus on Add reaction", async () => {
+        const w = await mountBlock(1200, true);
+        await openWithMessages(w, [7]);
+        await rest(w, 7);
+
+        const box = boxes()[0];
+        expect(box).toBeDefined();
+        expect(box.dataset.layer).toBe("bar");
+
+        await press(box.querySelector("[data-testid='action-bar'] button[aria-label='More reactions']"));
+        expect(boxes()).toEqual([box]);
+        expect(box.dataset.layer).toBe("tray");
+        expect(document.activeElement).toBe(box.querySelector("[role='toolbar'][aria-label='Quick reactions'] button"));
+
+        await press(box.querySelector("button[aria-label='All emoji']"));
+        expect(boxes()).toEqual([box]);
+        expect(box.dataset.layer).toBe("picker");
+        expect(document.activeElement).toBe(box.querySelector("input[aria-label='Search emoji']"));
+
+        document.activeElement?.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+        await fadeOut();
+
+        expect(boxes()).toEqual([box]);
+        expect(box.dataset.layer).toBe("bar");
+        expect(document.activeElement).toBe(box.querySelector("[data-testid='action-bar'] button[aria-label='More reactions']"));
+    });
+
+    test("the pointer moving from the row onto the box keeps it past the grace, a keyboard's focus in it holds it, and focus on the next message takes it there", async () => {
+        const w = await mountBlock(1200, true);
+        await openWithMessages(w, [7, 8]);
+        await rest(w, 7);
+        const box = boxes()[0];
+        expect(box?.dataset.hotId).toBe("7");
+
+        // Off the feed and onto the box, which the chat's root holds apart from the feed.
+        await w.get("[data-testid='frame-main'] [data-testid='message-feed']").trigger("pointerleave");
+        box.dispatchEvent(new PointerEvent("pointerover", { bubbles: true, pointerType: "mouse" }));
+        await new Promise(resolve => setTimeout(resolve, 300));
+        await settle();
+        expect(boxes()).toEqual([box]);
+
+        // A keyboard's focus inside it holds it after the pointer has gone.
+        focusIsFromKeyboard(true);
+        box.querySelector<HTMLElement>("[data-testid='action-bar'] button")?.focus();
+        box.dispatchEvent(new PointerEvent("pointerleave", { pointerType: "mouse" }));
+        await new Promise(resolve => setTimeout(resolve, 300));
+        await settle();
+        expect(boxes()).toEqual([box]);
+
+        w.get<HTMLElement>("[data-testid='frame-main'] [data-message-id='8']").element.focus();
+        await fadeOut();
+        expect(boxes().map(drawn => drawn.dataset.hotId)).toEqual(["8"]);
+    });
+
+    test("raises nothing while another floating layer is open: the composer's emoji picker, a menu, or the drawer's tray", async () => {
+        const w = await mountBlock(1200, true);
+        await openWithMessages(w, [7]);
+
+        await press(w.get("[data-testid='frame-main'] button[aria-label='Add emoji']").element);
+        expect(document.querySelector("[role='dialog'][aria-label='Add emoji']")).not.toBeNull();
+
+        await rest(w, 7);
+
+        expect(w.find("[data-testid='action-bar']").exists()).toBe(false);
+        expect(boxes()).toHaveLength(0);
+    });
+
+    test("a room switch with focus in the tray takes the box away and leaves focus on something drawn and in reach", async () => {
+        const w = await mountBlock(1200, true);
+        await openWithMessages(w, [7]);
+        await rest(w, 7);
+        await press(boxes()[0]?.querySelector("[data-testid='action-bar'] button[aria-label='More reactions']"));
+        expect(document.activeElement?.closest("[data-testid='message-box']")).not.toBeNull();
+
+        await openRow(w, dmAnna.channel_id);
+        await fadeOut();
+
+        expect(boxes()).toHaveLength(0);
+        expect(document.activeElement).not.toBe(document.body);
+        expect(isInert(document.activeElement)).toBe(false);
+    });
+
+    test("on a phone, the thread's sheet plus opens the thread's own box as a picker sheet; a touch rings nothing, a keyboard the first emoji", async () => {
+        window.matchMedia = ((query: string) => ({ matches: query.includes("hover: none"), media: query })) as unknown as typeof window.matchMedia;
+        const w = await mountBlock(375, true);
+        await openWithMessages(w, []);
+        timelineOf(team.channel_id).messages.push(storedMessage(40, { reply_count: 2, last_reply_at: new Date().toISOString(), repliers: [] } as Partial<TimelineMessage>));
+        await settle();
+        await w.get("[data-testid='frame-main'] [data-testid='thread-summary']").trigger("click");
+        await fadeOut();
+        const drawer = w.findComponent(ThreadDrawerComponent);
+        const anchor = document.createElement("button");
+        w.get("[data-testid='frame-panel']").element.append(anchor);
+
+        drawer.vm.$emit("messageAction", { kind: "openPicker", message: storedMessage(40), anchor, opening: { startsOn: "full" } });
+        await fadeOut();
+
+        const sheet = document.querySelector<HTMLElement>("[role='dialog'][aria-label='Add reaction']");
+        expect(sheet).not.toBeNull();
+        expect(drawer.findComponent(EmojiPickerComponent).exists()).toBe(true);
+        expect(w.findComponent(MessageFeedComponent).findComponent(EmojiPickerComponent).exists()).toBe(false);
+        expect(document.activeElement?.getAttribute("role")).not.toBe("gridcell");
+
+        sheet?.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+        await fadeOut();
+        focusIsFromKeyboard(true);
+        anchor.focus();
+        drawer.vm.$emit("messageAction", { kind: "openPicker", message: storedMessage(40), anchor, opening: { startsOn: "full" } });
+        await fadeOut();
+
+        expect(document.activeElement?.getAttribute("role")).toBe("gridcell");
+        expect(document.activeElement?.closest("[role='dialog'][aria-label='Add reaction']")).not.toBeNull();
     });
 });
 

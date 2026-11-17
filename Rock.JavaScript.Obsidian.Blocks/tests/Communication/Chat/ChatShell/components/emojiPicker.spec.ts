@@ -679,6 +679,45 @@ describe("the tabs", () => {
     });
 });
 
+// Every control names itself in a tip, never the browser's title (T-27); the hosted form, drawn
+// inside the message box, brings no popover of its own, which the box already is.
+describe("its names and its host", () => {
+    test("the tabs and All emoji carry tips and no title", async () => {
+        await open({ startsOn: "tray" });
+        const all = document.querySelector<HTMLElement>("button[aria-label='All emoji']") as HTMLElement;
+        expect(all.hasAttribute("title")).toBe(false);
+        all.dispatchEvent(new MouseEvent("mouseenter"));
+        await new Promise(resolve => setTimeout(resolve, 600));
+        await settle();
+        expect(Array.from(document.querySelectorAll("[role='tooltip']")).map(tip => (tip.textContent ?? "").trim())).toEqual(["All emoji"]);
+
+        all.click();
+        await settle();
+        await settle();
+        expect(tabs().filter(t => t.hasAttribute("title"))).toHaveLength(0);
+        tabs()[1].dispatchEvent(new MouseEvent("mouseenter"));
+        await new Promise(resolve => setTimeout(resolve, 600));
+        await settle();
+        expect(Array.from(document.querySelectorAll("[role='tooltip']")).map(tip => (tip.textContent ?? "").trim())).toContain("Cedar Hill favorites");
+    });
+
+    test("hosted, it draws the step it is given and no popover of its own", async () => {
+        wrapper = mount(EmojiPicker, {
+            props: { mode: "react", startsOn: "tray", isHosted: true, source: { favorites, catalog, recents: [], churchName: "Cedar Hill" } },
+            attachTo: document.body,
+            global: { provide: providedSession({ isPhone: false }) }
+        });
+        await settle();
+
+        expect(document.querySelector("[data-testid='popover']")).toBeNull();
+        expect(document.querySelector("[role='toolbar'][aria-label='Quick reactions']")).not.toBeNull();
+
+        document.querySelector<HTMLElement>("button[aria-label='All emoji']")?.click();
+        await settle();
+        expect(wrapper.emitted("showAll")).toHaveLength(1);
+    });
+});
+
 describe("where it is placed", () => {
     /** Opens the picker beside an anchor at a given box, in a window 1000 by 800. */
     async function openAt(box: { left: number, top: number, width: number, height: number }, isOwn = false): Promise<HTMLElement> {

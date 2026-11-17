@@ -21,7 +21,7 @@
 // hold the one way, including the cases the copies got wrong.
 import { mount, VueWrapper } from "@vue/test-utils";
 import { defineComponent, h, nextTick, PropType, ref } from "vue";
-import { PopoverControl, PopoverOptions, usePopover } from "../../../../../src/Communication/Chat/ChatShell/ui/popover.partial";
+import { isFloatingLayerOpen, PopoverControl, PopoverOptions, usePopover } from "../../../../../src/Communication/Chat/ChatShell/ui/popover.partial";
 import Popover from "../../../../../src/Communication/Chat/ChatShell/ui/popoverSurface.partial.obs";
 import Dialog from "../../../../../src/Communication/Chat/ChatShell/ui/dialog.partial.obs";
 import { ruleOf, styleOf } from "./partStyle";
@@ -345,6 +345,44 @@ describe("the popover", () => {
         await pop.open();
         await new Promise(resolve => setTimeout(resolve, 0));
         expect(asked).toHaveBeenCalled();
+    });
+});
+
+// One floating layer at a time (A-22): while any popover, menu or card is open, a message's bar
+// rises for no hover. A tip, which shows on its own timers and takes no press, is not one.
+describe("the open layer", () => {
+    const wrappers: VueWrapper[] = [];
+
+    afterEach(() => {
+        wrappers.splice(0).forEach(wrapper => wrapper.unmount());
+        document.body.innerHTML = "";
+    });
+
+    function host(props: Record<string, unknown> = {}): PopoverControl {
+        const wrapper = mount(Host, { props, attachTo: document.body });
+        wrappers.push(wrapper);
+        return (wrapper.vm as unknown as { pop: PopoverControl }).pop;
+    }
+
+    test("is open while a popover is, and shut once each closes, however it closes", async () => {
+        const menu = host({ name: "menu" });
+        const card = host({ name: "card" });
+        const tip = host({ name: "tip", options: { isDismissable: false } });
+        expect(isFloatingLayerOpen()).toBe(false);
+
+        await tip.open();
+        expect(isFloatingLayerOpen()).toBe(false);
+
+        await menu.open();
+        expect(isFloatingLayerOpen()).toBe(true);
+        await card.open();
+        menu.close();
+        expect(isFloatingLayerOpen()).toBe(true);
+
+        key("Escape");
+        await settle();
+        expect(card.isOpen.value).toBe(false);
+        expect(isFloatingLayerOpen()).toBe(false);
     });
 });
 

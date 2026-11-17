@@ -48,10 +48,12 @@
 import { mount, VueWrapper } from "@vue/test-utils";
 import { readFileSync } from "fs";
 import { join } from "path";
-import { nextTick } from "vue";
+import { defineComponent, effect, nextTick, reactive, shallowRef } from "vue";
 import ActionBar from "../../../../../src/Communication/Chat/ChatShell/components/actionBar.partial.obs";
 import Icon from "../../../../../src/Communication/Chat/ChatShell/ui/icon.partial.obs";
+import { ActionBars, provideActionBars } from "../../../../../src/Communication/Chat/ChatShell/composables/useActionBar.partial";
 import { isActionCall } from "../../../../../src/Communication/Chat/ChatShell/composables/useMessageActions.partial";
+import { ChatShell } from "../../../../../src/Communication/Chat/ChatShell/shell.partial";
 import { TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 
 const me = "a0000001-0000-4000-8000-000000000000";
@@ -773,5 +775,103 @@ describe("the bar under reduced motion", () => {
         expect(style).toMatch(/\.chat-tools-leave-active\s*\{[^}]*--chat-slide-to:\s*var\(--chat-rise-sm\);[^}]*animation:\s*chat-slide-out var\(--chat-d-tools-move\) var\(--chat-ease-in\) forwards, chat-fade-out var\(--chat-d-tools-hide\) linear forwards;/);
         expect(style).not.toContain("prefers-reduced-motion");
         expect(sheet).toMatch(/@media \(prefers-reduced-motion: reduce\) \{\s*@keyframes chat-slide-in \{\s*from \{\s*opacity: 0;/);
+    });
+});
+
+// One look for every tool (J-08): each is the shared icon button at its one size, a quick reaction
+// its glyph inside one, so the bar restyles nothing from outside its parts.
+describe("the bar's parts", () => {
+    test("every tool is the shared icon button, and the bar's sheet reaches into no part", async () => {
+        const w = await shown({ message: message() });
+        const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/actionBar.partial.obs"), "utf8");
+        const style = source.slice(source.indexOf("<style"), source.indexOf("</style>"));
+
+        const tools = w.get("[data-testid='action-bar']").findAll(":scope > button, :scope > [role='group'] > button");
+        expect(tools.length).toBe(7);
+        expect(tools.filter(tool => !tool.classes("chat-icon-btn"))).toHaveLength(0);
+        expect(style).not.toContain(":deep(");
+    });
+});
+
+// The block's one held box: where it opens, the quick tray unless the control that asked has
+// offered the quick reactions already, and what the message rows read of it while it is up.
+// Every row asks about its own message, so opening and closing it reaches the rows of that
+// message and no other. The shell is faked with only what the box reads. Moved from the old
+// picker host's own tests, which the box took over.
+describe("the block's boxes", () => {
+    const team = "c0000001-0000-4000-8000-000000000000";
+
+    function setUp(): ActionBars {
+        const shell = shallowRef({
+            reactions: {
+                favorites: [],
+                state: reactive({ catalog: null, recents: [] }),
+                loadCatalog: jest.fn(async () => null),
+                reactorNames: jest.fn(),
+                recordRecent: jest.fn(),
+                toggleCode: jest.fn()
+            },
+            timelines: { state: () => ({ messages: [] }) },
+            threads: { state: { thread: null } }
+        } as unknown as ChatShell);
+
+        let bars: ActionBars | null = null;
+        wrapper = mount(defineComponent({
+            setup() {
+                bars = provideActionBars(shell, "Cedar Hill", () => undefined);
+                return () => null;
+            }
+        }));
+        return bars as unknown as ActionBars;
+    }
+
+    function stored(id: number): TimelineMessage {
+        return { id, body: "Hello" } as TimelineMessage;
+    }
+
+    test("opens on the quick tray, or on the full picker when the control that asked says so", () => {
+        const picker = setUp();
+        const anchor = document.createElement("button");
+        const sheetPlus = document.createElement("button");
+
+        picker.openReactionPicker("conversation", team, stored(7), anchor);
+        expect(picker.held.value?.layer).toBe("tray");
+
+        picker.openReactionPicker("conversation", team, stored(7), sheetPlus, sheetPlus, { startsOn: "full" });
+        expect(picker.held.value?.layer).toBe("picker");
+    });
+
+    test("keeps the quick reactions the control that asked already shows, for its tray to leave out", () => {
+        const picker = setUp();
+        const add = document.createElement("button");
+
+        picker.openReactionPicker("conversation", team, stored(7), add, add, { offered: ["thumbsup", "heart", "joy"] });
+        expect(picker.held.value).toMatchObject({ layer: "tray", offered: ["thumbsup", "heart", "joy"] });
+
+        picker.closeReactionPicker();
+        picker.openReactionPicker("conversation", team, stored(7), add);
+        expect(picker.held.value?.offered).toEqual([]);
+    });
+
+    test("opening and closing reaches only the rows of the message it is open on", () => {
+        const picker = setUp();
+        const anchor = document.createElement("button");
+        const runs = { 7: 0, 8: 0 };
+        const seen: Record<number, HTMLElement | null> = {};
+        for (const id of [7, 8] as const) {
+            effect(() => {
+                seen[id] = picker.reactionHost.pickerAnchorOf(id);
+                runs[id]++;
+            });
+        }
+
+        picker.openReactionPicker("conversation", team, stored(7), anchor);
+        expect(seen[7]).toBe(anchor);
+        expect(seen[8]).toBeNull();
+
+        picker.closeReactionPicker();
+        expect(seen[7]).toBeNull();
+
+        expect(runs).toEqual({ 7: 3, 8: 1 });
     });
 });
