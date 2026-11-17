@@ -964,9 +964,8 @@ img.chat-sheet-glyph {
             isEditedNow.value = false;
         }
         else if (isGreeting.value && event.animationName.includes("chat-flash")) {
-            // The greeting's end is the row's own: a feed lets its jump's flash go on any flash
-            // ending under it, so it never hears this one.
-            event.stopPropagation();
+            // The end still reaches the feed, which lets its jump's flash go only on the jumped-to
+            // row's own end, so a greeting on another row leaves that flash be.
             isGreeting.value = false;
         }
     }

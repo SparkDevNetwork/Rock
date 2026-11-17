@@ -2395,16 +2395,11 @@ describe("a row's one-off motion", () => {
             const wrapper = draw({ message: naming(), isChannel: true, position: "single" }, motion);
             expect(root(wrapper).classList.contains("is-greeting")).toBe(true);
 
-            const outside = jest.fn();
-            const holder = root(wrapper).parentElement!;
-            holder.addEventListener("animationend", outside);
             animationEnd(wrapper, "chat-flash");
             await nextTick();
-            holder.removeEventListener("animationend", outside);
             expect(root(wrapper).classList.contains("is-greeting")).toBe(false);
-            // The greeting's end is the row's own; a feed letting its jump's flash go on any flash
-            // ending must not hear it.
-            expect(outside).not.toHaveBeenCalled();
+            // The end goes on to the feed, which keeps a jumped-to row's flash through another
+            // row's greeting ending: messageFeed.spec, "keeps the landed message's flash".
 
             await wrapper.setProps({ message: naming(), position: "first" });
             expect(root(wrapper).classList.contains("is-greeting")).toBe(false);
