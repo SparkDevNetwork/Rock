@@ -217,6 +217,21 @@ test('P10 refuses finding an element by its test id in production code', () => {
   assert.deepEqual(ruleLines(one(`${shell}/components/x.partial.obs`, template), 'P10'), []);
 });
 
+// A lookup typed with the element it expects is the same lookup: the type between the name and
+// its bracket must not hide it.
+test('P10 refuses a typed lookup by test id, as an untyped one', () => {
+  const script = [
+    'const input = rootElement.value?.querySelector<HTMLInputElement>("[data-testid=\'composer-input\']");',
+    'const rows = list.querySelectorAll<HTMLElement>(`[data-testid="row"]`);',
+    'const view = element.closest<HTMLElement>("[data-testid=\'main-view\']");',
+    'const tile = grid.querySelector < HTMLButtonElement > ("[data-testid=\'gif-topic\']");',
+    'const row = list.querySelector<HTMLElement>(".chat-row");',
+    'const mark = list.querySelector<HTMLElement>("[data-focus-stop=\'member\']");',
+  ].join('\n');
+
+  assert.deepEqual(ruleLines(one(`${shell}/composables/useMessageActionsView.partial.ts`, script), 'P10'), [1, 2, 3, 4]);
+});
+
 test('P15 refuses looking a room up in the channel rows outside the channel store, not other rows', () => {
   const script = [
     'const row = shell.value.channels.rows.find(r => r.channel_id === channelId);',
