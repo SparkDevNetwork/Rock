@@ -1163,28 +1163,39 @@ describe("the components' own styles", () => {
             }
         });
 
-        // A long foot (three faces, a count, the start time, Following and the badge) once ran past
-        // the panel and cut the badge off at the window's edge. The start time is the one part that
-        // gives way, and it gives way whole: it wraps onto a second line the foot hides, so a time
-        // is never shown clipped ("Started 2:..."); every other part keeps its width.
-        test("the threads list's foot gives way at its start time whole, so its badge is always drawn whole", () => {
+        // A thread has one date, its last reply's at the row's end, which is the list's order. The
+        // foot once also said "Started <day>", a second date with no label, and had to give way at
+        // it to keep the badge whole; with it gone the foot is faces, count, Following and the
+        // badge, each kept whole.
+        test("the threads list's foot holds no start day, a second date, and keeps every part whole", () => {
             const source = readFileSync(threadsPath, "utf8");
-            expect(source).toContain('<span class="chat-ls-started"><span class="chat-ls-unit"><span class="chat-ls-sep">&middot;</span> Started {{ drawn.started }}</span></span>');
-            expect(declarationOf(threadsPath, ".chat-ls-started", "min-width")).toBe("0");
-            expect(declarationOf(threadsPath, ".chat-ls-started", "display")).toBe("flex");
-            expect(declarationOf(threadsPath, ".chat-ls-started", "flex-wrap")).toBe("wrap");
-            expect(declarationOf(threadsPath, ".chat-ls-started", "height")).toBe("20px");
-            expect(declarationOf(threadsPath, ".chat-ls-started", "overflow")).toBe("hidden");
-            expect(declarationOf(threadsPath, ".chat-ls-started", "text-overflow")).toBe("");
-            // The unit never breaks inside itself, so it is shown whole or on the hidden line.
-            expect(declarationOf(threadsPath, ".chat-ls-unit", "white-space")).toBe("nowrap");
-            // An empty item as tall as the box holds the first line, so the unit has a line to wrap from
-            // (a lone item never wraps) and the line it wraps to is the hidden one.
-            expect(declarationOf(threadsPath, ".chat-ls-started::before", "height")).toBe("100%");
-            expect(declarationOf(threadsPath, ".chat-ls-started::before", "content")).toMatch(/^(""|'')$/);
+            expect(source).not.toMatch(/Started|chat-ls-started|chat-ls-unit/);
             for (const part of [".chat-ls-faces", ".chat-ls-count", ".chat-ls-end"]) {
                 expect([part, declarationOf(threadsPath, part, "flex")]).toEqual([part, "none"]);
             }
+        });
+
+        // Every row of the three panels starts its face on the list row's own lead edge, so a
+        // face never shifts as one panel gives way to another. A mention's face carries no "@"
+        // mark, since every row there is a mention, and its New dot sits in the gutter beside it.
+        test("the three panels start their faces on one edge, a mention's face with no @ mark", () => {
+            const mentionsPath = resolve(components, "mentionsPanel.partial.obs");
+            expect(readFileSync(mentionsPath, "utf8")).not.toMatch(/chat-ls-at\b/);
+            for (const property of ["padding-left", "padding", "margin-left", "margin"]) {
+                expect([property, declarationOf(mentionsPath, ".chat-ls-face", property)]).toEqual([property, ""]);
+                expect([property, declarationOf(sheetPath, ".chat-shell .chat-ls-avw", property)]).toEqual([property, ""]);
+            }
+        });
+
+        // "Reply in a thread" says where the mention is; it is not a button (the whole row is), so it
+        // is a line of quiet words with its mark, not an outlined pill.
+        test("a mention's Reply in a thread is quiet words, not a pill", () => {
+            const mentionsPath = resolve(components, "mentionsPanel.partial.obs");
+            for (const property of ["border", "background", "border-radius", "padding", "height"]) {
+                expect([property, declarationOf(mentionsPath, ".chat-ls-inthread", property)]).toEqual([property, ""]);
+            }
+            expect(declarationOf(mentionsPath, ".chat-ls-inthread", "color")).toBe(normalize("var(--chat-muted)"));
+            expect(declarationOf(mentionsPath, ".chat-ls-inthread", "font-weight")).toBe("");
         });
 
         test("the threads list's badge, which skips the pop, sits on a pinned line too", () => {

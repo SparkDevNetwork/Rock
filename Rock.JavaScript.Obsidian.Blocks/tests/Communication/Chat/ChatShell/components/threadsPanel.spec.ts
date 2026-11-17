@@ -346,6 +346,29 @@ describe("a row", () => {
 
         expect(w.get("[data-testid='thread-row-status']").text()).toContain("Following");
     });
+
+    // One date per thread: its last reply's, at the row's end, which is the list's order, as the
+    // sidebar's. The day it started is not drawn beside it as a second, unlabelled date.
+    test("draws one date, its last reply's, and no day it started", () => {
+        const yesterday = new Date(todayAtNineFortyOne);
+        yesterday.setDate(yesterday.getDate() - 1);
+        const w = draw({ rows: [row(40, {}, { created_at: yesterday.toISOString() })] });
+
+        const drawn = rowsOf(w)[0];
+        expect(drawn.findAll("time").map(time => plain(time.text()))).toEqual(["9:41 AM"]);
+        expect(plain(drawn.text())).not.toMatch(/Started|Yesterday/);
+    });
+
+    // On a phone a row keeps its time and draws no bell: a column of bells would hide every
+    // row's time, and a thread is followed or unfollowed from its own drawer.
+    test("on a phone keeps its time and draws no follow bell, saying no Right arrow to one", () => {
+        const w = draw({ isPhone: true, tab: "all", rows: [row(40, { following: false }), row(30)] });
+
+        expect(w.find("[data-testid='thread-row-follow']").exists()).toBe(false);
+        expect(rowsOf(w).map(drawn => plain(drawn.get("time").text()))).toEqual(["9:41 AM", "9:41 AM"]);
+        expect(w.findAll(".chat-lrow-actions")).toHaveLength(0);
+        expect(plain(w.get("[aria-describedby]").element.ownerDocument.getElementById(String(w.get("[data-testid='thread-row-open']").attributes("aria-describedby")))?.textContent)).toBe("Up and down arrows move between rows.");
+    });
 });
 
 describe("following from a row", () => {

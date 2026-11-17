@@ -15,9 +15,9 @@
 // </copyright>
 //
 // The mentions inbox: where people named the reader, newest first, under day headings. A row is
-// one button whose label says the whole row; it draws the author's face with an @ badge, their
-// name, the room's name from the sidebar, the time, the text in three lines as the message body
-// draws it, and on a reply a "Reply in a thread" tag. A row newer than the last visit is New with
+// one button whose label says the whole row; it draws the author's face, their name, the room's
+// name from the sidebar, the time, the text in three lines as the message body draws it less a
+// leading mention of the reader, and on a reply "Reply in a thread" in quiet words. A row newer than the last visit is New with
 // a dot, until it is opened; the row just opened is marked current. A channel row jumps to the
 // message and a reply opens its thread. Paging is "Load older mentions", "Loading" while busy,
 // then "That's every mention"; a failed page and a failed refresh each say so in place.
@@ -67,7 +67,7 @@ function at(hours: number, minutes: number, daysAgo = 0): string {
 const offline: ChatError = { code: "rpc.transport", severity: "failed" };
 
 /** One row of chat_list_mentions, exactly its keys, its message as a history page carries it. */
-function row(id: number, extra: { channel_id?: string, parent_id?: number | null, created_at?: string, body?: string } = {}): MentionRow {
+function row(id: number, extra: { channel_id?: string, parent_id?: number | null, created_at?: string, body?: string, pieces?: Array<Record<string, unknown>> } = {}): MentionRow {
     const parentId = extra.parent_id ?? null;
     const body = extra.body ?? "are you in for Saturday?";
     return {
@@ -86,7 +86,7 @@ function row(id: number, extra: { channel_id?: string, parent_id?: number | null
             sender_listed: true,
             message_type: "text",
             body: `<@${me}> ${body}`,
-            pieces: [{ type: "mention", text: "@Jordan Ellis", person_alias_guid: me }, { type: "text", text: ` ${body}` }],
+            pieces: extra.pieces ?? [{ type: "mention", text: "@Jordan Ellis", person_alias_guid: me }, { type: "text", text: ` ${body}` }],
             blocks: null,
             metadata: null,
             visibility: "visible",
@@ -185,20 +185,48 @@ describe("the rows", () => {
         expect(rowsOf(w)).toHaveLength(3);
     });
 
-    test("draw the author's face with its @ badge, the name, the room, the time and the text through the message body", () => {
+    test("draw the author's face with no @ mark, the name, the room, the time and the text through the message body", () => {
         const w = draw();
         expect(rowsOf(w)).toHaveLength(1);
         const drawn = rowsOf(w)[0];
 
         expect(drawn.find("[data-testid='avatar']").exists()).toBe(true);
-        expect(drawn.findAllComponents(Icon).some(i => i.props("name") === "at")).toBe(true);
+        expect(drawn.findAllComponents(Icon).some(i => i.props("name") === "at")).toBe(false);
         expect(plain(drawn.text())).toContain("Sam Ortiz");
         expect(plain(drawn.text())).toContain("young-adults");
         expect(plain(drawn.text())).toContain("9:12 AM");
 
         const body = drawn.findComponent(MessageBody);
         expect(body.exists()).toBe(true);
-        expect(plain(body.text())).toContain("@Jordan Ellis are you in for Saturday?");
+        expect(plain(body.text())).toContain("Are you in for Saturday?");
+    });
+
+    // Every row here is where someone named the reader, so a mention of them leading the words
+    // says nothing the inbox does not: it is left off, and the words start with a capital.
+    test("leave off a leading mention of the reader, starting the words with a capital", () => {
+        const w = draw({ rows: [row(60, { pieces: [{ type: "mention", text: "@Jordan Ellis", person_alias_guid: me }, { type: "text", text: ", can you cover the welcome table?" }] })] });
+
+        const body = rowsOf(w)[0].getComponent(MessageBody);
+        expect(plain(body.text())).toBe("Can you cover the welcome table?");
+        expect(body.find(".chat-mn").exists()).toBe(false);
+    });
+
+    test("keep a mention of the reader that is the whole message, or that comes later in the words", () => {
+        const w = draw({ rows: [
+            row(60, { pieces: [{ type: "mention", text: "@Jordan Ellis", person_alias_guid: me }] }),
+            row(50, { pieces: [{ type: "text", text: "Thanks " }, { type: "mention", text: "@Jordan Ellis", person_alias_guid: me }, { type: "text", text: "!" }] })
+        ] });
+
+        const [alone, later] = rowsOf(w).map(drawn => drawn.getComponent(MessageBody));
+        expect(plain(alone.text())).toBe("@Jordan Ellis");
+        expect(alone.find(".chat-mn").exists()).toBe(true);
+        expect(plain(later.text())).toBe("Thanks @Jordan Ellis!");
+    });
+
+    test("keep a leading mention of someone else", () => {
+        const w = draw({ rows: [row(60, { pieces: [{ type: "mention", text: "@Sam Ortiz", person_alias_guid: sam }, { type: "text", text: " and you are on coffee." }] })] });
+
+        expect(plain(rowsOf(w)[0].getComponent(MessageBody).text())).toBe("@Sam Ortiz and you are on coffee.");
     });
 
     test("tag a reply Reply in a thread, and only a reply", () => {
