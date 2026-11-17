@@ -327,9 +327,17 @@ img.chat-tool-glyph {
     const forms: Form[] = ["full", "one", "bare"];
     const quickCounts: Record<Form, number> = { full: 3, one: 1, bare: 0 };
 
-    /** How far the box stands off the bubble beside it, over or under it, and inside a channel's row from its top. */
+    /** How far the box stands off the bubble beside it, and over or under it. */
     const besideGapPx = 6;
     const overGapPx = 4;
+
+    /**
+     * A channel's box: lifted over its row's top so it straddles the edge and covers the least of
+     * the words, in from the row's end, and how far inside the row it moves where the column's top
+     * leaves no room for the lift.
+     */
+    const channelLiftPx = 18;
+    const channelEndInsetPx = 14;
     const insideGapPx = 4;
 
     /** What a box drawn alone, outside any block, would pick from: nothing. */
@@ -360,15 +368,16 @@ img.chat-tool-glyph {
     /**
      * The box's floating: beside the bubble, away from the face, its top on the bubble's top; over
      * the bubble's top at its own edge, or under the bubble, only where the column has no room
-     * beside for even the tools alone. A channel's at its row's top right, inside the row. Kept
-     * inside its column. It is open, on the block's stack of floating layers, only while it is
-     * the tray or the picker: Escape, a press elsewhere or Tab past its end then give the bar back.
+     * beside for even the tools alone. A channel's at its row's top right, from the edge where its
+     * top goes. Kept inside its column. It is open, on the block's stack of floating layers, only
+     * while it is the tray or the picker: Escape, a press elsewhere or Tab past its end then give
+     * the bar back.
      */
     const pop = usePopover(guard, boxElement, {
         placement: placementOf,
-        offset: () => props.isCommunity ? -(boxElement.value?.offsetHeight ?? 0) - insideGapPx : side.value === "beside" ? besideGapPx : overGapPx,
+        offset: () => props.isCommunity ? 0 : side.value === "beside" ? besideGapPx : overGapPx,
         fallbackPlacements: fallbacksOf,
-        virtualAnchor: () => hostElement()?.getBoundingClientRect() ?? null,
+        virtualAnchor: () => props.isCommunity ? channelEdge() : hostElement()?.getBoundingClientRect() ?? null,
         boundary: columnElement,
         isSheet: () => session.isPhone.value,
         returnTo: returnTarget
@@ -641,9 +650,27 @@ img.chat-tool-glyph {
         return props.isOwn ? `${vertical}-start` : `${vertical}-end`;
     }
 
+    /**
+     * Where a channel's box has its top right corner: lifted over its row's top, in from the row's
+     * end; inside the row, under its top, where the lift would cross the column's inset. A line of
+     * no height, so the bar, the tray and the picker all hang from it and grow down from it.
+     */
+    function channelEdge(): DOMRect | null {
+        const row = hostElement()?.getBoundingClientRect();
+        if (!row) {
+            return null;
+        }
+
+        const column = columnElement()?.getBoundingClientRect();
+        const lifted = row.top - channelLiftPx;
+        const top = column && lifted < column.top + boundaryInsetPx ? row.top + insideGapPx : lifted;
+        const right = row.right - channelEndInsetPx;
+        return { x: row.left, y: top, left: row.left, top, right, bottom: top, width: right - row.left, height: 0, toJSON: () => ({}) } as DOMRect;
+    }
+
     function placementOf(): PopoverPlacement {
         if (props.isCommunity) {
-            return "top-end";
+            return "bottom-end";
         }
 
         if (side.value === "over") {
@@ -654,14 +681,15 @@ img.chat-tool-glyph {
     }
 
     /**
-     * Where the box goes when its placement has no room. A channel's stays inside its row, and a
-     * bar fitted beside its bubble stays there; over the bubble it goes under it where the column's
-     * top leaves no room. The tray and the picker, grown from the bar, grow up beside it rather than
-     * down, else over or under the bubble, as room allows.
+     * Where the box goes when its placement has no room. A channel's bar stays at its row's top,
+     * and a bar fitted beside its bubble stays there; over the bubble it goes under it where the
+     * column's top leaves no room. The tray and the picker, grown from the bar, grow up from where
+     * a channel's bar stood, or up beside a bubble's rather than down, else over or under the
+     * bubble, as room allows.
      */
     function fallbacksOf(): PopoverPlacement[] {
         if (props.isCommunity) {
-            return [];
+            return layer.value === "bar" ? [] : ["top-end"];
         }
 
         if (side.value === "over") {
