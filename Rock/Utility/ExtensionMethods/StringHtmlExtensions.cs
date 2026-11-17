@@ -23,6 +23,9 @@ using System.Web;
 
 using HtmlAgilityPack;
 
+using Rock.Attribute;
+using Rock.Utility.HtmlSanitization;
+
 namespace Rock
 {
     /// <summary>
@@ -386,6 +389,66 @@ namespace Rock
                 Reason: Notes Lava was having extra <br>'s at the end.
             */
             return CommonMark.CommonMarkConverter.Convert( markdown, settings ).Trim();
+        }
+
+        /// <summary>
+        /// The allowlist sanitize options for HTML made from Markdown: the Simple
+        /// preset plus the elements CommonMark writes (headings, lists, tables
+        /// and images). Rich is not used because Markdown can be written by
+        /// anonymous visitors, and Rich allows form controls, SVG, id, data-*
+        /// and positional CSS meant for staff-authored templates. This is the
+        /// same list as MarkdownFieldType.MarkdownSanitizeOptions.
+        /// </summary>
+        private static readonly HtmlSanitizeOptions MarkdownSanitizeOptions = new HtmlSanitizeOptions( HtmlSanitizeOptions.Simple )
+            .AllowTag( "h1" )
+            .AllowTag( "h2" )
+            .AllowTag( "h3" )
+            .AllowTag( "h4" )
+            .AllowTag( "h5" )
+            .AllowTag( "h6" )
+            .AllowTag( "ul" )
+            .AllowTag( "ol" )
+            .AllowTag( "li" )
+            .AllowTag( "dl" )
+            .AllowTag( "dt" )
+            .AllowTag( "dd" )
+            .AllowTag( "table" )
+            .AllowTag( "thead" )
+            .AllowTag( "tbody" )
+            .AllowTag( "tfoot" )
+            .AllowTag( "tr" )
+            .AllowTag( "th" )
+            .AllowTag( "td" )
+            .AllowTag( "caption" )
+            .AllowTag( "img" )
+            .AllowAttribute( "img", "src" )
+            .AllowAttribute( "img", "alt" )
+            .AllowAttribute( "img", "width" )
+            .AllowAttribute( "img", "height" )
+            .AllowAttribute( "td", "colspan" )
+            .AllowAttribute( "td", "rowspan" )
+            .AllowAttribute( "th", "colspan" )
+            .AllowAttribute( "th", "rowspan" )
+            .AllowAttribute( "ol", "start" )
+            .MakeReadOnly();
+
+        /// <summary>
+        /// Converts Markdown into HTML and then removes everything the Markdown
+        /// allowlist does not allow (script, event handlers, script URLs, form
+        /// controls and similar), so the result is safe to show even when the
+        /// Markdown was written by an anonymous visitor.
+        /// </summary>
+        /// <remarks>
+        /// Use this in place of <c>ConvertMarkdownToHtml().SanitizeHtml( strict: false )</c>.
+        /// The denylist sanitizer double encodes the entities Markdown writes, so
+        /// an ampersand or less than sign in the Markdown shows as entity text.
+        /// </remarks>
+        /// <param name="markdown">The Markdown.</param>
+        /// <returns>The sanitized HTML, or an empty string when <paramref name="markdown"/> is <c>null</c>.</returns>
+        [RockInternal( "17.13" )]
+        public static string ConvertMarkdownToSanitizedHtml( this string markdown )
+        {
+            return markdown.ConvertMarkdownToHtml().SanitizeHtml( MarkdownSanitizeOptions );
         }
 
         /// <summary>
