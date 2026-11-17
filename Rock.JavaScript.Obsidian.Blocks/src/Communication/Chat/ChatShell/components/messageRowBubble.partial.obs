@@ -122,7 +122,7 @@
     pointer-events: none;
     content: "";
     background: var(--chat-flash);
-    border-radius: calc(var(--chat-r-bubble) + 4px);
+    border-radius: var(--chat-r-bubble);
     animation: chat-flash var(--chat-d-flash) var(--chat-ease-state) forwards;
 }
 

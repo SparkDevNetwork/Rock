@@ -174,7 +174,7 @@
     grid-template-columns: var(--chat-cm-gut) minmax(0, 1fr);
     align-items: start;
     column-gap: var(--chat-cm-gap);
-    /* The same above and below on every row, a head too; the space between people is the feed's. */
+    /* The same above and below on every row, a head too; the space between people is a margin over a head row. */
     padding: var(--chat-cm-row-pad) var(--chat-cm-pad);
     border-radius: 0;
     /* How far a washed row stands in from the feed's edges. */
@@ -186,6 +186,11 @@
     --chat-cm-gap: 10px;
     --chat-cm-pad: 12px;
     --chat-cm-inset: 4px;
+}
+
+/* A new person's turn: the space between people stands over the head row, outside it, where no highlight reaches. */
+.chat-msg.is-community.is-head {
+    margin-top: var(--chat-cm-person-gap);
 }
 
 /* The ring sits inside the row, which runs edge to edge, so the scroller does not clip it. */

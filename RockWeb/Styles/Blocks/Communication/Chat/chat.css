@@ -162,7 +162,7 @@
     /*
         A channel's spacing. Each row pads its content equally above and below, so a hover, a
         mention's wash or a jump's flash covers the same air on both sides; the space between two
-        people sits outside the rows, between the feed's groups, where no highlight reaches.
+        people sits outside the rows, over a new person's head row, where no highlight reaches.
     */
     --chat-cm-row-pad: 6px;
     --chat-cm-person-gap: 8px;
