@@ -497,8 +497,10 @@ describe("the details", () => {
 
         const details = w.get("[data-testid='header-details']");
         expect(details.findAll("[tabindex], button, a, input").length).toBe(0);
-        expect(details.attributes("data-header-focus")).toBeDefined();
-        expect(w.findAll("[data-header-focus]")).toHaveLength(1);
+        // the header's one focus stop, which the frame puts focus on by name
+        expect(details.attributes("data-focus-stop")).toBe("header");
+        expect(w.findAll("[data-focus-stop='header']")).toHaveLength(1);
+        expect(w.findAll("[data-header-focus], [data-focus-stop='details-button']")).toHaveLength(0);
     });
 
     test("with no room to open, the title itself takes focus", () => {
@@ -506,7 +508,7 @@ describe("the details", () => {
 
         expect(w.find("[data-testid='header-details']").exists()).toBe(false);
         expect(w.get("[data-testid='header-title']").attributes("tabindex")).toBe("-1");
-        expect(w.get("[data-testid='header-title']").attributes("data-header-focus")).toBeDefined();
+        expect(w.get("[data-testid='header-title']").attributes("data-focus-stop")).toBe("header");
     });
 
     test.each([

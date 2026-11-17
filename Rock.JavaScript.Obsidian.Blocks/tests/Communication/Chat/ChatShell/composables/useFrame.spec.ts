@@ -149,7 +149,7 @@ function mountFrame(): Mounted {
             return () => h("div", { ref: rootElement }, [
                 h("button", { "data-testid": "browse-channels" }, "Browse channels"),
                 h("section", { ref: frame.mainElement, "data-testid": "frame-main" }, [
-                    h("button", { "data-testid": "header-title", "data-header-focus": "" }, "Title"),
+                    h("button", { "data-testid": "header-title", "data-focus-stop": "header" }, "Title"),
                     h("button", { "data-testid": "header-threads", "data-focus-stop": "threads-button" }, "Threads"),
                     hasJoinBar.value
                         ? h("button", { "data-testid": "join-channel", "data-focus-stop": "join" }, "Join channel")
@@ -713,7 +713,7 @@ describe("the one focus helper", () => {
                 return () => h("div", { ref: rootElement }, [
                     h("button", { "data-focus-stop": "new-message" }, "New message"),
                     h("section", { ref: frame.mainElement }, [
-                        h("b", { tabindex: -1, "data-header-focus": "" }, "Title"),
+                        h("b", { tabindex: -1, "data-focus-stop": "header" }, "Title"),
                         drawn.threadsButton ? h("button", { "data-focus-stop": "threads-button" }, "Threads") : null,
                         drawn.more ? h("span", { "data-focus-stop": "more" }, [h("button", "More")]) : null,
                         drawn.message
@@ -741,7 +741,7 @@ describe("the one focus helper", () => {
         }
 
         return active.closest("[data-focus-stop]")?.getAttribute("data-focus-stop")
-            ?? (active.hasAttribute("data-header-focus") ? "header" : active.hasAttribute("data-message-id") ? "message" : null);
+            ?? (active.hasAttribute("data-message-id") ? "message" : null);
     }
 
     test("focuses Join when drawn, the composer on desktop when not, the header otherwise, and on a phone skips the composer", async () => {
