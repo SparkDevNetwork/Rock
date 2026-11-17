@@ -374,6 +374,7 @@
     <Compile Include="Utility\HtmlSanitizeOptionsTests.cs" />
     <Compile Include="Utility\MethodRetryTests.cs" />
     <Compile Include="Utility\WebRequestHelperTests.cs" />
+    <Compile Include="Obsidian\UI\GridBuilderExtensionsTests.cs" />
     <Compile Include="Web\Cache\GroupTypeCacheTests.cs" />
     <Compile Include="Web\UI\Controls\ItemPickerTests.cs" />
     <Compile Include="Web\UI\Controls\KeyValueListTests.cs" />
