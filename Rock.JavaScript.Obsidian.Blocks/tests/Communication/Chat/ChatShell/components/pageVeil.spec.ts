@@ -83,12 +83,27 @@ describe("the page veil", () => {
 
     test("a channel's header drops its description mark while the status line takes the second line", async () => {
         const w = drawVeil("main");
-        expect(w.find(".chat-veil-desc").exists()).toBe(true);
+        const headLines = (): number => w.get("[data-testid='veil-header']").findAll(".chat-skel-lines > .chat-skel-bone").length;
+        expect(headLines()).toBe(2);
 
         await w.setProps({ statusLine: "Connecting to chat\u2026" });
 
-        expect(w.find(".chat-veil-desc").exists()).toBe(false);
-        expect(w.find("[data-testid='veil-header'] [data-testid='veil-status']").exists()).toBe(true);
+        expect(headLines()).toBe(1);
+        expect(w.find("[data-testid='veil-header'] .chat-skel-lines [data-testid='veil-status']").exists()).toBe(true);
+    });
+
+    // The marks are the shared still part, so the veil never draws a loading fill of its own: a
+    // channel's head is a tile, a conversation's a face, each with its name.
+    test("over the main column, draws its head and rows as skeletons, with no fill of its own", async () => {
+        const w = drawVeil("main");
+        const head = w.get("[data-testid='veil-header']").getComponent(Skeleton);
+
+        expect(head.props("shape")).toBe("header");
+        expect(head.props("isTile")).toBe(true);
+        expect(w.find(".chat-skeleton").exists()).toBe(false);
+
+        await w.setProps({ kind: "direct" });
+        expect(w.get("[data-testid='veil-header']").getComponent(Skeleton).props("isTile")).toBe(false);
     });
 
     test("under reduced motion the status line's dot stands still, by the one rule every live dot shares", () => {
