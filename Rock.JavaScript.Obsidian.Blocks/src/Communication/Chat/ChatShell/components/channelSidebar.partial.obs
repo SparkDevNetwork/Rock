@@ -109,10 +109,13 @@
 
                     <!--
                         A room a message moves glides to its place by the list's one move, keeping
-                        its element and its face; its bold, dot and badge say what is new. After every
-                        channel, a room only previewed included, comes the way to the ones not listed.
+                        its element and its face; its bold, dot and badge say what is new. The move is
+                        the list's only motion: a row leaving its section, starred or hidden, goes in
+                        the same frame, so the rows under it glide into its place and no copy lingers.
+                        After every channel, a room only previewed included, comes the way to the ones
+                        not listed.
                     -->
-                    <TransitionGroup moveClass="chat-move">
+                    <TransitionGroup moveClass="chat-move" :css="false">
                         <button v-for="row in section.rows"
                                 :key="row.channel_id"
                                 type="button"
