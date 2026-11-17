@@ -1,9 +1,12 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div class="chat-scrim"
-         data-testid="scrim"
-         @pointerdown.self="isPressed = true"
-         @click.self="onClick"></div>
+    <Transition leave-active-class="is-leaving">
+        <div v-if="isShown"
+             class="chat-scrim"
+             data-testid="scrim"
+             @pointerdown.self="isPressed = true"
+             @click.self="onClick"></div>
+    </Transition>
 </template>
 
 <style scoped>
@@ -29,7 +32,15 @@
     // The shade behind a sheet or dialog. It takes the whole of a tap that lands on it: it asks to
     // close only on the click that ends a press begun on it, so the press, the release and the
     // click all land here, and nothing under it is pressed by the tap that closed it. A drag that
-    // starts in the sheet and ends on the shade closes nothing.
+    // starts in the sheet and ends on the shade closes nothing. It fades out itself as it goes,
+    // whatever it was shown for.
+
+    defineProps({
+        isShown: {
+            type: Boolean,
+            default: false
+        }
+    });
 
     const emit = defineEmits<{
         (e: "dismiss"): void;

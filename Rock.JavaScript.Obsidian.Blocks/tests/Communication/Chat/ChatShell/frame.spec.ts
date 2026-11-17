@@ -1714,7 +1714,9 @@ describe("the panel column", () => {
         const w = await openSidebarOver();
         const frame = w.get("[data-testid='chat-frame']");
         const shade = frame.get("[data-testid='scrim']");
-        expect(shade.element.parentElement).toBe(frame.element);
+        // the shade fades out by a Transition of its own, which a test stub draws as an element
+        const stub = shade.element.parentElement?.tagName === "TRANSITION-STUB" ? shade.element.parentElement : shade.element;
+        expect(stub.parentElement).toBe(frame.element);
 
         await w.get("[data-testid='frame-sidebar'] [data-testid='sidebar-search']").trigger("pointerdown");
         await w.get("[data-testid='frame-sidebar'] [data-testid='sidebar-search']").trigger("click");

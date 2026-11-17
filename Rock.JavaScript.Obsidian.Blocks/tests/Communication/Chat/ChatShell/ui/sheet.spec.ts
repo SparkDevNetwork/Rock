@@ -42,7 +42,7 @@ describe("the scrim", () => {
     });
 
     it("takes the whole tap: it dismisses on the click that ends a press begun on it, never on the press alone", async () => {
-        const wrapper = mount(Scrim, { attachTo: document.body });
+        const wrapper = mount(Scrim, { props: { isShown: true }, attachTo: document.body });
         const scrim = find("scrim") as HTMLElement;
         scrim.dispatchEvent(new Event("pointerdown", { bubbles: true }));
         expect(wrapper.emitted("dismiss")).toBeUndefined();
@@ -52,7 +52,7 @@ describe("the scrim", () => {
     });
 
     it("ignores a click whose press began elsewhere, as a drag out of the sheet that ends on the scrim", () => {
-        const wrapper = mount(Scrim, { attachTo: document.body });
+        const wrapper = mount(Scrim, { props: { isShown: true }, attachTo: document.body });
         (find("scrim") as HTMLElement).click();
         expect(wrapper.emitted("dismiss")).toBeUndefined();
         wrapper.unmount();

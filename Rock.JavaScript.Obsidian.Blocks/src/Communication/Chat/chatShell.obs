@@ -284,7 +284,7 @@
             </section>
 
             <!-- Under the sidebar laid over the conversation, the shade that puts it away, as a sheet's does. -->
-            <Scrim v-if="sidebarFold === 'over'" @dismiss="onSidebarAway" />
+            <Scrim :isShown="sidebarFold === 'over'" @dismiss="onSidebarAway" />
 
             <!--
                 The panel column, closed until a thread or a list opens in it. It holds one panel
