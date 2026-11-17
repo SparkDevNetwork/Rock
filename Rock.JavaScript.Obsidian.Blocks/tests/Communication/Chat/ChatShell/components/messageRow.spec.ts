@@ -760,18 +760,22 @@ describe("Community, in a channel", () => {
         expect(rule).toMatch(/margin-top:\s*6px/);
     });
 
-    // The chip that reached the reader, theirs or @all, takes a thin ring in a washed row, so it
-    // stands off the wash; the ring is the church's line, as the wash is the church's tint.
-    test("the reader's chip and the @all chip in a washed row are ringed in the mention ring", () => {
+    // The chip that reached the reader takes a thin ring, so it stands off a wash: the reader's own
+    // chip in every row, the @all chip in a washed row. The ring is the church's line, as the wash
+    // is the church's tint.
+    test("the reader's chip is ringed everywhere and the @all chip in a washed row, in the mention ring", () => {
         const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/messageRow.partial.obs"), "utf8");
         const style = source.slice(source.indexOf("<style"), source.indexOf("</style>"));
         const washed = /\.chat-msg\.is-community\.is-mention-me\s*\{([^}]*)\}/.exec(style)?.[1] ?? "";
         const sheet = readFileSync(join(__dirname, "../../../../../../RockWeb/Styles/Blocks/Communication/Chat/chat.css"), "utf8");
-        const chip = /(?:^|\n)\.chat-mn\.is-you,\s*\.chat-mn\.is-all\s*\{([^}]*)\}/.exec(sheet)?.[1] ?? "";
+        const chip = /(?:^|\n)\.chat-mn\.is-all\s*\{([^}]*)\}/.exec(sheet)?.[1] ?? "";
+        const own = /(?:^|\n)\.chat-mn\.is-you\s*\{([^}]*)\}/.exec(sheet)?.[1] ?? "";
 
-        // The row hands the ring to the chip, which draws it itself: the row reaches into no part.
+        // The row hands the @all ring to the chip, which draws it itself: the row reaches into no part.
         expect(washed).toMatch(/--chat-mn-ring:\s*0 0 0 1px var\(--chat-mention-ring\)/);
         expect(chip).toMatch(/box-shadow:\s*var\(--chat-mn-ring,\s*none\)/);
+        expect(own).toMatch(/box-shadow:\s*0 0 0 1px var\(--chat-mention-ring\)/);
+        expect(own).not.toMatch(/background|color/);
         expect(style).not.toMatch(/:deep\(\.chat-mn/);
         expect(style).not.toMatch(/amber|--chat-warning/i);
     });
@@ -2192,6 +2196,31 @@ describe("a message's files", () => {
             const rowSource = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/messageRow.partial.obs"), "utf8");
             const next = ruleOf(rowSource.slice(rowSource.indexOf("<style"), rowSource.indexOf("</style>")), ".chat-msg.is-conversational.has-files + .chat-msg");
             expect(next).toMatch(/margin-top:\s*calc\(12px - var\(--chat-grp-gap, 0px\)\)/);
+        });
+
+        // An own photo with no words is a Tab stop like any own message, and a focus rings what the
+        // person reads: with no bubble that is the files, ringed as a bubble is, on their corners.
+        test("an own message of files alone rings its files when focused, as a bubble is ringed", () => {
+            const alone = draw({ message: ownConfirmed({ body: null, attachments: [photo] }), isOwn: true });
+            const worded = draw({ message: ownConfirmed({ attachments: [photo] }), isOwn: true });
+
+            expect(root(alone).getAttribute("tabindex")).toBe("0");
+            expect(alone.get(".chat-bub-anchor").classes()).toContain("is-files-only");
+            expect(worded.get(".chat-bub-anchor").classes()).not.toContain("is-files-only");
+
+            // Every rule, by each selector in its list; comments out, so a rule's list is its own.
+            const style = bubbleStyle().replace(/\/\*[\s\S]*?\*\//g, "");
+            const rulesNaming = (selector: string): string[] => [...style.matchAll(/([^{};]+)\{([^{}]*)\}/g)]
+                .filter(m => m[1].split(",").map(s => s.trim()).includes(selector))
+                .map(m => m[2]);
+            const ringed = (selector: string): boolean => rulesNaming(selector)
+                .some(body => /outline:\s*2px solid var\(--chat-brand-ink\)/.test(body) && /outline-offset:\s*2px/.test(body));
+
+            expect(ringed(".chat-msg.is-conversational:focus-visible .chat-bub-anchor.is-files-only")).toBe(true);
+            expect(ringed(".chat-msg.is-conversational:focus .chat-bub-anchor.is-files-only")).toBe(true);
+            expect(rulesNaming(".chat-msg.is-conversational:focus:not(:focus-visible) .chat-bub-anchor.is-files-only")
+                .some(body => /outline:\s*none/.test(body))).toBe(true);
+            expect(ruleOf(style, ".chat-bub-anchor.is-files-only")).toMatch(/border-radius:\s*var\(--chat-r-surface\)/);
         });
     });
 });

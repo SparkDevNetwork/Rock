@@ -216,9 +216,9 @@ const tokens: Token[] = [
     { name: "presence-online", light: "#008A1A", dark: "#01A11E" },
     { name: "presence-away", light: "#A86400", dark: "#C27400" },
     { name: "presence-busy", light: "#D70015", dark: "#F0303F" },
-    { name: "mn-me-bg", light: "#F7E0C0", dark: "#4E3410" },
     // A row that names the reader and the ring on its chip name the church's tint and line, in
-    // every theme; "draws a mention's wash and ring from the church color" holds them.
+    // every theme; "draws a mention's wash and ring from the church color" holds them, and the
+    // reader's own chip has no fill of its own.
 
     // An initials avatar's saturation and lightness; the hue is the person's own.
     { name: "av-sat", light: "70%", dark: "28%" },
@@ -558,8 +558,8 @@ describe("the chat token sheet", () => {
     });
 
     // A mention of the reader is the church's: its wash the church color at 12% (20% in dark),
-    // worked out per church and theme, and its chip's ring the church's line, so no amber is left
-    // to read as a warning.
+    // worked out per church and theme, and its chip's ring the church's stronger line (55%, the
+    // line an own reaction wears), so no amber is left to read as a warning.
     test("draws a mention's wash and ring from the church color, never amber", () => {
         const modes = [["light", isLight], ["dark", isDarkExplicit], ["dark", isDarkUnthemed], ["dark", isDarkFollowingSystem]] as const;
         for (const [theme, isMode] of modes) {
@@ -567,10 +567,11 @@ describe("the chat token sheet", () => {
             expect(washes).toHaveLength(1);
             expect(washes[0]).toBe(normalize(`var(--chat-row-mention-${theme}, rgba(255, 121, 29, .${theme === "light" ? "12" : "20"}))`));
             for (const value of valuesOf(sheet, "--chat-mention-ring", isMode)) {
-                expect(value).toBe(normalize("var(--chat-brand-line)"));
+                expect(value).toBe(normalize("var(--chat-reaction-mine-line)"));
             }
         }
         expect(valuesOf(sheet, "--chat-mention-ring", isLight)).toHaveLength(1);
+        expect(readFileSync(sheetPath, "utf8")).not.toMatch(/--chat-mn-me-bg/);
     });
 
     // A channel's row pads its content the same above and below, so a hover, a mention's wash or a
@@ -1104,6 +1105,13 @@ describe("the components' own styles", () => {
         // The @all chip is a person's chip with the mark for a face: no color of its own.
         expect(declared(".chat-mn.is-all", "color")).toBe("");
         expect(declared(".chat-mn.is-all", "background")).toBe("");
+
+        // The reader's own chip is the church's chip too, its tint and ink, ringed 1px in the
+        // church's stronger line wherever it stands, a bubble or a channel row, washed or not:
+        // an amber chip read as a warning, and as another church's color.
+        expect(declared(".chat-mn.is-you", "color")).toBe("");
+        expect(declared(".chat-mn.is-you", "background")).toBe("");
+        expect(declared(".chat-mn.is-you", "box-shadow")).toBe(normalize("0 0 0 1px var(--chat-mention-ring)"));
     });
 
     // A chip that is a button must take the sheet's line, not its parent's, or the pill grows
