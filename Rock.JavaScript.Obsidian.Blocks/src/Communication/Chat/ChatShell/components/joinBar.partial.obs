@@ -1,9 +1,5 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <!--
-        In Browse channels the bar is the preview's footer: one line of what the person can do, and
-        the buttons at its end, Join channel where Open channel will stand once they are in.
-    -->
     <div v-if="place === 'preview'"
          ref="barElement"
          class="chat-joinfoot"
@@ -13,6 +9,10 @@
          data-place="preview"
          :data-state="footer"
          @keydown.esc="onLeaveEscape">
+        <!--
+            In Browse channels the bar is the preview's footer: one line of what the person can do,
+            and the buttons at its end, Join channel where Open channel will stand once they are in.
+        -->
         <span class="chat-joinfoot-main" :role="footer === 'confirmLeave' ? 'group' : undefined" :aria-labelledby="footer === 'confirmLeave' ? questionId : undefined">
             <template v-if="footer === 'confirmLeave'">
                 <b v-if="leaveError" :id="questionId" class="chat-joinfoot-err" data-testid="leave-error">{{ leaveError }}</b>
@@ -47,7 +47,8 @@
                     kind="ghost"
                     data-testid="join-leave"
                     @click="onLeaveAsk">Leave</Button>
-            <Button kind="brand"
+            <Button ref="openButton"
+                    kind="brand"
                     data-testid="join-open"
                     @click="emit('open')">Open channel</Button>
         </template>
@@ -293,6 +294,7 @@
     const barElement = ref<HTMLElement>();
     const browseButton = ref<InstanceType<typeof Button>>();
     const leaveButton = ref<InstanceType<typeof Button>>();
+    const openButton = ref<InstanceType<typeof Button>>();
     const leaveCancelButton = ref<InstanceType<typeof Button>>();
 
     const questionId = `chat-joinfoot-q-${newGuid()}`;
@@ -476,7 +478,7 @@
         }
 
         await nextTick();
-        barElement.value?.querySelector<HTMLElement>("[data-testid='join-open']")?.focus();
+        openButton.value?.focus();
     }, { flush: "pre" });
 
     // The button the person pressed leaves with a refusal or a pending join, so focus goes to the
