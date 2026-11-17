@@ -228,3 +228,157 @@ describe("the entrance", () => {
         expect(reducedMotionRules("../../../../../src/Communication/Chat/ChatShell/components/joinBar.partial.obs")).toHaveLength(0);
     });
 });
+
+// In Browse channels the bar is the preview's footer: the channel is beside the list, not open, so
+// a person in it is offered Open channel and Leave, Leave asks first in the footer's own place,
+// and nothing changes shape as Join turns to Joining and then to Open channel.
+describe("in the preview's footer", () => {
+    function mountFooter(state: JoinState = { kind: "idle" }, props: Record<string, unknown> = {}): VueWrapper {
+        return mountBar(state, { place: "preview", ...props });
+    }
+
+    test("offers Join channel beside how to post, for a channel the person is not in", async () => {
+        const w = mountFooter();
+
+        const bar = w.get("[data-testid='join-bar']");
+        expect(bar.attributes("data-place")).toBe("preview");
+        expect(bar.attributes("data-state")).toBe("preview");
+        expect(w.get("[data-testid='join-bar-text']").text()).toBe("Join to post and get notifications");
+        expect(w.find("[data-testid='join-bar-title']").exists()).toBe(false);
+        expect(w.find("[data-testid='join-open']").exists()).toBe(false);
+        expect(w.find("[data-testid='join-leave']").exists()).toBe(false);
+
+        await w.get("[data-testid='join-channel']").trigger("click");
+        expect(w.emitted("join")).toHaveLength(1);
+    });
+
+    test("keeps Join channel's button while the door is out, busy and holding its width, saying what is joining", async () => {
+        const w = mountFooter();
+        const join = w.get("[data-testid='join-channel']");
+        (join.element as HTMLElement).focus();
+
+        await w.setProps({ state: { kind: "joining" } });
+
+        const joining = w.get("[data-testid='join-channel']");
+        expect(joining.element).toBe(join.element);
+        expect(document.activeElement).toBe(joining.element);
+        expect(joining.attributes("aria-busy")).toBe("true");
+        // the button holds its resting width while busy, so the footer never shifts
+        expect(joining.attributes("style")).toMatch(/min-width/);
+        expect(w.get("[data-testid='join-bar-text']").text()).toBe("Joining Volunteers");
+        await joining.trigger("click");
+        expect(w.emitted("join")).toBeUndefined();
+    });
+
+    test("offers Open channel and Leave for a channel the person is in, Open asking for the channel", async () => {
+        const w = mountFooter({ kind: "idle" }, { isMember: true });
+
+        expect(w.get("[data-testid='join-bar']").attributes("data-state")).toBe("member");
+        expect(w.get("[data-testid='join-bar-text']").text()).toBe("You're a member");
+        expect(w.find("[data-testid='join-channel']").exists()).toBe(false);
+        const open = w.get("[data-testid='join-open']");
+        expect(open.text()).toBe("Open channel");
+        expect(w.get("[data-testid='join-leave']").text()).toBe("Leave");
+        // Leave before Open, Open at the end where Join stood
+        expect(w.get("[data-testid='join-leave']").element.compareDocumentPosition(open.element) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+
+        await open.trigger("click");
+        expect(w.emitted("open")).toHaveLength(1);
+    });
+
+    test("swaps Join for Open channel and Leave once joined, saying the person joined", () => {
+        const w = mountFooter({ kind: "joined", isFresh: true }, { isMember: true });
+
+        expect(w.get("[data-testid='join-bar-text']").text()).toBe("You joined Volunteers");
+        expect(w.find("[data-testid='join-open']").exists()).toBe(true);
+        expect(w.find("[data-testid='join-leave']").exists()).toBe(true);
+    });
+
+    test("says the room is setting up while the platform catches up, with no button", () => {
+        const w = mountFooter({ kind: "pending" });
+
+        expect(w.get("[data-testid='join-bar']").attributes("data-state")).toBe("pending");
+        expect(w.get("[data-testid='join-bar-title']").text()).toBe("You've joined Volunteers");
+        expect(w.get("[data-testid='join-bar-text']").find(".chat-spinner").exists()).toBe(true);
+        expect(w.find("button").exists()).toBe(false);
+    });
+
+    test("says the door's own sentence when it refuses, with no way to Browse channels, which is already open", () => {
+        const w = mountFooter({ kind: "refused", text: "Volunteers is full right now." });
+
+        expect(w.get("[data-testid='join-bar-title']").text()).toBe("You can't join Volunteers");
+        expect(w.get("[data-testid='join-bar-text']").text()).toBe("Volunteers is full right now.");
+        expect(w.find("[data-testid='join-bar-browse']").exists()).toBe(false);
+        expect(w.find("[data-testid='join-channel']").exists()).toBe(false);
+    });
+
+    test("says why when the door could not be reached, and offers Join channel again", () => {
+        const w = mountFooter({ kind: "failed", text: "You're offline. Try again when you're back." });
+
+        expect(w.get("[data-testid='join-bar-text']").text()).toBe("You're offline. Try again when you're back.");
+        expect(w.get("[data-testid='join-channel']").attributes("aria-disabled")).toBeUndefined();
+    });
+
+    test("asks before leaving, in the footer's place, Cancel first so Enter never leaves by accident", async () => {
+        const w = mountFooter({ kind: "idle" }, { isMember: true });
+
+        await w.get("[data-testid='join-leave']").trigger("click");
+        await nextTick();
+
+        expect(w.get("[data-testid='join-bar']").attributes("data-state")).toBe("confirmLeave");
+        expect(w.get("[data-testid='leave-question']").text()).toBe("Leave Volunteers?");
+        expect(w.get("[data-testid='leave-body']").text()).toBe("You'll leave its Rock group too.");
+        expect(document.activeElement).toBe(w.get("[data-testid='leave-cancel']").element);
+        expect(w.find("[data-testid='join-open']").exists()).toBe(false);
+        expect(w.emitted("leave")).toBeUndefined();
+
+        await w.get("[data-testid='leave-go']").trigger("click");
+        expect(w.emitted("leave")).toHaveLength(1);
+    });
+
+    test("goes back from the question to Leave with Cancel or Escape, the Escape kept from the view behind", async () => {
+        const w = mountFooter({ kind: "idle" }, { isMember: true });
+        const outside = jest.fn();
+        document.body.addEventListener("keydown", outside);
+
+        await w.get("[data-testid='join-leave']").trigger("click");
+        await nextTick();
+        await w.get("[data-testid='leave-cancel']").trigger("click");
+        await nextTick();
+        expect(w.find("[data-testid='leave-question']").exists()).toBe(false);
+        expect(document.activeElement).toBe(w.get("[data-testid='join-leave']").element);
+
+        await w.get("[data-testid='join-leave']").trigger("click");
+        await nextTick();
+        await w.get("[data-testid='leave-cancel']").trigger("keydown", { key: "Escape" });
+        await nextTick();
+        expect(w.find("[data-testid='leave-question']").exists()).toBe(false);
+        expect(outside).not.toHaveBeenCalled();
+        document.body.removeEventListener("keydown", outside);
+    });
+
+    test("holds Leave busy while the door is out, and says the door's own sentence when it refuses", async () => {
+        const w = mountFooter({ kind: "idle" }, { isMember: true });
+
+        await w.get("[data-testid='join-leave']").trigger("click");
+        await w.get("[data-testid='leave-go']").trigger("click");
+        await w.setProps({ leave: { kind: "leaving" } });
+        const going = w.get("[data-testid='leave-go']");
+        expect(going.attributes("aria-busy")).toBe("true");
+        expect(going.text()).toBe("Leaving");
+
+        await w.setProps({ leave: { kind: "refused", text: "Leaders can't leave Volunteers." } });
+        expect(w.get("[data-testid='leave-error']").text()).toBe("Leaders can't leave Volunteers.");
+    });
+
+    test("is Join channel again once the person has left", async () => {
+        const w = mountFooter({ kind: "idle" }, { isMember: true });
+
+        await w.get("[data-testid='join-leave']").trigger("click");
+        await w.get("[data-testid='leave-go']").trigger("click");
+        await w.setProps({ leave: { kind: "left" }, isMember: false });
+
+        expect(w.find("[data-testid='leave-question']").exists()).toBe(false);
+        expect(w.get("[data-testid='join-channel']").text()).toBe("Join channel");
+    });
+});
