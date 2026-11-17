@@ -1,6 +1,7 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <button type="button"
+    <button ref="element"
+            type="button"
             class="chat-chip"
             :class="{ 'is-selected': selected }"
             :aria-pressed="selected === undefined ? undefined : selected ? 'true' : 'false'"
@@ -42,7 +43,7 @@
 </style>
 
 <script setup lang="ts">
-    import { PropType } from "vue";
+    import { PropType, ref } from "vue";
 
     // The chip. One that filters says whether it is pressed; one that only acts, such as a
     // suggested word, leaves selected out and so carries no pressed state at all.
@@ -57,4 +58,9 @@
     const emit = defineEmits<{
         (e: "click", event: MouseEvent): void;
     }>();
+
+    /** The chip's button, for a caller that hangs a tip on it, as the thread's Follow does. */
+    const element = ref<HTMLButtonElement>();
+
+    defineExpose({ element });
 </script>
