@@ -776,7 +776,8 @@ describe("a chip leaving", () => {
     test("glides the chips after it into place", async () => {
         const style = document.createElement("style");
         style.dataset.testMove = "";
-        style.textContent = ".chat-move { transition: transform 220ms ease; }";
+        // Longhands in seconds, as a browser reports them; jsdom reports what is declared.
+        style.textContent = ".chat-move { transition-property: transform; transition-duration: 0.22s; }";
         document.head.append(style);
 
         // Each chip stands one 40px step along from the one before it, so a chip leaving moves those after it.
@@ -785,7 +786,10 @@ describe("a chip leaving", () => {
             return { left: step, top: 0, right: step + 36, bottom: 26, width: 36, height: 26, x: step, y: 0, toJSON: () => ({}) } as DOMRect;
         });
         const held = reactive(message([thumbsup(2), heart(5), pray(2)]));
-        const w = mountRow({ message: held });
+
+        // The real group, which the test utils stub by default, since it is what measures the move.
+        wrapper = mount(MessageReactions, { props: { reader, listReactors: async () => null, message: held }, attachTo: document.body, global: { ...session(), stubs: { "transition-group": false } } });
+        const w = wrapper;
 
         held.reactions!.splice(0, 1);
         await settle();

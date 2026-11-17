@@ -30,7 +30,7 @@
 // each mark themselves with data-hot-id; the box marks itself with its message's, so the pointer
 // or focus on it counts as on its message.
 
-import { computed, ComputedRef, inject, InjectionKey, onScopeDispose, provide, reactive, Ref, ref, shallowReactive, shallowRef, ShallowRef } from "vue";
+import { computed, ComputedRef, inject, InjectionKey, onScopeDispose, provide, reactive, Ref, ref, shallowReactive, shallowRef, ShallowRef, watch } from "vue";
 import { PickerOpening, PickerSource } from "../components/emojiPicker.partial.obs";
 import { ChatShell } from "../shell.partial";
 import { BoxLayer, ColumnKind, TimelineMessage } from "../types.partial";
@@ -508,6 +508,15 @@ export function useActionBar(timingElement: () => Element | null | undefined): C
             hide(true);
         }
     }
+
+    // A box grown on another of this column's messages, as by a chip's add reaction, brings the
+    // box's place in the row to that message, which the box is placed against. Which column holds
+    // it is read as it changes, never as the column is set up, before its scroller exists.
+    watch(() => bars?.held.value ?? null, box => {
+        if (box && box.messageId !== barId.value && isHeldHere(box.messageId)) {
+            show(box.messageId);
+        }
+    });
 
     // A column going takes its grown box with it.
     onScopeDispose(() => {
