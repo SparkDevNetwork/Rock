@@ -757,10 +757,19 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
      */
     async function openFromMainView(channelId: string): Promise<void> {
         shell.value.rooms.previewRoom(channelId);
-        leaveMainView();
+        const isPreviewed = mainView.value === "directory";
+        leaveMainView(true);
         isListChosen.value = false;
         isPaneMotionOn.value = true;
-        await shell.value.selectChannel(channelId);
+        const opening = shell.value.selectChannel(channelId);
+
+        // Let go only once the room is on screen: the preview's end keeps that room's page, so the
+        // open draws what the person just read while its own read is out.
+        if (isPreviewed) {
+            onPreview(null);
+        }
+
+        await opening;
         await askFocus(["join", "composer", "header"], { within: "main" });
     }
 
@@ -794,8 +803,11 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
         shell.value.members.openAdd();
     }
 
-    /** Lets go of the full view, without moving focus. */
-    function leaveMainView(): void {
+    /**
+     * Lets go of the full view, without moving focus. Open holds Browse's preview to let it go
+     * itself, once the room it opens is on screen.
+     */
+    function leaveMainView(isPreviewHeld: boolean = false): void {
         const kind = mainView.value;
         if (!kind) {
             return;
@@ -804,7 +816,9 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
         mainView.value = null;
         mainViewOpener = null;
         if (kind === "directory") {
-            onPreview(null);
+            if (!isPreviewHeld) {
+                onPreview(null);
+            }
             shell.value.rooms.closeDirectory();
         }
         else {
