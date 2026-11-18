@@ -191,7 +191,7 @@ Main Output:
         [TestMethod]
         [DataRow( "John 3:16", "<a href=\"https://www.bible.com/bible/116/JHN.3.16.NLT\"  class=\"scripture\" title=\"YouVersion\">John 3:16</a>" )]
         [DataRow( "Jn 3:16", "<a href=\"https://www.bible.com/bible/116/JHN.3.16.NLT\"  class=\"scripture\" title=\"YouVersion\">Jn 3:16</a>" )]
-        [DataRow( "John 3", "<a href=\"https://www.bible.com/bible/116/JHN.3..NLT\"  class=\"scripture\" title=\"YouVersion\">John 3</a>" )]
+        [DataRow( "John 3", "<a href=\"https://www.bible.com/bible/116/JHN.3.NLT\"  class=\"scripture\" title=\"YouVersion\">John 3</a>" )]
 
         public void ScripturizeShortcode_YouVersion_ProducesCorrectHtml( string input, string expectedResult )
         {

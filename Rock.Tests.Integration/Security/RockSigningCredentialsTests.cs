@@ -62,14 +62,14 @@ namespace Rock.Tests.Integration.Security
             ReflectionHelper.InstantiateInternalObject<IRockOidcSigningCredentials>( "Rock.Oidc.Configuration.RockOidcSigningCredentials", RockOidcSettings.GetDefaultSettings() );
 
             var systemSettings = SystemSettings.GetValue( SystemSetting.OPEN_ID_CONNECT_RSA_KEYS );
-            Assert.DoesNotContain( systemSettings, "Modulus" );
-            Assert.Contains( Rock.Security.Encryption.DecryptString( systemSettings ), "Modulus" );
+            Assert.DoesNotContain( "Modulus", systemSettings );
+            Assert.Contains( "Modulus", Rock.Security.Encryption.DecryptString( systemSettings ) );
 
             var attribute = new AttributeService( rockContext ).GetSystemSetting( SystemSetting.OPEN_ID_CONNECT_RSA_KEYS );
-            Assert.DoesNotContain( attribute.DefaultPersistedTextValue ?? string.Empty, "Modulus" );
-            Assert.DoesNotContain( attribute.DefaultPersistedHtmlValue ?? string.Empty, "Modulus" );
-            Assert.DoesNotContain( attribute.DefaultPersistedCondensedTextValue ?? string.Empty, "Modulus" );
-            Assert.DoesNotContain( attribute.DefaultPersistedCondensedHtmlValue ?? string.Empty, "Modulus" );
+            Assert.DoesNotContain( "Modulus", attribute.DefaultPersistedTextValue ?? string.Empty );
+            Assert.DoesNotContain( "Modulus", attribute.DefaultPersistedHtmlValue ?? string.Empty );
+            Assert.DoesNotContain( "Modulus", attribute.DefaultPersistedCondensedTextValue ?? string.Empty );
+            Assert.DoesNotContain( "Modulus", attribute.DefaultPersistedCondensedHtmlValue ?? string.Empty );
         }
 
         [TestMethod]
