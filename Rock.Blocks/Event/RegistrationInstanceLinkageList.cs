@@ -25,6 +25,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Obsidian.UI;
+using Rock.Security;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Event.RegistrationInstanceLinkageList;
 using Rock.Web.Cache;
@@ -110,6 +111,8 @@ namespace Rock.Blocks.Event
 
         private RegistrationInstance _registrationInstance;
 
+        private bool _isRegistrationInstanceLoaded;
+
         #endregion
 
         #region Properties
@@ -174,7 +177,7 @@ namespace Rock.Blocks.Event
 
                 Reason: https://github.com/SparkDevNetwork/Rock/issues/6865
             */
-            return true;
+            return GetRegistrationInstance() != null;
         }
 
         /// <summary>
@@ -332,38 +335,53 @@ namespace Rock.Blocks.Event
         }
 
         /// <summary>
-        /// Gets the registration instance.
+        /// Gets the registration instance named by the page parameter when the current person can view it.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>The registration instance, or <c>null</c> if it doesn't exist or the current person isn't authorized to view it.</returns>
         private RegistrationInstance GetRegistrationInstance()
         {
-            if ( _registrationInstance == null )
+            if ( _isRegistrationInstanceLoaded )
             {
-                var registrationInstanceId = PageParameter( PageParameterKey.RegistrationInstanceId ).AsIntegerOrNull();
-
-                if ( registrationInstanceId.HasValue )
-                {
-                    _registrationInstance = new RegistrationInstanceService( RockContext )
-                        .Queryable()
-                        .Include( a => a.RegistrationTemplate )
-                        .Include( a => a.Account )
-                        .Include( a => a.RegistrationTemplate.Forms )
-                        .Include( a => a.RegistrationTemplate.Forms.Select( s => s.Fields ) )
-                        .Where( a => a.Id == registrationInstanceId.Value )
-                        .AsNoTracking().FirstOrDefault();
-
-                    if ( _registrationInstance == null )
-                    {
-                        return null;
-                    }
-
-                    // Load the Registration Template.
-                    if ( _registrationInstance.RegistrationTemplate == null && _registrationInstance.RegistrationTemplateId > 0 )
-                    {
-                        _registrationInstance.RegistrationTemplate = new RegistrationTemplateService( RockContext ).Get( _registrationInstance.RegistrationTemplateId );
-                    }
-                }
+                return _registrationInstance;
             }
+
+            _isRegistrationInstanceLoaded = true;
+
+            var registrationInstanceId = PageParameter( PageParameterKey.RegistrationInstanceId ).AsIntegerOrNull();
+
+            if ( !registrationInstanceId.HasValue )
+            {
+                return null;
+            }
+
+            var registrationInstance = new RegistrationInstanceService( RockContext )
+                .Queryable()
+                .Include( a => a.RegistrationTemplate )
+                .Include( a => a.RegistrationTemplate.Category )
+                .Include( a => a.Account )
+                .Include( a => a.RegistrationTemplate.Forms )
+                .Include( a => a.RegistrationTemplate.Forms.Select( s => s.Fields ) )
+                .Where( a => a.Id == registrationInstanceId.Value )
+                .AsNoTracking().FirstOrDefault();
+
+            if ( registrationInstance == null )
+            {
+                return null;
+            }
+
+            // Load the Registration Template.
+            if ( registrationInstance.RegistrationTemplate == null && registrationInstance.RegistrationTemplateId > 0 )
+            {
+                registrationInstance.RegistrationTemplate = new RegistrationTemplateService( RockContext ).Get( registrationInstance.RegistrationTemplateId );
+            }
+
+            // The template and its category must be loaded first so their security rules apply.
+            if ( !registrationInstance.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+            {
+                return null;
+            }
+
+            _registrationInstance = registrationInstance;
 
             return _registrationInstance;
         }
