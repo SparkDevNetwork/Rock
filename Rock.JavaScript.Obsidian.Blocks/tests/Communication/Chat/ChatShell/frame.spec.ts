@@ -2624,7 +2624,7 @@ describe("the thread drawer", () => {
 
         const calls = await closeWatched(w, "x");
 
-        expect(document.activeElement).toBe(w.get("[data-testid='frame-main'] [data-testid='header-title']").element);
+        expect(document.activeElement).toBe(w.get("[data-testid='frame-main'] [data-focus-stop='header']").element);
         expect(calls.filter(call => call.options?.preventScroll !== true)).toEqual([]);
     });
 

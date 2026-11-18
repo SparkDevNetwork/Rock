@@ -410,10 +410,10 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
     let threadChannelId: string | null = null;
 
     /**
-     * The part of a message in the conversation that opened the drawer, its pill, its "Replied to
-     * a thread" label or its bar's Reply in thread, which the drawer's close gives focus back to.
-     * Null when the thread came from a list, a mention, a link or a push, or the click left focus
-     * where it was.
+     * The part of a message in the conversation that opened the drawer, its pill or its "Replied to
+     * a thread" label, or the message's row for its hover bar's Reply in thread, which the
+     * drawer's close gives focus back to. Null when the thread came from a list, a mention, a
+     * link or a push, or the click left focus where it was.
      */
     let threadOpener: HTMLElement | null = null;
 
@@ -1018,8 +1018,7 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
     async function openThreadDrawer(channelId: string, rootId: number, origin: ThreadOrigin): Promise<void> {
         // Read before anything moves focus into the drawer: a message's part in the conversation
         // is where the reader was, and the newest one pressed is where they come back to.
-        const active = document.activeElement;
-        const opener = active instanceof HTMLElement && !!mainElement.value?.contains(active) && !!active.closest("[data-message-id]") ? active : null;
+        const opener = openerOf(document.activeElement);
 
         if (panelKind.value === "thread" && shell.value.threads.isOpen(channelId, rootId)) {
             threadOpener = opener ?? threadOpener;
@@ -1049,6 +1048,7 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
 
     /** Lets go of the open thread, which saves where the reader got to, without moving focus. */
     function leaveThread(): void {
+        threadOpener = null;
         if (panelKind.value === "thread") {
             threadOpenCount++;
             panelKind.value = null;
@@ -1058,9 +1058,10 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
 
     /**
      * Closes the drawer. Focus returns to what in the conversation opened it, else the root's
-     * thread pill, else the root message, else the conversation's title. The conversation stays
-     * where the reader left it: a reply also sent to it can sit a long way below its root, and
-     * the focus coming back never scrolls the feed to reach the root.
+     * thread pill, else the root message, while the feed shows them, else the conversation's
+     * title. The conversation stays where the reader left it: a reply also sent to it can sit a
+     * long way below its root, and the focus coming back never scrolls the feed to reach the
+     * root, so a root out of view would take focus where the reader cannot see it.
      */
     function closeThreadDrawer(): void {
         const rootId = drawnThread.value?.rootId;
@@ -1070,7 +1071,43 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
         finishClosing();
 
         const message = mainElement.value?.querySelector<HTMLElement>(`[data-message-id='${rootId}']`);
-        void askFocus([opener, message ? { stop: "thread-summary", within: message } : null, message, "header"], { within: "main", preventScroll: true });
+        const pill = message ? stopElement({ stop: "thread-summary", within: message }, mainElement.value, {}) : null;
+        void askFocus([opener, inFeedView(pill), inFeedView(message), "header"], { within: "main", preventScroll: true });
+    }
+
+    /**
+     * What in the conversation a press that opens a thread came from: the pressed part of a
+     * message's row, or the row itself for its hover bar, which floats over the column from the
+     * chat's overlay layer and stands for the message it is on. Null for anything else.
+     */
+    function openerOf(active: Element | null): HTMLElement | null {
+        const main = mainElement.value;
+        if (!(active instanceof HTMLElement) || !main) {
+            return null;
+        }
+
+        if (main.contains(active)) {
+            return active.closest("[data-message-id]") ? active : null;
+        }
+
+        // The bar's box carries the id of the message it is on, as that message's row does.
+        const id = active.closest<HTMLElement>("[data-hot-id]")?.dataset.hotId;
+        return id ? main.querySelector<HTMLElement>(`[data-message-id='${id}']`) : null;
+    }
+
+    /**
+     * The element while some of it is inside what the conversation's feed shows, else null, so a
+     * focus that never scrolls only lands where the reader can see it.
+     */
+    function inFeedView(element: HTMLElement | null | undefined): HTMLElement | null {
+        const feed = element?.closest<HTMLElement>("[data-chat-scroller]");
+        if (!element || !feed) {
+            return null;
+        }
+
+        const shown = feed.getBoundingClientRect();
+        const box = element.getBoundingClientRect();
+        return box.bottom >= shown.top && box.top <= shown.bottom ? element : null;
     }
 
     /** Keeps what the column drew until it has finished narrowing, then lets it go. */
