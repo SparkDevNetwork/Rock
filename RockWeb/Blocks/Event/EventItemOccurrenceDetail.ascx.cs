@@ -67,6 +67,14 @@ namespace RockWeb.Blocks.Event
     [Rock.SystemGuid.BlockTypeGuid( "C18CB1DC-B2BC-4D3F-918A-A047183E4024" )]
     public partial class EventItemOccurrenceDetail : RockBlock
     {
+        #region Fields
+
+        private static readonly string LinkageGroupNotAllowedMessage = "You are not authorized to link the selected group.";
+
+        private static readonly string LinkageRegistrationInstanceNotAllowedMessage = "You are not authorized to link the selected registration instance.";
+
+        #endregion Fields
+
         #region Properties
 
         private bool IsAllowingPredictableIds => !PageCache.Layout.Site.DisablePredictableIds;
@@ -259,8 +267,9 @@ namespace RockWeb.Blocks.Event
         /// check used by <see cref="ShowDetail(int)"/> to decide whether to show the edit button.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
-        /// <returns><c>true</c> if the current person can edit occurrences; otherwise, <c>false</c>.</returns>
-        private bool CanEditOccurrence( RockContext rockContext )
+        /// <param name="eventItemId">The identifier of the event the occurrence belongs to.</param>
+        /// <returns><c>true</c> if the current person can edit occurrences of the event; otherwise, <c>false</c>.</returns>
+        private bool CanEditOccurrence( RockContext rockContext, int eventItemId )
         {
             if ( UserCanEdit )
             {
@@ -272,7 +281,23 @@ namespace RockWeb.Blocks.Event
                 IsAllowingPredictableIds
             );
 
-            return calendar != null && calendar.IsAuthorized( Authorization.EDIT, CurrentPerson );
+            return calendar != null
+                && calendar.IsAuthorized( Authorization.EDIT, CurrentPerson )
+                && IsEventOnCalendar( rockContext, calendar.Id, eventItemId );
+        }
+
+        /// <summary>
+        /// Determines whether the event is on the calendar.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="eventCalendarId">The identifier of the calendar.</param>
+        /// <param name="eventItemId">The identifier of the event.</param>
+        /// <returns><c>true</c> if the event is on the calendar; otherwise, <c>false</c>.</returns>
+        private bool IsEventOnCalendar( RockContext rockContext, int eventCalendarId, int eventItemId )
+        {
+            return new EventCalendarItemService( rockContext )
+                .Queryable()
+                .Any( ci => ci.EventCalendarId == eventCalendarId && ci.EventItemId == eventItemId );
         }
 
         /// <summary>
@@ -301,7 +326,19 @@ namespace RockWeb.Blocks.Event
                 }
             }
 
-            return CanEditOccurrence( rockContext );
+            var eventItemId = eventItemOccurrenceId != 0
+                ? new EventItemOccurrenceService( rockContext ).Queryable().AsNoTracking()
+                    .Where( o => o.Id == eventItemOccurrenceId )
+                    .Select( o => o.EventItemId )
+                    .FirstOrDefault()
+                : new EventItemService( rockContext ).GetQueryableByKey(
+                      PageParameter( PageParameterKey.EventItemId ),
+                      IsAllowingPredictableIds
+                  )
+                  .Select( i => i.Id )
+                  .FirstOrDefault();
+
+            return CanEditOccurrence( rockContext, eventItemId );
         }
 
         /// <summary>
@@ -330,10 +367,19 @@ namespace RockWeb.Blocks.Event
                     pdAuditDetails.Visible = false;
                 }
 
-                bool canEdit = CanEditOccurrence( rockContext );
+                var eventItemId = eventItemOccurrence.Id != 0
+                    ? eventItemOccurrence.EventItemId
+                    : new EventItemService( rockContext ).GetQueryableByKey(
+                          PageParameter( PageParameterKey.EventItemId ),
+                          IsAllowingPredictableIds
+                      )
+                      .Select( i => i.Id )
+                      .FirstOrDefault();
+                bool canEdit = CanEditOccurrence( rockContext, eventItemId );
 
                 bool readOnly = false;
 
+                nbEditModeMessage.NotificationBoxType = NotificationBoxType.Info;
                 nbEditModeMessage.Text = string.Empty;
 
                 if ( !canEdit )
@@ -602,8 +648,19 @@ namespace RockWeb.Blocks.Event
                 return eventItemOccurrence;
             }
 
-            EventItemOccurrence oldOccurrence;
-            oldOccurrence = new EventItemOccurrenceService( new RockContext() ).Get( copyFromOccurrenceKey, IsAllowingPredictableIds );
+            var copyRockContext = new RockContext();
+            var oldOccurrence = new EventItemOccurrenceService( copyRockContext ).Get( copyFromOccurrenceKey, IsAllowingPredictableIds );
+
+            // Only copy an occurrence whose event is on the page's calendar, unless the person can edit the block.
+            var calendarId = new EventCalendarService( copyRockContext ).GetNoTracking(
+                PageParameter( PageParameterKey.EventCalendarId ),
+                IsAllowingPredictableIds
+            )?.Id ?? 0;
+
+            if ( oldOccurrence != null && !UserCanEdit && !IsEventOnCalendar( copyRockContext, calendarId, oldOccurrence.EventItemId ) )
+            {
+                oldOccurrence = null;
+            }
 
             if ( oldOccurrence != null )
             {
@@ -937,6 +994,22 @@ namespace RockWeb.Blocks.Event
                 eventItemOccurrence.LoadAttributes( rockContext );
                 Helper.GetEditValues( phAttributeEdits, eventItemOccurrence );
 
+                // Linkages added in this edit, including ones copied from another occurrence, get the same checks as the linkage dialogs.
+                var existingLinkageGuids = eventItemOccurrence.Linkages.Select( l => l.Guid ).ToList();
+                var newLinkages = LinkedRegistrationsState.Where( l => !existingLinkageGuids.Contains( l.Guid ) ).ToList();
+
+                if ( newLinkages.Any( l => !IsLinkageGroupAllowed( l.GroupId, null ) ) )
+                {
+                    ShowLinkageNotAllowed( LinkageGroupNotAllowedMessage );
+                    return;
+                }
+
+                if ( newLinkages.Any( l => l.RegistrationInstance != null && l.RegistrationInstance.Id != 0 && !CanViewLinkedRegistrationInstance( l.RegistrationInstance.Id ) ) )
+                {
+                    ShowLinkageNotAllowed( LinkageRegistrationInstanceNotAllowedMessage );
+                    return;
+                }
+
                 // Remove linkages not in LinkedRegistrationsState
                 var linkedRegistrationsToRemove = new List<EventItemOccurrenceGroupMap>();
 
@@ -983,7 +1056,11 @@ namespace RockWeb.Blocks.Event
                             linkage.RegistrationInstance = registrationInstance;
                         }
 
-                        linkage.RegistrationInstance.CopyPropertiesFrom( linkedRegistrationState.RegistrationInstance );
+                        // A linked instance the person cannot edit keeps its own settings.
+                        if ( linkage.RegistrationInstance.Id == 0 || CanEditLinkedRegistrationInstance( linkage.RegistrationInstance.Id ) )
+                        {
+                            linkage.RegistrationInstance.CopyPropertiesFrom( linkedRegistrationState.RegistrationInstance );
+                        }
                     }
                 }
 
@@ -1181,7 +1258,8 @@ namespace RockWeb.Blocks.Event
                 if ( registrationInstance != null )
                 {
                     eventItemOccurrenceGroupMap.RegistrationInstance = new RegistrationInstance();
-                    eventItemOccurrenceGroupMap.RegistrationInstance.AccountId = registrationInstance.AccountId;
+                    var previousAccount = registrationInstance.AccountId.HasValue ? FinancialAccountCache.Get( registrationInstance.AccountId.Value ) : null;
+                    eventItemOccurrenceGroupMap.RegistrationInstance.AccountId = previousAccount != null && previousAccount.IsActive ? previousAccount.Id : ( int? ) null;
                     eventItemOccurrenceGroupMap.RegistrationInstance.RegistrationTemplateId = registrationInstance.RegistrationTemplateId;
                     eventItemOccurrenceGroupMap.RegistrationInstance.RegistrationTemplate = new RegistrationTemplate();
                     eventItemOccurrenceGroupMap.RegistrationInstance.ContactPersonAliasId = registrationInstance.ContactPersonAliasId;
@@ -1239,8 +1317,8 @@ namespace RockWeb.Blocks.Event
                     Guid? accountGuid = GetAttributeValue( AttributeKey.DefaultAccount ).AsGuidOrNull();
                     if ( accountGuid.HasValue )
                     {
-                        var account = new FinancialAccountService( rockContext ).Get( accountGuid.Value );
-                        rieNewLinkage.AccountId = account != null ? account.Id : 0;
+                        var account = FinancialAccountCache.Get( accountGuid.Value );
+                        rieNewLinkage.AccountId = account != null && account.IsActive ? account.Id : 0;
                     }
                 }
             }
@@ -1275,6 +1353,12 @@ namespace RockWeb.Blocks.Event
                 if ( groupId.HasValue )
                 {
                     var group = new GroupService( rockContext ).Get( groupId.Value );
+                    if ( !IsLinkageGroupAllowed( groupId, null ) )
+                    {
+                        ShowLinkageNotAllowed( LinkageGroupNotAllowedMessage );
+                        return;
+                    }
+
                     if ( group != null )
                     {
                         eventItemOccurrenceGroupMap.GroupId = group.Id;
@@ -1322,7 +1406,7 @@ namespace RockWeb.Blocks.Event
                 lEditLinkageTemplate.Text = eventItemOccurrenceGroupMap.RegistrationInstance.RegistrationTemplate.Name;
                 tbEditLinkagePublicName.Text = eventItemOccurrenceGroupMap.PublicName;
                 rieEditLinkage.SetValue( eventItemOccurrenceGroupMap.RegistrationInstance );
-                rieEditLinkage.Visible = true;
+                rieEditLinkage.Visible = CanEditLinkedRegistrationInstance( eventItemOccurrenceGroupMap.RegistrationInstance.Id );
                 pnlEditLinkageRegistrationType.Visible = true;
             }
 
@@ -1336,6 +1420,8 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void dlgEditLinkage_SaveClick( object sender, EventArgs e )
         {
+            ClearLinkageGroupNotAllowed();
+
             if ( !Page.IsValid )
             {
                 return;
@@ -1344,11 +1430,17 @@ namespace RockWeb.Blocks.Event
             var groupMapId = hfEditLinkageGroupMapId.Value.AsGuid();
             var eventItemOccurrenceGroupMap = LinkedRegistrationsState.First( x => x.Guid == groupMapId );
 
-            eventItemOccurrenceGroupMap.PublicName = tbEditLinkagePublicName.Text;
-            eventItemOccurrenceGroupMap.UrlSlug = tbEditLinkageUrlSlug.Text;
-
             int? groupId = gpEditLinkageGroup.SelectedValueAsInt();
             var group = GetGroup( groupId, null );
+
+            if ( !IsLinkageGroupAllowed( groupId, eventItemOccurrenceGroupMap.GroupId ) )
+            {
+                ShowLinkageNotAllowed( LinkageGroupNotAllowedMessage );
+                return;
+            }
+
+            eventItemOccurrenceGroupMap.PublicName = tbEditLinkagePublicName.Text;
+            eventItemOccurrenceGroupMap.UrlSlug = tbEditLinkageUrlSlug.Text;
 
             if ( group != null )
             {
@@ -1363,7 +1455,10 @@ namespace RockWeb.Blocks.Event
 
             if ( eventItemOccurrenceGroupMap.RegistrationInstance != null )
             {
-                rieEditLinkage.GetValue( eventItemOccurrenceGroupMap.RegistrationInstance );
+                if ( CanEditLinkedRegistrationInstance( eventItemOccurrenceGroupMap.RegistrationInstance.Id ) )
+                {
+                    rieEditLinkage.GetValue( eventItemOccurrenceGroupMap.RegistrationInstance );
+                }
 
                 if ( !eventItemOccurrenceGroupMap.IsValid )
                 {
@@ -1387,13 +1482,17 @@ namespace RockWeb.Blocks.Event
             {
                 using ( var rockContext = new RockContext() )
                 {
-                    foreach ( var instance in new RegistrationInstanceService( rockContext )
+                    var instances = new RegistrationInstanceService( rockContext )
                         .Queryable().AsNoTracking()
+                        .Include( i => i.RegistrationTemplate.Category )
                         .Where( i => i.RegistrationTemplateId == templateId.Value
                             && i.RegistrationTemplate.IsActive == true
                             && i.IsActive == true )
                         .OrderBy( i => i.Name )
-                        )
+                        .ToList()
+                        .Where( i => UserCanEdit || i.IsAuthorized( Authorization.VIEW, CurrentPerson ) );
+
+                    foreach ( var instance in instances )
                     {
                         ListItem li = new ListItem( instance.Name, instance.Id.ToString() );
                         ddlExistingLinkageInstance.Items.Add( li );
@@ -1443,6 +1542,18 @@ namespace RockWeb.Blocks.Event
 
             int? groupId = gpNewLinkageGroup.SelectedValueAsInt();
             int? registrationInstanceId = ddlExistingLinkageInstance.SelectedValueAsInt();
+
+            if ( !IsLinkageGroupAllowed( groupId, null ) )
+            {
+                ShowLinkageNotAllowed( LinkageGroupNotAllowedMessage );
+                return;
+            }
+
+            if ( registrationInstanceId.HasValue && !CanViewLinkedRegistrationInstance( registrationInstanceId.Value ) )
+            {
+                ShowLinkageNotAllowed( LinkageRegistrationInstanceNotAllowedMessage );
+                return;
+            }
 
             Group group = null;
             RegistrationInstance registrationInstance = null;
@@ -1509,6 +1620,8 @@ namespace RockWeb.Blocks.Event
 
         protected void dlgNewEventRegistrationGroupLinkage_SaveClick( object sender, EventArgs e )
         {
+            ClearLinkageGroupNotAllowed();
+
             if ( Page.IsValid )
             {
                 switch ( bgLinkageOptions.SelectedValue )
@@ -1551,6 +1664,12 @@ namespace RockWeb.Blocks.Event
                 return null;
             }
 
+            if ( !IsLinkageGroupAllowed( groupId, null ) )
+            {
+                ShowLinkageNotAllowed( LinkageGroupNotAllowedMessage );
+                return null;
+            }
+
             var eventItemOccurrenceGroupMap = new EventItemOccurrenceGroupMap
             {
                 UrlSlug = urlSlug
@@ -1582,6 +1701,97 @@ namespace RockWeb.Blocks.Event
             }
 
             return eventItemOccurrenceGroupMap;
+        }
+
+        /// <summary>
+        /// Determines whether the current person may link the group to a registration.
+        /// </summary>
+        /// <param name="groupId">The identifier of the picked group, or <c>null</c> when no group is picked.</param>
+        /// <param name="currentGroupId">The identifier of the group the linkage already has, or <c>null</c> for a new linkage.</param>
+        /// <returns><c>true</c> if no group is picked, the group is unchanged, or the person can edit the block or manage the group; otherwise, <c>false</c>.</returns>
+        private bool IsLinkageGroupAllowed( int? groupId, int? currentGroupId )
+        {
+            if ( !groupId.HasValue || groupId == currentGroupId || UserCanEdit )
+            {
+                return true;
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var group = new GroupService( rockContext ).Get( groupId.Value );
+
+                return group == null
+                    || group.IsAuthorized( Authorization.EDIT, CurrentPerson )
+                    || group.IsAuthorized( Authorization.MANAGE_MEMBERS, CurrentPerson );
+            }
+        }
+
+        /// <summary>
+        /// Determines whether the current person may change the settings of a linked registration instance.
+        /// </summary>
+        /// <param name="registrationInstanceId">The identifier of the registration instance, or 0 for a new instance.</param>
+        /// <returns><c>true</c> if the instance is new, or the person can edit the block or edit or administrate the instance; otherwise, <c>false</c>.</returns>
+        private bool CanEditLinkedRegistrationInstance( int registrationInstanceId )
+        {
+            if ( registrationInstanceId == 0 || UserCanEdit )
+            {
+                return true;
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var registrationInstance = new RegistrationInstanceService( rockContext ).Queryable()
+                    .Include( r => r.RegistrationTemplate.Category )
+                    .AsNoTracking()
+                    .FirstOrDefault( r => r.Id == registrationInstanceId );
+
+                return registrationInstance != null
+                    && ( registrationInstance.IsAuthorized( Authorization.EDIT, CurrentPerson )
+                        || registrationInstance.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) );
+            }
+        }
+
+        /// <summary>
+        /// Determines whether the current person may link an existing registration instance to the occurrence.
+        /// </summary>
+        /// <param name="registrationInstanceId">The identifier of the registration instance.</param>
+        /// <returns><c>true</c> if the person can edit the block or view the instance; otherwise, <c>false</c>.</returns>
+        private bool CanViewLinkedRegistrationInstance( int registrationInstanceId )
+        {
+            if ( UserCanEdit )
+            {
+                return true;
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var registrationInstance = new RegistrationInstanceService( rockContext ).Queryable()
+                    .Include( r => r.RegistrationTemplate.Category )
+                    .AsNoTracking()
+                    .FirstOrDefault( r => r.Id == registrationInstanceId );
+
+                return registrationInstance != null && registrationInstance.IsAuthorized( Authorization.VIEW, CurrentPerson );
+            }
+        }
+
+        /// <summary>
+        /// Shows a not authorized message for a linkage and closes the linkage dialog.
+        /// </summary>
+        /// <param name="message">The message to show.</param>
+        private void ShowLinkageNotAllowed( string message )
+        {
+            nbEditModeMessage.NotificationBoxType = NotificationBoxType.Danger;
+            nbEditModeMessage.Text = message;
+            HideDialog();
+        }
+
+        /// <summary>
+        /// Clears the not authorized message for a linkage group.
+        /// </summary>
+        private void ClearLinkageGroupNotAllowed()
+        {
+            nbEditModeMessage.NotificationBoxType = NotificationBoxType.Info;
+            nbEditModeMessage.Text = string.Empty;
         }
 
         private Group GetGroup( int? groupId, RockContext rockContext )

@@ -1002,6 +1002,23 @@ namespace Rock.Blocks.Event.InteractiveExperiences
                     return ActionBadRequest( updateMessage ?? "Invalid data." );
                 }
 
+                // A file this experience already uses may move to another image field,
+                // so files are only checked when they are new to the experience.
+                bool IsFileAllowed( int? binaryFileId )
+                {
+                    return ( binaryFileId.HasValue && oldBinaryFileIds.Contains( binaryFileId.Value ) )
+                        || binaryFileService.IsUploadedBinaryFileAllowedForPerson( binaryFileId, null, RequestContext.CurrentPerson );
+                }
+
+                if ( !IsFileAllowed( entity.ActionBackgroundImageBinaryFileId )
+                    || !IsFileAllowed( entity.AudienceBackgroundImageBinaryFileId )
+                    || !IsFileAllowed( entity.NoActionHeaderImageBinaryFileId )
+                    || !IsFileAllowed( entity.PhotoBinaryFileId )
+                    || !IsFileAllowed( entity.WelcomeHeaderImageBinaryFileId ) )
+                {
+                    return ActionBadRequest( "Invalid file." );
+                }
+
                 // Ensure everything is valid before saving.
                 if ( !ValidateInteractiveExperience( entity, rockContext, out var validationMessage ) )
                 {

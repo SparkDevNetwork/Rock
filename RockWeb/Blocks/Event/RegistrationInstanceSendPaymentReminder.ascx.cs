@@ -49,6 +49,8 @@ namespace RockWeb.Blocks.Event
 
         private bool? _canViewRegistrationInstance;
 
+        private bool? _canSendReminders;
+
         #endregion
 
         #region Properties
@@ -87,6 +89,8 @@ namespace RockWeb.Blocks.Event
                 base.OnLoad( e );
                 return;
             }
+
+            btnSendReminders.Visible = CanSendReminders();
 
             if ( !Page.IsPostBack )
             {
@@ -135,7 +139,7 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnSendReminders_Click( object sender, EventArgs e )
         {
-            if ( !CanViewRegistrationInstance() )
+            if ( !CanSendReminders() )
             {
                 return;
             }
@@ -166,7 +170,7 @@ namespace RockWeb.Blocks.Event
                             var registrationService = new RegistrationService( rockContext );
 
                             var registration = registrationService.Get( registrationId );
-                            if ( registration != null && !string.IsNullOrWhiteSpace(registration.ConfirmationEmail) )
+                            if ( registration != null && registration.RegistrationInstanceId == registrationInstanceId && !string.IsNullOrWhiteSpace(registration.ConfirmationEmail) )
                             {
                                 Dictionary<string, object> mergeObjects = new Dictionary<string, object>();
                                 mergeObjects.Add( "Registration", registration );
@@ -326,10 +330,24 @@ namespace RockWeb.Blocks.Event
 
                     _canViewRegistrationInstance = registrationInstance != null
                         && registrationInstance.IsAuthorized( Authorization.VIEW, CurrentPerson );
+
+                    _canSendReminders = _canViewRegistrationInstance.Value
+                        && ( UserCanEdit
+                            || registrationInstance.IsAuthorized( Authorization.EDIT, CurrentPerson )
+                            || registrationInstance.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) );
                 }
             }
 
             return _canViewRegistrationInstance.Value;
+        }
+
+        /// <summary>
+        /// Determines whether the current person can send payment reminders for the registration instance in the page parameter.
+        /// </summary>
+        /// <returns><c>true</c> if the person can view the instance and can edit the block or the instance; otherwise, <c>false</c>.</returns>
+        private bool CanSendReminders()
+        {
+            return CanViewRegistrationInstance() && _canSendReminders.GetValueOrDefault();
         }
 
         /// <summary>
