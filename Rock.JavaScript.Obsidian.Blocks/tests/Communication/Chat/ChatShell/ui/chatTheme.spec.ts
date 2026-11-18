@@ -583,6 +583,25 @@ describe("the chat token sheet", () => {
         expect(valuesOf(sheet, "--chat-cm-person-gap", isLight)).toEqual(["8px"]);
     });
 
+    // A photo settles in over 260ms, long enough that its blurred preview reads as the same
+    // picture coming into focus rather than a swap.
+    test("names a photo's settling time, 260ms", () => {
+        expect(valuesOf(sheet, "--chat-d-img-in", isLight)).toEqual(["260ms"]);
+    });
+
+    // The church's profile template is markup the panel did not render, so its own scoped rules
+    // cannot reach it; the token sheet draws it in the panel's type, its links in the church's ink.
+    test("draws a profile template's paragraphs, lists, headings, bold, links and pictures in the panel's type", () => {
+        const sheetText = readFileSync(sheetPath, "utf8");
+        const ruleText = (selector: string): string => normalize(new RegExp(`${selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s*\\{([^}]*)\\}`).exec(sheetText)?.[1] ?? "");
+        expect(ruleText(".chat-pp-lava :is(p, ul, ol, h1, h2, h3, h4, h5, h6)")).toContain(normalize("margin: 0 0 4px"));
+        expect(ruleText(".chat-pp-lava :is(ul, ol)")).toContain(normalize("padding-left: 18px"));
+        expect(ruleText(".chat-pp-lava :is(h1, h2, h3, h4, h5, h6)")).toContain(normalize("font-size: var(--chat-fs-ui)"));
+        expect(ruleText(".chat-pp-lava :is(b, strong)")).toContain(normalize("color: var(--chat-text)"));
+        expect(ruleText(".chat-pp-lava a")).toContain(normalize("color: var(--chat-brand-ink)"));
+        expect(ruleText(".chat-pp-lava img")).toContain(normalize("max-width: 100%"));
+    });
+
     test("follows the system into dark only on a Rock theme that has a dark mode", () => {
         // Rock's older themes set no theme attribute and have no dark mode, so a page on one of them
         // matches "no theme attribute" while staying light. The block marks its root when it finds
