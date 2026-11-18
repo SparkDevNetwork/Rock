@@ -5,6 +5,7 @@
               :key="index"
               class="chat-av"
               :class="{ 'is-photo': !!person.photoUrl }"
+              :data-letters="person.photoUrl ? initialsOf(person.name, index) || undefined : undefined"
               data-testid="avatar"
               :style="faceStyle(person, index)">
             <img v-if="person.photoUrl" v-reveal="reveal" class="chat-av-photo" :src="person.photoUrl" alt="" />
@@ -80,7 +81,7 @@
 
     // #region Values
 
-    // Faces drawn in the same frame fade in together once decoded, over a neutral disc.
+    // Faces drawn in the same frame fade in together once decoded, over the person's letters.
     const reveal = useImageReveal({ isShared: true });
 
     /** At this size and below two letters do not fit, so one is drawn. */

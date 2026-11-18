@@ -1423,17 +1423,19 @@ describe("the section label", () => {
 
     // The list's section heading and the loading veil's stand-in for it are one heading, so the
     // words stand still when the list takes over: its box (no margin, the chat's family, a
-    // whole-pixel 16px line) has one home in the sheet, and each screen keeps only its place.
+    // whole-pixel 16px line) has one home in the sheet, and each screen keeps only its place. The
+    // sidebar's own pin of its heading's line, beside its rows' lines, stays where it is.
     test("draws the list's heading and the veil's from one heading box in the sheet, neither keeping a copy", () => {
-        const body = styleRules(sheetPath, /^\.chat-shell \.chat-list-heading$/).join(";");
+        const body = styleRules(sheetPath, /^\.chat-list-heading$/).join(";");
         expect(body).toMatch(/margin:\s*0/);
         expect(body).toMatch(/font-family:\s*inherit/);
         expect(body).toMatch(/line-height:\s*16px/);
 
-        for (const [file, tag, selector] of [holders[0], holders[5]]) {
+        const screens: Array<[[string, RegExp, RegExp], RegExp]> = [[holders[0], /margin|font-family/], [holders[5], /margin|font-family|line-height/]];
+        for (const [[file, tag, selector], copied] of screens) {
             const path = resolve(shell, file);
             expect(tag.exec(readFileSync(path, "utf8"))?.[0]).toMatch(/class="[^"]*\bchat-list-heading\b/);
-            expect(styleRules(path, selector).join(";")).not.toMatch(/margin|font-family|line-height/);
+            expect(styleRules(path, selector).join(";")).not.toMatch(copied);
         }
     });
 });

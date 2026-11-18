@@ -90,7 +90,7 @@
                      data-testid="sidebar-section"
                      :data-section="section.key">
                     <div v-if="!isNoResults" class="chat-sec">
-                        <h3 class="chat-section-label" data-testid="section-heading">{{ section.title }}</h3>
+                        <h3 class="chat-section-label chat-list-heading" data-testid="section-heading">{{ section.title }}</h3>
                         <IconButton v-if="section.key === 'channels'"
                                     class="chat-sec-btn"
                                     icon="plus"
@@ -204,8 +204,12 @@
                  :style="nameTip.floatingStyles.value">{{ nameTipText }}</div>
         </Teleport>
 
-        <!-- Who the person is, and their settings; with online status, their face sets their status. -->
-        <div class="chat-side-me">
+        <!--
+            Who the person is, and their settings; with online status, their face sets their status.
+            Drawn final from the first paint with no veil over it, so its face fades in on its own
+            at the first load's reveal.
+        -->
+        <div class="chat-side-me" data-unveiled>
             <StatusMenu v-if="isStatusShown"
                         trigger="face"
                         :choice="statusChoice"
@@ -392,11 +396,8 @@
     padding: 14px 8px 4px 10px;
 }
 
-/* Rock's theme styles every heading, so this one states its family and margin; its face is the section label's. */
+/* The heading's box is the sheet's list heading; its whole-pixel line is pinned here beside the rows' lines. */
 .chat-sec h3 {
-    margin: 0;
-    font-family: inherit;
-    /* A whole-pixel line, so nothing below it sits on a fraction. */
     line-height: 16px;
 }
 

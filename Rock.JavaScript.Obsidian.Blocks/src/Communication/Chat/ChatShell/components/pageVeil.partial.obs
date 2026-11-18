@@ -25,11 +25,11 @@
                 <!-- The list's own sections, so nothing changes shape when it arrives: channels, then direct messages. -->
                 <div v-if="isMarksShown" class="chat-veil-marks" aria-hidden="true" data-testid="veil-marks">
                     <div class="chat-veil-sec" data-testid="veil-section">
-                        <h3 class="chat-veil-heading chat-section-label" data-testid="veil-heading">Channels</h3>
+                        <h3 class="chat-veil-heading chat-section-label chat-list-heading" data-testid="veil-heading">Channels</h3>
                         <Skeleton v-for="width in channelWidths" :key="width" shape="channel" :widths="[width]" />
                     </div>
                     <div class="chat-veil-sec" data-testid="veil-section">
-                        <h3 class="chat-veil-heading chat-section-label" data-testid="veil-heading">Direct messages</h3>
+                        <h3 class="chat-veil-heading chat-section-label chat-list-heading" data-testid="veil-heading">Direct messages</h3>
                         <Skeleton v-for="width in personWidths" :key="width" shape="person" :widths="[width, 32]" />
                     </div>
                 </div>
@@ -84,15 +84,12 @@
 }
 
 /*
-    A section's heading, drawn as the list draws its own: the same place and type, so the words
-    stand still when the list takes over from the veil. The list's heading line is as tall as its
-    26px add button, the words centred in it, so the veil's padding takes the button's place.
+    A section's heading, the list's own heading box in the list's place, so the words stand still
+    when the list takes over from the veil. The list's heading line is as tall as its 26px add
+    button, the words centred in it, so the veil's padding takes the button's place.
 */
 .chat-veil-heading {
-    margin: 0;
     padding: 19px 8px 9px 10px;
-    font-family: inherit;
-    line-height: 16px;
 }
 
 .chat-veil-header {

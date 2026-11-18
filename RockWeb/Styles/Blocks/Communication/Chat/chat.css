@@ -929,9 +929,18 @@
     object-fit: cover;
 }
 
-/* A person with a photo shows a neutral disc, never their hue, until the photo is revealed. */
-.chat-av.is-photo {
-    background: var(--chat-line-strong);
+/*
+    A person with a photo: their letters on their hue are the base under it, as a channel's tile is
+    under its photo, painted from the face's own letters in the photo's cell, so the photo fades in
+    over the face rather than into an empty disc. They are never the face's text.
+*/
+.chat-av.is-photo::before {
+    content: attr(data-letters);
+    grid-area: 1 / 1;
+}
+
+.chat-av.is-photo > .chat-av-photo {
+    grid-area: 1 / 1;
 }
 
 /*
@@ -1315,6 +1324,18 @@
     color: var(--chat-muted);
     text-transform: none;
     letter-spacing: 0;
+}
+
+/*
+    The list's section heading, and the loading veil's stand-in for it, as one box, so the words
+    stand still when the list takes over from the veil. Rock's theme styles every heading, so it
+    states its margin and family; a whole-pixel line, so nothing below it sits on a fraction. Each
+    screen keeps only where it sits.
+*/
+.chat-shell .chat-list-heading {
+    margin: 0;
+    font-family: inherit;
+    line-height: 16px;
 }
 
 /* A hairline of air between one row's fill and the next. */

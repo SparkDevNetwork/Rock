@@ -24,8 +24,8 @@
 // On the first load the page's reveal is the one owner of when the first screen appears: until it
 // has released, every image waits for it, each one still to decode is reported to it so it can
 // wait a short grace for them, and what has decoded by the release shows with it, with no fade of
-// its own, since the page's crossfade is the fade. After the release the batch and the image's
-// own fade apply as usual.
+// its own, since the page's crossfade is the fade; only a region with no veil over it fades its
+// images in itself. After the release the batch and the image's own fade apply as usual.
 import { computed, Directive, inject, onBeforeUnmount, Ref, watch } from "vue";
 import { tokenDuration } from "./brand.partial";
 import { pageRevealKey } from "../pageLoad.partial";
@@ -38,6 +38,13 @@ export const imageHoldClass = "chat-img-hold";
 
 /** The class that fades a revealed image in; a cached image is revealed without it. */
 export const imageInClass = "chat-img-in";
+
+/**
+ * Marks a region of the first screen drawn final from the first paint with no veil over it, as the
+ * sidebar's foot is. The page's crossfade does not pass over it, so at the release an image in it
+ * fades in on its own over the same moment rather than appearing at once.
+ */
+export const unveiledAttribute = "data-unveiled";
 
 /** How long the first decoded image of a batch waits for the rest when the sheet names no value. */
 const fallbackBatchMs = 300;
@@ -344,7 +351,7 @@ export function createImageReveal(options: {
                 for (const member of members.values()) {
                     if (member.isReady) {
                         leave(member);
-                        show(member, false);
+                        show(member, !member.isCached && !!member.img.closest(`[${unveiledAttribute}]`));
                     }
                 }
             }
