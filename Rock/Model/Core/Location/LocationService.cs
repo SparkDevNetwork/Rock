@@ -166,9 +166,9 @@ namespace Rock.Model
             var foundLocation = Search( new Location { Street1 = street1, Street2 = street2, City = city, State = state, County = locality, PostalCode = postalCode, Country = country }, group );
             if ( foundLocation != null )
             {
-                // Check for casing 
-                if ( !string.Equals( street1, foundLocation.Street1 ) || !string.Equals( street2, foundLocation.Street2 ) || !string.Equals( city, foundLocation.City )
-                    || !string.Equals( state, foundLocation.State ) || !string.Equals( postalCode, foundLocation.PostalCode ) || !string.Equals( country, foundLocation.Country ) )
+                // Check for casing. The casing and County update is skipped for anonymous callers.
+                if ( !IsAnonymousRequest() && ( !string.Equals( street1, foundLocation.Street1 ) || !string.Equals( street2, foundLocation.Street2 ) || !string.Equals( city, foundLocation.City )
+                    || !string.Equals( state, foundLocation.State ) || !string.Equals( postalCode, foundLocation.PostalCode ) || !string.Equals( country, foundLocation.Country ) ) )
                 {
                     var context = new RockContext();
                     var location = new LocationService( context ).Get( foundLocation.Id );
@@ -233,6 +233,17 @@ namespace Rock.Model
 
             // Re-fetch it from the database to make sure we get a valid Id.
             return Get( newLocation.Guid );
+        }
+
+        /// <summary>
+        /// Determines whether the current call is part of a request where nobody is signed in.
+        /// </summary>
+        /// <returns><c>true</c> only inside a request with no current person; <c>false</c> for signed in requests and for code running outside a request (jobs, imports).</returns>
+        private static bool IsAnonymousRequest()
+        {
+            var requestContext = Rock.Net.RockRequestContextAccessor.Current;
+
+            return requestContext != null && requestContext.CurrentPerson == null;
         }
 
         /// <summary>
