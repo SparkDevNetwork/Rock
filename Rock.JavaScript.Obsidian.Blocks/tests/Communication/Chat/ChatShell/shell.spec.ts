@@ -1337,6 +1337,13 @@ describe("the page load's reveal", () => {
         expect(build({ stored: { [`${key}:kind`]: "direct" } }).shell.reveal.state.kind).toBe("direct");
     });
 
+    test("ties the remembered look to the room opened last, and to no room on a first visit", async () => {
+        const key = rememberedChannelKey(tenant, person);
+
+        expect(build().shell.reveal.state.room).toBeNull();
+        expect(build({ stored: { [key]: channelA, [`${key}:kind`]: "direct" } }).shell.reveal.state.room).toBe(channelA);
+    });
+
     test("remembers a direct message's look beside its id once its facts are in", async () => {
         const h = build();
         h.channelFacts[channelA] = memberFacts(channelA, { channel_type: "dm" });

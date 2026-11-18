@@ -1646,6 +1646,90 @@ describe("the look, by the open conversation's kind", () => {
             expect(readFileSync(join(shellFolder, screen), "utf8")).not.toMatch(/:deep\(\.chat-msg\.is-conversational\)/);
         }
     });
+
+    describe("before the room's facts or its sidebar row", () => {
+        // On a reload the room's history often lands before its facts and the sidebar, so the feed
+        // draws from what the page already holds: the look this browser remembered for the room it
+        // opened last. Facts and the row arrive later and refine what they carry in place.
+        const unlisted = "c0000061-0000-4000-8000-000000000000";
+
+        /** Opens a room the sidebar has not listed yet, with one message, before any facts land. */
+        async function openUnlisted(remembered: { kind: string, room: string | null }): Promise<void> {
+            Object.assign((mockShell!.reveal as { state: Record<string, unknown> }).state, remembered);
+            (mockShell!.channels as { rows: SidebarRow[] }).rows = [];
+            timelineOf(unlisted).messages.push(storedMessage(71, { channel_id: unlisted }));
+            (mockShell!.state as { activeChannelId: string | null }).activeChannelId = unlisted;
+            await settle();
+        }
+
+        test("draws the feed at once in the look remembered for the room, a direct message's bubbles with no facts yet", async () => {
+            const w = await mountBlock(1200);
+            await openUnlisted({ kind: "direct", room: unlisted });
+
+            expect(roomsOf().factsOf(unlisted)).toBeNull();
+            expect(lookOf(w)).toBe("conversational");
+            expect(isFeedCommunity(w)).toBe(false);
+        });
+
+        test("keeps the feed and its layout as the facts and then the sidebar row arrive", async () => {
+            const w = await mountBlock(1200);
+            await openUnlisted({ kind: "channel", room: unlisted });
+
+            const feed = w.get(".chat-feed-frame").element;
+            const classes = [...feed.classList].join(" ");
+            expect(lookOf(w)).toBe("community");
+            expect(isFeedCommunity(w)).toBe(true);
+
+            roomsOf().state.facts[unlisted] = roomFacts({ channel_id: unlisted, name: "Greeters", room_kind: "channel" });
+            await settle();
+
+            expect(w.get(".chat-feed-frame").element).toBe(feed);
+            expect([...feed.classList].join(" ")).toBe(classes);
+            expect(lookOf(w)).toBe("community");
+
+            (mockShell!.channels as { rows: SidebarRow[] }).rows = [sidebarRow({ channel_id: unlisted, name: "Greeters", title: "Greeters" })];
+            await settle();
+
+            expect(w.get(".chat-feed-frame").element).toBe(feed);
+            expect([...feed.classList].join(" ")).toBe(classes);
+            expect(lookOf(w)).toBe("community");
+        });
+
+        test("draws a room with no remembered look in a channel's look, the neutral one", async () => {
+            const w = await mountBlock(1200);
+            await openUnlisted({ kind: "direct", room: dmAnna.channel_id });
+
+            expect(lookOf(w)).toBe("community");
+            expect(isFeedCommunity(w)).toBe(true);
+        });
+
+        test("titles the room from its facts once they land, in place, while the sidebar has no row for it", async () => {
+            const w = await mountBlock(1200);
+            await openUnlisted({ kind: "channel", room: unlisted });
+
+            roomsOf().state.facts[unlisted] = roomFacts({ channel_id: unlisted, name: "Greeters", room_kind: "channel" });
+            await settle();
+
+            expect(w.get("[data-testid='header-title']").text()).toBe("Greeters");
+        });
+
+        test("titles an unlisted direct message by its other person, from its facts", async () => {
+            const w = await mountBlock(1200);
+            await openUnlisted({ kind: "direct", room: unlisted });
+
+            roomsOf().state.facts[unlisted] = roomFacts({
+                channel_id: unlisted,
+                channel_type: "dm",
+                room_kind: "person",
+                member_count: 2,
+                people: [{ person_alias_guid: "a0000002-0000-4000-8000-000000000000", nick_name: "Anna", last_name: "Kim", avatar_url: null, details: null }]
+            });
+            await settle();
+
+            expect(w.get("[data-testid='header-title']").text()).toBe("Anna Kim");
+            expect(lookOf(w)).toBe("conversational");
+        });
+    });
 });
 
 describe("the panel column", () => {

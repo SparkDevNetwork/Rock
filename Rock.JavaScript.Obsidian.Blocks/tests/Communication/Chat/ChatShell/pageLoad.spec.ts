@@ -503,6 +503,11 @@ describe("the page reveal", () => {
         expect(createPageReveal({ kind: "channel" }).state.kind).toBe("channel");
     });
 
+    test("holds the room the look was remembered for, so only that room is drawn in it; none without one", () => {
+        expect(createPageReveal({ kind: "direct", room: "c0000005-0000-4000-8000-000000000000" }).state.room).toBe("c0000005-0000-4000-8000-000000000000");
+        expect(createPageReveal({ kind: "channel" }).state.room).toBeNull();
+    });
+
     test("stopped mid-load leaves no timer and takes no late answer", async () => {
         const reveal = createPageReveal({ kind: "channel" });
         let decoded: () => void = () => undefined;
