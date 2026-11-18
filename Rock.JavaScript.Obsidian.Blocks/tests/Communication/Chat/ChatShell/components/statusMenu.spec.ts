@@ -531,6 +531,15 @@ describe("its triggers", () => {
             delete scoped.__scopeId;
         }
     });
+
+    // The shared icon button is a square with the control's corners; the face's button is a disc,
+    // so its hover, pressed and open fills and its focus ring follow the round face, never a
+    // square box around it.
+    test("draws its face's button as a disc, so its fills and focus ring follow the face", () => {
+        const style = styleOf("../components/statusMenu.partial.obs");
+
+        expect(ruleOf(style, ".chat-status-menu .chat-status-face")).toMatch(/border-radius:\s*var\(--chat-r-full\)/);
+    });
 });
 
 // On a phone Chat settings is a sheet, so its Change turns that sheet into a Status page rather
