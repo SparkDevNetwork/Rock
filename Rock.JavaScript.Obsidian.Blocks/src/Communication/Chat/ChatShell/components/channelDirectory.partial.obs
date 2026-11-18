@@ -60,23 +60,22 @@
                             <Icon class="chat-fd-note-ic" name="info" size="sm" />
                             <span>Showing channels for <b>{{ ownCampusName }}</b> and the whole church.</span>
                         </div>
-                        <div v-else-if="campuses.length > 0"
-                             ref="chipsElement"
-                             class="chat-fd-chips"
-                             :class="{ 'is-cut-start': isChipsCutStart, 'is-cut-end': isChipsCutEnd }"
-                             role="group"
-                             aria-label="Campus"
-                             data-testid="directory-chips"
-                             @scroll="measureChips">
-                            <Pill v-for="chip in chips"
-                                  :key="chip.key"
-                                  data-testid="directory-chip"
-                                  :data-campus="chip.key"
-                                  :selected="isChipPressed(chip.campus)"
-                                  @click="emit('campus', chip.campus)">
-                                {{ chip.label }}
-                            </Pill>
-                        </div>
+                        <!-- One button naming the campus chosen, opening the block's menu of them all; a sheet on a phone. -->
+                        <Menu v-else-if="campuses.length > 0"
+                              label="Campus"
+                              placement="bottom-start"
+                              :items="campusItems"
+                              @select="onCampusSelect">
+                            <template #trigger="{ attrs }">
+                                <Pill v-bind="attrs"
+                                      class="chat-fd-campus"
+                                      :aria-label="`Campus: ${campusChosen.label}`"
+                                      data-testid="directory-campus">
+                                    <span class="chat-fd-campus-words">{{ campusChosen.label }}</span>
+                                    <Icon name="down" size="xs" />
+                                </Pill>
+                            </template>
+                        </Menu>
                     </div>
                 </div>
 
@@ -472,35 +471,23 @@
     min-width: 0;
 }
 
-/* The chips scroll sideways rather than wrap; the padding keeps a focus ring inside the clip. */
-.chat-fd-chips {
-    display: flex;
-    gap: 6px;
+/*
+    The campus button: the filter chip's pill with a chevron, as a select is drawn beside a search.
+    It holds to the row's width, so a long campus name shortens rather than running past the edge.
+*/
+.chat-fd-campus {
+    max-width: 100%;
+}
+
+.chat-fd-campus-words {
     min-width: 0;
-    padding: 3px;
-    margin: -3px;
-    overflow-x: auto;
-    scrollbar-width: none;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
-.chat-fd-chips::-webkit-scrollbar {
-    display: none;
-}
-
-/* The end where the row cuts chips off fades, so a phone shows there is more to scroll to. */
-.chat-fd-chips.is-cut-end {
-    -webkit-mask-image: linear-gradient(to right, var(--chat-mask-solid) calc(100% - 32px), transparent);
-    mask-image: linear-gradient(to right, var(--chat-mask-solid) calc(100% - 32px), transparent);
-}
-
-.chat-fd-chips.is-cut-start {
-    -webkit-mask-image: linear-gradient(to left, var(--chat-mask-solid) calc(100% - 32px), transparent);
-    mask-image: linear-gradient(to left, var(--chat-mask-solid) calc(100% - 32px), transparent);
-}
-
-.chat-fd-chips.is-cut-start.is-cut-end {
-    -webkit-mask-image: linear-gradient(to right, transparent, var(--chat-mask-solid) 32px, var(--chat-mask-solid) calc(100% - 32px), transparent);
-    mask-image: linear-gradient(to right, transparent, var(--chat-mask-solid) 32px, var(--chat-mask-solid) calc(100% - 32px), transparent);
+/* Open, it keeps the edge the pointer gives it, so the list reads as its own. */
+.chat-fd-campus[aria-expanded="true"] {
+    border-color: var(--chat-icon);
 }
 
 .chat-fd-note {
@@ -771,6 +758,7 @@
     import EmptyState from "../ui/emptyState.partial.obs";
     import Icon from "../ui/icon.partial.obs";
     import MatchText from "../ui/matchText.partial.obs";
+    import Menu, { MenuItem } from "../ui/menu.partial.obs";
     import Pill from "../ui/pill.partial.obs";
     import IconButton from "../ui/iconButton.partial.obs";
     import LoadMoreRow from "../ui/loadMoreRow.partial.obs";
@@ -783,8 +771,8 @@
 
     // #region Types
 
-    /** One campus chip: what it asks for and what it says. */
-    type Chip = {
+    /** One campus choice: its menu key, what it says, and what it asks for. */
+    type CampusChoice = {
         key: string;
         label: string;
         campus: DirectoryCampus;
@@ -840,7 +828,7 @@
             default: null
         },
 
-        /** The church's campuses, for the chips and for naming each room's campus. */
+        /** The church's campuses, for the campus menu and for naming each room's campus. */
         campuses: {
             type: Array as PropType<ChatCampusBag[]>,
             default: () => []
@@ -877,7 +865,6 @@
     const viewElement = ref<HTMLElement>();
     const searchInput = ref<HTMLInputElement>();
     const scrollElement = ref<HTMLElement>();
-    const chipsElement = ref<HTMLElement>();
     const previewBack = ref<InstanceType<typeof IconButton>>();
 
     /** The row whose preview lies over the list, which takes focus back as the preview closes. */
@@ -891,10 +878,6 @@
 
     /** Whether the view is wide enough for the preview beside the list, as last laid out. */
     const isSplit = ref(false);
-
-    /** Whether the campus chips run past the row's start or end, which fades that edge. */
-    const isChipsCutStart = ref(false);
-    const isChipsCutEnd = ref(false);
 
     /** Whether rows have passed under the tools, which draws the hairline. */
     const isScrolled = ref(false);
@@ -919,11 +902,21 @@
 
     const ownCampusName = computed((): string => campusNameOf(props.personCampusGuid) ?? "your campus");
 
-    const chips = computed((): Chip[] => [
+    const campusChoices = computed((): CampusChoice[] => [
         { key: "all", label: "All campuses", campus: { kind: "all" } },
         ...props.campuses.map(campus => ({ key: campus.guid, label: campus.name ?? "", campus: { kind: "campus", campusId: campus.guid } as DirectoryCampus })),
         { key: "whole-church", label: "Whole church", campus: { kind: "wholeChurch" } }
     ]);
+
+    /** The choice the rooms hold, which the button names; the first stands in for a campus the church no longer lists. */
+    const campusChosen = computed((): CampusChoice => campusChoices.value.find(choice => isChosen(choice.campus)) ?? campusChoices.value[0]);
+
+    /** The choices as the menu draws them, the one chosen checked. */
+    const campusItems = computed((): MenuItem[] => campusChoices.value.map(choice => ({
+        key: choice.key,
+        label: choice.label,
+        isChecked: choice === campusChosen.value
+    })));
 
     const countText = computed((): string => {
         const total = props.directory.total;
@@ -1079,11 +1072,12 @@
         isSplit.value = !isPhone.value && (viewElement.value?.clientWidth ?? 0) >= splitWidth;
     }
 
-    /** Reads where the chip row cuts its chips off, as it scrolls or changes width. */
-    function measureChips(): void {
-        const row = chipsElement.value;
-        isChipsCutStart.value = !!row && row.scrollLeft > 1;
-        isChipsCutEnd.value = !!row && row.scrollLeft + row.clientWidth < row.scrollWidth - 1;
+    /** Asks for the campus picked from the menu, which closes with focus back on its button. */
+    function onCampusSelect(key: string): void {
+        const choice = campusChoices.value.find(one => one.key === key);
+        if (choice) {
+            emit("campus", choice.campus);
+        }
     }
 
     function onScroll(): void {
@@ -1146,7 +1140,8 @@
         return channelId ? viewElement.value?.querySelector<HTMLElement>(`.chat-fd-row[data-channel-id="${channelId}"] .chat-fd-open`) ?? null : null;
     }
 
-    function isChipPressed(campus: DirectoryCampus): boolean {
+    /** Whether a choice is the campus the rooms hold. */
+    function isChosen(campus: DirectoryCampus): boolean {
         const chosen = props.directory.campus;
         return chosen.kind === campus.kind && (chosen.kind !== "campus" || (campus.kind === "campus" && chosen.campusId === campus.campusId));
     }
@@ -1192,21 +1187,9 @@
         }
     }, { flush: "pre" });
 
-    // The chip row's cut is read as the row is drawn and each time its width changes, since a
-    // narrower window cuts chips that fit before; a browser's observer reads it once on start.
-    const chipsObserver = typeof ResizeObserver !== "undefined" ? new ResizeObserver(measureChips) : null;
-
-    // The view's width is read the same way, once on start and as the window or the panels change it.
+    // The view's width is read once on start, by a browser's observer, and as the window or the
+    // panels change it.
     const viewObserver = typeof ResizeObserver !== "undefined" ? new ResizeObserver(measureView) : null;
-
-    watch(chipsElement, (element, before) => {
-        if (before) {
-            chipsObserver?.unobserve(before);
-        }
-        if (element) {
-            chipsObserver?.observe(element);
-        }
-    });
 
     // #endregion Watchers
 
@@ -1219,7 +1202,6 @@
     });
 
     onBeforeUnmount(() => {
-        chipsObserver?.disconnect();
         viewObserver?.disconnect();
     });
 

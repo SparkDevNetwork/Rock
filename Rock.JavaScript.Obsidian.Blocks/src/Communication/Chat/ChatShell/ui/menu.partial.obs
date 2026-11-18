@@ -282,9 +282,13 @@
             default: ""
         },
 
-        /** Where the menu opens from its button: below it at its end by default, or above it at its start, as at the foot of the chat. */
+        /**
+         * Where the menu opens from its button: below it at its end by default; above it at its
+         * start, as at the foot of the chat; or below it at its start, as for a button that leads
+         * a row, such as Browse channels' campus.
+         */
         placement: {
-            type: String as PropType<"bottom-end" | "top-start">,
+            type: String as PropType<"bottom-end" | "top-start" | "bottom-start">,
             default: "bottom-end"
         },
 

@@ -331,73 +331,138 @@ describe("the search", () => {
     });
 });
 
-describe("the campus chips", () => {
-    // The rest of the block says "Downtown Campus"; a short code here was a second name for it.
-    test("offer every campus by its name, between All campuses and Whole church", () => {
+// A row of campus chips ran off the edge once a church had more than three campuses; the filter is
+// one button naming the campus chosen, which opens the block's own menu of every campus.
+describe("the campus menu", () => {
+    /** The menu, looked for in the whole document, since it may be drawn outside the view. */
+    function campusMenu(): HTMLElement | null {
+        return document.querySelector("[role='menu']");
+    }
+
+    function choices(): HTMLElement[] {
+        return Array.from(document.querySelectorAll<HTMLElement>("[role='menu'] [role='menuitemradio']"));
+    }
+
+    async function settle(): Promise<void> {
+        await nextTick();
+        await nextTick();
+    }
+
+    async function press(key: string): Promise<void> {
+        (document.activeElement as HTMLElement).dispatchEvent(new KeyboardEvent("keydown", { key, bubbles: true }));
+        await settle();
+    }
+
+    async function openMenu(w: VueWrapper): Promise<HTMLElement> {
+        const button = w.get("[data-testid='directory-campus']").element as HTMLElement;
+        button.focus();
+        button.click();
+        await settle();
+        return button;
+    }
+
+    test("is one button naming the campus chosen, All campuses by default, that opens a menu", () => {
         const w = mountDirectory();
+        const button = w.get("[data-testid='directory-campus']");
 
-        const chips = w.findAll("[data-testid='directory-chip']");
-        expect(chips.map(chip => chip.text())).toEqual(["All campuses", "Downtown Campus", "North Campus", "Whole church"]);
-        expect(w.get("[data-testid='directory-chips']").attributes("role")).toBe("group");
-        expect(w.get("[data-testid='directory-chips']").attributes("aria-label")).toBe("Campus");
+        expect(button.element.tagName).toBe("BUTTON");
+        expect(button.text()).toBe("All campuses");
+        expect(button.attributes("aria-label")).toBe("Campus: All campuses");
+        expect(button.attributes("aria-haspopup")).toBe("menu");
+        expect(button.attributes("aria-expanded")).toBe("false");
+        expect(button.attributes("aria-pressed")).toBeUndefined();
+        expect(w.find("[data-testid='directory-chip']").exists()).toBe(false);
+        expect(campusMenu()).toBeNull();
     });
 
-    test("press the chip of the campus chosen and no other", () => {
-        const w = mountDirectory({ directory: directory({ campus: { kind: "campus", campusId: north.guid } }) });
-
-        const pressed = w.findAll("[data-testid='directory-chip']").map(chip => chip.attributes("aria-pressed"));
-        expect(pressed).toEqual(["false", "false", "true", "false"]);
-    });
-
-    test("press All campuses with nothing chosen, and Whole church for the rooms with no campus", () => {
-        const all = mountDirectory();
-        expect(all.findAll("[data-testid='directory-chip']").map(chip => chip.attributes("aria-pressed"))).toEqual(["true", "false", "false", "false"]);
-        all.unmount();
+    // The rest of the block says "Downtown Campus"; a short code here was a second name for it.
+    test("names on its button the campus chosen, or Whole church for the rooms with no campus", () => {
+        const at = mountDirectory({ directory: directory({ campus: { kind: "campus", campusId: north.guid } }) });
+        expect(at.get("[data-testid='directory-campus']").text()).toBe("North Campus");
+        at.unmount();
 
         const whole = mountDirectory({ directory: directory({ campus: { kind: "wholeChurch" } }) });
-        expect(whole.findAll("[data-testid='directory-chip']").map(chip => chip.attributes("aria-pressed"))).toEqual(["false", "false", "false", "true"]);
+        expect(whole.get("[data-testid='directory-campus']").text()).toBe("Whole church");
     });
 
-    test("ask for the campus each one names", async () => {
+    test("offers every campus by its name, between All campuses and Whole church, the one chosen checked and focused", async () => {
+        const w = mountDirectory({ directory: directory({ campus: { kind: "campus", campusId: north.guid } }) });
+        const button = await openMenu(w);
+
+        expect(campusMenu()?.getAttribute("aria-label")).toBe("Campus");
+        expect(choices().map(choice => choice.textContent?.trim())).toEqual(["All campuses", "Downtown Campus", "North Campus", "Whole church"]);
+        expect(choices().map(choice => choice.getAttribute("aria-checked"))).toEqual(["false", "false", "true", "false"]);
+        expect(choices().map(choice => choice.getAttribute("data-key"))).toEqual(["all", downtown.guid, north.guid, "whole-church"]);
+        expect(document.activeElement).toBe(choices()[2]);
+        expect(button.getAttribute("aria-expanded")).toBe("true");
+    });
+
+    test("asks for the campus picked, closing with focus back on its button", async () => {
         const w = mountDirectory();
-        const chips = w.findAll("[data-testid='directory-chip']");
+        const button = await openMenu(w);
 
-        await chips[1].trigger("click");
-        await chips[3].trigger("click");
-        await chips[0].trigger("click");
+        choices()[1].click();
+        await settle();
 
-        expect(w.emitted("campus")).toEqual([[{ kind: "campus", campusId: downtown.guid }], [{ kind: "wholeChurch" }], [{ kind: "all" }]]);
+        expect(w.emitted("campus")).toEqual([[{ kind: "campus", campusId: downtown.guid }]]);
+        expect(campusMenu()).toBeNull();
+        expect(document.activeElement).toBe(button);
     });
 
-    // On a phone the row ran off the edge with nothing to say more was there: it scrolls in one
-    // line, and the edge where chips are cut fades, at either end, wherever the row is cut.
-    test("fade the edge where the row cuts chips off, and not once it is scrolled to that end", async () => {
+    test("opens from its button on Down, moves with the arrows and picks with Enter", async () => {
+        const w = mountDirectory();
+        const button = w.get("[data-testid='directory-campus']").element as HTMLElement;
+        button.focus();
+
+        await press("ArrowDown");
+        expect(document.activeElement).toBe(choices()[0]);
+        await press("ArrowDown");
+        await press("ArrowDown");
+        await press("ArrowDown");
+        expect(document.activeElement).toBe(choices()[3]);
+        await press("Enter");
+
+        expect(w.emitted("campus")).toEqual([[{ kind: "wholeChurch" }]]);
+        expect(campusMenu()).toBeNull();
+        expect(document.activeElement).toBe(button);
+    });
+
+    // Browse closes on Escape too; the menu over it takes the key first, so only the menu closes.
+    test("closes on Escape with focus back on its button, leaving Browse channels open", async () => {
+        const w = mountDirectory();
+        const button = await openMenu(w);
+
+        await press("Escape");
+
+        expect(campusMenu()).toBeNull();
+        expect(document.activeElement).toBe(button);
+        expect(button.getAttribute("aria-expanded")).toBe("false");
+        expect(w.emitted("campus")).toBeUndefined();
+        expect(w.emitted("close")).toBeUndefined();
+    });
+
+    test("opens on a phone as a sheet, as every menu there does", async () => {
         const w = mountDirectory({ isPhone: true });
-        const row = w.get("[data-testid='directory-chips']");
-        const element = row.element as HTMLElement;
-        let scrollLeft = 0;
-        Object.defineProperty(element, "scrollWidth", { configurable: true, get: () => 500 });
-        Object.defineProperty(element, "clientWidth", { configurable: true, get: () => 300 });
-        Object.defineProperty(element, "scrollLeft", { configurable: true, get: () => scrollLeft });
+        await openMenu(w);
 
-        await row.trigger("scroll");
-        expect(row.classes()).toContain("is-cut-end");
-        expect(row.classes()).not.toContain("is-cut-start");
+        expect(campusMenu()?.closest("[data-testid='sheet']")).not.toBeNull();
+        expect(choices()).toHaveLength(4);
+    });
 
-        scrollLeft = 200;
-        await row.trigger("scroll");
-        expect(row.classes()).toContain("is-cut-start");
-        expect(row.classes()).not.toContain("is-cut-end");
-
+    // A long campus name at a phone's width shortens with an ellipsis rather than pushing the
+    // button past the row's edge.
+    test("never runs past the row: the button holds to its width and its words shorten", () => {
         const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/channelDirectory.partial.obs"), "utf8");
         const style = source.slice(source.indexOf("<style"), source.indexOf("</style>"));
-        expect(style).toMatch(/\.chat-fd-chips\.is-cut-end\s*\{[^}]*mask-image:[^}]*var\(--chat-mask-solid\)/);
+
+        expect(style).toMatch(/\.chat-fd-campus\s*\{[^}]*max-width:\s*100%/);
+        expect(style).toMatch(/\.chat-fd-campus-words\s*\{[^}]*overflow:\s*hidden[^}]*text-overflow:\s*ellipsis/);
     });
 
     test("give way to the church's note when it shows each person only their campus's rooms", () => {
         const w = mountDirectory({ directory: directory({ isCampusLimited: true }) });
 
-        expect(w.find("[data-testid='directory-chips']").exists()).toBe(false);
+        expect(w.find("[data-testid='directory-campus']").exists()).toBe(false);
         const note = w.get("[data-testid='directory-campus-note']");
         expect(note.text()).toBe("Showing channels for Downtown Campus and the whole church.");
         expect(note.get("b").text()).toBe("Downtown Campus");
