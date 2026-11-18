@@ -945,10 +945,13 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
         }
 
         const closed = panelKind.value;
+        const isFromMembers = closed === "person" && personOrigin.value === "members";
         endPanel();
 
-        // a thread or a profile is opened from a message or a list, never from a header button of its own
-        const button: FocusStop | null = closed === "thread" || closed === "person" ? null : `${closed}-button`;
+        // A thread or a profile is opened from a message or a list, never from a header button of
+        // its own. A profile opened from Members took the list's place, so the row that opened it
+        // went with the list and the header's Members button is the way back to it.
+        const button: FocusStop | null = isFromMembers ? "members-button" : closed === "thread" || closed === "person" ? null : `${closed}-button`;
         void askFocus([returnTo?.isConnected ? returnTo : null, button, "more", "header"]);
     }
 
