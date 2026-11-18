@@ -50,9 +50,10 @@ import { FollowError, OpenThreadState, ThreadListState, ThreadListTab, ThreadPla
 
 /**
  * What the panel column can hold: the open conversation's threads, Activity (the mentions inbox
- * and every thread followed, across conversations), the members panel, or one thread in its drawer.
+ * and every thread followed, across conversations), the members panel, one thread in its drawer,
+ * or a person's full profile.
  */
-export type PanelKind = "threads" | "activity" | "members" | "thread";
+export type PanelKind = "threads" | "activity" | "members" | "thread" | "person";
 
 /** The panels that list something, which a thread can be opened from or which take a thread's place. */
 export type ListPanelKind = "threads" | "activity" | "members";
@@ -61,7 +62,7 @@ export type ListPanelKind = "threads" | "activity" | "members";
 export type ActivityTab = "mentions" | "threads";
 
 /** The list the column draws: Activity's shown tab, or the open panel itself. */
-export type ShownList = "threads" | "mentions" | "members" | "thread";
+export type ShownList = "threads" | "mentions" | "members" | "thread" | "person";
 
 /**
  * Where the sidebar is while a window too narrow for three columns holds a panel: folded away, or
@@ -77,6 +78,9 @@ export type FramePane = "list" | "conversation" | "panel";
 
 /** The list a thread was opened from, which its back chevron returns to, or null when it was opened from the conversation. */
 export type ThreadOrigin = "threads" | "activity" | null;
+
+/** The list a person's profile was opened from, which its back chevron returns to, or null for none. */
+export type PersonOrigin = "members" | null;
 
 /**
  * A place focus can go, tried in its order: a stop by its mark, a stop narrowed where it repeats
@@ -197,6 +201,9 @@ export type Frame = MembersPanelViews & ThreadsPanelWiring & Landings & {
     /** The list the open thread came from, which its back chevron and Escape return to, or null. */
     threadOrigin: Ref<ThreadOrigin>;
 
+    /** The list the profile in the column came from, which its back chevron returns to, or null. */
+    personOrigin: Ref<PersonOrigin>;
+
     /** What the frame draws of rooms: the open conversation's, the open thread's and the one New message found. */
     rooms: ReturnType<typeof useRoomsView>;
 
@@ -248,7 +255,20 @@ export type Frame = MembersPanelViews & ThreadsPanelWiring & Landings & {
 
     closeThreadDrawer: () => void;
 
-    closePanel: () => void;
+    /**
+     * Closes the panel column, with focus on what is given when it is still drawn, else on the
+     * header button that opened the panel.
+     */
+    closePanel: (returnTo?: HTMLElement | null) => void;
+
+    /**
+     * The profile open as a card moves into the column in full. One opened from the members panel
+     * keeps that list to go back to; any other panel gives the profile its place.
+     */
+    openPersonPanel: () => void;
+
+    /** Back from a profile to the members list it was opened from, with focus on its person's row. */
+    onPersonBack: () => Promise<void>;
 
     /**
      * Opens a full view in the conversation's place, or brings the one open back to the front.
@@ -354,6 +374,7 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
     const drawnThread = shallowRef<OpenThreadState | null>(null);
 
     const threadOrigin = ref<ThreadOrigin>(null);
+    const personOrigin = ref<PersonOrigin>(null);
 
     /** The conversation the open thread belongs to, which the drawer stays open over. */
     let threadChannelId: string | null = null;
@@ -827,7 +848,12 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
      * so it folds again with that panel, whichever way the panel goes.
      */
     function releasePanel(): void {
-        const kind = panelKind.value === "thread" ? threadOrigin.value : panelKind.value;
+        const kind = panelKind.value === "thread" ? threadOrigin.value : panelKind.value === "person" ? personOrigin.value : panelKind.value;
+        // The profile in the column is the open profile, so it closes with the column.
+        if (panelKind.value === "person") {
+            personOrigin.value = null;
+            shell.value.rooms.closeCard();
+        }
         const list = kind === "activity" ? activityTab.value : kind;
         isSidebarOver.value = false;
         leaveThread();
@@ -854,7 +880,7 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
      * Closes the panel column. Focus returns to the header button that opened it, or on a phone
      * to the overflow button it was chosen from, else the conversation's title.
      */
-    function closePanel(): void {
+    function closePanel(returnTo: HTMLElement | null = null): void {
         if (!panelKind.value) {
             return;
         }
@@ -862,9 +888,39 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
         const closed = panelKind.value;
         endPanel();
 
-        // a thread is opened from a message or a list, never from a header button of its own
-        const button: FocusStop | null = closed === "thread" ? null : `${closed}-button`;
-        void askFocus([button, "more", "header"]);
+        // a thread or a profile is opened from a message or a list, never from a header button of its own
+        const button: FocusStop | null = closed === "thread" || closed === "person" ? null : `${closed}-button`;
+        void askFocus([returnTo?.isConnected ? returnTo : null, button, "more", "header"]);
+    }
+
+    function openPersonPanel(): void {
+        const origin: PersonOrigin = panelKind.value === "members" ? "members" : null;
+        // A thread or another list gives the profile its place; the members list stays to go back to.
+        if (origin === null && panelKind.value !== "person") {
+            releasePanel();
+        }
+
+        window.clearTimeout(panelClearTimer);
+        isPaneMotionOn.value = true;
+        personOrigin.value = origin;
+        panelKind.value = "person";
+        shownPanel.value = "person";
+        void askFocus(["panel-start"], { within: "panel", preventScroll: true });
+    }
+
+    async function onPersonBack(): Promise<void> {
+        const personAliasGuid = shell.value.rooms.state.card?.personAliasGuid ?? "";
+        const origin = personOrigin.value;
+        personOrigin.value = null;
+        shell.value.rooms.closeCard();
+        if (origin !== "members") {
+            closePanel();
+            return;
+        }
+
+        panelKind.value = origin;
+        shownPanel.value = origin;
+        await askFocus([{ stop: "member", match: `[data-person='${personAliasGuid}']` }, "panel-start"], { within: "panel" });
     }
 
     /** Closes the panel column, which draws what it held while it narrows, without moving focus. */
@@ -1147,6 +1203,13 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
     // as it is.
     watch(activeChannelId, channelId => {
         const kind = panelKind.value;
+        // A profile is the person's wherever the reader is, but the members list it came from was
+        // the room left, so it no longer stands behind it.
+        if (kind === "person" && personOrigin.value === "members") {
+            personOrigin.value = null;
+            shell.value.members.close();
+        }
+
         if (kind !== "threads" && kind !== "members") {
             return;
         }
@@ -1209,6 +1272,7 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
         mainViewElement,
         drawnThread,
         threadOrigin,
+        personOrigin,
         rooms,
         onResize,
         onFocusIn,
@@ -1230,6 +1294,8 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
         openThreadDrawer,
         closeThreadDrawer,
         closePanel,
+        openPersonPanel,
+        onPersonBack,
         openMainView,
         closeMainView,
         openFromMainView,

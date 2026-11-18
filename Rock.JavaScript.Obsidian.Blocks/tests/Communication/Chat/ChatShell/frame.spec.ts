@@ -4931,7 +4931,9 @@ describe("the profile card", () => {
         mockConfig.session = { ...(mockConfig.session as Record<string, unknown>), isProfileLavaConfigured: true };
         const w = await mountBlock(1200);
         await openRow(w, team.channel_id);
-        const anchor = w.get("[data-testid='header-title']").element as HTMLElement;
+        // an author's name, as a card opens from
+        const anchor = document.createElement("button");
+        shellRoot(w).appendChild(anchor);
         w.findComponent(MessageFeedComponent).vm.$emit("messageAction", { kind: "person", personAliasGuid: annaPerson.person_alias_guid, anchor });
         roomsOf().state.card = { personAliasGuid: annaPerson.person_alias_guid, channelId: team.channel_id, person: annaProfile({ details: { badge_keys: [] } }), rock: { kind: "loading" } } as never;
         await settle();
@@ -4949,7 +4951,7 @@ describe("the profile card", () => {
         await settle();
         expect(document.querySelector<HTMLAnchorElement>("[data-testid='profile-panel'] [data-testid='profile-email']")?.getAttribute("href")).toBe("mailto:anna@example.org");
 
-        await w.get("[data-testid='profile-panel'] [data-testid='panel-close']").trigger("click");
+        await w.get("[data-testid='frame-panel'] [data-testid='panel-close']").trigger("click");
         await fadeOut();
         expect(roomsOf().closeCard).toHaveBeenCalled();
         expect(w.get("[data-testid='chat-frame']").attributes("data-panel-open")).toBe("false");
@@ -4976,7 +4978,7 @@ describe("the profile card", () => {
         document.querySelector<HTMLElement>("[data-testid='profile-card'] [data-testid='profile-settings']")!.click();
         await settle();
         expect(roomsOf().closeCard).toHaveBeenCalledTimes(1);
-        expect(settingsDialog()).not.toBeNull();
+        expect(document.querySelector("[data-testid='settings-close']")).not.toBeNull();
         document.querySelector<HTMLElement>("[data-testid='settings-close']")!.click();
         await fadeOut();
 
@@ -4991,7 +4993,7 @@ describe("the profile card", () => {
 
         expect(roomsOf().closeCard).toHaveBeenCalledTimes(2);
         expect(w.get("[data-testid='chat-frame']").attributes("data-panel-open")).toBe("false");
-        expect(settingsDialog()).not.toBeNull();
+        expect(document.querySelector("[data-testid='settings-close']")).not.toBeNull();
     });
 
     test("closes on Escape, letting go of the person", async () => {
@@ -5339,7 +5341,7 @@ describe("the members panel", () => {
         expect(document.querySelector("[data-testid='members-panel']")).toBeNull();
         expect(membersOf().close).not.toHaveBeenCalled();
 
-        panel.querySelector<HTMLElement>("[data-testid='panel-back']")!.click();
+        document.querySelector<HTMLElement>("[data-testid='frame-panel'] [data-testid='panel-back']")!.click();
         await fadeOut();
         expect(document.querySelector("[data-testid='members-panel']")).not.toBeNull();
         expect(document.activeElement?.closest("[data-person]")?.getAttribute("data-person")).toBe(annaMember.person_alias_guid);

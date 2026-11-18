@@ -314,7 +314,7 @@
                         <Segmented :options="activityTabs" :modelValue="activityTab" optionTestId="activity-tab" hasAutofocus aria-label="Activity" @update:modelValue="onActivityTab($event as ActivityTab)" />
                     </div>
 
-                    <!-- One panel gives way to the next in one crossfade, the old laid over the new and out of reach. -->
+                    <!-- One panel gives way to the next in one crossfade, the old laid over the new and out of reach; a profile is the card's, opened in full. -->
                     <Transition name="chat-panel-swap" @beforeLeave="onPanelLeave">
                         <ThreadsPanel v-if="shownList === 'threads'"
                                       :key="shownPanel ?? undefined"
@@ -440,6 +440,24 @@
                                           @overLimit="onOverLimit" />
                             </template>
                         </ThreadDrawer>
+
+                        <ProfilePanel v-else-if="shownList === 'person' && shell.rooms.state.card?.person"
+                                      :key="shell.rooms.state.card.person.person_alias_guid"
+                                      :person="shell.rooms.state.card.person"
+                                      :campuses="campuses"
+                                      :badges="shell.channels.badges"
+                                      :rock="shell.rooms.state.card.rock"
+                                      :isLavaConfigured="isProfileLavaConfigured"
+                                      :mayViewProfile="config.mayViewProfile === true"
+                                      :isBlockBusy="!!shell.blocks.state.busy[shell.rooms.state.card.person.person_alias_guid.toLowerCase()]"
+                                      :backLabel="personOrigin === 'members' ? 'Members' : null"
+                                      @close="closePersonPanel"
+                                      @back="onPersonBack"
+                                      @message="onCardMessage"
+                                      @settings="onPanelSettings"
+                                      @block="onPanelBlock"
+                                      @unblock="onPanelUnblock"
+                                      @openRoom="onPanelOpenRoom" />
                     </Transition>
                 </div>
             </aside>
@@ -471,22 +489,20 @@
             <RemoveMember v-bind="removeView" @close="shell.members.cancelRemove" @confirm="shell.members.remove" @query="shell.members.setSuccessorQuery" />
             <AddPeople v-bind="addView" @close="shell.members.closeAdd" @query="shell.members.setAddQuery" @retry="shell.members.retryAdd" @add="shell.members.add" />
 
-            <!-- The profile card, one at a time, beside the author or chip that asked, once its person is read. -->
-            <ProfileCard v-if="shell.rooms.state.card?.person"
+            <!--
+                The profile card, one at a time, beside the author or chip that asked, once its person
+                is read; while the profile is open in the panel column the card has given way to it.
+            -->
+            <ProfileCard v-if="shell.rooms.state.card?.person && panelKind !== 'person'"
                          :key="cardOpenCount"
                          :person="shell.rooms.state.card.person"
                          :campuses="campuses"
-                         :badges="shell.channels.badges"
                          :anchor="cardAnchor"
-                         :rock="shell.rooms.state.card.rock"
-                         :isLavaConfigured="isProfileLavaConfigured"
-                         :showsOwnDetails="shell.prefs.state.me.show_profile_details"
-                         :ownDetailsNote="shell.prefs.state.meNotes.profile_details ?? null"
+                         :isBlockBusy="!!shell.blocks.state.busy[shell.rooms.state.card.person.person_alias_guid.toLowerCase()]"
                          @close="shell.rooms.closeCard"
                          @message="onCardMessage"
-                         :isBlockBusy="!!shell.blocks.state.busy[shell.rooms.state.card.person.person_alias_guid.toLowerCase()]"
                          @settings="onCardSettings"
-                         @toggleDetails="onCardToggleDetails"
+                         @details="onCardDetails"
                          @block="onCardBlock"
                          @unblock="onCardUnblock" />
 
@@ -838,6 +854,7 @@
     import MessageFeed from "./ChatShell/components/messageFeed.partial.obs";
     import NewMessage from "./ChatShell/components/newMessage.partial.obs";
     import ProfileCard from "./ChatShell/components/profileCard.partial.obs";
+    import ProfilePanel from "./ChatShell/components/profilePanel.partial.obs";
     import ThreadDrawer from "./ChatShell/components/threadDrawer.partial.obs";
     import ThreadsPanel from "./ChatShell/components/threadsPanel.partial.obs";
     import { attachmentViewsKey } from "./ChatShell/composables/useAttachments.partial";
@@ -1028,8 +1045,8 @@
 
     const {
         isPhone, isPaneMotionOn, pane, isSidebarHidden, isMainInert, isPanelHidden, isPanelInert, isSidebarGone, isConversationGone, isPanelGone, goneStyle,
-        panelKind, shownPanel, shownList, activityTab, sidebarFold, isMembersOffered, panelElement, sidebarElement, mainElement, mainViewElement, drawnThread, threadOrigin, focusStop,
-        onResize, onFocusIn, onFocusOut, onSelect, onBack, onListPanel, onActivityTab, onPanelLeave, onSidebarOver, onSidebarAway, onThreadsTab, openThreadFromList, onOpenThread, onThreadBack, onMentionOpen,
+        panelKind, shownPanel, shownList, activityTab, sidebarFold, isMembersOffered, panelElement, sidebarElement, mainElement, mainViewElement, drawnThread, threadOrigin, personOrigin, focusStop,
+        onResize, onFocusIn, onFocusOut, onSelect, onBack, onListPanel, onActivityTab, onPanelLeave, onSidebarOver, onSidebarAway, onThreadsTab, openThreadFromList, onOpenThread, onThreadBack, onPersonBack, onMentionOpen,
         openThreadFromMentions, openFromTap, closeThreadDrawer, closePanel,
         mainView, openMainView, closeMainView, openFromMainView, openAddPeople,
         landingReplyId, landingMessageId, onJump, landInConversation,
@@ -1103,7 +1120,7 @@
      */
     const {
         isDetailsOpen, isSettingsOpen, cardAnchor, cardOpenCount, onCardMessage, onLeave, onRename, closeDetails, onRoomChoice,
-        onCardToggleDetails, onCardBlock, onCardUnblock, onSettingsUnblock, onCardSettings, closeSettings, onMemberMessage, onMemberPerson, onDetailsMembers,
+        onCardDetails, closePersonPanel, onPanelBlock, onPanelUnblock, onPanelSettings, onPanelOpenRoom, onCardBlock, onCardUnblock, onSettingsUnblock, onCardSettings, closeSettings, onMemberMessage, onMemberPerson, onDetailsMembers,
         conversationQuoteKey, threadQuoteKey, conversationQuote, threadQuote, confirmingDelete, deleteBody, isOwnQuote,
         editingIdIn, editErrorIn, isEditSavingIn, onEditLast, onEditLastReply, onCancelQuote, onMessageAction, onCancelDelete, onConfirmDelete,
         blockTitle, blockReturnTarget, onCancelBlock, onConfirmBlock
