@@ -5190,6 +5190,38 @@ describe("the profile card", () => {
         expect(document.querySelector("[data-testid='frame-panel'] [data-testid='panel-host']")).toBeNull();
     });
 
+    // The column follows the open card, so a second face opened while it shows a profile becomes
+    // what focus goes back to, whether the profile closes by its X or by a read that draws no card.
+    test.each(["its X", "a read that draws no card"])("a profile closed by %s gives focus to the face that opened the person it shows", async how => {
+        const w = await mountBlock(1200);
+        await openRow(w, team.channel_id);
+        const first = document.createElement("button");
+        const second = document.createElement("button");
+        shellRoot(w).append(first, second);
+        w.findComponent(MessageFeedComponent).vm.$emit("messageAction", { kind: "person", personAliasGuid: annaPerson.person_alias_guid, anchor: first });
+        profileOf().state.card = { personAliasGuid: annaPerson.person_alias_guid, channelId: team.channel_id, person: annaProfile() } as never;
+        await settle();
+        document.querySelector<HTMLElement>("[data-testid='profile-details-open']")!.click();
+        await settle();
+
+        const ben = "a0000003-0000-4000-8000-000000000000";
+        w.findComponent(MessageFeedComponent).vm.$emit("messageAction", { kind: "person", personAliasGuid: ben, anchor: second });
+        profileOf().state.card = { personAliasGuid: ben, channelId: team.channel_id, person: annaProfile({ person_alias_guid: ben, nick_name: "Ben" }) } as never;
+        await settle();
+        expect(w.get("[data-testid='chat-frame']").attributes("data-panel-open")).toBe("true");
+
+        if (how === "its X") {
+            await w.get("[data-testid='frame-panel'] [data-testid='panel-close']").trigger("click");
+        }
+        else {
+            profileOf().state.card = null;
+        }
+        await fadeOut();
+
+        expect(w.get("[data-testid='chat-frame']").attributes("data-panel-open")).toBe("false");
+        expect(document.activeElement).toBe(second);
+    });
+
     // A phone opens the profile full screen before the person is read, so the pane draws its way
     // back and a skeleton meanwhile; a read that draws no card ends the pane, never leaving it blank.
     test("on a phone a face opens the profile at once, with its way back and a skeleton until the person is read, and a read that draws no card ends it", async () => {
