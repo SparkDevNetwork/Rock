@@ -955,9 +955,12 @@ describe("the one focus helper", () => {
                         h("b", { tabindex: -1, "data-focus-stop": "header" }, "Title"),
                         drawn.threadsButton ? h("button", { "data-focus-stop": "threads-button" }, "Threads") : null,
                         drawn.more ? h("span", { "data-focus-stop": "more" }, [h("button", "More")]) : null,
-                        drawn.message
-                            ? h("div", { "data-message-id": "40", tabindex: -1 }, [drawn.summary ? h("button", { "data-focus-stop": "thread-summary" }, "3 replies") : null])
-                            : null,
+                        // A message lives in the feed, which what the drawer's close gives focus to must be in view of.
+                        h("div", { "data-chat-scroller": "" }, [
+                            drawn.message
+                                ? h("div", { "data-message-id": "40", tabindex: -1 }, [drawn.summary ? h("button", { "data-focus-stop": "thread-summary" }, "3 replies") : null])
+                                : null
+                        ]),
                         drawn.join ? h("button", { "data-focus-stop": "join" }, "Join channel") : null,
                         drawn.composer ? h("div", { contenteditable: "true", tabindex: 0, "data-focus-stop": "composer" }) : null,
                         frame.mainView.value ? h("div", { ref: frame.mainViewElement }, [h("input", { "data-autofocus": "" })]) : null
