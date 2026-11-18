@@ -14,7 +14,8 @@
                 enter-from-class="is-beyond"
                 leave-to-class="is-beyond"
                 leave-active-class="is-leaving"
-                @beforeLeave="onBeforeLeave">
+                @beforeLeave="onBeforeLeave"
+                @leave="onLeave">
         <div v-if="isOpen"
              ref="pageElement"
              class="chat-surface-page"
@@ -66,7 +67,9 @@
 /*
     Set aside or going back, a page is out of the flow, so the page in front sets the surface's
     height, and clipped to the box of the page in front, so its own length adds nothing to the
-    scroll of a body turned from far down. The page in front is never clipped: its rings show whole.
+    scroll of a body turned from far down. In a body that scrolls, the page's view moves its top and
+    caps its height, and it scrolls within its box to where it was seen; its bottom stays at the
+    box's. The page in front is never clipped: its rings show whole.
 */
 .chat-surface-page.is-covered,
 .chat-surface-page.is-leaving {
@@ -84,7 +87,7 @@
 
 <script setup lang="ts">
     import { computed, onBeforeUnmount, PropType, ref, watch } from "vue";
-    import { SurfacePageEntry, useSurfacePages } from "./surfacePages.partial";
+    import { SurfacePageEntry, SurfacePageView, useSurfacePages } from "./surfacePages.partial";
     import { SheetHeight } from "../types.partial";
 
     // One page of a sheet or a panel dialog. The surface draws its own body as its first page,
@@ -136,6 +139,19 @@
     /** Whether another page lies over this one. */
     const isCovered = computed((): boolean => pages?.isCovered(props.isFirst ? null : entry) ?? false);
 
+    /** The view the page is drawn as while out of front; null in front, or where it keeps its own scroll. */
+    const view = computed((): SurfacePageView | null => pages?.viewOf(props.isFirst ? null : entry) ?? null);
+
+    /**
+     * Draws the page as its view, or in the flow as ever with none: its box placed and capped by
+     * the view, then scrolled within, once the box is out of the flow and clips.
+     */
+    function drawView(element: HTMLElement, shown: SurfacePageView | null): void {
+        element.style.top = shown ? `${shown.top}px` : "";
+        element.style.maxHeight = shown ? `${shown.height}px` : "";
+        element.scrollTop = shown?.scrolled ?? 0;
+    }
+
     /**
      * A page going back is out of front for its whole leave, out of reach and unheard, though it
      * still lies over the page it uncovers: no tap, Tab or screen reader lands on it as it goes.
@@ -146,9 +162,28 @@
         element.setAttribute("aria-hidden", "true");
     }
 
-    // A page goes on the stack the moment its owner opens it, while focus is still on the control
-    // that turned it, which focus goes back to as it closes.
-    if (!props.isFirst) {
+    /** Going back, the page is drawn as the view it was seen in, now that it is out of the flow. */
+    function onLeave(element: Element): void {
+        if (element instanceof HTMLElement) {
+            drawView(element, view.value);
+        }
+    }
+
+    // Set aside or back in front, the page is drawn by its view after the patch has moved it out of
+    // the flow or into it. A page going back is no longer patched, so its leave draws it instead.
+    watch(view, shown => {
+        if (pageElement.value) {
+            drawView(pageElement.value, shown);
+        }
+    }, { flush: "post" });
+
+    // The surface's own body gives its drawing, which a turn reads as it sets the body aside. A page
+    // goes on the stack the moment its owner opens it, while focus is still on the control that
+    // turned it, which focus goes back to as it closes.
+    if (props.isFirst) {
+        pages?.holdFirst(() => pageElement.value);
+    }
+    else {
         watch(() => props.isOpen, isOpen => {
             if (isOpen) {
                 pages?.turnTo(entry);
