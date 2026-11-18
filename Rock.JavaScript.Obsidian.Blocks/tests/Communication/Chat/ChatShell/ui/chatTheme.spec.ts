@@ -576,11 +576,12 @@ describe("the chat token sheet", () => {
 
     // A channel's row pads its content the same above and below, so a hover, a mention's wash or a
     // jump's flash covers equal air on both sides; the space between two people is outside the
-    // rows, where no highlight reaches.
+    // rows, where no highlight reaches. The channel's rhythm is the tight one it always had: 4px
+    // between one person's messages and 8px between two people's.
 
-    test("names a channel row's equal padding, 6px, and the space between people, 8px", () => {
-        expect(valuesOf(sheet, "--chat-cm-row-pad", isLight)).toEqual(["6px"]);
-        expect(valuesOf(sheet, "--chat-cm-person-gap", isLight)).toEqual(["8px"]);
+    test("names a channel row's equal padding, 2px, and the space between people, 4px", () => {
+        expect(valuesOf(sheet, "--chat-cm-row-pad", isLight)).toEqual(["2px"]);
+        expect(valuesOf(sheet, "--chat-cm-person-gap", isLight)).toEqual(["4px"]);
     });
 
     // A photo settles in over 260ms, long enough that its blurred preview reads as the same

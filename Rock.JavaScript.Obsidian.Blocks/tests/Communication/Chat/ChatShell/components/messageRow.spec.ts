@@ -777,12 +777,12 @@ describe("Community, in a channel", () => {
         expect(rule).not.toMatch(/padding/);
     });
 
-    test("a channel's chips and thread pill stand 6px under the text", () => {
+    test("a channel's chips and thread pill stand 4px under the text", () => {
         const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/messageRowCommunity.partial.obs"), "utf8");
         const style = source.slice(source.indexOf("<style"), source.indexOf("</style>"));
         const rule = /\.chat-msg\.is-community \.chat-reacts\s*\{([^}]*)\}/.exec(style)?.[1] ?? "";
 
-        expect(rule).toMatch(/margin-top:\s*6px/);
+        expect(rule).toMatch(/margin-top:\s*4px/);
     });
 
     // The chip that reached the reader takes a thin ring, so it stands off a wash: the reader's own
