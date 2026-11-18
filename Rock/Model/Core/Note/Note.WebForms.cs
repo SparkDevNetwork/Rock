@@ -44,7 +44,7 @@ namespace Rock.Model
                 // only get notes they have auth to VIEW ( note that VIEW has special rules based on approval status, etc. See Note.IsAuthorized for details )
                 var currentPerson = System.Web.HttpContext.Current?.Items["CurrentPerson"] as Person;
 
-                var viewableChildNotes = ChildNotes.ToList().Where( a => a.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson ) ).ToList();
+                var viewableChildNotes = ChildNotes.ToList().Where( a => a.IsViewableBy( currentPerson?.Id ) && a.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson ) ).ToList();
 
                 return viewableChildNotes;
             }
@@ -93,14 +93,9 @@ namespace Rock.Model
             {
                 if ( !_viewableDescendentsCount.HasValue )
                 {
-                    var currentPerson = System.Web.HttpContext.Current?.Items["CurrentPerson"] as Person;
-
-                    using ( var rockContext = new RockContext() )
-                    {
-                        var noteDescendents = new NoteService( rockContext ).GetAllDescendents( this.Id ).ToList();
-                        var viewableDescendents = noteDescendents.ToList().Where( a => a.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson ) ).ToList();
-                        _viewableDescendentsCount = viewableDescendents.Count();
-                    }
+                    // Count the same replies that ViewableChildNotes shows. A reply
+                    // under a hidden reply is never displayed, so it isn't counted.
+                    _viewableDescendentsCount = ViewableChildNotes.Sum( c => 1 + c.ViewableDescendentsCount );
                 }
 
                 return _viewableDescendentsCount.Value;
