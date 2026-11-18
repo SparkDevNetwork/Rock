@@ -943,8 +943,6 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
                 await topicChannels.AddToChannelAsync( connectionId, channel );
             }
 
-            await topicChannels.AddToChannelAsync( connectionId, EntityUpdatedTopic.GetAttendanceDeletedChannel() );
-
             return ActionOk( new SubscribeToRealTimeResponseBag
             {
                 LocationMap = locationMap,

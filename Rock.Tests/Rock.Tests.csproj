@@ -229,6 +229,7 @@
     <Compile Include="Lava\Helpers\LavaAppendWatchesHelperTests.cs" />
     <Compile Include="Lava\Shortcodes\NetworkGraphShortcodeTests.cs" />
     <Compile Include="Model\AnalyticsSourceDateTests.cs" />
+    <Compile Include="Model\AttendanceServiceTests.cs" />
     <Compile Include="Model\ExceptionLogServiceRedactionTests.cs" />
     <Compile Include="Model\InteractionComponentServiceTests.cs" />
     <Compile Include="Model\NoteServiceTests.cs" />
