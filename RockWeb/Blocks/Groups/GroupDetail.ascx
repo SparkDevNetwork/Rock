@@ -634,6 +634,7 @@
             <Content>
                 <asp:HiddenField ID="hfGroupSyncGuid" runat="server" />
                 <asp:ValidationSummary ID="valGroupSyncSettings" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="GroupSyncSettings" />
+                <Rock:NotificationBox ID="nbGroupSyncDataView" runat="server" NotificationBoxType="Danger" Visible="false" />
 
                 <div class="row">
                     <div class="col-md-6">
