@@ -239,7 +239,15 @@ namespace RockWeb.Blocks.Fundraising
         /// <returns><c>true</c> if the current person is a leader in the group; otherwise <c>false</c>.</returns>
         private bool IsCurrentPersonGroupLeader( Group group )
         {
-            return group != null && group.Members.Any( a => a.PersonId == this.CurrentPersonId && a.GroupRole.IsLeader );
+            /*
+                11/18/2026 - MSE
+
+                Only an Active leader membership counts. A leader whose membership was set to Inactive
+                or Pending is no longer leading the opportunity and must not open the toolbox.
+
+                Reason: Leader Toolbox access should require an Active leader membership.
+            */
+            return group != null && group.Members.Any( a => a.PersonId == this.CurrentPersonId && a.GroupRole.IsLeader && a.GroupMemberStatus == GroupMemberStatus.Active );
         }
 
         #endregion
