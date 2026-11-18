@@ -1034,6 +1034,10 @@ namespace Rock.Blocks.Communication
             {
                 return ActionBadRequest( "Category is required." );
             }
+            else if ( category.EntityTypeId != EntityTypeCache.GetId<CommunicationTemplate>() )
+            {
+                return ActionBadRequest( "Invalid category." );
+            }
             else if ( !category.IsAuthorized( Authorization.EDIT, currentPerson ) )
             {
                 return ActionBadRequest( "You don't have edit access to this category." );
@@ -2618,7 +2622,7 @@ namespace Rock.Blocks.Communication
         }
 
         /// <summary>
-        /// Validates the communication list, SMS from number, communication type
+        /// Validates the communication list, personalization segments, SMS from number, communication type
         /// and individual recipients in a request against the options this block offers.
         /// </summary>
         /// <remarks>
@@ -2658,6 +2662,21 @@ namespace Rock.Blocks.Communication
                     {
                         return "Invalid communication list.";
                     }
+                }
+            }
+
+            // Segments already on the communication stay valid so it can still be edited.
+            var newSegmentIds = GetPersonalizationSegmentIds( bag.PersonalizationSegments )?
+                .Except( existingCommunication?.PersonalizationSegments.SplitDelimitedValues().AsIntegerList() ?? new List<int>() )
+                .ToList();
+
+            if ( newSegmentIds?.Any() == true )
+            {
+                var offeredSegmentIds = new HashSet<int>( GetPersonalizationSegments( RockContext, currentPerson ).Select( s => s.Value.AsInteger() ) );
+
+                if ( newSegmentIds.Any( id => !offeredSegmentIds.Contains( id ) ) )
+                {
+                    return "Invalid personalization segment.";
                 }
             }
 
@@ -3529,7 +3548,11 @@ namespace Rock.Blocks.Communication
                     }
                 }
 
-                if ( previewAsPersonalizationSegmentId.HasValue )
+                // The preview only offers segments selected on the communication, which have already been validated.
+                var isPreviewSegmentSelected = previewAsPersonalizationSegmentId.HasValue
+                    && GetPersonalizationSegmentIds( bag.PersonalizationSegments )?.Contains( previewAsPersonalizationSegmentId.Value ) == true;
+
+                if ( isPreviewSegmentSelected )
                 {
                     // Use the first person returned for this personalization segment.
                     var personAliasPersonalizationQuery = new PersonalizationSegmentService( rockContext )
