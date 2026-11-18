@@ -14,8 +14,9 @@
 // limitations under the License.
 // </copyright>
 //
-// The empty state: a few words, centred, with no tile. An error is the same words in the same
-// place with a Try again under them, never a strip above a list that says the opposite.
+// The empty state: the list's mark in a tinted tile over a few words, centred. An error is its
+// words in the same place with a Try again under them and no tile, never a strip above a list
+// that says the opposite.
 import { mount } from "@vue/test-utils";
 import Button from "../../../../../src/Communication/Chat/ChatShell/ui/button.partial.obs";
 import EmptyState from "../../../../../src/Communication/Chat/ChatShell/ui/emptyState.partial.obs";
@@ -23,13 +24,22 @@ import Icon from "../../../../../src/Communication/Chat/ChatShell/ui/icon.partia
 import { partRuleBreaks, ruleOf, styleOf } from "./partStyle";
 
 describe("the empty state", () => {
-    test("says its title and its line, and draws no tile or icon", () => {
-        const empty = mount(EmptyState, { props: { title: "No threads yet", text: "Reply to a message to start one." } });
+    test("says its title and its line under its icon's tile, which a screen reader passes over", () => {
+        const empty = mount(EmptyState, { props: { title: "No threads yet", text: "Reply to a message to start one.", icon: "thread" } });
 
+        const tile = empty.get(".chat-empty-tile");
+        expect(tile.attributes("aria-hidden")).toBe("true");
+        expect(tile.findComponent(Icon).props("name")).toBe("thread");
         expect(empty.get(".chat-empty-title").text()).toBe("No threads yet");
         expect(empty.get(".chat-empty-text").text()).toBe("Reply to a message to start one.");
-        expect(empty.findComponent(Icon).exists()).toBe(false);
         expect(empty.classes()).toEqual(expect.arrayContaining(["chat-empty", "is-empty"]));
+    });
+
+    test("draws no tile without an icon, as an error's line", () => {
+        const empty = mount(EmptyState, { props: { title: "Couldn't load members", tone: "error" } });
+
+        expect(empty.find(".chat-empty-tile").exists()).toBe(false);
+        expect(empty.findComponent(Icon).exists()).toBe(false);
     });
 
     test("leaves out the line it is not given", () => {
@@ -64,18 +74,28 @@ describe("the empty state", () => {
 describe("the empty state's look", () => {
     const style = styleOf("emptyState.partial.obs");
 
-    test("is centred words: the title in the text colour at the display size, its line muted in the interface's", () => {
+    test("is centred words: the title in the text colour at the body size, its line muted in the interface's and narrow", () => {
         expect(ruleOf(style, ".chat-empty")).toMatch(/text-align:\s*center/);
-        expect(ruleOf(style, ".chat-empty-title")).toMatch(/font-size:\s*var\(--chat-fs-display\)/);
+        expect(ruleOf(style, ".chat-empty-title")).toMatch(/font-size:\s*var\(--chat-fs-body\)/);
         expect(ruleOf(style, ".chat-empty-title")).toMatch(/color:\s*var\(--chat-text\)/);
         expect(ruleOf(style, ".chat-empty-text")).toMatch(/font-size:\s*var\(--chat-fs-ui\)/);
         expect(ruleOf(style, ".chat-empty-text")).toMatch(/color:\s*var\(--chat-muted\)/);
+        expect(ruleOf(style, ".chat-empty-text")).toMatch(/max-width:\s*32ch/);
     });
 
-    // The type scale's display size is an empty state's; a failure was always one line in the
-    // interface's size, so an error's title keeps it.
-    test("an empty state's title draws at the display size, and an error's at the interface's", () => {
-        expect(ruleOf(style, ".chat-empty-title")).toMatch(/font-size:\s*var\(--chat-fs-display\)/);
+    // The tile is the brand-tinted mark Browse's head draws beside its title, in the same corner.
+    test("draws its icon in the brand's tinted tile, in a surface's corner", () => {
+        const tile = ruleOf(style, ".chat-empty-tile");
+        expect(tile).toMatch(/width:\s*44px/);
+        expect(tile).toMatch(/height:\s*44px/);
+        expect(tile).toMatch(/color:\s*var\(--chat-brand-ink\)/);
+        expect(tile).toMatch(/background:\s*var\(--chat-brand-tint\)/);
+        expect(tile).toMatch(/border-radius:\s*var\(--chat-r-surface\)/);
+    });
+
+    // A failure was always one line in the interface's size, so an error's title keeps it.
+    test("an empty state's title draws at the body size, and an error's at the interface's", () => {
+        expect(ruleOf(style, ".chat-empty-title")).toMatch(/font-size:\s*var\(--chat-fs-body\)/);
         expect(ruleOf(style, ".chat-empty.is-error .chat-empty-title")).toMatch(/font-size:\s*var\(--chat-fs-ui\)/);
     });
 
