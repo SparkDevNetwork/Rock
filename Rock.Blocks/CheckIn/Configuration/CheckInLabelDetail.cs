@@ -570,6 +570,21 @@ namespace Rock.Blocks.CheckIn.Configuration
                     return ActionBadRequest( "Attendance record was not found." );
                 }
 
+                if ( !LabelDesigner.CanPreviewAttendance( attendance, RequestContext.CurrentPerson ) )
+                {
+                    return ActionBadRequest( "Attendance record was not found." );
+                }
+
+                var isValidAttendance = attendance.PersonAliasId.HasValue
+                    && attendance.Occurrence?.ScheduleId.HasValue == true
+                    && attendance.Occurrence?.LocationId.HasValue == true
+                    && attendance.Occurrence?.GroupId.HasValue == true;
+
+                if ( !isValidAttendance )
+                {
+                    return ActionBadRequest( "Attendance record is not a valid check-in attendance." );
+                }
+
                 var attendanceLabel = new LabelAttendanceDetail( attendance, RockContext );
                 var director = new CheckInDirector( RockContext );
 
