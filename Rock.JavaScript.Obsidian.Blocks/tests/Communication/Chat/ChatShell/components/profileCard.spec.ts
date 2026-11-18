@@ -360,7 +360,9 @@ describe("where it is placed", () => {
         document.body.append(panel);
         boxed(panel, { left: 700, top: 0, width: 300, height: 800 });
         boxed(who, { left: 700, top: 300, width: 300, height: 48 });
-        boxed(face, { left: 710, top: 306, width: 36, height: 36 });
+        // the row's face stands above the button's middle, as beside a name on two lines, so the
+        // card follows the face and not the button it was pressed on
+        boxed(face, { left: 710, top: 296, width: 36, height: 36 });
 
         // the card's face, 56 px, sits 20 px down a card whose name runs to two lines
         const sized = jest.spyOn(HTMLElement.prototype, "offsetWidth", "get").mockImplementation(function (this: HTMLElement) {
@@ -383,7 +385,7 @@ describe("where it is placed", () => {
 
         const placed = card(w);
         expect(placed.style.left).toBe(`${700 - 8 - 300}px`);
-        expect(placed.style.top).toBe(`${306 + 18 - (20 + 28)}px`);
+        expect(placed.style.top).toBe(`${296 + 18 - (20 + 28)}px`);
         panel.remove();
     });
 
