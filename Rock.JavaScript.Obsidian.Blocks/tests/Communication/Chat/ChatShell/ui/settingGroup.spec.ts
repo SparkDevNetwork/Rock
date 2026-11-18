@@ -45,10 +45,13 @@ describe("a settings group", () => {
         expect(list.findAll("[data-name]").every(row => row.attributes("role") === "listitem")).toBe(true);
     });
 
-    test("a row taken out of a list leaves by the Leave motion, the rows below moving by the one move", async () => {
+    // The rows below glide by the list's one move only once a row has gone, so the transition group
+    // moves nothing of itself: a row whose ask opens or closes as it starts to leave neither glides
+    // itself nor sets the rows below gliding while it fades.
+    test("a row taken out of a list leaves by the Leave motion, the transition group moving nothing of itself", async () => {
         const { names, wrapper } = mountList(["Sam", "Ben", "Ana"]);
 
-        expect(wrapper.getComponent(TransitionGroup).props("moveClass")).toBe("chat-move");
+        expect(wrapper.getComponent(TransitionGroup).props("moveClass")).toBeUndefined();
 
         names.value = ["Ben", "Ana"];
         await nextTick();
@@ -127,6 +130,27 @@ describe("a settings group", () => {
             await leaveEnds();
             expect(rowOf(wrapper, "Sam")).toBeNull();
             expect(wrapper.getComponent(SettingGroup).emitted("empty")).toHaveLength(1);
+        });
+
+        // A sheet held at the screen's bottom closes from its top: as the box closes by the row,
+        // the list's top comes down by it and the rows below stay where they are seen, so nothing
+        // is drawn away from its place to glide back.
+        test("in a surface held at its bottom, the rows below a row that has gone stay where they are seen and do not glide", async () => {
+            const { names, wrapper } = mountList(["Sam", "Ben", "Ana"]);
+            const list = wrapper.get("[role='list']").element as HTMLElement;
+            jest.spyOn(list, "getBoundingClientRect").mockImplementation(() => {
+                const top = 500 + (3 - list.children.length) * rowHeight;
+                return { x: 0, y: top, left: 0, top, right: 300, bottom: top + list.children.length * rowHeight, width: 300, height: list.children.length * rowHeight, toJSON: () => ({}) } as DOMRect;
+            });
+
+            names.value = ["Sam", "Ana"];
+            await nextTick();
+            await leaveEnds();
+
+            const ana = rowOf(wrapper, "Ana") as HTMLElement;
+            expect(rowOf(wrapper, "Ben")).toBeNull();
+            expect(ana.classList).not.toContain("chat-move");
+            expect(ana.style.transform).toBe("");
         });
 
         // Where less motion is asked for, the move takes no time and no transition ever ends, so a
