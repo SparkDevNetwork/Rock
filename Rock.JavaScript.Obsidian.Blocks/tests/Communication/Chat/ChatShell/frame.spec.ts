@@ -4320,7 +4320,10 @@ describe("block confirm focus", () => {
             person: { person_alias_guid: sam, nick_name: "Sam", last_name: "Ortiz", avatar_url: null, is_self: false, is_leader: false, is_blocked: false, details: null, can_message: true, dm_channel_id: null }
         } as never;
         await settle();
-        const block = document.querySelector<HTMLElement>("[data-testid='profile-block']")!;
+        // Block is in the card's More, which opens its menu first
+        document.querySelector<HTMLElement>("[data-testid='profile-more']")!.click();
+        await settle();
+        const block = document.querySelector<HTMLElement>("[data-key='block']")!;
         block.focus();
         block.click();
         await settle();
@@ -5615,7 +5618,9 @@ describe("settings", () => {
         expect(document.activeElement).toBe(w.get("[data-testid='sidebar-me']").element);
     });
 
-    test("Chat settings reads the people blocked as it opens, and Unblock on a row reaches the shell with no confirmation", async () => {
+    // Unblock asks in the row itself, on the Blocked people page, so only its yes reaches the shell;
+    // no dialog of the frame's is drawn for it.
+    test("Chat settings reads the people blocked as it opens, and Unblock on a row reaches the shell only after the row's yes", async () => {
         const w = await mountBlock(1200);
         const blocks = mockShell!.blocks as ReturnType<typeof fakeBlocks> & Record<string, jest.Mock> & { state: { people: unknown[], listState: string } };
         const sam = { person_alias_guid: "a0000005-0000-4000-8000-000000000000", nick_name: "Sam", last_name: "Ortiz", avatar_url: null };
@@ -5626,7 +5631,13 @@ describe("settings", () => {
         await settle();
         expect(blocks.load).toHaveBeenCalledTimes(1);
 
+        document.querySelector<HTMLElement>("[data-testid='blocked-people']")!.click();
+        await settle();
         document.querySelector<HTMLElement>("[data-testid='blocked-unblock']")!.click();
+        await settle();
+        expect(blocks.unblock).not.toHaveBeenCalled();
+
+        document.querySelector<HTMLElement>("[data-testid='blocked-ask-yes']")!.click();
         await settle();
 
         expect(blocks.unblock.mock.calls).toEqual([[sam, true]]);
