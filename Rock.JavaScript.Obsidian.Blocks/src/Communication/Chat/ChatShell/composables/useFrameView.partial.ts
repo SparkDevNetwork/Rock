@@ -773,15 +773,9 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
         void shell.value.readPreview(channelId);
     }
 
-    /**
-     * Join from Browse's preview. Once it lands the preview's history is read again, since the
-     * room's topic is not the one joined: the door's line, and what a member may read, come with it.
-     */
+    /** Join from Browse's preview; the watch below reads its history again once the join lands. */
     async function onPreviewJoin(channelId: string): Promise<void> {
         await shell.value.rooms.join(channelId);
-        if (previewId.value === channelId && shell.value.rooms.joinOf(channelId).kind === "joined") {
-            await shell.value.readPreview(channelId);
-        }
     }
 
     // #endregion Event Handlers
@@ -1213,6 +1207,15 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
     watch(() => shell.value.profile.state.card, card => {
         if (!card && panelKind.value === "person") {
             closePanel(personReturn);
+        }
+    });
+
+    // A join of the previewed room that lands, at once or once a pending join is taken, reads its
+    // history again, since the room's topic is not the one joined: the door's line, and what a
+    // member may read, come with it. Moving the preview to a room joined earlier reads nothing more.
+    watch(() => ({ channelId: previewId.value, kind: previewId.value ? shell.value.rooms.joinOf(previewId.value).kind : null }), (now, was) => {
+        if (now.channelId && now.channelId === was.channelId && now.kind === "joined" && was.kind !== "joined") {
+            void shell.value.readPreview(now.channelId);
         }
     });
 

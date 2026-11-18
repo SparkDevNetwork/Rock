@@ -225,6 +225,12 @@ export type ShellState = {
      * when a phone shows its list in front; written by the frame, which alone knows its panes.
      */
     hiddenPanes: { conversation: boolean; thread: boolean };
+
+    /**
+     * Browse's preview: the room it reads, whether that room's newest page is on its way, and why
+     * the last read failed, which its feed's place says with Try again; none while nothing is previewed.
+     */
+    preview: { channelId: string | null; isLoading: boolean; error: ChatError | null };
 };
 
 /** The shell a block holds. */
@@ -306,8 +312,11 @@ export type ChatShell = {
 
     /**
      * Reads the newest page of the room Browse previews beside the conversation on screen, which
-     * stays the open one: no topic is joined, nothing is tracked or marked read. A failure is told
-     * by the toast. Null, or another room, lets the last one go, so an answer still on its way lands nothing.
+     * stays the open one: no topic is joined, nothing is tracked or marked read. The read is held
+     * in the state's preview, a failure there and in the toast. Another room lets the last one go,
+     * so an answer still on its way lands nothing and says nothing; a room this visit already read
+     * is held and not read again, while the same room asked again is. Null ends the visit and
+     * drops every page it read.
      */
     readPreview: (channelId: string | null) => Promise<void>;
 
@@ -397,7 +406,8 @@ export function createChatShell(options: ShellOptions): ChatShell {
         isPushOffered: false,
         // known once push starts after the first channel is on screen
         push: "unavailable",
-        hiddenPanes: { conversation: false, thread: false }
+        hiddenPanes: { conversation: false, thread: false },
+        preview: { channelId: null, isLoading: false, error: null }
     }) as ShellState;
     const projectUrl = (options.session.projectUrl ?? "").replace(/\/+$/, "");
     const publishableKey = options.session.publishableKey ?? "";
@@ -1158,6 +1168,16 @@ export function createChatShell(options: ShellOptions): ChatShell {
     /** The room Browse previews beside the conversation on screen, which the next preview lets go. */
     let previewedChannelId: string | null = null;
 
+    /** Each read of the preview moves this on, so only the newest read's answer is held in its state. */
+    let previewAsk = 0;
+
+    /**
+     * The rooms whose page the preview read this visit, which no live topic keeps current: moving
+     * back to one reads nothing, and the visit's end drops them all. A room held before the
+     * preview read it is not among them, and is kept.
+     */
+    const previewRead = new Set<string>();
+
     const opener = createRoomOpener({
         state,
         modules: { reveal, channels, timelines, messageActions, rooms, directMessages },
@@ -1286,17 +1306,52 @@ export function createChatShell(options: ShellOptions): ChatShell {
         readPreview: async (channelId: string | null): Promise<void> => {
             const before = previewedChannelId;
             previewedChannelId = channelId;
+            const ask = ++previewAsk;
             // The room on screen keeps its own catch-up; any other is let go, so its answer lands nothing.
             if (before && before !== channelId && before !== state.activeChannelId) {
                 timelines.leave(before);
             }
 
-            // The room on screen is held and live already.
-            if (!channelId || isStopped || channelId === state.activeChannelId) {
+            if (!channelId) {
+                for (const read of previewRead) {
+                    if (read !== state.activeChannelId) {
+                        timelines.forget(read);
+                    }
+                }
+                previewRead.clear();
+                state.preview = { channelId: null, isLoading: false, error: null };
                 return;
             }
 
-            await timelines.loadNewest(channelId).catch(error => report(classifyPlatformError(error)));
+            // The room on screen is held and live already, and a room this visit read is held as
+            // it was read; Try again, or a join that landed, asks for the same room and reads it.
+            const timeline = timelines.state(channelId);
+            const isHeld = channelId === state.activeChannelId || (channelId !== before && previewRead.has(channelId) && timeline.isLoaded);
+            if (isStopped || isHeld) {
+                state.preview = { channelId, isLoading: false, error: null };
+                return;
+            }
+
+            if (!timeline.isLoaded) {
+                previewRead.add(channelId);
+            }
+            state.preview = { channelId, isLoading: true, error: null };
+            try {
+                await timelines.loadNewest(channelId);
+                if (ask === previewAsk) {
+                    state.preview = { channelId, isLoading: false, error: null };
+                }
+            }
+            catch (thrown) {
+                // A preview let go has nothing left to say.
+                if (ask !== previewAsk) {
+                    return;
+                }
+
+                const error = classifyPlatformError(thrown);
+                state.preview = { channelId, isLoading: false, error };
+                report(error);
+            }
         },
 
         seen:(messageId: number): void => tracker.seen(messageId),

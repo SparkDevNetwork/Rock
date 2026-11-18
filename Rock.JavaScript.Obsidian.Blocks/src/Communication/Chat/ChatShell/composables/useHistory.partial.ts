@@ -229,6 +229,12 @@ export type Timelines = {
     /** The channel is no longer open: its catch-up stops and any answer on its way is dropped. */
     leave: (channelId: string) => void;
 
+    /**
+     * Lets go of a channel and drops what is held of it, for a room read with no live topic, whose
+     * page nothing keeps current. Its next ask starts empty, and an answer on its way still lands nothing.
+     */
+    forget: (channelId: string) => void;
+
     /** The session ended: every channel is let go. */
     stop: () => void;
 };
@@ -1310,6 +1316,12 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
         },
 
         leave,
+
+        forget: (channelId: string): void => {
+            leave(channelId);
+            // the sync stays, its epoch moved on, so a page asked before this never lands
+            states.delete(channelId);
+        },
 
         stop: (): void => {
             // for good: a join or a reload that fires while the session ends starts nothing

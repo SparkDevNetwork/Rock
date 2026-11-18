@@ -237,7 +237,15 @@
                                       @open="openFromMainView">
                         <!-- The chosen room's own feed, read only: it is not the room on screen, so nothing in it is read or marked. -->
                         <template #feed="{ channelId }">
-                            <MessageFeed :key="channelId"
+                            <EmptyState v-if="shell.state.preview.channelId === channelId && shell.state.preview.error"
+                                        tone="error"
+                                        :title="previewFailure"
+                                        actionLabel="Try again"
+                                        :actionAttrs="{ 'data-testid': 'preview-retry' }"
+                                        data-testid="preview-error"
+                                        @action="shell.readPreview(channelId)" />
+                            <MessageFeed v-else
+                                         :key="channelId"
                                          :timeline="shell.timelines.state(channelId)"
                                          :pending="[]"
                                          :readCursor="null"
@@ -890,11 +898,13 @@
     import { lockedReason } from "./ChatShell/composables/useSend.partial";
     import { refusalMessage, startWaitMessage } from "./ChatShell/shellSession.partial";
     import { blockSentence } from "./ChatShell/composables/useBlocks.partial";
+    import { messageOrOffline } from "./ChatShell/errors.partial";
     import { ChatCampusBag } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatShell/chatCampusBag";
     import { applyChatTheme } from "./ChatShell/ui/brand.partial";
     import { provideChatSession } from "./ChatShell/chatSession.partial";
     import { Announcer, provideAnnouncer } from "./ChatShell/ui/announcer.partial";
     import Dialog from "./ChatShell/ui/dialog.partial.obs";
+    import EmptyState from "./ChatShell/ui/emptyState.partial.obs";
     import PanelHost from "./ChatShell/ui/panelHost.partial.obs";
     import Scrim from "./ChatShell/ui/scrim.partial.obs";
     import Segmented, { SegmentedOption } from "./ChatShell/ui/segmented.partial.obs";
@@ -1097,6 +1107,9 @@
      * would draw the whole sidebar again with each send, notice and thread change.
      */
     const statusChoice = computed((): StatusChoice => shell.value.prefs.shownStatus());
+
+    /** Why Browse's preview could not read its room's messages, in the words its feed's place says. */
+    const previewFailure = computed((): string => shell.value.state.preview.error ? messageOrOffline(shell.value.state.preview.error, "Couldn't load this channel's messages. Check your connection and try again.") : "");
 
     /** Whether her status choice keeps failing to save, which the menus she chooses it from and the Status line say. */
     const isStatusRetrying = computed((): boolean => shell.value.prefs.isStatusRetrying());
