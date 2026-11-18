@@ -3798,6 +3798,50 @@ describe("settings", () => {
         expect(build({ signInMark, stored: { ...first.stored } }).shell.state.isStatusShown).toBe(false);
     });
 
+    // The foot's face is the person's own status, so a reload draws it from the first paint too:
+    // the switch from the foot's remembered shape, and her Busy or Appear offline from what her
+    // last load's settings held, until her settings are read again. A sign-out since forgets it.
+    test("a reload draws her own face with the status her last load's settings held, before the platform answers, and forgets it after a sign-out", async () => {
+        let isMarkSet = true;
+        const signInMark = { isSet: () => isMarkSet, set: () => void (isMarkSet = true) };
+        const busyUntil = new Date(Date.now() + 2 * 3_600_000).toISOString();
+        const first = build({ signInMark });
+        first.exchangeSettings.value = { limits: platformLimits, flags: { online: true } };
+        first.bootstrap.value = { channels: [], me: { unread_mentions: [], busy_until: busyUntil, appear_offline: false } };
+        const starting = first.shell.start();
+        await settle();
+        answerHistory(first, channelA, 10);
+        await starting;
+        await settle();
+        expect(first.shell.presence.status.statusOf(person)?.state).toBe("busy");
+
+        const reload = build({ signInMark, stored: { ...first.stored } });
+        expect(reload.shell.prefs.shownStatus()).toEqual({ busy_until: busyUntil, appear_offline: false });
+        expect(reload.shell.presence.status.statusOf(person)?.state).toBe("busy");
+
+        // another person on this browser draws nothing of hers
+        const other = "b0000002-0000-4000-8000-000000000000";
+        expect(build({ signInMark, stored: { ...first.stored }, personAliasGuid: other }).shell.presence.status.statusOf(other)).toBeNull();
+
+        isMarkSet = false;
+        expect(build({ signInMark, stored: { ...first.stored } }).shell.presence.status.statusOf(person)).toBeNull();
+    });
+
+    test("a reload whose last load's settings held Automatic draws her own face Online before the platform answers", async () => {
+        const signInMark = { isSet: () => true, set: () => undefined };
+        const first = build({ signInMark });
+        first.exchangeSettings.value = { limits: platformLimits, flags: { online: true } };
+        first.bootstrap.value = { channels: [], me: { unread_mentions: [] } };
+        const starting = first.shell.start();
+        await settle();
+        answerHistory(first, channelA, 10);
+        await starting;
+        await settle();
+
+        const reload = build({ signInMark, stored: { ...first.stored } });
+        expect(reload.shell.presence.status.statusOf(person)?.state).toBe("online");
+    });
+
     // A shared computer keeps nothing of the last person's rooms: a sign-out since deletes every
     // remembered room on the device, and another person signing in deletes every one not theirs,
     // when the drafts delete theirs and by the same mark.
