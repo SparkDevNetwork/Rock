@@ -27,8 +27,9 @@
  */
 export type ChatProfileDetailsBag = {
     /**
-     * Gets or sets whether the person shows their details to the person asking. False wherever
-     * chat would not show this person, and then nothing else is set but the profile page's link.
+     * Gets or sets whether the person shows their details to the person asking. False when they
+     * hide them, and then only the profile page's link may be set; false too wherever chat would
+     * not show this person to the person asking, and then nothing is set at all.
      */
     isShown: boolean;
 
