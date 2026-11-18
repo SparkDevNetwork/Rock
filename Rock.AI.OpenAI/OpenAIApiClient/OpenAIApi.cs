@@ -134,7 +134,12 @@ namespace Rock.AI.OpenAI.OpenAIApiClient
 
             string message = ParseErrorMessage( response );
 
-            return new OpenAIChatCompletionsResponse() { IsSuccessful = false, ErrorMessage = message };
+            return new OpenAIChatCompletionsResponse()
+            {
+                IsSuccessful = false,
+                ErrorMessage = message,
+                ErrorParameter = ParseErrorParameter( response )
+            };
         }
 
         /// <summary>
@@ -211,6 +216,29 @@ namespace Rock.AI.OpenAI.OpenAIApiClient
             }
 
             return message;
+        }
+
+        /// <summary>
+        /// Gets the name of the request parameter that an error response
+        /// names, such as "temperature".
+        /// </summary>
+        /// <param name="response">The failed response.</param>
+        /// <returns>The parameter name, or <c>null</c> if the error does not name one.</returns>
+        private static string ParseErrorParameter( IRestResponse response )
+        {
+            var errorResponse = response.Content.FromJsonDynamicOrNull() as IDictionary<string, object>;
+            if ( errorResponse == null || !errorResponse.ContainsKey( "error" ) )
+            {
+                return null;
+            }
+
+            var errorInfo = errorResponse["error"] as IDictionary<string, object>;
+            if ( errorInfo == null || !errorInfo.ContainsKey( "param" ) )
+            {
+                return null;
+            }
+
+            return errorInfo["param"]?.ToString();
         }
 
         #endregion
