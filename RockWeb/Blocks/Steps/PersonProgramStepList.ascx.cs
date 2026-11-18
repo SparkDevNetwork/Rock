@@ -306,10 +306,15 @@ namespace RockWeb.Blocks.Steps
              Block Authorization is removed once the parent authority for Step is Set as Step Type.
              */
             bool canEdit = stepGridRowViewModel.Step.IsAuthorized( Authorization.EDIT, CurrentPerson ) || stepGridRowViewModel.Step.IsAuthorized( Authorization.MANAGE_STEPS, CurrentPerson );
-            var deleteFieldColumn = gStepList.ColumnsOfType<DeleteField>().FirstOrDefault();
-            if ( deleteFieldColumn != null )
+
+            var deleteField = gStepList.ColumnsOfType<DeleteField>().FirstOrDefault();
+            if ( deleteField != null )
             {
-                deleteFieldColumn.Visible = canEdit;
+                var cell = e.Row.Cells[gStepList.GetColumnIndex( deleteField )] as DataControlFieldCell;
+                if ( cell != null && cell.Controls.Count > 0 )
+                {
+                    cell.Controls[0].Visible = canEdit;
+                }
             }
         }
 
@@ -996,11 +1001,19 @@ namespace RockWeb.Blocks.Steps
         {
             var rockContext = GetRockContext();
             var service = new StepService( rockContext );
-            var step = service.Get( stepId );
+
+            // Only allow deleting one of the shown person's steps in this program.
+            var step = GetStepTypeToPersonStepMap()?.Values.SelectMany( s => s ).FirstOrDefault( s => s.Id == stepId );
             string errorMessage;
 
             if ( step == null )
             {
+                return;
+            }
+
+            if ( !step.IsAuthorized( Authorization.EDIT, CurrentPerson ) && !step.IsAuthorized( Authorization.MANAGE_STEPS, CurrentPerson ) )
+            {
+                ShowError( "You are not authorized to delete this step." );
                 return;
             }
 
