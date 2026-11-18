@@ -55,6 +55,8 @@ function fakeShell(calls: Calls): { shell: ChatShell, state: { activeChannelId: 
     };
     const shell = {
         state,
+        // Browse's preview reading its room's history, which no order here waits on
+        readPreview: jest.fn(async () => undefined),
         selectChannel: jest.fn(async (channelId: string) => {
             calls.push(`selectChannel:${channelId}`);
             state.activeChannelId = channelId;
