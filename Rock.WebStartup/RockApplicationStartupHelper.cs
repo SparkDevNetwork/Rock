@@ -238,6 +238,24 @@ namespace Rock.WebStartup
 
                 LogStartupMessage( "Updatating Attributes From Web.Config Settings" );
                 UpdateAttributesFromRockConfig( rockContext );
+
+                /*
+                    11/16/2026 - JPH
+
+                    Encrypt secret attribute values still stored as plain text.
+                    This runs on every start and must never stop start-up,
+                    since web farm nodes can start at the same time.
+
+                    Reason: Keep integration secrets encrypted at rest.
+                */
+                try
+                {
+                    Rock.Utility.SecretAttributeEncryptor.EncryptAll();
+                }
+                catch ( Exception ex )
+                {
+                    Rock.Model.ExceptionLogService.LogException( ex );
+                }
             }
 
             if ( ranEFMigrations || anyPluginMigrations )

@@ -31,7 +31,7 @@ namespace Rock.Communication.Transport
     [TextField( "Server", "", true, "", "", 0 )]
     [IntegerField( "Port", "", false, 25, "", 1 )]
     [TextField( "User Name", "", false, "", "", 2 )]
-    [TextField( "Password", "", false, "", "", 3, null, true )]
+    [EncryptedTextField( "Password", Description = "", IsRequired = false, IsPassword = true, Order = 3, Key = "Password" )]
     [BooleanField( "Use SSL", "", false, "", 4 )]
     [IntegerField( "Concurrent Send Workers", "", false, 1, "", 5, key: "MaxParallelization" )]
     [Rock.SystemGuid.EntityTypeGuid( "1FEF44B2-8685-4001-BE5B-8A059BC65430")]

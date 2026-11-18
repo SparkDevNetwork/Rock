@@ -131,7 +131,8 @@ class TwilioSmsResponseAsync : TwilioDefaultResponseAsync
                 if ( numberOfAttachments != null && this.TwilioTransportComponent != null )
                 {
                     var accountSid = this.TwilioTransportComponent.GetAttributeValue( TwilioAttributeKey.Sid );
-                    var authToken = this.TwilioTransportComponent.GetAttributeValue( TwilioAttributeKey.AuthToken );
+                    var storedAuthToken = this.TwilioTransportComponent.GetAttributeValue( TwilioAttributeKey.AuthToken );
+                    var authToken = Rock.Security.Encryption.DecryptString( storedAuthToken ) ?? storedAuthToken;
 
                     if ( accountSid.IsNotNullOrWhiteSpace() && authToken.IsNotNullOrWhiteSpace() )
                     {
