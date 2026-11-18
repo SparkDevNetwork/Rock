@@ -284,7 +284,7 @@
                                 @discard="shell.directMessages.discardFailed"
                                 @emojiPickerOpen="onEmojiPickerOpen"
                                 @emojiChosen="onEmojiChosen">
-                        <!-- The conversation found, drawn as its own feed draws it, with nothing to act on. -->
+                        <!-- The conversation found, drawn as its own feed draws it, with nothing to act on, under the view's To and notice rather than a header. -->
                         <template #history>
                             <MessageFeed v-if="foundTimeline"
                                          :key="shell.directMessages.lookup.channelId ?? ''"
@@ -292,7 +292,8 @@
                                          :readCursor="foundRow?.read_cursor ?? null"
                                          :pending="[]"
                                          :isDirectMessage="foundRow ? foundRow.room_kind === 'person' : shell.directMessages.chosen.length === 1"
-                                         isPreviewing />
+                                         isPreviewing
+                                         isTopOpen />
                         </template>
                     </NewMessage>
                 </div>

@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div class="chat-feed-frame" :class="{ 'is-community': layout === 'community', 'is-phone': isPhone, 'has-strip': isStripShown, 'has-strip-room': isStripRoomKept, 'has-jump': isJumpShown, 'is-pair': isDirectMessage, 'is-scrolled': isScrolled }">
+    <div class="chat-feed-frame" :class="{ 'is-community': layout === 'community', 'is-phone': isPhone, 'has-strip': isStripShown, 'has-strip-room': isStripRoomKept, 'has-jump': isJumpShown, 'is-pair': isDirectMessage, 'is-scrolled': isScrolled, 'is-top-open': isTopOpen }">
         <!-- Always drawn, so it fades out the way it came in; out of reach while it is off. -->
         <div class="chat-unread-strip"
              :class="{ 'is-on': isStripShown }"
@@ -233,7 +233,8 @@
 /*
     The feed's top edge once it is scrolled off its start: the line and soft shadow the strip draws
     at its own edge, on the frame's top, where the header's rule is. A box the strip's height above
-    the frame, since the shadow's spread pulls it in from each side of the box that casts it.
+    the frame, since the shadow's spread pulls it in from each side of the box that casts it. A feed
+    whose top stands open under its holder's own content has no header rule to meet, so none.
 */
 .chat-feed-frame::before {
     position: absolute;
@@ -250,7 +251,7 @@
     transition: opacity var(--chat-t-base) var(--chat-ease-state);
 }
 
-.chat-feed-frame.is-scrolled::before {
+.chat-feed-frame.is-scrolled:not(.is-top-open)::before {
     opacity: 1;
 }
 
@@ -642,6 +643,16 @@
 
         /** Whether a full view lies over this conversation, which stays laid out under it; it enters again when the view closes. */
         isCovered: {
+            type: Boolean,
+            default: false
+        },
+
+        /**
+         * Whether the feed's top stands open under its holder's own content rather than under a
+         * header, as the look at a found conversation stands under New message's To and its
+         * notice; no line marks that top once scrolled, so the holder's content draws no band.
+         */
+        isTopOpen: {
             type: Boolean,
             default: false
         },
