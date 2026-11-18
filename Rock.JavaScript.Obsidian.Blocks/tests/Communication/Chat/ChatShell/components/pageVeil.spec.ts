@@ -134,5 +134,16 @@ describe("the page veil", () => {
 
         expect(rule?.[1]).toMatch(/animation:\s*chat-reveal-in var\(--chat-t-base\)/);
     });
+
+    // The marks are the first paint's own, so nothing fades them in: a fade would show an empty
+    // column first, the flash the skeleton is there to prevent.
+    test("draws the marks at once, with no fade in", () => {
+        const source = readFileSync(resolve(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/pageVeil.partial.obs"), "utf8");
+        const styles = source.slice(source.indexOf("<style"));
+        const rules = [...styles.matchAll(/\n([^{}\n]*\.chat-veil-(?:marks|header|feed)[^{}]*)\{([^}]*)\}/g)];
+
+        expect(rules.length).toBeGreaterThan(0);
+        expect(rules.filter(rule => /animation/.test(rule[2])).map(rule => rule[1].trim())).toEqual([]);
+    });
 });
 

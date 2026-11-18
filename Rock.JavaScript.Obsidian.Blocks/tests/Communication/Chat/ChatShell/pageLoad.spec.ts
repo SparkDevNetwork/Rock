@@ -27,7 +27,6 @@ import {
     readRememberedKind,
     rememberedChannelKey,
     revealCeilingMs,
-    skeletonWaitMs,
     startPageLoad,
     StorageLike,
     writeRememberedChannel,
@@ -395,7 +394,7 @@ describe("the page reveal", () => {
         expect(reveal.state.isMainRevealed).toBe(true);
     });
 
-    test("before sign-in no ceiling reveals anything, however long sign-in takes, and the marks still come after their wait", () => {
+    test("before sign-in no ceiling reveals anything, however long sign-in takes, and the marks stay drawn", () => {
         const reveal = createPageReveal({ kind: "channel" });
 
         jest.advanceTimersByTime(revealCeilingMs * 40);
@@ -481,23 +480,21 @@ describe("the page reveal", () => {
         expect(reveal.state.isMainRevealed).toBe(true);
     });
 
-    test("draws no skeleton marks under the wait, and draws them after it", () => {
+    // The skeleton is the first paint's own, with no wait before it: a quick load swaps it for
+    // the list in one step rather than showing an empty column first.
+    test("draws the skeleton's marks from the first paint, with no wait for them", () => {
         const reveal = createPageReveal({ kind: "channel" });
 
-        jest.advanceTimersByTime(skeletonWaitMs - 1);
-        expect(reveal.state.isSkeletonShown).toBe(false);
-
-        jest.advanceTimersByTime(1);
         expect(reveal.state.isSkeletonShown).toBe(true);
+        expect(jest.getTimerCount()).toBe(0);
     });
 
-    test("a load that is ready inside the wait never draws the marks", async () => {
+    test("a load that is ready takes the marks away as it reveals", async () => {
         const reveal = createPageReveal({ kind: "channel" });
         answerAll(reveal);
         await rendered();
 
-        jest.advanceTimersByTime(skeletonWaitMs * 2);
-
+        expect(reveal.state.isSidebarRevealed && reveal.state.isMainRevealed).toBe(true);
         expect(reveal.state.isSkeletonShown).toBe(false);
     });
 
@@ -529,7 +526,8 @@ describe("the page reveal", () => {
 
         expect(reveal.state.isSidebarRevealed).toBe(false);
         expect(reveal.state.isMainRevealed).toBe(false);
-        expect(reveal.state.isSkeletonShown).toBe(false);
+        // the marks stand as they were when it stopped
+        expect(reveal.state.isSkeletonShown).toBe(true);
         expect(jest.getTimerCount()).toBe(0);
     });
 
