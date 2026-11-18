@@ -1360,10 +1360,20 @@ namespace Rock.Blocks.Group
                 placementConfiguration.PersonFilters?.Campuses?.Select( c => c.Value ).Where( v => v.IsNotNullOrWhiteSpace() ) ?? new List<string>()
             );
 
-            // Preparing params for Person Filter (Persisted Data Views)
+            // Preparing params for Person Filter (Persisted Data Views). Only person data views
+            // the current person can view are used, since the guids come from saved preferences.
+            var currentPerson = GetCurrentPerson();
             var persistedDataViewGuids = string.Join(
                 ",",
-                placementConfiguration.PersonFilters?.PersistedDataViews?.Select( c => c.Value ).Where( v => v.IsNotNullOrWhiteSpace() ) ?? new List<string>()
+                ( placementConfiguration.PersonFilters?.PersistedDataViews ?? new List<ListItemBag>() )
+                    .Select( c => c?.Value.AsGuidOrNull() )
+                    .Where( g => g.HasValue )
+                    .Select( g => DataViewCache.Get( g.Value ) )
+                    .Where( dv => dv != null
+                        && dv.EntityTypeId == personEntityTypeId
+                        && dv.IsAuthorized( Authorization.VIEW, currentPerson ) )
+                    .Select( dv => dv.Guid.ToString() )
+                    .Distinct()
             );
 
             // Preparing params for Person Filter (Age)
