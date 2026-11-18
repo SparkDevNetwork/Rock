@@ -5032,6 +5032,47 @@ describe("the profile card", () => {
         expect(document.activeElement).toBe(anchor);
     });
 
+    // The panel holds the open card's person, so it follows the card: another room closes the
+    // card, and the column goes with it rather than standing empty.
+    test("another room closes the card, and the profile in the panel column goes with it", async () => {
+        const w = await mountBlock(1200);
+        await openRow(w, team.channel_id);
+        await cardFor(w, annaProfile());
+        document.querySelector<HTMLElement>("[data-testid='profile-details-open']")!.click();
+        await settle();
+        expect(w.get("[data-testid='chat-frame']").attributes("data-panel-open")).toBe("true");
+
+        await openRow(w, dmAnna.channel_id);
+        await fadeOut();
+
+        expect(profileOf().closeCard).toHaveBeenCalled();
+        expect(w.get("[data-testid='chat-frame']").attributes("data-panel-open")).toBe("false");
+        expect(document.querySelector("[data-testid='frame-panel'] [data-testid='panel-host']")).toBeNull();
+    });
+
+    // A phone opens the profile full screen before the person is read, so the pane draws its way
+    // back and a skeleton meanwhile; a read that draws no card ends the pane, never leaving it blank.
+    test("on a phone a face opens the profile at once, with its way back and a skeleton until the person is read, and a read that draws no card ends it", async () => {
+        const w = await mountBlock(390);
+        await openRow(w, team.channel_id);
+        const anchor = document.createElement("button");
+        shellRoot(w).appendChild(anchor);
+
+        w.findComponent(MessageFeedComponent).vm.$emit("messageAction", { kind: "person", personAliasGuid: annaPerson.person_alias_guid, anchor });
+        profileOf().state.card = { personAliasGuid: annaPerson.person_alias_guid, channelId: team.channel_id, person: null, rock: { kind: "loading" } } as never;
+        await settle();
+
+        expect(w.get("[data-testid='chat-frame']").attributes("data-panel-open")).toBe("true");
+        expect(w.find("[data-testid='frame-panel'] [data-testid='panel-back']").exists()).toBe(true);
+        expect(w.find("[data-testid='frame-panel'] [data-testid='profile-skeleton']").exists()).toBe(true);
+
+        profileOf().state.card = null;
+        await fadeOut();
+
+        expect(w.get("[data-testid='chat-frame']").attributes("data-panel-open")).toBe("false");
+        expect(document.querySelector("[data-testid='frame-panel'] [data-testid='panel-host']")).toBeNull();
+    });
+
     // The switch for the person's own details lives only in Chat settings now; their own card
     // and panel offer the way there in Message's place, and give way to the dialog.
     test("the person's own card and panel hold no switch, and Chat settings opens from either, the profile giving way", async () => {
