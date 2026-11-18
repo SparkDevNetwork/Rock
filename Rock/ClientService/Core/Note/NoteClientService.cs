@@ -261,7 +261,40 @@ namespace Rock.ClientService.Core.Note
                 // If this is a reply, check if a reply is allowed.
                 if ( noteEntity.ParentNoteId.HasValue )
                 {
-                    var parentNote = noteService.Get( noteEntity.ParentNoteId.Value );
+                    // Apply the same filters as GetViewableNotes, but for the
+                    // single parent note so we don't load the whole note list.
+                    var parentNoteId = noteEntity.ParentNoteId.Value;
+                    var contextEntityTypeId = contextEntity.TypeId;
+                    var parentNoteQry = noteService.Queryable();
+
+                    if ( EnableSecurity )
+                    {
+                        parentNoteQry = parentNoteQry.AreViewableBy( Person?.Id );
+                    }
+
+                    parentNoteQry = parentNoteQry.Where( n => n.Id == parentNoteId
+                        && n.EntityId == contextEntity.Id
+                        && n.NoteType.EntityTypeId == contextEntityTypeId );
+
+                    if ( AllowedNoteTypes != null )
+                    {
+                        var allowedNoteTypeIds = AllowedNoteTypes.Select( nt => nt.Id ).ToList();
+
+                        parentNoteQry = parentNoteQry.Where( n => allowedNoteTypeIds.Contains( n.NoteTypeId ) );
+                    }
+
+                    var parentNote = parentNoteQry.FirstOrDefault();
+
+                    if ( parentNote != null && EnableSecurity && !parentNote.IsAuthorized( Authorization.VIEW, Person ) )
+                    {
+                        parentNote = null;
+                    }
+
+                    if ( parentNote == null )
+                    {
+                        errorMessage = "Parent note is invalid.";
+                        return null;
+                    }
 
                     if ( !noteService.CanReplyToNote( parentNote, out errorMessage ) )
                     {
