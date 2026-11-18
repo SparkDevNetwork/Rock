@@ -172,8 +172,25 @@ END
         /// The delete old block SQL, run after new block instance is added to page, removed the existing block instance.
         /// </summary>
         private const string deleteOldBlockSql = @"
-DELETE [Auth] WHERE [EntityTypeId] = @EntityTypeId AND [EntityId] = @BlockToBeReplacedBlockId
-DELETE [Block] WHERE [Id] = @BlockToBeReplacedBlockId
+/* Copy the old block's security rules to the new block so the administrator's restrictions still apply. */
+INSERT INTO [Auth] ( [EntityTypeId], [EntityId], [Order], [Action], [AllowOrDeny], [SpecialRole], [GroupId], [PersonAliasId], [Guid], [CreatedDateTime], [ModifiedDateTime] )
+SELECT a.[EntityTypeId], @NewBlockBlockId, a.[Order], a.[Action], a.[AllowOrDeny], a.[SpecialRole], a.[GroupId], a.[PersonAliasId], NEWID(), GETDATE(), GETDATE()
+FROM [Auth] AS a
+WHERE a.[EntityTypeId] = @EntityTypeId
+    AND a.[EntityId] = @BlockToBeReplacedBlockId
+    AND NOT EXISTS (
+        SELECT 1
+        FROM [Auth] AS x
+        WHERE x.[EntityTypeId] = a.[EntityTypeId]
+            AND x.[EntityId] = @NewBlockBlockId
+            AND x.[Action] = a.[Action]
+            AND x.[AllowOrDeny] = a.[AllowOrDeny]
+            AND x.[SpecialRole] = a.[SpecialRole]
+            AND ISNULL( x.[GroupId], 0 ) = ISNULL( a.[GroupId], 0 )
+            AND ISNULL( x.[PersonAliasId], 0 ) = ISNULL( a.[PersonAliasId], 0 ) );
+
+DELETE [Auth] WHERE [EntityTypeId] = @EntityTypeId AND [EntityId] = @BlockToBeReplacedBlockId;
+DELETE [Block] WHERE [Id] = @BlockToBeReplacedBlockId;
 ";
 
         /// <summary>
