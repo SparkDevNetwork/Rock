@@ -794,7 +794,27 @@ namespace RockWeb.Blocks.Fundraising
                     btnUpdatesTab.Visible = btnContributionsTab.Visible;
 
                     string updatesLavaTemplate = this.GetAttributeValue( AttributeKey.UpdatesLavaTemplate );
-                    var contentChannelItems = new ContentChannelItemService( rockContext ).Queryable().Where( a => a.ContentChannelId == contentChannel.Id ).AsNoTracking().ToList();
+                    /*
+                        11/18/2026 - MSE
+
+                        Only list items that are published: started, not expired and approved (unless the channel
+                        does not use approval). Item security can not be evaluated in SQL, so items the current
+                        person can not View are removed after the query. The channel and its type are included
+                        because the item's security falls back to them.
+
+                        Reason: The Updates tab listed unpublished and restricted update items.
+                    */
+                    var now = RockDateTime.Now;
+                    var contentChannelItems = new ContentChannelItemService( rockContext ).Queryable()
+                        .Include( a => a.ContentChannel.ContentChannelType )
+                        .Where( a => a.ContentChannelId == contentChannel.Id
+                            && a.StartDateTime <= now
+                            && ( !a.ExpireDateTime.HasValue || a.ExpireDateTime.Value > now )
+                            && ( a.Status == ContentChannelItemStatus.Approved || !a.ContentChannel.RequiresApproval || a.ContentChannel.ContentChannelType.DisableStatus ) )
+                        .AsNoTracking()
+                        .ToList()
+                        .Where( a => a.IsAuthorized( Rock.Security.Authorization.VIEW, this.CurrentPerson ) )
+                        .ToList();
 
                     mergeFields.Add( "ContentChannelItems", contentChannelItems );
                     lUpdatesContentItemsHtml.Text = updatesLavaTemplate.ResolveMergeFields( mergeFields );
