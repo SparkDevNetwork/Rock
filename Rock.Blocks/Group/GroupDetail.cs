@@ -1290,6 +1290,42 @@ namespace Rock.Blocks.Group
                 return false;
             }
 
+            // Group Syncs: a new data view must be a person data view the current
+            // person can view. Data views already stored on this group are kept so
+            // existing rules stay editable.
+            if ( bag.GroupSyncs?.Any() == true )
+            {
+                var storedDataViewGuids = group.Id > 0
+                    ? new GroupSyncService( RockContext ).Queryable()
+                        .Where( s => s.GroupId == group.Id )
+                        .Select( s => s.SyncDataView.Guid )
+                        .ToList()
+                    : new List<Guid>();
+                var personEntityTypeId = EntityTypeCache.GetId<Model.Person>();
+                var currentPerson = GetCurrentPerson();
+
+                foreach ( var sync in bag.GroupSyncs.Where( s => s != null ) )
+                {
+                    var dataViewGuid = sync.SyncDataView.Value.AsGuidOrNull();
+
+                    if ( !dataViewGuid.HasValue || storedDataViewGuids.Contains( dataViewGuid.Value ) )
+                    {
+                        continue;
+                    }
+
+                    var dataView = DataViewCache.Get( dataViewGuid.Value );
+                    var isDataViewAllowed = dataView != null
+                        && dataView.EntityTypeId == personEntityTypeId
+                        && dataView.IsAuthorized( Authorization.VIEW, currentPerson );
+
+                    if ( !isDataViewAllowed )
+                    {
+                        errorMessage = "One or more Group Sync rules use a data view you do not have permission to view.";
+                        return false;
+                    }
+                }
+            }
+
             // Group Syncs: the chosen Role must belong to the active group type.
             if ( bag.GroupSyncs?.Any() == true && group.GroupTypeId > 0 )
             {
