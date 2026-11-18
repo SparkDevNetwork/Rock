@@ -106,8 +106,9 @@ describe("a panel turned into another page", () => {
      * @param props The dialog's own props.
      * @param isPhone Whether the session reads a phone.
      * @param beforeTurn What the person did in the dialog before the row turned it, as scrolling down to it.
+     * @param isMoving Whether Vue's own transitions run, as on a page, so a page going back is still drawn as it leaves.
      */
-    async function turned(props: Record<string, unknown>, isPhone = false, beforeTurn?: (dialog: HTMLElement) => void): Promise<{ isBlocked: { value: boolean }, opener: HTMLElement }> {
+    async function turned(props: Record<string, unknown>, isPhone = false, beforeTurn?: (dialog: HTMLElement) => void, isMoving = false): Promise<{ isBlocked: { value: boolean }, opener: HTMLElement }> {
         const isBlocked = ref(false);
         const Host = defineComponent({
             setup() {
@@ -123,7 +124,7 @@ describe("a panel turned into another page", () => {
             }
         });
 
-        wrapper = mount(Host, { global: { provide: { ...providedSession({ isPhone }) } }, attachTo: document.body });
+        wrapper = mount(Host, { global: { provide: { ...providedSession({ isPhone }) }, stubs: { transition: !isMoving } }, attachTo: document.body });
         await nextTick();
         beforeTurn?.(document.querySelector<HTMLElement>("[data-testid='dialog']") as HTMLElement);
         const opener = document.querySelector<HTMLElement>("[data-testid='to-blocked']") as HTMLElement;
@@ -223,5 +224,58 @@ describe("a panel turned into another page", () => {
             expect(ruleOf(page, outOfFront)).toMatch(/inset:\s*0\s*(;|$)/);
             expect(ruleOf(page, outOfFront)).toMatch(/overflow:\s*hidden/);
         }
+    });
+
+    // The page sliding out of front, set aside or going back, is drawn as the person last saw it:
+    // where the body's view was, as much of it as was seen, and scrolled to where it was. Drawn
+    // from its own top it would flash settings' first rows on a turn from far down, and on Back
+    // the page going back would stand at the restored place, below its own end, and show nothing.
+    test.each([
+        ["centred", {}, false],
+        ["as a phone's sheet", { placement: "top", sheet: "phone" }, true]
+    ])("draws the page sliding out %s as the person last saw it, at the view and scrolled where it was", async (_where, props, isPhone) => {
+        // jsdom lays nothing out: the body's view is 300 tall and 100 down the frame, and the page in
+        // front starts under the body's 18px padding, moving up as the body scrolls
+        const view = { top: 100, height: 300, padding: 18 };
+        let scroll = document.body;
+        const standIn = (page: HTMLElement, height: number): void => {
+            page.getBoundingClientRect = () => {
+                const top = view.top + view.padding - scroll.scrollTop;
+                return { top, bottom: top + height, height } as DOMRect;
+            };
+        };
+
+        await turned(props, isPhone, dialog => {
+            scroll = dialog.querySelector(".chat-dialog-scroll") as HTMLElement;
+            scroll.getBoundingClientRect = () => ({ top: view.top, bottom: view.top + view.height, height: view.height }) as DOMRect;
+            Object.defineProperty(scroll, "clientHeight", { value: view.height });
+            standIn(dialog.querySelector("[data-testid='surface-page']") as HTMLElement, 1200);
+            scroll.scrollTop = 400;
+        }, true);
+        const pageOf = (id: string): HTMLElement => Array.from(document.querySelectorAll<HTMLElement>("[data-testid='surface-page']"))
+            .find(page => page.contains(document.querySelector(`[data-testid='${id}']`))) as HTMLElement;
+        const first = pageOf("to-blocked");
+        const blocked = pageOf("unblock");
+
+        // settings, seen from 382px down its rows at the view's top, stays there as it slides away:
+        // its box stands at the view's top over the body's padding, 300 tall, scrolled 382 within
+        expect(scroll.scrollTop).toBe(0);
+        expect(first.classList.contains("is-covered")).toBe(true);
+        expect([first.style.top, first.style.maxHeight, first.scrollTop]).toEqual(["-18px", "300px", 382]);
+        // the page in front is drawn in the flow as ever
+        expect([blocked.style.top, blocked.style.maxHeight]).toEqual(["", ""]);
+
+        // Blocked people, scrolled 50 down, goes back: drawn at the restored place, scrolled 32
+        // within, so it leaves showing what was seen, over settings back at its place in front
+        standIn(blocked, 600);
+        scroll.scrollTop = 50;
+        (document.querySelector("[data-testid='page-back']") as HTMLElement).click();
+        await nextTick();
+        await nextTick();
+
+        expect(scroll.scrollTop).toBe(400);
+        expect(blocked.isConnected && blocked.classList.contains("is-leaving")).toBe(true);
+        expect([blocked.style.top, blocked.style.maxHeight, blocked.scrollTop]).toEqual(["382px", "300px", 32]);
+        expect([first.style.top, first.style.maxHeight]).toEqual(["", ""]);
     });
 });
