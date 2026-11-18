@@ -65,7 +65,7 @@ namespace Rock.Model
         #region ISecured
 
         /// <inheritdoc/>
-        public override ISecured ParentAuthority => GroupLocation ?? base.ParentAuthority;
+        public override ISecured ParentAuthority => ( ISecured ) GroupLocation ?? Group ?? base.ParentAuthority;
 
         #endregion
     }
