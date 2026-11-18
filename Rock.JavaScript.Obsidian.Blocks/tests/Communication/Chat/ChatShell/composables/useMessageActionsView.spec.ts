@@ -51,10 +51,11 @@ function setUp(activeChannelId: string | null, thread: { channelId: string, root
             state.confirmingDelete = { channelId, message: m };
         })
     };
-    // the card opens in the shell's rooms, for the person and the room
+    // the card opens in the shell's profile, for the person and the room
     const openCard = jest.fn();
-    const rooms = { state: { card: null }, openCard, leaveOf: () => ({ kind: "idle" }) };
-    const shell = shallowRef({ messageActions: actions, rooms } as unknown as ChatShell);
+    const profile = { state: { card: null }, openCard };
+    const rooms = { leaveOf: () => ({ kind: "idle" }) };
+    const shell = shallowRef({ messageActions: actions, rooms, profile } as unknown as ChatShell);
     const openReactionPicker = jest.fn();
     const frame = {
         panelKind: ref(null),

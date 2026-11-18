@@ -3540,22 +3540,22 @@ describe("the live sidebar", () => {
             const h = await startedLive();
             h.personAnswer.value = { status: 200, body: annaProfile };
 
-            h.shell.rooms.openCard(anna, channelA);
+            h.shell.profile.openCard(anna, channelA);
             await settle();
 
             expect(h.personCalls).toEqual([{ p_person_alias_guid: anna, p_channel_id: channelA }]);
-            expect(h.shell.rooms.state.card).toEqual({ personAliasGuid: anna, channelId: channelA, person: annaProfile, rock: { kind: "failed" } });
+            expect(h.shell.profile.state.card).toEqual({ personAliasGuid: anna, channelId: channelA, person: annaProfile, rock: { kind: "failed" } });
         });
 
         test("a person the platform does not list opens no card", async () => {
             const h = await startedLive();
             h.personAnswer.value = { status: 400, body: { code: "P0001", message: "rpc.person_not_found", hint: "This person isn't available in chat." } };
 
-            h.shell.rooms.openCard(anna, channelA);
+            h.shell.profile.openCard(anna, channelA);
             await settle();
 
             expect(h.personCalls).toHaveLength(1);
-            expect(h.shell.rooms.state.card).toBeNull();
+            expect(h.shell.profile.state.card).toBeNull();
         });
 
         test("Leave goes through Rock's door, and leaving the conversation on screen opens the next one", async () => {
@@ -5866,7 +5866,7 @@ describe("online status on the token exchange", () => {
         personal(h, "session.recheck", {});
         await advance(0);
         h.personAnswer.value = { status: 401, body: {} };
-        h.shell.rooms.openCard(ada, channelA);
+        h.shell.profile.openCard(ada, channelA);
         await advance(0);
         h.exchangeAnswers.value = [{ status: 503, retryAfter: 2, code: "rpc.unavailable" }];
         await advance(210_000);
@@ -6478,13 +6478,13 @@ describe("online status into the store", () => {
     test("a card's person tells her status, and a card refused leaves it", async () => {
         const h = await begin();
         h.personAnswer.value = { status: 200, body: { ...readerPerson(ada, busy(null, 0)), campus_id: null, is_self: false, is_leader: false } };
-        h.shell.rooms.openCard(ada, channelA);
+        h.shell.profile.openCard(ada, channelA);
         await advance(0);
         expect(stateOf(h, ada)).toBe("busy");
 
-        h.shell.rooms.closeCard();
+        h.shell.profile.closeCard();
         h.personAnswer.value = { status: 500, body: { message: "rpc.unavailable" } };
-        h.shell.rooms.openCard(ada, channelA);
+        h.shell.profile.openCard(ada, channelA);
         await advance(0);
 
         expect(h.personCalls.length).toBe(2);

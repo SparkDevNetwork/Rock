@@ -462,7 +462,7 @@
     import Menu, { MenuItem } from "../ui/menu.partial.obs";
     import PanelHost from "../ui/panelHost.partial.obs";
     import { cardStatusWords, shownStatus } from "../ui/face.partial";
-    import { ProfileRockState } from "../composables/useRooms.partial";
+    import { ProfileRockState } from "../composables/useProfile.partial";
     import { useFaceStatus } from "../composables/usePresenceStatus.partial";
     import { ChatBadge, PersonProfile, SharedConversation } from "../types.partial";
 

@@ -451,15 +451,15 @@
                             </template>
                         </ThreadDrawer>
 
-                        <ProfilePanel v-else-if="shownList === 'person' && shell.rooms.state.card?.person"
-                                      :key="shell.rooms.state.card.person.person_alias_guid"
-                                      :person="shell.rooms.state.card.person"
+                        <ProfilePanel v-else-if="shownList === 'person' && shell.profile.state.card?.person"
+                                      :key="shell.profile.state.card.person.person_alias_guid"
+                                      :person="shell.profile.state.card.person"
                                       :campuses="campuses"
                                       :badges="shell.channels.badges"
-                                      :rock="shell.rooms.state.card.rock"
+                                      :rock="shell.profile.state.card.rock"
                                       :isLavaConfigured="isProfileLavaConfigured"
                                       :mayViewProfile="config.mayViewProfile === true"
-                                      :isBlockBusy="!!shell.blocks.state.busy[shell.rooms.state.card.person.person_alias_guid.toLowerCase()]"
+                                      :isBlockBusy="!!shell.blocks.state.busy[shell.profile.state.card.person.person_alias_guid.toLowerCase()]"
                                       :backLabel="personOrigin === 'members' ? 'Members' : null"
                                       @close="closePersonPanel"
                                       @back="onPersonBack"
@@ -503,13 +503,13 @@
                 The profile card, one at a time, beside the author or chip that asked, once its person
                 is read; while the profile is open in the panel column the card has given way to it.
             -->
-            <ProfileCard v-if="shell.rooms.state.card?.person && panelKind !== 'person'"
+            <ProfileCard v-if="shell.profile.state.card?.person && panelKind !== 'person'"
                          :key="cardOpenCount"
-                         :person="shell.rooms.state.card.person"
+                         :person="shell.profile.state.card.person"
                          :campuses="campuses"
                          :anchor="cardAnchor"
-                         :isBlockBusy="!!shell.blocks.state.busy[shell.rooms.state.card.person.person_alias_guid.toLowerCase()]"
-                         @close="shell.rooms.closeCard"
+                         :isBlockBusy="!!shell.blocks.state.busy[shell.profile.state.card.person.person_alias_guid.toLowerCase()]"
+                         @close="shell.profile.closeCard"
                          @message="onCardMessage"
                          @settings="onCardSettings"
                          @details="onCardDetails"

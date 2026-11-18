@@ -27,7 +27,7 @@ import { mount, VueWrapper } from "@vue/test-utils";
 import { nextTick } from "vue";
 import ProfilePanel from "../../../../../src/Communication/Chat/ChatShell/components/profilePanel.partial.obs";
 import { ChatBadge, PersonProfile, SharedConversation } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
-import { ProfileRockState } from "../../../../../src/Communication/Chat/ChatShell/composables/useRooms.partial";
+import { ProfileRockState } from "../../../../../src/Communication/Chat/ChatShell/composables/useProfile.partial";
 import { join } from "path";
 import { anna as annaAlias, badgesIn, createStatusStore, provideStatus, shellFolder, styleRules } from "../statusStore";
 

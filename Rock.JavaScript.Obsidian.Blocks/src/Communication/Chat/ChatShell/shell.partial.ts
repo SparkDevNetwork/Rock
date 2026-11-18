@@ -15,9 +15,10 @@
 // </copyright>
 //
 // The shell's wiring: one place that builds the call path, the timelines, the sender, the read
-// tracker, the threads, the mentions, the rooms and the person's settings, and joins them to the
-// sign-in (shellSession), the part that keeps them current (shellLive) and the one that puts rooms
-// on screen (pageLoad's opener). Each is its own tested module; what is here decides which hears what.
+// tracker, the threads, the mentions, the rooms, the profile and the person's settings, and joins
+// them to the sign-in (shellSession), the part that keeps them current (shellLive) and the one that
+// puts rooms on screen (pageLoad's opener). Each is its own tested module; what is here decides
+// which hears what.
 //
 // Each step marks the page's performance timeline (chat:mint, chat:exchange, chat:history,
 // chat:join, chat:sidebar, chat:first-message), so the time from opening the page to the first
@@ -41,7 +42,8 @@ import { createDrafts, DraftStorage, Drafts, DraftsDependencies } from "./compos
 import { ActionNotice, createMessageActions, MessageActions, quoteKey } from "./composables/useMessageActions.partial";
 import { createReactions, Reactions } from "./composables/useReactions.partial";
 import { createMentions, Mentions, MentionsDependencies } from "./composables/useMentions.partial";
-import { ChannelFactsResult, createRooms, DirectoryPageResult, DirectoryRequest, PersonProfileResult, Rooms, RoomsDependencies } from "./composables/useRooms.partial";
+import { ChannelFactsResult, createRooms, DirectoryPageResult, DirectoryRequest, Rooms } from "./composables/useRooms.partial";
+import { createProfile, PersonProfileResult, Profile, ProfileDependencies } from "./composables/useProfile.partial";
 import { createMembers, MemberDoors, Members } from "./composables/useMembers.partial";
 import { AttachmentTray, Attachments, createAttachments } from "./composables/useAttachments.partial";
 import { createGifs, Gifs } from "./composables/useGifs.partial";
@@ -104,7 +106,7 @@ export type ShellOptions = {
     getMemberRights?: MemberDoors["getRights"];
 
     /** Asks Rock for its half of a profile card; without it, a card shows only what chat holds. */
-    getProfileDetails?: RoomsDependencies["getProfileDetails"];
+    getProfileDetails?: ProfileDependencies["getProfileDetails"];
 
     /** Asks Rock's door to add people to a room; without it, nobody is added. */
     addMembers?: MemberDoors["addMembers"];
@@ -256,6 +258,10 @@ export type ChatShell = {
 
     /** Browse channels, each open room's facts, Join, and a previewed room's sidebar row. */
     rooms: Rooms;
+
+    /** The person a card or the profile panel shows, with Rock's half, and a member's messaging rights. */
+    profile: Profile;
+
     /** What kind of room a channel is, from its sidebar row or else its facts; null where neither is held. */
     roomKindOf: (channelId: string) => RoomKind | null;
 
@@ -497,6 +503,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
         reactions.stop();
         mentions.stop();
         rooms.stop();
+        profile.stop();
         members.stop();
         prefs.stop();
         blocks.stop();
@@ -806,12 +813,10 @@ export function createChatShell(options: ShellOptions): ChatShell {
     const rooms = createRooms({
         getChannel,
         listDirectory,
-        getPerson,
         joinChannel: options.joinChannel,
         leaveChannel: leaveChannel && (async channelId => inRoomWords(channelId, await leaveChannel(channelId))),
         renameConversation: options.renameConversation,
         getMemberRights: options.getMemberRights,
-        getProfileDetails: options.getProfileDetails,
         // The next conversation after a leave opens as a sidebar row does.
         openChannel: channelId => {
             directMessages.close();
@@ -829,6 +834,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
         notify: notice => options.notify?.(notice),
         announce: (text, politeness) => options.announce?.(text, politeness)
     });
+    const profile = createProfile({ getPerson, getProfileDetails: options.getProfileDetails });
     const members = createMembers({
         call,
         doors: {
@@ -1180,6 +1186,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
         reactions,
         mentions,
         rooms,
+        profile,
         roomKindOf,
         members,
         prefs,
@@ -1429,6 +1436,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
             reactions.stop();
             mentions.stop();
             rooms.stop();
+            profile.stop();
             members.stop();
             prefs.stop();
             blocks.stop();

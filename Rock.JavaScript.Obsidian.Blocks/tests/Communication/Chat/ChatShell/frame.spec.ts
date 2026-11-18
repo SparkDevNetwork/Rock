@@ -296,6 +296,7 @@ function fakeShell(): Record<string, unknown> {
         threads,
         mentions,
         rooms,
+        profile: fakeProfile(),
         roomKindOf: (channelId: string) => (rooms as unknown as ReturnType<typeof roomsOf>).state.facts[channelId]?.room_kind ?? null,
         members: fakeMembers(),
         prefs: fakePrefs(),
@@ -407,7 +408,6 @@ function fakeRooms(): Record<string, unknown> {
         leaves: {} as Record<string, unknown>,
         renames: {} as Record<string, unknown>,
         canRename: {} as Record<string, boolean>,
-        card: null as Record<string, unknown> | null,
         announcement: null
     });
 
@@ -436,6 +436,18 @@ function fakeRooms(): Record<string, unknown> {
         renameOf: (channelId: string) => state.renames[channelId] ?? { kind: "idle" },
         detailsOpened: jest.fn(async () => undefined),
         canRenameOf: (channelId: string) => state.canRename[channelId] === true,
+        stop: jest.fn()
+    };
+}
+
+/**
+ * The profile the shell holds, as useProfile's createProfile answers it: the open card the block
+ * draws, and the calls that open, read and close it.
+ */
+function fakeProfile(): Record<string, unknown> {
+    const state = reactive({ card: null as Record<string, unknown> | null });
+    return {
+        state,
         openCard: jest.fn(),
         readPerson: jest.fn(async () => null),
         closeCard: jest.fn(() => {
@@ -727,6 +739,11 @@ function isPaneHidden(w: VueWrapper, testId: string): boolean {
 /** The rooms the mounted block's shell holds. */
 function roomsOf(): { state: { facts: Record<string, ChannelFacts>, joins: Record<string, unknown>, directory: Record<string, unknown> } } & Record<string, jest.Mock> {
     return mockShell!.rooms as ReturnType<typeof roomsOf>;
+}
+
+/** The profile the mounted block's shell holds: the open card and its calls. */
+function profileOf(): { state: { card: Record<string, unknown> | null } } & Record<string, jest.Mock> {
+    return mockShell!.profile as ReturnType<typeof profileOf>;
 }
 
 /** A room's facts in the exact shape chat_get_channel answers. */
@@ -4316,7 +4333,7 @@ describe("block confirm focus", () => {
         shellRoot(w).appendChild(anchor);
         w.findComponent(MessageFeedComponent).vm.$emit("messageAction", { kind: "person", personAliasGuid: sam, anchor });
         await settle();
-        roomsOf().state.card = {
+        profileOf().state.card = {
             personAliasGuid: sam,
             channelId: team.channel_id,
             person: { person_alias_guid: sam, nick_name: "Sam", last_name: "Ortiz", avatar_url: null, is_self: false, is_leader: false, is_blocked: false, details: null, can_message: true, dm_channel_id: null }
@@ -4901,7 +4918,7 @@ describe("New message", () => {
 });
 
 // A message's author or a person's chip asks for that person's card, in the room it was opened
-// from; the card is drawn once the shell's rooms have read the person, and its Message opens the
+// from; the card is drawn once the shell's profile has read the person, and its Message opens the
 // conversation the two already have, or New message with that person chosen.
 describe("the profile card", () => {
     /** chat_get_person's answer for Anna, exactly its keys. */
@@ -4924,7 +4941,7 @@ describe("the profile card", () => {
         const anchor = w.get("[data-testid='header-title']").element as HTMLElement;
         w.findComponent(MessageFeedComponent).vm.$emit("messageAction", { kind: "person", personAliasGuid: annaPerson.person_alias_guid, anchor });
         await settle();
-        roomsOf().state.card = { personAliasGuid: annaPerson.person_alias_guid, channelId: team.channel_id, person: profile } as never;
+        profileOf().state.card = { personAliasGuid: annaPerson.person_alias_guid, channelId: team.channel_id, person: profile } as never;
         await settle();
         const card = document.querySelector<HTMLElement>("[data-testid='profile-card']");
         if (!card) {
@@ -4939,7 +4956,7 @@ describe("the profile card", () => {
 
         const card = await cardFor(w, annaProfile());
 
-        expect(roomsOf().openCard).toHaveBeenCalledWith(annaPerson.person_alias_guid, team.channel_id);
+        expect(profileOf().openCard).toHaveBeenCalledWith(annaPerson.person_alias_guid, team.channel_id);
         expect(card.getAttribute("aria-label")).toBe("Profile, Anna Kim");
     });
 
@@ -4949,10 +4966,10 @@ describe("the profile card", () => {
         const anchor = w.get("[data-testid='header-title']").element as HTMLElement;
 
         w.findComponent(MessageFeedComponent).vm.$emit("messageAction", { kind: "person", personAliasGuid: annaPerson.person_alias_guid, anchor });
-        roomsOf().state.card = { personAliasGuid: annaPerson.person_alias_guid, channelId: team.channel_id, person: null } as never;
+        profileOf().state.card = { personAliasGuid: annaPerson.person_alias_guid, channelId: team.channel_id, person: null } as never;
         await settle();
 
-        expect(roomsOf().openCard).toHaveBeenCalledTimes(1);
+        expect(profileOf().openCard).toHaveBeenCalledTimes(1);
         expect(document.querySelector("[data-testid='profile-card']")).toBeNull();
     });
 
@@ -4965,7 +4982,7 @@ describe("the profile card", () => {
         await settle();
 
         expect(mockShell!.selectChannel).toHaveBeenCalledWith(dmAnna.channel_id);
-        expect(roomsOf().closeCard).toHaveBeenCalled();
+        expect(profileOf().closeCard).toHaveBeenCalled();
         expect(document.querySelector("[data-testid='profile-card']")).toBeNull();
     });
 
@@ -4979,7 +4996,7 @@ describe("the profile card", () => {
 
         expect(w.get("[data-testid='main-view']").attributes("data-kind")).toBe("newdm");
         expect(directMessagesOf().begin).toHaveBeenCalledWith([annaPerson]);
-        expect(roomsOf().closeCard).toHaveBeenCalled();
+        expect(profileOf().closeCard).toHaveBeenCalled();
     });
 
     // The card is a glance; Details moves the same profile into the panel column in full, where
@@ -4992,7 +5009,7 @@ describe("the profile card", () => {
         const anchor = document.createElement("button");
         shellRoot(w).appendChild(anchor);
         w.findComponent(MessageFeedComponent).vm.$emit("messageAction", { kind: "person", personAliasGuid: annaPerson.person_alias_guid, anchor });
-        roomsOf().state.card = { personAliasGuid: annaPerson.person_alias_guid, channelId: team.channel_id, person: annaProfile({ details: { badge_keys: [] } }), rock: { kind: "loading" } } as never;
+        profileOf().state.card = { personAliasGuid: annaPerson.person_alias_guid, channelId: team.channel_id, person: annaProfile({ details: { badge_keys: [] } }), rock: { kind: "loading" } } as never;
         await settle();
 
         document.querySelector<HTMLElement>("[data-testid='profile-details-open']")!.click();
@@ -5002,15 +5019,15 @@ describe("the profile card", () => {
         const panel = w.get("[data-testid='frame-panel'] [data-testid='profile-panel']");
         expect(w.get("[data-testid='chat-frame']").attributes("data-panel-open")).toBe("true");
         expect(panel.find("[data-testid='profile-lava-skeleton']").exists()).toBe(true);
-        expect(roomsOf().closeCard).not.toHaveBeenCalled();
+        expect(profileOf().closeCard).not.toHaveBeenCalled();
 
-        roomsOf().state.card = { ...(roomsOf().state.card as Record<string, unknown>), rock: { kind: "answered", details: { isShown: true, email: "anna@example.org", mobilePhone: null, mobilePhoneUri: null, lavaHtml: null } } } as never;
+        profileOf().state.card = { ...(profileOf().state.card as Record<string, unknown>), rock: { kind: "answered", details: { isShown: true, email: "anna@example.org", mobilePhone: null, mobilePhoneUri: null, lavaHtml: null } } } as never;
         await settle();
         expect(document.querySelector<HTMLAnchorElement>("[data-testid='profile-panel'] [data-testid='profile-email']")?.getAttribute("href")).toBe("mailto:anna@example.org");
 
         await w.get("[data-testid='frame-panel'] [data-testid='panel-close']").trigger("click");
         await fadeOut();
-        expect(roomsOf().closeCard).toHaveBeenCalled();
+        expect(profileOf().closeCard).toHaveBeenCalled();
         expect(w.get("[data-testid='chat-frame']").attributes("data-panel-open")).toBe("false");
         expect(document.activeElement).toBe(anchor);
     });
@@ -5028,19 +5045,19 @@ describe("the profile card", () => {
             rock: { kind: "answered", details: { isShown: true } }
         };
         w.findComponent(MessageFeedComponent).vm.$emit("messageAction", { kind: "person", personAliasGuid: me.personAliasGuid, anchor });
-        roomsOf().state.card = { ...me } as never;
+        profileOf().state.card = { ...me } as never;
         await settle();
 
         expect(document.querySelector("[data-testid='switch-profile_details']")).toBeNull();
         document.querySelector<HTMLElement>("[data-testid='profile-card'] [data-testid='profile-settings']")!.click();
         await settle();
-        expect(roomsOf().closeCard).toHaveBeenCalledTimes(1);
+        expect(profileOf().closeCard).toHaveBeenCalledTimes(1);
         expect(document.querySelector("[data-testid='settings-close']")).not.toBeNull();
         document.querySelector<HTMLElement>("[data-testid='settings-close']")!.click();
         await fadeOut();
 
         w.findComponent(MessageFeedComponent).vm.$emit("messageAction", { kind: "person", personAliasGuid: me.personAliasGuid, anchor });
-        roomsOf().state.card = { ...me } as never;
+        profileOf().state.card = { ...me } as never;
         await settle();
         document.querySelector<HTMLElement>("[data-testid='profile-details-open']")!.click();
         await settle();
@@ -5048,7 +5065,7 @@ describe("the profile card", () => {
         document.querySelector<HTMLElement>("[data-testid='profile-panel'] [data-testid='profile-settings']")!.click();
         await settle();
 
-        expect(roomsOf().closeCard).toHaveBeenCalledTimes(2);
+        expect(profileOf().closeCard).toHaveBeenCalledTimes(2);
         expect(w.get("[data-testid='chat-frame']").attributes("data-panel-open")).toBe("false");
         expect(document.querySelector("[data-testid='settings-close']")).not.toBeNull();
     });
@@ -5061,7 +5078,7 @@ describe("the profile card", () => {
         card.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
         await settle();
 
-        expect(roomsOf().closeCard).toHaveBeenCalled();
+        expect(profileOf().closeCard).toHaveBeenCalled();
         expect(document.querySelector("[data-testid='profile-card']")).toBeNull();
     });
 });
@@ -5373,9 +5390,9 @@ describe("the members panel", () => {
         const who = w.get("[data-testid='members-panel'] [data-testid='member-who']");
         await who.trigger("click");
         await settle();
-        expect(roomsOf().openCard).toHaveBeenCalledWith(annaMember.person_alias_guid, team.channel_id);
+        expect(profileOf().openCard).toHaveBeenCalledWith(annaMember.person_alias_guid, team.channel_id);
 
-        roomsOf().state.card = { personAliasGuid: annaMember.person_alias_guid, channelId: team.channel_id, person: { ...annaMember, is_self: false, dm_channel_id: null } } as never;
+        profileOf().state.card = { personAliasGuid: annaMember.person_alias_guid, channelId: team.channel_id, person: { ...annaMember, is_self: false, dm_channel_id: null } } as never;
         await settle();
         const card = document.querySelector<HTMLElement>("[data-testid='profile-card']")!;
         expect(card).not.toBeNull();
@@ -5388,7 +5405,7 @@ describe("the members panel", () => {
         expect(document.activeElement).toBe(who.element);
 
         await who.trigger("click");
-        roomsOf().state.card = { personAliasGuid: annaMember.person_alias_guid, channelId: team.channel_id, person: { ...annaMember, is_self: false, dm_channel_id: null, details: { badge_keys: ["serving"] } } } as never;
+        profileOf().state.card = { personAliasGuid: annaMember.person_alias_guid, channelId: team.channel_id, person: { ...annaMember, is_self: false, dm_channel_id: null, details: { badge_keys: ["serving"] } } } as never;
         await settle();
         document.querySelector<HTMLElement>("[data-testid='profile-details-open']")!.click();
         await fadeOut();
@@ -5409,7 +5426,7 @@ describe("the members panel", () => {
         await openTeam(w);
         await openMembers(w);
         membersOf().state.rows = [annaMember];
-        roomsOf().readPerson.mockResolvedValue({ ...annaMember, is_self: false, dm_channel_id: null });
+        profileOf().readPerson.mockResolvedValue({ ...annaMember, is_self: false, dm_channel_id: null });
         await settle();
 
         await w.get("[data-testid='member-message']").trigger("click");
@@ -5430,14 +5447,14 @@ describe("the members panel", () => {
         await openTeam(w);
         await openMembers(w);
         membersOf().state.rows = [annaMember];
-        roomsOf().readPerson.mockResolvedValue({ ...annaMember, is_self: false, dm_channel_id: dmAnna.channel_id });
+        profileOf().readPerson.mockResolvedValue({ ...annaMember, is_self: false, dm_channel_id: dmAnna.channel_id });
         await settle();
 
         await w.get("[data-testid='member-message']").trigger("click");
         await settle();
 
         expect(mockShell!.selectChannel).toHaveBeenLastCalledWith(dmAnna.channel_id);
-        expect(roomsOf().readPerson).toHaveBeenCalledWith(annaMember.person_alias_guid, team.channel_id);
+        expect(profileOf().readPerson).toHaveBeenCalledWith(annaMember.person_alias_guid, team.channel_id);
         expect(directMessagesOf().begin).not.toHaveBeenCalled();
         expect(w.find("[data-testid='main-view']").exists()).toBe(false);
         expect(w.get("[data-testid='chat-frame']").attributes("data-panel-open")).toBe("false");
@@ -5449,7 +5466,7 @@ describe("the members panel", () => {
         await openMembers(w);
         membersOf().state.rows = [annaMember];
         let resolvePerson!: (person: unknown) => void;
-        roomsOf().readPerson.mockReturnValue(new Promise(resolve => { resolvePerson = resolve; }));
+        profileOf().readPerson.mockReturnValue(new Promise(resolve => { resolvePerson = resolve; }));
         await settle();
 
         await w.get("[data-testid='member-message']").trigger("click");
@@ -5467,7 +5484,7 @@ describe("the members panel", () => {
         await openMembers(w);
         membersOf().state.rows = [annaMember];
         let resolvePerson!: (person: unknown) => void;
-        roomsOf().readPerson.mockReturnValue(new Promise(resolve => { resolvePerson = resolve; }));
+        profileOf().readPerson.mockReturnValue(new Promise(resolve => { resolvePerson = resolve; }));
         await settle();
 
         await w.get("[data-testid='member-message']").trigger("click");
@@ -5770,7 +5787,7 @@ describe("settings", () => {
     test("Chat settings opens from the person's own card", async () => {
         const w = await mountBlock(1200);
         await openTeam(w);
-        roomsOf().state.card = {
+        profileOf().state.card = {
             personAliasGuid: "a0000001-0000-4000-8000-000000000000",
             channelId: team.channel_id,
             person: {
@@ -5790,7 +5807,7 @@ describe("settings", () => {
         document.querySelector<HTMLElement>("[data-testid='profile-settings']")!.click();
         await settle();
 
-        expect(roomsOf().closeCard).toHaveBeenCalled();
+        expect(profileOf().closeCard).toHaveBeenCalled();
         expect(settingsDialog()).not.toBeNull();
     });
 
@@ -6001,8 +6018,8 @@ describe("a shell rebuilt by a birthdate save", () => {
         await w.get("[data-testid='member-message']").trigger("click");
         await settle();
 
-        expect(partOf(mockShell!, "rooms").readPerson).toHaveBeenCalledWith(annaMember.person_alias_guid, team.channel_id);
-        expect(partOf(old, "rooms").readPerson).not.toHaveBeenCalled();
+        expect(partOf(mockShell!, "profile").readPerson).toHaveBeenCalledWith(annaMember.person_alias_guid, team.channel_id);
+        expect(partOf(old, "profile").readPerson).not.toHaveBeenCalled();
     });
 
     test("the open conversation's title reads the new shell's sidebar", async () => {

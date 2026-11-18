@@ -25,20 +25,19 @@
 // press again. A room opened with no
 // sidebar row keeps a muted row after the channels, across any sidebar reload, until another
 // conversation opens or the reload brings its real row. Leave and a group's Rename go through
-// Rock's doors too, and the profile card reads its person for the room it was opened from. Once
-// stopped, nothing more is asked and no answer still on its way reaches the screen.
+// Rock's doors too. Once stopped, nothing more is asked and no answer still on its way reaches the
+// screen.
 //
 // The fakes answer in the platform's and the door's own shapes: chat_get_channel's object,
-// chat_list_directory's {channels, total}, chat_get_person's object, and
-// ChatMembershipResultBag's {code, message, isPending, personAliasGuid}.
+// chat_list_directory's {channels, total}, and ChatMembershipResultBag's {code, message,
+// isPending, personAliasGuid}.
 /* eslint-disable @typescript-eslint/naming-convention */
-import { ChatProfileDetailsBag } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatShell/chatProfileDetailsBag";
-import { ChannelFactsResult, createRooms, DirectoryPageResult, DirectoryRequest, PersonProfileResult, profileDetailsWait } from "../../../../../src/Communication/Chat/ChatShell/composables/useRooms.partial";
+import { ChannelFactsResult, createRooms, DirectoryPageResult, DirectoryRequest } from "../../../../../src/Communication/Chat/ChatShell/composables/useRooms.partial";
 import { searchPause } from "../../../../../src/Communication/Chat/ChatShell/composables/useLatestSearch.partial";
 import { MemberRights } from "../../../../../src/Communication/Chat/ChatShell/composables/useMembers.partial";
 import { JoinResult } from "../../../../../src/Communication/Chat/ChatShell/composables/useSend.partial";
 import { createChannelStore } from "../../../../../src/Communication/Chat/ChatShell/stores/channelStore.partial";
-import { ChannelFacts, DirectoryRow, PersonProfile, SidebarRow } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
+import { ChannelFacts, DirectoryRow, SidebarRow } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 
 // #region Fixtures
 
@@ -171,9 +170,7 @@ type Setup = {
     joinCalls: Array<{ channelId: string, answer: Deferred<JoinResult> }>;
     leaveCalls: Array<{ channelId: string, answer: Deferred<JoinResult> }>;
     renameCalls: Array<{ channelId: string, name: string, answer: Deferred<JoinResult> }>;
-    personCalls: Array<{ personAliasGuid: string, channelId: string, answer: Deferred<PersonProfileResult> }>;
     rightsCalls: Array<{ channelId: string, answer: Deferred<MemberRights> }>;
-    detailsCalls: Array<{ personAliasGuid: string, answer: Deferred<ChatProfileDetailsBag | null> }>;
     reloads: { value: number };
     opened: string[];
     toasts: Array<{ code: string, text: string, icon: string }>;
@@ -187,15 +184,13 @@ type Setup = {
     lastSaid: () => { text: string, isAssertive: boolean } | null;
 };
 
-function setup(options: { isCampusLimited?: boolean, hasDetailsDoor?: boolean } = {}): Setup {
+function setup(options: { isCampusLimited?: boolean } = {}): Setup {
     const directoryCalls: Setup["directoryCalls"] = [];
     const channelCalls: Setup["channelCalls"] = [];
     const joinCalls: Setup["joinCalls"] = [];
     const leaveCalls: Setup["leaveCalls"] = [];
     const renameCalls: Setup["renameCalls"] = [];
-    const personCalls: Setup["personCalls"] = [];
     const rightsCalls: Setup["rightsCalls"] = [];
-    const detailsCalls: Setup["detailsCalls"] = [];
     const reloads = { value: 0 };
     const opened: string[] = [];
     const toasts: Setup["toasts"] = [];
@@ -230,23 +225,11 @@ function setup(options: { isCampusLimited?: boolean, hasDetailsDoor?: boolean } 
             renameCalls.push({ channelId, name, answer });
             return answer.promise;
         },
-        getPerson: (personAliasGuid, channelId) => {
-            const answer = deferred<PersonProfileResult>();
-            personCalls.push({ personAliasGuid, channelId, answer });
-            return answer.promise;
-        },
         getMemberRights: channelId => {
             const answer = deferred<MemberRights>();
             rightsCalls.push({ channelId, answer });
             return answer.promise;
         },
-        getProfileDetails: options.hasDetailsDoor === false
-            ? undefined
-            : personAliasGuid => {
-                const answer = deferred<ChatProfileDetailsBag | null>();
-                detailsCalls.push({ personAliasGuid, answer });
-                return answer.promise;
-            },
         reloadSidebar: () => {
             reloads.value++;
         },
@@ -264,7 +247,7 @@ function setup(options: { isCampusLimited?: boolean, hasDetailsDoor?: boolean } 
 
     const lastSaid = (): { text: string, isAssertive: boolean } | null => said[said.length - 1] ?? null;
 
-    return { rooms, channels, directoryCalls, channelCalls, joinCalls, leaveCalls, renameCalls, personCalls, rightsCalls, detailsCalls, reloads, opened, toasts, active, offline, said, lastSaid };
+    return { rooms, channels, directoryCalls, channelCalls, joinCalls, leaveCalls, renameCalls, rightsCalls, reloads, opened, toasts, active, offline, said, lastSaid };
 }
 
 /** Opens Browse channels and answers its first page. */
@@ -1593,471 +1576,27 @@ describe("Rename offered", () => {
     });
 });
 
-describe("the profile card", () => {
-    const anna = "a0000002-0000-4000-8000-000000000000";
-    const ben = "a0000003-0000-4000-8000-000000000000";
-
-    /** chat_get_person's answer, exactly its keys. */
-    function profile(personAliasGuid: string, nickName: string, extra: Partial<PersonProfile> = {}): PersonProfile {
-        return {
-            person_alias_guid: personAliasGuid,
-            nick_name: nickName,
-            last_name: "Reyes",
-            avatar_url: null,
-            campus_id: null,
-            is_self: false,
-            is_leader: false,
-            details: null,
-            can_message: true,
-            dm_channel_id: null,
-            ...extra
-        };
-    }
-
-    test("opening asks for the person in that room, and the card is drawn once they are read", async () => {
-        const s = setup();
-
-        s.rooms.openCard(anna, team);
-        expect(s.personCalls.map(c => [c.personAliasGuid, c.channelId])).toEqual([[anna, team]]);
-        expect(s.rooms.state.card).toEqual({ personAliasGuid: anna, channelId: team, person: null, rock: { kind: "loading" } });
-
-        s.personCalls[0].answer.resolve({ ok: true, person: profile(anna, "Anna", { is_leader: true }) });
-        await settle();
-
-        expect(s.rooms.state.card).toEqual({ personAliasGuid: anna, channelId: team, person: profile(anna, "Anna", { is_leader: true }), rock: { kind: "loading" } });
-    });
-
-    test("a card opened over another drops the first one's answer, whichever lands first", async () => {
-        const s = setup();
-        s.rooms.openCard(anna, team);
-        s.rooms.openCard(ben, team);
-        const [first, second] = s.personCalls;
-
-        first.answer.resolve({ ok: true, person: profile(anna, "Anna") });
-        await settle();
-        expect(s.rooms.state.card).toEqual({ personAliasGuid: ben, channelId: team, person: null, rock: { kind: "loading" } });
-
-        second.answer.resolve({ ok: true, person: profile(ben, "Ben") });
-        await settle();
-        expect(s.rooms.state.card?.person?.nick_name).toBe("Ben");
-    });
-
-    test("an older card's answer landing after the newer one's changes nothing", async () => {
-        const s = setup();
-        s.rooms.openCard(anna, team);
-        s.rooms.openCard(ben, team);
-        const [first, second] = s.personCalls;
-
-        second.answer.resolve({ ok: true, person: profile(ben, "Ben") });
-        await settle();
-        first.answer.resolve({ ok: true, person: profile(anna, "Anna") });
-        await settle();
-
-        expect(s.rooms.state.card?.person?.nick_name).toBe("Ben");
-    });
-
-    test("a person the platform does not list draws no card", async () => {
-        const s = setup();
-        s.rooms.openCard(anna, team);
-
-        s.personCalls[0].answer.resolve({ ok: false, error: { code: "rpc.person_not_found", severity: "failed", text: "This person isn't available." } });
-        await settle();
-
-        expect(s.rooms.state.card).toBeNull();
-    });
-
-    test("a read that fails draws no card either", async () => {
-        const s = setup();
-        s.rooms.openCard(anna, team);
-
-        s.personCalls[0].answer.resolve({ ok: false, error: { code: "rpc.transport", severity: "failed" } });
-        await settle();
-
-        expect(s.rooms.state.card).toBeNull();
-    });
-
-    test("closing drops an answer still on its way", async () => {
-        const s = setup();
-        s.rooms.openCard(anna, team);
-
-        s.rooms.closeCard();
-        s.personCalls[0].answer.resolve({ ok: true, person: profile(anna, "Anna") });
-        await settle();
-
-        expect(s.rooms.state.card).toBeNull();
-    });
-});
-
-// What Rock adds to the card, its email, phone and template, is read beside the platform's person
-// and never copied to chat. A person showing details waits a moment for Rock's answer, so the card
-// usually draws once, whole; past that it draws with Rock's rows reserved. Each person's answer is
-// kept for the visit, so a card opened again draws whole at once.
-describe("the profile card's details from Rock", () => {
-    const anna = "a0000002-0000-4000-8000-000000000000";
-    const ben = "a0000003-0000-4000-8000-000000000000";
-
-    /** chat_get_person's answer for someone showing details, exactly its keys. */
-    function profile(personAliasGuid: string, nickName: string, extra: Partial<PersonProfile> = {}): PersonProfile {
-        return {
-            person_alias_guid: personAliasGuid,
-            nick_name: nickName,
-            last_name: "Reyes",
-            avatar_url: null,
-            campus_id: null,
-            is_self: false,
-            is_leader: false,
-            details: { badge_keys: [] },
-            can_message: true,
-            dm_channel_id: null,
-            ...extra
-        };
-    }
-
-    function shown(email: string): ChatProfileDetailsBag {
-        return { isShown: true, email, mobilePhone: "(602) 555-0142", mobilePhoneUri: "tel:+16025550142", lavaHtml: null };
-    }
-
-    beforeEach(() => {
-        jest.useFakeTimers();
-    });
-
-    afterEach(() => {
-        jest.useRealTimers();
-    });
-
-    test("opening asks the platform and Rock together", () => {
-        const s = setup();
-
-        s.rooms.openCard(anna, team);
-
-        expect(s.personCalls.map(c => c.personAliasGuid)).toEqual([anna]);
-        expect(s.detailsCalls.map(c => c.personAliasGuid)).toEqual([anna]);
-    });
-
-    test("Rock answering first is kept, and the card draws once, whole", async () => {
-        const s = setup();
-        s.rooms.openCard(anna, team);
-
-        s.detailsCalls[0].answer.resolve(shown("anna@example.org"));
-        await settle();
-        expect(s.rooms.state.card?.person).toBeNull();
-
-        s.personCalls[0].answer.resolve({ ok: true, person: profile(anna, "Anna") });
-        await settle();
-
-        expect(s.rooms.state.card).toEqual({ personAliasGuid: anna, channelId: team, person: profile(anna, "Anna"), rock: { kind: "answered", details: shown("anna@example.org") } });
-    });
-
-    test("someone showing details waits for Rock, and Rock answering in time draws the card once, whole", async () => {
-        const s = setup();
-        s.rooms.openCard(anna, team);
-
-        s.personCalls[0].answer.resolve({ ok: true, person: profile(anna, "Anna") });
-        await settle();
-        expect(s.rooms.state.card?.person).toBeNull();
-
-        jest.advanceTimersByTime(profileDetailsWait - 1);
-        s.detailsCalls[0].answer.resolve(shown("anna@example.org"));
-        await settle();
-
-        expect(s.rooms.state.card?.person?.nick_name).toBe("Anna");
-        expect(s.rooms.state.card?.rock).toEqual({ kind: "answered", details: shown("anna@example.org") });
-    });
-
-    test("past the wait the card draws with Rock's rows still loading, and fills them when it answers", async () => {
-        const s = setup();
-        s.rooms.openCard(anna, team);
-        s.personCalls[0].answer.resolve({ ok: true, person: profile(anna, "Anna") });
-        await settle();
-
-        jest.advanceTimersByTime(profileDetailsWait);
-        await settle();
-        expect(s.rooms.state.card?.person?.nick_name).toBe("Anna");
-        expect(s.rooms.state.card?.rock).toEqual({ kind: "loading" });
-
-        s.detailsCalls[0].answer.resolve(shown("anna@example.org"));
-        await settle();
-        expect(s.rooms.state.card?.rock).toEqual({ kind: "answered", details: shown("anna@example.org") });
-    });
-
-    test("the wait runs from the open, so a slow platform is not waited on twice", async () => {
-        const s = setup();
-        s.rooms.openCard(anna, team);
-
-        jest.advanceTimersByTime(profileDetailsWait);
-        s.personCalls[0].answer.resolve({ ok: true, person: profile(anna, "Anna") });
-        await settle();
-
-        expect(s.rooms.state.card?.person?.nick_name).toBe("Anna");
-        expect(s.rooms.state.card?.rock).toEqual({ kind: "loading" });
-    });
-
-    test("someone keeping details private draws at once, Rock or not", async () => {
-        const s = setup();
-        s.rooms.openCard(anna, team);
-
-        s.personCalls[0].answer.resolve({ ok: true, person: profile(anna, "Anna", { details: null }) });
-        await settle();
-
-        expect(s.rooms.state.card?.person?.nick_name).toBe("Anna");
-    });
-
-    test("Rock failing, or answering nothing, leaves its rows out", async () => {
-        const s = setup();
-        s.rooms.openCard(anna, team);
-        s.detailsCalls[0].answer.reject(new Error("unreachable"));
-        s.personCalls[0].answer.resolve({ ok: true, person: profile(anna, "Anna") });
-        await settle();
-        expect(s.rooms.state.card?.person?.nick_name).toBe("Anna");
-        expect(s.rooms.state.card?.rock).toEqual({ kind: "failed" });
-
-        s.rooms.openCard(ben, team);
-        s.detailsCalls[1].answer.resolve(null);
-        s.personCalls[1].answer.resolve({ ok: true, person: profile(ben, "Ben") });
-        await settle();
-        expect(s.rooms.state.card?.person?.nick_name).toBe("Ben");
-        expect(s.rooms.state.card?.rock).toEqual({ kind: "failed" });
-    });
-
-    test("an older card's answer from Rock never lands on a newer card", async () => {
-        const s = setup();
-        s.rooms.openCard(anna, team);
-        s.rooms.openCard(ben, team);
-
-        s.detailsCalls[0].answer.resolve(shown("anna@example.org"));
-        await settle();
-
-        expect(s.rooms.state.card?.personAliasGuid).toBe(ben);
-        expect(s.rooms.state.card?.rock).toEqual({ kind: "loading" });
-    });
-
-    test("each person's answer is kept for the visit, so their card opens whole without asking again", async () => {
-        const s = setup();
-        s.rooms.openCard(anna, team);
-        s.detailsCalls[0].answer.resolve(shown("anna@example.org"));
-        s.personCalls[0].answer.resolve({ ok: true, person: profile(anna, "Anna") });
-        await settle();
-        s.rooms.closeCard();
-
-        s.rooms.openCard(anna.toUpperCase(), team);
-        expect(s.detailsCalls).toHaveLength(1);
-        expect(s.rooms.state.card?.rock).toEqual({ kind: "answered", details: shown("anna@example.org") });
-
-        s.personCalls[1].answer.resolve({ ok: true, person: profile(anna, "Anna") });
-        await settle();
-        expect(s.rooms.state.card?.person?.nick_name).toBe("Anna");
-    });
-
-    test("a failed answer is not kept, so the next open asks again", async () => {
-        const s = setup();
-        s.rooms.openCard(anna, team);
-        s.detailsCalls[0].answer.reject(new Error("unreachable"));
-        await settle();
-        s.rooms.closeCard();
-
-        s.rooms.openCard(anna, team);
-
-        expect(s.detailsCalls).toHaveLength(2);
-    });
-
-    test("after the person's own switch is saved, their open card asks Rock again and keeps the new answer", async () => {
-        const s = setup();
-        s.rooms.openCard(anna, team);
-        s.detailsCalls[0].answer.resolve({ isShown: false });
-        s.personCalls[0].answer.resolve({ ok: true, person: profile(anna, "Anna", { is_self: true, details: null }) });
-        await settle();
-
-        const saved = deferred<void>();
-        s.rooms.refreshCardDetails(saved.promise);
-        expect(s.rooms.state.card?.rock).toEqual({ kind: "loading" });
-        expect(s.detailsCalls).toHaveLength(1);
-
-        saved.resolve();
-        await settle();
-        expect(s.detailsCalls).toHaveLength(2);
-
-        s.detailsCalls[1].answer.resolve(shown("anna@example.org"));
-        await settle();
-        expect(s.rooms.state.card?.rock).toEqual({ kind: "answered", details: shown("anna@example.org") });
-
-        s.rooms.closeCard();
-        s.rooms.openCard(anna, team);
-        expect(s.rooms.state.card?.rock).toEqual({ kind: "answered", details: shown("anna@example.org") });
-    });
-
-    test("an answer that shows nothing is not kept, so a person who turns details on is asked again at the next open", async () => {
-        const s = setup();
-        s.rooms.openCard(anna, team);
-        s.detailsCalls[0].answer.resolve({ isShown: false });
-        s.personCalls[0].answer.resolve({ ok: true, person: profile(anna, "Anna", { details: null }) });
-        await settle();
-        s.rooms.closeCard();
-
-        s.rooms.openCard(anna, team);
-
-        expect(s.detailsCalls).toHaveLength(2);
-        expect(s.rooms.state.card?.rock).toEqual({ kind: "loading" });
-    });
-
-    test("only the newest ask after quick changes of the switch is drawn and kept, however the answers arrive", async () => {
-        const s = setup();
-        s.rooms.openCard(anna, team);
-        s.detailsCalls[0].answer.resolve(shown("anna@example.org"));
-        s.personCalls[0].answer.resolve({ ok: true, person: profile(anna, "Anna", { is_self: true }) });
-        await settle();
-
-        s.rooms.refreshCardDetails(Promise.resolve());
-        await settle();
-        s.rooms.refreshCardDetails(Promise.resolve());
-        await settle();
-        expect(s.detailsCalls).toHaveLength(3);
-
-        s.detailsCalls[2].answer.resolve({ isShown: false });
-        await settle();
-        s.detailsCalls[1].answer.resolve(shown("old@example.org"));
-        await settle();
-
-        expect(s.rooms.state.card?.rock).toEqual({ kind: "answered", details: { isShown: false } });
-
-        s.rooms.closeCard();
-        s.rooms.openCard(anna, team);
-        expect(s.detailsCalls).toHaveLength(4);
-    });
-
-    test("an answer to an open asked before the switch changed is neither drawn nor kept", async () => {
-        const s = setup();
-        s.rooms.openCard(anna, team);
-        s.personCalls[0].answer.resolve({ ok: true, person: profile(anna, "Anna", { is_self: true }) });
-        jest.advanceTimersByTime(profileDetailsWait);
-        await settle();
-
-        s.rooms.refreshCardDetails(Promise.resolve());
-        await settle();
-        s.detailsCalls[0].answer.resolve(shown("old@example.org"));
-        await settle();
-
-        expect(s.rooms.state.card?.rock).toEqual({ kind: "loading" });
-
-        s.detailsCalls[1].answer.resolve({ isShown: false });
-        await settle();
-        s.rooms.closeCard();
-        s.rooms.openCard(anna, team);
-        expect(s.detailsCalls).toHaveLength(3);
-    });
-
-    test("after the person's own switch is saved, their card reads them again from the platform, so their badges show", async () => {
-        const s = setup();
-        s.rooms.openCard(anna, team);
-        s.detailsCalls[0].answer.resolve({ isShown: false });
-        s.personCalls[0].answer.resolve({ ok: true, person: profile(anna, "Anna", { is_self: true, details: null }) });
-        await settle();
-
-        const saved = deferred<void>();
-        s.rooms.refreshCardDetails(saved.promise);
-        await settle();
-        expect(s.personCalls).toHaveLength(1);
-
-        saved.resolve();
-        await settle();
-        expect(s.personCalls.map(c => [c.personAliasGuid, c.channelId])).toEqual([[anna, team], [anna, team]]);
-
-        s.personCalls[1].answer.resolve({ ok: true, person: profile(anna, "Anna", { is_self: true, details: { badge_keys: ["serving"] } }) });
-        await settle();
-        expect(s.rooms.state.card?.person?.details).toEqual({ badge_keys: ["serving"] });
-    });
-
-    test("only the newest save's platform read is drawn, however the answers arrive", async () => {
-        const s = setup();
-        s.rooms.openCard(anna, team);
-        s.detailsCalls[0].answer.resolve({ isShown: false });
-        s.personCalls[0].answer.resolve({ ok: true, person: profile(anna, "Anna", { is_self: true, details: null }) });
-        await settle();
-
-        s.rooms.refreshCardDetails(Promise.resolve());
-        await settle();
-        s.rooms.refreshCardDetails(Promise.resolve());
-        await settle();
-        expect(s.personCalls).toHaveLength(3);
-
-        s.personCalls[2].answer.resolve({ ok: true, person: profile(anna, "Anna", { is_self: true, details: null }) });
-        await settle();
-        s.personCalls[1].answer.resolve({ ok: true, person: profile(anna, "Anna", { is_self: true, details: { badge_keys: ["serving"] } }) });
-        await settle();
-
-        expect(s.rooms.state.card?.person?.details).toBeNull();
-    });
-
-    test("a failed read after the save keeps the person the card already shows", async () => {
-        const s = setup();
-        s.rooms.openCard(anna, team);
-        s.detailsCalls[0].answer.resolve({ isShown: false });
-        s.personCalls[0].answer.resolve({ ok: true, person: profile(anna, "Anna", { is_self: true, details: null }) });
-        await settle();
-
-        s.rooms.refreshCardDetails(Promise.resolve());
-        await settle();
-        s.personCalls[1].answer.resolve({ ok: false, error: { code: "rpc.transport", severity: "failed" } });
-        await settle();
-
-        expect(s.rooms.state.card?.person?.nick_name).toBe("Anna");
-    });
-
-    test("without Rock's door the card draws at once with nothing from Rock", async () => {
-        const s = setup({ hasDetailsDoor: false });
-        s.rooms.openCard(anna, team);
-        s.personCalls[0].answer.resolve({ ok: true, person: profile(anna, "Anna") });
-        await settle();
-
-        expect(s.rooms.state.card?.person?.nick_name).toBe("Anna");
-        expect(s.rooms.state.card?.rock).toEqual({ kind: "failed" });
-    });
-
-    test("once stopped Rock is not asked again and its answer never lands", async () => {
-        const s = setup();
-        s.rooms.openCard(anna, team);
-        s.rooms.stop();
-        s.detailsCalls[0].answer.resolve(shown("anna@example.org"));
-        jest.advanceTimersByTime(profileDetailsWait);
-        await settle();
-
-        expect(s.rooms.state.card?.rock).toEqual({ kind: "loading" });
-
-        s.rooms.openCard(ben, team);
-        s.rooms.refreshCardDetails(Promise.resolve());
-        await settle();
-        expect(s.detailsCalls).toHaveLength(1);
-    });
-});
-
-describe("the doors and the card once stopped", () => {
+describe("the doors once stopped", () => {
     test("nothing still on its way reaches the screen and nothing more is asked", async () => {
         const s = setup();
         sidebarOfThree(s);
         s.active.value = volunteers;
         void s.rooms.leave(volunteers);
         void s.rooms.rename(group, "Trail crew");
-        s.rooms.openCard("a0000002-0000-4000-8000-000000000000", team);
 
         s.rooms.stop();
         s.leaveCalls[0].answer.resolve(door("ok"));
         s.renameCalls[0].answer.resolve(door("ok"));
-        s.personCalls[0].answer.resolve({
-            ok: true,
-            person: { person_alias_guid: "a0000002-0000-4000-8000-000000000000", nick_name: "Anna", last_name: "Reyes", avatar_url: null, campus_id: null, is_self: false, is_leader: false, details: null, can_message: true, dm_channel_id: null }
-        });
         await settle();
 
         expect(s.toasts).toEqual([]);
         expect(s.opened).toEqual([]);
         expect(s.rooms.leaveOf(volunteers)).toEqual({ kind: "leaving" });
         expect(s.rooms.renameOf(group)).toEqual({ kind: "saving" });
-        expect(s.rooms.state.card?.person ?? null).toBeNull();
 
         await s.rooms.leave(team);
         await s.rooms.rename(group, "Hike crew");
-        s.rooms.openCard("a0000003-0000-4000-8000-000000000000", team);
         expect(s.leaveCalls).toHaveLength(1);
         expect(s.renameCalls).toHaveLength(1);
-        expect(s.personCalls).toHaveLength(1);
     });
 });

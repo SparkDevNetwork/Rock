@@ -887,7 +887,7 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
         // The profile in the column is the open profile, so it closes with the column.
         if (panelKind.value === "person") {
             personOrigin.value = null;
-            shell.value.rooms.closeCard();
+            shell.value.profile.closeCard();
         }
         const list = kind === "activity" ? activityTab.value : kind;
         isSidebarOver.value = false;
@@ -944,10 +944,10 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
     }
 
     async function onPersonBack(): Promise<void> {
-        const personAliasGuid = shell.value.rooms.state.card?.personAliasGuid ?? "";
+        const personAliasGuid = shell.value.profile.state.card?.personAliasGuid ?? "";
         const origin = personOrigin.value;
         personOrigin.value = null;
-        shell.value.rooms.closeCard();
+        shell.value.profile.closeCard();
         if (origin !== "members") {
             closePanel();
             return;

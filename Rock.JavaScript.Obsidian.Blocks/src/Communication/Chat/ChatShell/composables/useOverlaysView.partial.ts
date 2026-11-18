@@ -21,9 +21,9 @@
 // it belongs to, and focus goes somewhere the person can see as it does, through the frame's one
 // focus helper.
 //
-// The shell's message actions, rooms and blocks hold the state; this reads it for the place each
-// part sits in, the conversation or the open thread, and moves focus as each one ends, so it needs
-// the block's frame and elements, which the shell's half never sees.
+// The shell's message actions, rooms, profile and blocks hold the state; this reads it for the
+// place each part sits in, the conversation or the open thread, and moves focus as each one ends,
+// so it needs the block's frame and elements, which the shell's half never sees.
 
 import { computed, getCurrentScope, nextTick, onBeforeUnmount, ref, Ref, shallowRef, watch, WatchStopHandle } from "vue";
 import { PickerOpening } from "../components/emojiPicker.partial.obs";
@@ -139,7 +139,7 @@ export function useOverlaysView(dependencies: OverlaysViewDependencies) {
      * chosen. The card goes first, so it never stands over what opens.
      */
     function onCardMessage(person: PersonProfile): void {
-        shell.value.rooms.closeCard();
+        shell.value.profile.closeCard();
         closePanel();
         if (person.dm_channel_id) {
             void openFromMainView(person.dm_channel_id);
@@ -207,13 +207,13 @@ export function useOverlaysView(dependencies: OverlaysViewDependencies) {
     /** The card goes first, so the confirmation never stands under it, and focus comes back to what opened the card. */
     function onCardBlock(person: PersonProfile): void {
         const anchor = cardAnchor.value;
-        shell.value.rooms.closeCard();
+        shell.value.profile.closeCard();
         askBlock(person, anchor, null);
     }
 
     /** Needs no confirmation, since everything comes back as it was. */
     function onCardUnblock(person: PersonProfile): void {
-        shell.value.rooms.closeCard();
+        shell.value.profile.closeCard();
         void shell.value.blocks.unblock(person, false);
     }
 
@@ -223,7 +223,7 @@ export function useOverlaysView(dependencies: OverlaysViewDependencies) {
 
     /** The card goes first, so it never stands over the dialog. */
     function onCardSettings(): void {
-        shell.value.rooms.closeCard();
+        shell.value.profile.closeCard();
         isSettingsOpen.value = true;
     }
 
@@ -258,7 +258,7 @@ export function useOverlaysView(dependencies: OverlaysViewDependencies) {
         }
 
         const generation = ++memberMessageGeneration;
-        const person = await askedShell.rooms.readPerson(personAliasGuid, channelId);
+        const person = await askedShell.profile.readPerson(personAliasGuid, channelId);
         // A slow answer must not replace another conversation or a newer member's Message.
         if (generation !== memberMessageGeneration || shell.value !== askedShell || activeChannelId.value !== channelId || panelKind.value !== "members") {
             return;
@@ -463,7 +463,7 @@ export function useOverlaysView(dependencies: OverlaysViewDependencies) {
     function openCard(anchor: HTMLElement, personAliasGuid: string, channelId: string): void {
         cardAnchor.value = anchor;
         cardOpenCount.value++;
-        shell.value.rooms.openCard(personAliasGuid, channelId);
+        shell.value.profile.openCard(personAliasGuid, channelId);
         // A phone has no room for a glance beside the face, so the profile opens full screen at once.
         if (isPhone.value) {
             openPersonPanel();
@@ -579,8 +579,8 @@ export function useOverlaysView(dependencies: OverlaysViewDependencies) {
     // over it closes them; so are the details, which belong to the conversation.
     watch([activeChannelId, mainView], () => {
         closeReactionPicker();
-        if (shell.value.rooms.state.card) {
-            shell.value.rooms.closeCard();
+        if (shell.value.profile.state.card) {
+            shell.value.profile.closeCard();
         }
         isDetailsOpen.value = false;
     });
