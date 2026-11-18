@@ -50,7 +50,7 @@ export type OverlaysViewDependencies = {
 
     /** The frame, whose panes and views the overlays open and close, and whose helper places focus. */
     frame: Pick<Frame, "panelKind" | "mainView" | "panelElement" | "mainElement" | "isPhone" | "drawnThread" | "rooms"
-        | "closePanel" | "openPersonPanel" | "openFromMainView" | "openMainView" | "onListPanel" | "focusStop">;
+        | "closePanel" | "notePersonOpener" | "openPersonPanel" | "openFromMainView" | "openMainView" | "onListPanel" | "focusStop">;
 
     /** Opens the message box of the column that asked past its bar, for a message, beside what asked. */
     openReactionPicker: (column: ColumnKind, channelId: string, message: TimelineMessage, anchor: HTMLElement, opener?: HTMLElement, opening?: PickerOpening) => void;
@@ -70,7 +70,7 @@ export type OverlaysView = ReturnType<typeof useOverlaysView>;
  */
 export function useOverlaysView(dependencies: OverlaysViewDependencies) {
     const { shell, activeChannelId, personAliasGuid, rootElement, frame, closeReactionPicker } = dependencies;
-    const { panelKind, mainView, panelElement, mainElement, isPhone, drawnThread, closePanel, openPersonPanel, openFromMainView, openMainView, onListPanel, focusStop } = frame;
+    const { panelKind, mainView, panelElement, mainElement, isPhone, drawnThread, closePanel, notePersonOpener, openPersonPanel, openFromMainView, openMainView, onListPanel, focusStop } = frame;
     const { roomTitles, roomKinds } = frame.rooms;
 
     // #region Values
@@ -80,7 +80,10 @@ export function useOverlaysView(dependencies: OverlaysViewDependencies) {
 
     const isSettingsOpen = ref(false);
 
-    /** What asked for the profile card, which it is placed beside, and a count that draws each card afresh. */
+    /**
+     * What asked for the profile card, which it is placed beside, and a count that draws each card
+     * afresh. Where focus goes when the profile closes is the frame's, which every card tells.
+     */
     const cardAnchor = shallowRef<HTMLElement | null>(null);
     const cardOpenCount = ref(0);
 
@@ -174,12 +177,7 @@ export function useOverlaysView(dependencies: OverlaysViewDependencies) {
 
     /** The card's Details: the profile moves into the panel column in full, and the card gives way to it. */
     function onCardDetails(): void {
-        openPersonPanel(cardAnchor.value);
-    }
-
-    /** The profile panel's X: focus goes back to the face or name that opened the profile, while it is drawn. */
-    function closePersonPanel(): void {
-        closePanel(cardAnchor.value);
+        openPersonPanel();
     }
 
     /** The profile panel's Block asks as the card's does, the panel staying open under the confirmation. */
@@ -463,10 +461,11 @@ export function useOverlaysView(dependencies: OverlaysViewDependencies) {
     function openCard(anchor: HTMLElement, personAliasGuid: string, channelId: string): void {
         cardAnchor.value = anchor;
         cardOpenCount.value++;
+        notePersonOpener(anchor);
         shell.value.profile.openCard(personAliasGuid, channelId);
         // A phone has no room for a glance beside the face, so the profile opens full screen at once.
         if (isPhone.value) {
-            openPersonPanel(anchor);
+            openPersonPanel();
         }
     }
 
@@ -609,7 +608,7 @@ export function useOverlaysView(dependencies: OverlaysViewDependencies) {
 
     return {
         isDetailsOpen, isSettingsOpen, cardAnchor, cardOpenCount, onCardMessage, onLeave, onRename, closeDetails, onRoomChoice,
-        onCardDetails, closePersonPanel, onPanelBlock, onPanelUnblock, onPanelSettings, onPanelOpenRoom, onCardBlock, onCardUnblock, onSettingsUnblock, onCardSettings, closeSettings, onMemberMessage, onMemberPerson, onDetailsMembers,
+        onCardDetails, onPanelBlock, onPanelUnblock, onPanelSettings, onPanelOpenRoom, onCardBlock, onCardUnblock, onSettingsUnblock, onCardSettings, closeSettings, onMemberMessage, onMemberPerson, onDetailsMembers,
         conversationQuoteKey, threadQuoteKey, conversationQuote, threadQuote, confirmingDelete, deleteBody, isOwnQuote,
         editingIdIn, editErrorIn, isEditSavingIn, onEditLast, onEditLastReply, onCancelQuote, onMessageAction, onCancelDelete, onConfirmDelete,
         askBlock, blockTitle, blockReturnTarget, onCancelBlock, onConfirmBlock

@@ -1088,7 +1088,7 @@
         isPhone, isPaneMotionOn, pane, isSidebarHidden, isMainInert, isPanelHidden, isPanelInert, isSidebarGone, isConversationGone, isPanelGone, goneStyle,
         panelKind, shownPanel, shownList, activityTab, sidebarFold, isMembersOffered, panelElement, sidebarElement, mainElement, mainViewElement, drawnThread, threadOrigin, personOrigin, focusStop,
         onResize, onFocusIn, onFocusOut, onSelect, onBack, onListPanel, onActivityTab, onPanelLeave, onSidebarOver, onSidebarAway, onThreadsTab, openThreadFromList, onOpenThread, onThreadBack, onPersonBack, onMentionOpen,
-        openThreadFromMentions, openFromTap, closeThreadDrawer, closePanel,
+        openThreadFromMentions, openFromTap, closeThreadDrawer, closePanel, closePersonPanel,
         mainView, openMainView, closeMainView, openFromMainView, previewId, onPreview, onPreviewJoin, openAddPeople,
         landingReplyId, landingMessageId, onJump, landInConversation,
         membersView, removeView, addView,
@@ -1164,7 +1164,7 @@
      */
     const {
         isDetailsOpen, isSettingsOpen, cardAnchor, cardOpenCount, onCardMessage, onLeave, onRename, closeDetails, onRoomChoice,
-        onCardDetails, closePersonPanel, onPanelBlock, onPanelUnblock, onPanelSettings, onPanelOpenRoom, onCardBlock, onCardUnblock, onSettingsUnblock, onCardSettings, closeSettings, onMemberMessage, onMemberPerson, onDetailsMembers,
+        onCardDetails, onPanelBlock, onPanelUnblock, onPanelSettings, onPanelOpenRoom, onCardBlock, onCardUnblock, onSettingsUnblock, onCardSettings, closeSettings, onMemberMessage, onMemberPerson, onDetailsMembers,
         conversationQuoteKey, threadQuoteKey, conversationQuote, threadQuote, confirmingDelete, deleteBody, isOwnQuote,
         editingIdIn, editErrorIn, isEditSavingIn, onEditLast, onEditLastReply, onCancelQuote, onMessageAction, onCancelDelete, onConfirmDelete,
         blockTitle, blockReturnTarget, onCancelBlock, onConfirmBlock

@@ -268,11 +268,19 @@ export type Frame = MembersPanelViews & ThreadsPanelWiring & Landings & {
     closePanel: (returnTo?: HTMLElement | null) => void;
 
     /**
-     * The profile open as a card moves into the column in full. One opened from the members panel
-     * keeps that list to go back to; any other panel gives the profile its place. Focus goes back
-     * to what opened it, while it is drawn, once the profile closes with its card.
+     * The face or name a card was opened from. The column shows the open card's person, so focus
+     * goes back to the opener of the person it shows, however the profile closes.
      */
-    openPersonPanel: (returnTo?: HTMLElement | null) => void;
+    notePersonOpener: (opener: HTMLElement) => void;
+
+    /**
+     * The profile open as a card moves into the column in full. One opened from the members panel
+     * keeps that list to go back to; any other panel gives the profile its place.
+     */
+    openPersonPanel: () => void;
+
+    /** The profile's X: focus goes back to the face or name that opened the person it shows, while it is drawn. */
+    closePersonPanel: () => void;
 
     /** Back from a profile to the members list it was opened from, with focus on its person's row. */
     onPersonBack: () => Promise<void>;
@@ -391,7 +399,11 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
     const threadOrigin = ref<ThreadOrigin>(null);
     const personOrigin = ref<PersonOrigin>(null);
 
-    /** What opened the profile in the column, which focus goes back to when the profile closes with its card. */
+    /**
+     * The face or name the open card's person was opened from, which focus goes back to when the
+     * profile in the column closes, by its X or with its card. Every card notes it, so a second
+     * face opened while the column shows a profile is the one focus goes back to.
+     */
     let personReturn: HTMLElement | null = null;
 
     /** The conversation the open thread belongs to, which the drawer stays open over. */
@@ -940,8 +952,11 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
         void askFocus([returnTo?.isConnected ? returnTo : null, button, "more", "header"]);
     }
 
-    function openPersonPanel(returnTo: HTMLElement | null = null): void {
-        personReturn = returnTo;
+    function notePersonOpener(opener: HTMLElement): void {
+        personReturn = opener;
+    }
+
+    function openPersonPanel(): void {
         const origin: PersonOrigin = panelKind.value === "members" ? "members" : null;
         // A thread or another list gives the profile its place; the members list stays to go back to.
         if (origin === null && panelKind.value !== "person") {
@@ -954,6 +969,10 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
         panelKind.value = "person";
         shownPanel.value = "person";
         void askFocus(["panel-start"], { within: "panel", preventScroll: true });
+    }
+
+    function closePersonPanel(): void {
+        closePanel(personReturn);
     }
 
     async function onPersonBack(): Promise<void> {
@@ -1355,7 +1374,9 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
         openThreadDrawer,
         closeThreadDrawer,
         closePanel,
+        notePersonOpener,
         openPersonPanel,
+        closePersonPanel,
         onPersonBack,
         openMainView,
         closeMainView,

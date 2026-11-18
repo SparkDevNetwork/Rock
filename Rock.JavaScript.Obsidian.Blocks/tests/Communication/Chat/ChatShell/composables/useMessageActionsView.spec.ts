@@ -69,6 +69,7 @@ function setUp(activeChannelId: string | null, thread: { channelId: string, root
             roomKinds: computed(() => ({ [team]: "channel", [pair]: "person" }))
         },
         closePanel: jest.fn(),
+        notePersonOpener: jest.fn(),
         openFromMainView: jest.fn(),
         openMainView: jest.fn(),
         onListPanel: jest.fn(),
