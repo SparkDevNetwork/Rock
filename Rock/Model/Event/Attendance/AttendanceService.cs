@@ -3357,8 +3357,19 @@ namespace Rock.Model
         private static async Task SendAttendanceDeletedRealTimeNotificationsAsync( RockContext rockContext, IList<AttendanceUpdatedState> items )
         {
             var bags = GetAttendanceUpdatedMessageBags( rockContext, items );
+
+            await SendAttendanceDeletedMessagesAsync( items, bags );
+        }
+
+        /// <summary>
+        /// Sends the attendance deleted messages for the Attendance records.
+        /// </summary>
+        /// <param name="items">The additional data that describes each attendance record when it was enqueued.</param>
+        /// <param name="bags">The message bags that describe the attendance records.</param>
+        /// <returns>A task that represents this operation.</returns>
+        internal static async Task SendAttendanceDeletedMessagesAsync( IList<AttendanceUpdatedState> items, List<AttendanceUpdatedMessageBag> bags )
+        {
             var topicClients = RealTimeHelper.GetTopicContext<IEntityUpdated>().Clients;
-            var channel = EntityUpdatedTopic.GetAttendanceDeletedChannel();
 
             foreach ( var item in items )
             {
@@ -3366,7 +3377,19 @@ namespace Rock.Model
                 {
                     var bag = bags.FirstOrDefault( b => b.AttendanceGuid == item.Guid );
 
-                    await topicClients.Channel( channel ).AttendanceDeleted( item.Guid, bag );
+                    if ( bag == null )
+                    {
+                        continue;
+                    }
+
+                    var channels = EntityUpdatedTopic.GetAttendanceChannelsForBag( bag );
+
+                    if ( channels.Count == 0 )
+                    {
+                        continue;
+                    }
+
+                    await topicClients.Channels( channels ).AttendanceDeleted( item.Guid, bag );
                 }
                 catch ( Exception ex )
                 {
