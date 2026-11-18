@@ -24,8 +24,7 @@
   "P3": {},
   "P4": {},
   "P5": {
-    "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/messageEditor.partial.obs": 1,
-    "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/chatShell.obs": 2
+    "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/messageEditor.partial.obs": 1
   },
   "P6": {
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/attachments.partial.obs": 1
