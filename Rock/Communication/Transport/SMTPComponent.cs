@@ -101,7 +101,9 @@ namespace Rock.Communication.Transport
         {
             get
             {
-                return GetAttributeValue( "Password" );
+                // A plain text value is still stored until start-up encrypts it.
+                var storedPassword = GetAttributeValue( "Password" );
+                return Rock.Security.Encryption.DecryptString( storedPassword ) ?? storedPassword;
             }
         }
 
