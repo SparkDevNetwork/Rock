@@ -321,6 +321,50 @@ namespace Rock.Blocks.CheckIn.Configuration
         }
 
         /// <summary>
+        /// Determines whether the person may preview a label rendered from
+        /// the attendance record. Attendance has no security of its own, so
+        /// the person must be able to view the attendance's group.
+        /// </summary>
+        /// <param name="attendance">The attendance record to be previewed.</param>
+        /// <param name="currentPerson">The person requesting the preview.</param>
+        /// <returns><c>true</c> if the preview is allowed; otherwise <c>false</c>.</returns>
+        internal static bool CanPreviewAttendance( Rock.Model.Attendance attendance, Person currentPerson )
+        {
+            var group = attendance.Occurrence?.Group;
+
+            return group != null && group.IsAuthorized( Authorization.VIEW, currentPerson );
+        }
+
+        /// <summary>
+        /// Removes the fields that display a person attribute the person is
+        /// not allowed to view. Used only for previews, since kiosk printing
+        /// runs without a signed in person and must still print these fields.
+        /// </summary>
+        /// <param name="fields">The label fields to be filtered.</param>
+        /// <param name="currentPerson">The person requesting the preview.</param>
+        internal static void RemoveDeniedPersonAttributeFields( List<LabelFieldBag> fields, Person currentPerson )
+        {
+            if ( fields == null )
+            {
+                return;
+            }
+
+            fields.RemoveAll( f =>
+            {
+                var sourceKey = f.ConfigurationValues?.GetValueOrNull( "sourceKey" );
+
+                if ( sourceKey == null || !sourceKey.StartsWith( "attribute:person:", StringComparison.OrdinalIgnoreCase ) )
+                {
+                    return false;
+                }
+
+                var attribute = AttributeCache.Get( sourceKey.Substring( "attribute:person:".Length ).AsGuid() );
+
+                return attribute != null && Authorization.AuthorizedForEntity( attribute, Authorization.VIEW, currentPerson ) == false;
+            } );
+        }
+
+        /// <summary>
         /// Generate the ZPL that can be used as a preview of how this label
         /// will look.
         /// </summary>
@@ -405,11 +449,18 @@ namespace Rock.Blocks.CheckIn.Configuration
             }
             else
             {
+                RemoveDeniedPersonAttributeFields( label.LabelData.Fields, RequestContext.CurrentPerson );
+
                 checkInLabel.Content = label.LabelData.ToJson();
 
                 var attendance = new AttendanceService( RockContext ).Get( attendanceId.AsInteger() );
 
                 if ( attendance == null )
+                {
+                    return ActionBadRequest( "Attendance record was not found." );
+                }
+
+                if ( !CanPreviewAttendance( attendance, RequestContext.CurrentPerson ) )
                 {
                     return ActionBadRequest( "Attendance record was not found." );
                 }
