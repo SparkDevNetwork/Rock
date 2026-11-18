@@ -4368,8 +4368,38 @@ namespace RockWeb.Blocks.Groups
             RockContext rockContext = new RockContext();
             Guid syncGuid = hfGroupSyncGuid.Value.AsGuid();
 
+            /*
+                11/18/26 - CLAUDE
+
+                The data view picker only limits what the person sees, so the selected data view
+                is checked again here. Only new or changed data views are checked so that an
+                existing rule stays editable by someone who cannot view its data view.
+
+                Reason: Only allow person data views the editor can view in sync rules.
+            */
+            var syncDataViewId = dvipSyncDataView.SelectedValueAsInt() ?? 0;
+            var existingSync = GroupSyncState.Where( s => s.Guid == syncGuid ).FirstOrDefault();
+            var isDataViewChanged = existingSync == null || existingSync.SyncDataViewId != syncDataViewId;
+
+            if ( isDataViewChanged )
+            {
+                var dataView = DataViewCache.Get( syncDataViewId );
+                var isDataViewAllowed = dataView != null
+                    && dataView.EntityTypeId == EntityTypeCache.GetId<Person>()
+                    && dataView.IsAuthorized( Authorization.VIEW, CurrentPerson );
+
+                if ( !isDataViewAllowed )
+                {
+                    nbGroupSyncDataView.Text = "The selected data view is not available to you. Choose a person data view you have permission to view.";
+                    nbGroupSyncDataView.Visible = true;
+                    return;
+                }
+            }
+
+            nbGroupSyncDataView.Visible = false;
+
             // Create a new obj
-            var groupSync = GroupSyncState.Where( s => s.Guid == syncGuid ).FirstOrDefault();
+            var groupSync = existingSync;
             if ( groupSync == null )
             {
                 groupSync = new GroupSyncViewModel();
@@ -4479,6 +4509,7 @@ namespace RockWeb.Blocks.Groups
             ddlExitCommunication.Items.Clear();
             cbCreateLoginDuringSync.Checked = false;
             ipScheduleIntervalMinutes.IntervalInMinutes = 12 * 60;
+            nbGroupSyncDataView.Visible = false;
         }
 
         #endregion
