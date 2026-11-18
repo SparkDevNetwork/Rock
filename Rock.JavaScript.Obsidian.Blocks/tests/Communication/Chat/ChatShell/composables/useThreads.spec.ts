@@ -324,6 +324,40 @@ describe("the threads list is fetched", () => {
         expect(listCalls[2].args).toEqual(expect.objectContaining({ p_channel_id: null }));
     });
 
+    // The panel draws what the list holds while it closes, so a closing panel keeps its rows to the end.
+    test("closed, the list keeps its rows for the panel leaving, and asks nothing more", async () => {
+        const { threads, callsTo, answers } = await setup();
+        answers.chat_list_threads = [listAnswer([listRow(40), listRow(41)])];
+        await threads.openList(channel);
+
+        threads.closeList();
+
+        expect(threads.state.list.rows.map(r => r.root.id)).toEqual([40, 41]);
+        expect(threads.state.list.isLoading).toBe(false);
+        expect(threads.state.list.isRefreshing).toBe(false);
+        expect(callsTo("chat_list_threads")).toHaveLength(1);
+    });
+
+    // A panel opened draws its rows entering as its first page lands; rows held from before would
+    // be drawn at once and then played in again under the reader, so an opening is always the first.
+    test("when the panel opens again, afresh as at its first opening: nothing held is drawn until the first page lands", async () => {
+        const { threads, answers } = await setup();
+        const page = deferred<CallResult>();
+        answers.chat_list_threads = [listAnswer([listRow(40)]), page];
+        await threads.openList(channel);
+        threads.closeList();
+
+        const opening = threads.openList(channel);
+
+        expect(threads.state.list.rows).toEqual([]);
+        expect(threads.state.list.isLoading).toBe(true);
+        expect(threads.state.list.isRefreshing).toBe(false);
+        page.resolve(listAnswer([listRow(40), listRow(41)]));
+        await opening;
+        expect(threads.state.list.rows.map(r => r.root.id)).toEqual([40, 41]);
+        expect(threads.state.list.isLoading).toBe(false);
+    });
+
     // All lists every followed thread whichever conversation is open, so it is the same list.
     test("on All, when the conversation changes, in place: the rows stay while the list refreshes", async () => {
         const { threads, callsTo, answers } = await setup();

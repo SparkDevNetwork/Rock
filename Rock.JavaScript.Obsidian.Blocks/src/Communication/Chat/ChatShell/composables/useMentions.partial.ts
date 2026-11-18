@@ -503,11 +503,20 @@ export function createMentions(dependencies: MentionsDependencies): Mentions {
         }
     }
 
-    /** Empties the inbox and drops any page still on its way. */
+    /** Empties the inbox and drops any page still on its way, as an opening starts from nothing. */
     function resetInbox(): void {
+        closeInbox();
+        Object.assign(state.inbox, { rows: [], hasMore: false, error: null, olderError: null, newIds: [], currentId: null });
+    }
+
+    /**
+     * The panel closed: any page still on its way is dropped, and the rows stay, so the panel
+     * leaving keeps drawing them until it is gone rather than saying there are no mentions.
+     */
+    function closeInbox(): void {
         isInboxShown = false;
         inboxGeneration++;
-        Object.assign(state.inbox, { rows: [], hasMore: false, isLoading: false, isRefreshing: false, isLoadingOlder: false, error: null, olderError: null, newIds: [], currentId: null });
+        Object.assign(state.inbox, { isLoading: false, isRefreshing: false, isLoadingOlder: false });
     }
 
     // #endregion The inbox
@@ -614,8 +623,9 @@ export function createMentions(dependencies: MentionsDependencies): Mentions {
         loadOlder: async (): Promise<void> => {
             const last = state.inbox.rows[state.inbox.rows.length - 1];
             // A refresh on its way replaces the rows, so a page after the current last row would land
-            // past a gap; the refreshed rows decide what is older.
-            if (isStopped || !last || !state.inbox.hasMore || state.inbox.isLoadingOlder || state.inbox.isRefreshing) {
+            // past a gap; the refreshed rows decide what is older. A closed inbox's rows are only
+            // drawn while its panel leaves, so nothing more is read for them.
+            if (isStopped || !isInboxShown || !last || !state.inbox.hasMore || state.inbox.isLoadingOlder || state.inbox.isRefreshing) {
                 return;
             }
 
@@ -641,7 +651,7 @@ export function createMentions(dependencies: MentionsDependencies): Mentions {
             markNew();
         },
 
-        closeInbox: resetInbox,
+        closeInbox,
 
         resync: (): void => {
             forgetPeople();

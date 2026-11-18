@@ -192,7 +192,10 @@ export type ThreadsDependencies = {
 export type Threads = {
     state: ThreadsState;
 
-    /** Opens the list for a conversation, on the tab last chosen unless one is named. */
+    /**
+     * Opens the list for a conversation, on the tab last chosen unless one is named: afresh when
+     * the panel opens, in place while it is shown.
+     */
     openList: (channelId: string, tab?: ThreadListTab) => Promise<void>;
 
     /** Fetches the list on screen again, keeping its rows until the answer replaces them. */
@@ -201,7 +204,7 @@ export type Threads = {
     /** Fetches the next page after the last row, when the list is scrolled to its end. */
     loadMore: () => Promise<void>;
 
-    /** The panel closed: any list answer still on its way is dropped. */
+    /** The panel closed: any list answer still on its way is dropped, and the rows stay for the panel leaving. */
     closeList: () => void;
 
     /** Follows or unfollows a thread. Resolves true when the platform took the change. */
@@ -964,16 +967,20 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
                 return;
             }
             const list = state.list;
+            // A panel opening draws its first page entering, so an opening starts from nothing, as
+            // the first did; rows held since a close would be drawn at once and then played in
+            // again. The tab is the person's choice for the page, kept across closing the panel
+            // and changing conversation. While the list is shown, All lists the same threads from
+            // any conversation, so it refreshes in place.
+            const isSameList = isListShown && list.tab === tab && (tab === "all" || list.channelId === channelId);
             isListShown = true;
-            // The tab is the person's choice for the page, kept across closing the panel and changing
-            // conversation. All lists the same threads from any conversation, so it refreshes in place.
-            const isSameList = list.tab === tab && (tab === "all" || list.channelId === channelId);
             list.channelId = channelId;
             list.tab = tab;
             state.followError = null;
             if (!isSameList) {
                 list.rows = [];
                 list.hasMore = false;
+                list.error = null;
             }
             await fetchList(list.rows.length > 0 ? "refresh" : "fresh");
         },
@@ -987,6 +994,7 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
             await fetchList("more");
         },
 
+        // The rows stay, so the panel leaving keeps drawing them until it is gone.
         closeList: (): void => {
             isListShown = false;
             listFetch++;
