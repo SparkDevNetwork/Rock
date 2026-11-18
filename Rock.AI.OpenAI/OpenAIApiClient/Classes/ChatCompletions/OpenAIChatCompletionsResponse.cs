@@ -73,6 +73,14 @@ namespace Rock.AI.OpenAI.OpenAIApiClient.Classes.ChatCompletions
         /// </summary>
         public string ErrorMessage { get; set; }
 
+        /// <summary>
+        /// The name of the request parameter that caused the error, such as
+        /// "temperature". This is <c>null</c> when the error does not name a
+        /// parameter.
+        /// </summary>
+        [JsonIgnore]
+        public string ErrorParameter { get; set; }
+
         #endregion
 
         #region Methods
