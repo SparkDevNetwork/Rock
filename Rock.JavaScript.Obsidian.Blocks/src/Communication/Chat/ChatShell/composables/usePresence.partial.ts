@@ -57,7 +57,7 @@ export type PresenceDependencies = {
     /** The token held now, which a refusal as off silences until the next. */
     currentToken: () => string | null;
 
-    state: Pick<ShellState, "activeChannelId" | "connection" | "isComposerOpen">;
+    state: Pick<ShellState, "activeChannelId" | "connection" | "isComposerOpen" | "isStatusShown">;
 
     /** A room's sidebar row, for its kind and whether the person may post there. */
     rowOf: (channelId: string) => SidebarRow | null;
@@ -98,10 +98,10 @@ export type PresenceDependencies = {
     isStopped: () => boolean;
 
     /**
-     * Her own settings: her status as her tabs show it, her choice pending, whether her settings
-     * have been read, and her input in her other tabs, which this page tells them its own.
+     * Her own settings: her status as her tabs show it, whether anything says it yet, and her
+     * input in her other tabs, which this page tells them its own.
      */
-    prefs: Pick<Prefs, "shownStatus" | "isChoicePending" | "noteInput"> & { state: Pick<Prefs["state"], "isMeRead" | "ownInputAt"> };
+    prefs: Pick<Prefs, "shownStatus" | "isStatusKnown" | "noteInput"> & { state: Pick<Prefs["state"], "ownInputAt"> };
 } & Pick<PresenceStatusDependencies, "targets" | "leave" | "session">;
 
 /** Typing, as the shell holds it. */
@@ -259,8 +259,10 @@ export function createPresence(dependencies: PresenceDependencies): Presence {
     const { prefs } = dependencies;
     const status = createPresenceStatus({
         ...dependencies,
-        // a choice she made is hers before her settings are read
-        me: () => prefs.state.isMeRead || prefs.isChoicePending() ? prefs.shownStatus() : null,
+        // the page's one switch, which the sidebar's foot draws by too, so her face and the foot agree
+        isStatusShown: () => shellState.isStatusShown,
+        // a choice she made, or what her last load left, is hers before her settings are read
+        me: () => prefs.isStatusKnown() ? prefs.shownStatus() : null,
         ownInputAt: () => prefs.state.ownInputAt,
         noteInput: at => prefs.noteInput(at)
     });

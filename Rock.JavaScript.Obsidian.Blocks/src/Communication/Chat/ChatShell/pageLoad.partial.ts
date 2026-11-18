@@ -29,6 +29,7 @@ import { classifyPlatformError } from "./errors.partial";
 import type { ReadTracker } from "./composables/useMarkRead.partial";
 import type { ChatShell, ShellState } from "./shell.partial";
 import { SidebarRow } from "./types.partial";
+import type { StatusChoice } from "./composables/usePrefs.partial";
 
 /** The part of browser storage the shell uses. */
 export type StorageLike = {
@@ -210,6 +211,61 @@ export function readRememberedStatusShown(storage: StorageLike | null, channelKe
 export function writeRememberedStatusShown(storage: StorageLike | null, channelKey: string, isShown: boolean): void {
     try {
         storage?.setItem(rememberedStatusShownKey(channelKey), isShown ? "on" : "off");
+    }
+    catch {
+        // Intentionally ignored: storage blocked or full only loses the memory.
+    }
+}
+
+/**
+ * The key beside the remembered channel that holds her own status as her settings last held it,
+ * so a reload draws her own face from the first paint, before her settings are read again.
+ *
+ * @param channelKey The remembered channel's key.
+ *
+ * @returns The key.
+ */
+function rememberedStatusKey(channelKey: string): string {
+    return `${channelKey}:status`;
+}
+
+/**
+ * Reads her own status as her settings held it at her last load. A sign-out since deleted it with
+ * the remembered rooms; a first visit, blocked storage or a value this reader cannot read gives
+ * null, and her face waits for her settings.
+ *
+ * @param storage The browser storage, or null when there is none.
+ * @param channelKey The remembered channel's key.
+ *
+ * @returns Her Busy and Appear offline, or null.
+ */
+export function readRememberedStatus(storage: StorageLike | null, channelKey: string): StatusChoice | null {
+    try {
+        const raw = storage?.getItem(rememberedStatusKey(channelKey));
+        const kept = raw ? JSON.parse(raw) as Partial<StatusChoice> | null : null;
+        if (typeof kept !== "object" || kept === null || typeof kept.appear_offline !== "boolean"
+            || (kept.busy_until !== null && typeof kept.busy_until !== "string")) {
+            return null;
+        }
+        return { busy_until: kept.busy_until, appear_offline: kept.appear_offline };
+    }
+    catch {
+        // Intentionally ignored: storage blocked, or a value no release wrote, only loses the memory.
+        return null;
+    }
+}
+
+/**
+ * Remembers her own status as her settings hold it. Storage that is blocked or missing only
+ * loses the memory.
+ *
+ * @param storage The browser storage, or null when there is none.
+ * @param channelKey The remembered channel's key.
+ * @param choice Her Busy and Appear offline.
+ */
+export function writeRememberedStatus(storage: StorageLike | null, channelKey: string, choice: StatusChoice): void {
+    try {
+        storage?.setItem(rememberedStatusKey(channelKey), JSON.stringify({ busy_until: choice.busy_until, appear_offline: choice.appear_offline }));
     }
     catch {
         // Intentionally ignored: storage blocked or full only loses the memory.

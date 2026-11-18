@@ -190,8 +190,17 @@ export type Prefs = {
      */
     setStatus: (choice: StatusChoice) => Promise<void>;
 
-    /** Her status as her faces, her typing and her menu read it: her newest choice while it is not yet saved, else the last saved. */
+    /**
+     * Her status as her faces, her typing and her menu read it: her newest choice while it is not
+     * yet saved, else the last saved, and before her settings are read what her last load left.
+     */
     shownStatus: () => StatusChoice;
+
+    /**
+     * Whether anything says her status yet, so her own face may draw it: her settings read, a
+     * choice of hers pending, or the status her last load on this browser left.
+     */
+    isStatusKnown: () => boolean;
 
     /** Whether a choice of hers is shown that is not yet saved, which is hers whether or not her settings have been read. */
     isChoicePending: () => boolean;
@@ -570,6 +579,7 @@ export function createPrefs(dependencies: PrefsDependencies): Prefs {
 
         setStatus: status.setStatus,
         shownStatus: status.shownStatus,
+        isStatusKnown: status.isStatusKnown,
         isChoicePending: status.isChoicePending,
         isStatusRetrying: status.isStatusRetrying,
         statusSaving: status.statusSaving,

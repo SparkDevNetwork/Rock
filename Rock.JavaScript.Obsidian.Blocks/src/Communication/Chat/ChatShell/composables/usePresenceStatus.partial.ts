@@ -47,8 +47,15 @@ import type { ChatSession, ChatSettings, RefreshReason } from "./useSession.part
 
 /** What status reaches outside itself. */
 export type PresenceStatusDependencies = {
-    /** The settings, watched, so it must be reactive: the switch and the idle line are kept as they change, since a face reads only its revision. */
+    /** The settings, watched, so it must be reactive: the idle line is kept as it changes, since a face reads only its revision. */
     settings: () => ChatSettings;
+
+    /**
+     * Whether online status is on for the page: the church's switch from the first exchange, and
+     * before it the sidebar foot's shape as the person's last load left it. Watched, so it must be
+     * reactive, and kept as it changes.
+     */
+    isStatusShown: () => boolean;
 
     /** The person's primary alias, whose own carried copy is never written. */
     personAliasGuid: string;
@@ -299,7 +306,7 @@ function readWatchAnswer(raw: unknown): { asOf: number, told: Map<string, unknow
  * @returns The store.
  */
 export function createPresenceStatus(dependencies: PresenceStatusDependencies): PresenceStatus {
-    const { settings, isBlocked, isStopped, targets, leave, session, me, ownInputAt, noteInput } = dependencies;
+    const { settings, isStatusShown, isBlocked, isStopped, targets, leave, session, me, ownInputAt, noteInput } = dependencies;
     const self = dependencies.personAliasGuid.toLowerCase();
 
     /** Each person's newest decision, by lower-case primary alias; kept when it says nothing, for its time. */
@@ -334,7 +341,7 @@ export function createPresenceStatus(dependencies: PresenceStatusDependencies): 
      * face reads only its revision: every token exchange replaces the settings whole, so a face
      * that read them would draw again at each exchange with nothing changed.
      */
-    const switchOf = (): boolean => settings().flags.online === true;
+    const switchOf = (): boolean => isStatusShown();
     const idleLineOf = (): number => settings().limits.presence_idle_seconds * 1000;
     const mineOf = (): Pick<MeSettings, "busy_until" | "appear_offline"> | null => {
         const read = me();
