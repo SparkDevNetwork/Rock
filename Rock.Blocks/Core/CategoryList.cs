@@ -27,6 +27,7 @@ using Rock.Obsidian.UI;
 using Rock.Security;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Core.CategoryList;
+using Rock.ViewModels.Core.Grid;
 using Rock.ViewModels.Utility;
 using Rock.Web;
 using Rock.Web.Cache;
@@ -545,6 +546,39 @@ namespace Rock.Blocks.Core
         #endregion
 
         #region Block Actions
+
+        /// <summary>
+        /// Determines whether the current person has Administrate on this
+        /// block, which is required to view or act on any category rows.
+        /// </summary>
+        /// <returns><c>true</c> if the current person is an administrator of the block; otherwise, <c>false</c>.</returns>
+        private bool IsAdministrator()
+        {
+            return BlockCache.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson );
+        }
+
+        /// <inheritdoc/>
+        public override BlockActionResult GetGridData()
+        {
+            if ( !IsAdministrator() )
+            {
+                return ActionForbidden( "Not authorized to view categories." );
+            }
+
+            return base.GetGridData();
+        }
+
+        /// <inheritdoc/>
+        protected override bool IsAllowedToCreateEntitySet( GridEntitySetBag entitySetBag )
+        {
+            return IsAdministrator();
+        }
+
+        /// <inheritdoc/>
+        protected override bool IsAllowedToCreateCommunication( GridCommunicationBag communicationBag )
+        {
+            return IsAdministrator();
+        }
 
         /// <summary>
         /// Gets the specified category for editing. An empty key indicates a
