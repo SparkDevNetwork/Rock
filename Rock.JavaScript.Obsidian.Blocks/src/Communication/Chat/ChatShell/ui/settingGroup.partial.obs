@@ -9,14 +9,15 @@
         <slot v-if="isBare" :labelId="labelId"></slot>
         <!--
             A list's rows leave by the Leave motion: each row draws its own fade where it stands,
-            and once it has gone the list glides the rows below into the gap by its one move.
+            and once it has gone the list glides the rows below into the gap by its one move. The
+            group itself moves nothing, so a row whose ask closes as it starts to leave neither
+            glides itself nor sets the rows below gliding while it fades.
         -->
         <TransitionGroup v-else-if="isList"
                          ref="listGroup"
                          tag="div"
                          class="chat-sg"
                          role="list"
-                         :moveClass="moveClass"
                          leaveActiveClass="is-leaving"
                          leaveToClass="is-left"
                          :aria-labelledby="label && !ariaLabel ? labelId : undefined"
@@ -133,8 +134,10 @@
     const listGroup = ref<ComponentPublicInstance | null>(null);
 
     /**
-     * Each row's place, from the list's top, as a row began to leave, and after each row has gone;
-     * the rows below one that went glide from it to their own.
+     * Each row's laid-out place on the screen as a row began to leave, and after each row has gone;
+     * the rows below one that went glide from it to their own. On the screen rather than in the
+     * list, since a sheet held at its bottom closes from its top: there the list's top comes down
+     * as the box closes and the rows below stay where they are seen, with nothing to glide.
      */
     const placeOf = new WeakMap<Element, number>();
 
@@ -155,14 +158,25 @@
         return list ? Array.from(list.children) as HTMLElement[] : [];
     }
 
+    /** Where a row is laid out on the screen, by the list's top, whatever glide it is drawn at. */
+    function placeOnScreen(row: HTMLElement, listTop: number): number {
+        return listTop + row.offsetTop;
+    }
+
+    /** The list's top on the screen, which a sheet's closing may move. */
+    function listTop(): number {
+        return (listGroup.value?.$el as HTMLElement | undefined)?.getBoundingClientRect().top ?? 0;
+    }
+
     // #endregion Functions
 
     // #region Event Handlers
 
     /** A row starts its fade, still holding its place: where every row stands is noted, none having moved. */
     function onRowLeaving(): void {
+        const top = listTop();
         for (const row of listRows()) {
-            placeOf.set(row, row.offsetTop);
+            placeOf.set(row, placeOnScreen(row, top));
         }
     }
 
@@ -173,13 +187,15 @@
      */
     function onRowGone(): void {
         const rows = listRows();
+        const top = listTop();
         // Where less motion is asked for the move takes no time, so no transition would end to take
         // it off again: the rows below stand in their new places at once.
         const isGlideShown = !isMotionReduced();
         const gliding = rows.filter(row => {
             const before = placeOf.get(row);
-            const shift = before === undefined || row.classList.contains("is-leaving") ? 0 : before - row.offsetTop;
-            placeOf.set(row, row.offsetTop);
+            const place = placeOnScreen(row, top);
+            const shift = before === undefined || row.classList.contains("is-leaving") ? 0 : before - place;
+            placeOf.set(row, place);
             if (shift === 0 || !isGlideShown) {
                 return false;
             }
