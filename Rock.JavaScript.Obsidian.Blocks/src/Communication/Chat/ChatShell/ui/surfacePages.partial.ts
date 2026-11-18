@@ -54,6 +54,9 @@ export type SurfaceParts = {
     scroller?: () => HTMLElement | undefined;
 };
 
+/** A surface's height and side inset as drawn, which a turn moves from one page's to the next's. */
+type SurfaceBox = { height: number, paddingLeft: string, paddingRight: string };
+
 /** A surface's pages, the first one its own body and the rest turned to over it in order. */
 export type SurfacePages = {
     /** Whether a page is turned to over the surface's own body. */
@@ -110,20 +113,25 @@ export function provideSurfacePages(parts: SurfaceParts): SurfacePages {
     const top = computed((): SurfacePageEntry | null => stack[stack.length - 1] ?? null);
 
     /**
-     * The surface's height as the person sees it before a turn is drawn, mid-change included, so
-     * the next change starts from there; null where the surface is not open to move.
+     * The surface's height and side inset as the person sees them, mid-change included, so the
+     * next change starts from there; null where the surface is not open to move. The inset moves
+     * with the height: a page that runs to the surface's edges, as a picker does, takes it away.
      */
-    function heightBefore(): number | null {
+    function boxOf(): SurfaceBox | null {
         const surface = parts.surface();
-        return surface && parts.isOpen() ? surface.getBoundingClientRect().height : null;
+        if (!surface || !parts.isOpen()) {
+            return null;
+        }
+        const style = getComputedStyle(surface);
+        return { height: surface.getBoundingClientRect().height, paddingLeft: style.paddingLeft, paddingRight: style.paddingRight };
     }
 
     /**
      * After the patch, puts the page on top at its place, then grows or shrinks the surface from
-     * its old height to the one that page gives it, over the panel's own duration as the pages
-     * slide. Where less motion is asked for the height changes at once and the pages only fade.
+     * its old height and inset to the ones that page gives it, over the panel's own duration as
+     * the pages slide. Where less motion is asked for both change at once and the pages only fade.
      */
-    function settleTurn(before: number | null, place: number): void {
+    function settleTurn(before: SurfaceBox | null, place: number): void {
         const surface = parts.surface();
         if (!surface || !parts.isOpen()) {
             return;
@@ -141,14 +149,17 @@ export function provideSurfacePages(parts: SurfaceParts): SurfacePages {
             return;
         }
 
-        const after = surface.getBoundingClientRect().height;
+        const after = boxOf();
         const style = getComputedStyle(surface);
         const duration = parseFloat(style.getPropertyValue("--chat-t-panel"));
-        if (after === before || !duration) {
+        const isSame = after !== null && after.height === before.height
+            && after.paddingLeft === before.paddingLeft && after.paddingRight === before.paddingRight;
+        if (!after || isSame || !duration) {
             return;
         }
 
-        resizing = surface.animate([{ height: `${before}px` }, { height: `${after}px` }], {
+        const frameOf = (box: SurfaceBox): Keyframe => ({ height: `${box.height}px`, paddingLeft: box.paddingLeft, paddingRight: box.paddingRight });
+        resizing = surface.animate([frameOf(before), frameOf(after)], {
             duration,
             easing: style.getPropertyValue("--chat-ease-in").trim()
         });
@@ -161,7 +172,7 @@ export function provideSurfacePages(parts: SurfaceParts): SurfacePages {
 
         openers.set(entry, document.activeElement instanceof HTMLElement ? document.activeElement : null);
         places.set(entry, parts.scroller?.()?.scrollTop ?? 0);
-        const before = heightBefore();
+        const before = boxOf();
         stack.push(entry);
 
         // After the patch, when the page and the head are drawn; the page starts at its top.
@@ -184,7 +195,7 @@ export function provideSurfacePages(parts: SurfaceParts): SurfacePages {
         const wasTop = at === stack.length - 1;
         const opener = openers.get(entry) ?? null;
         const place = places.get(entry) ?? 0;
-        const before = wasTop ? heightBefore() : null;
+        const before = wasTop ? boxOf() : null;
         stack.splice(at, 1);
         openers.delete(entry);
         places.delete(entry);
