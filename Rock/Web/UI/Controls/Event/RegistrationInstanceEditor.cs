@@ -24,6 +24,8 @@ using Rock;
 using Rock.Data;
 using Rock.Financial;
 using Rock.Model;
+using Rock.Security;
+using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {
@@ -828,6 +830,8 @@ namespace Rock.Web.UI.Controls
 
             if ( instance != null )
             {
+                var person = ( Page as RockPage )?.CurrentPerson;
+
                 instance.Name = _tbName.Text;
                 if ( ShowActive && ShowRegistrationTypeSection )
                 {
@@ -837,7 +841,12 @@ namespace Rock.Web.UI.Controls
                 instance.StartDateTime = _dtpStart.SelectedDateTime;
                 instance.EndDateTime = _dtpEnd.SelectedDateTime;
                 instance.MaxAttendees = _nbMaxAttendees.Text.AsIntegerOrNull();
-                instance.RegistrationWorkflowTypeId = _wtpRegistrationWorkflow.SelectedValueAsInt();
+                var postedWorkflowTypeId = _wtpRegistrationWorkflow.SelectedValueAsInt();
+                if ( IsWorkflowTypeAllowed( postedWorkflowTypeId, instance.RegistrationWorkflowTypeId, person ) )
+                {
+                    instance.RegistrationWorkflowTypeId = postedWorkflowTypeId;
+                }
+
                 instance.ContactPersonAliasId = _ppContact.PersonAliasId;
                 instance.ContactPhone = _pnContactPhone.Text;
                 instance.ContactEmail = _ebContactEmail.Text;
@@ -845,7 +854,11 @@ namespace Rock.Web.UI.Controls
                 instance.MinimumInitialPayment = _cbMinimumInitialPayment.Value;
                 instance.DefaultPayment = _cbDefaultPaymentAmount.Value;
                 int accountId = _apAccount.SelectedValue.AsInteger();
-                instance.AccountId = accountId > 0 ? accountId : ( int? ) null;
+                if ( IsAccountAllowed( accountId, instance.AccountId ) )
+                {
+                    instance.AccountId = accountId > 0 ? accountId : ( int? ) null;
+                }
+
                 instance.SendReminderDateTime = _dtpSendReminder.SelectedDateTime;
                 instance.PaymentDeadlineDate = _dpPaymentDeadline.SelectedDate;
                 instance.ReminderSent = _cbReminderSent.Checked;
@@ -871,6 +884,47 @@ namespace Rock.Web.UI.Controls
                     instance.ExternalGatewayMerchantId = null;
                     instance.ExternalGatewayFundId = null;
                 }
+            }
+        }
+
+        /// <summary>
+        /// Determines whether the posted workflow type may be assigned to the registration instance.
+        /// </summary>
+        /// <param name="postedWorkflowTypeId">The workflow type identifier posted by the client.</param>
+        /// <param name="currentWorkflowTypeId">The workflow type identifier currently on the registration instance.</param>
+        /// <param name="person">The person saving the registration instance.</param>
+        /// <returns><c>true</c> if the posted value is empty, unchanged or a workflow type the person can view; otherwise <c>false</c>.</returns>
+        private static bool IsWorkflowTypeAllowed( int? postedWorkflowTypeId, int? currentWorkflowTypeId, Person person )
+        {
+            if ( !postedWorkflowTypeId.HasValue || postedWorkflowTypeId == currentWorkflowTypeId )
+            {
+                return true;
+            }
+
+            // The picker offers inactive workflow types, so only VIEW is checked.
+            return WorkflowTypeCache.Get( postedWorkflowTypeId.Value )?.IsAuthorized( Authorization.VIEW, person ) == true;
+        }
+
+        /// <summary>
+        /// Determines whether the posted financial account may be assigned to the registration instance.
+        /// </summary>
+        /// <param name="postedAccountId">The account identifier posted by the client, zero or less when cleared.</param>
+        /// <param name="currentAccountId">The account identifier currently on the registration instance.</param>
+        /// <returns><c>true</c> if the posted value is empty, unchanged or an active account; otherwise <c>false</c>.</returns>
+        private static bool IsAccountAllowed( int postedAccountId, int? currentAccountId )
+        {
+            if ( postedAccountId <= 0 || postedAccountId == currentAccountId )
+            {
+                return true;
+            }
+
+            // The picker offers every active account to anyone who can edit the instance,
+            // and stock security only lets finance roles view accounts, so VIEW is not checked.
+            using ( var rockContext = new RockContext() )
+            {
+                var account = new FinancialAccountService( rockContext ).Get( postedAccountId );
+
+                return account != null && account.IsActive;
             }
         }
 

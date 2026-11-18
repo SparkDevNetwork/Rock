@@ -1116,7 +1116,8 @@ namespace RockWeb.Blocks.Event
                 if ( registrationInstance != null )
                 {
                     eventItemOccurrenceGroupMap.RegistrationInstance = new RegistrationInstance();
-                    eventItemOccurrenceGroupMap.RegistrationInstance.AccountId = registrationInstance.AccountId;
+                    var previousAccount = registrationInstance.AccountId.HasValue ? FinancialAccountCache.Get( registrationInstance.AccountId.Value ) : null;
+                    eventItemOccurrenceGroupMap.RegistrationInstance.AccountId = previousAccount != null && previousAccount.IsActive ? previousAccount.Id : ( int? ) null;
                     eventItemOccurrenceGroupMap.RegistrationInstance.RegistrationTemplateId = registrationInstance.RegistrationTemplateId;
                     eventItemOccurrenceGroupMap.RegistrationInstance.RegistrationTemplate = new RegistrationTemplate();
                     eventItemOccurrenceGroupMap.RegistrationInstance.ContactPersonAliasId = registrationInstance.ContactPersonAliasId;
@@ -1174,8 +1175,8 @@ namespace RockWeb.Blocks.Event
                     Guid? accountGuid = GetAttributeValue( AttributeKey.DefaultAccount ).AsGuidOrNull();
                     if ( accountGuid.HasValue )
                     {
-                        var account = new FinancialAccountService( rockContext ).Get( accountGuid.Value );
-                        rieNewLinkage.AccountId = account != null ? account.Id : 0;
+                        var account = FinancialAccountCache.Get( accountGuid.Value );
+                        rieNewLinkage.AccountId = account != null && account.IsActive ? account.Id : 0;
                     }
                 }
             }

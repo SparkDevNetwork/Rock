@@ -1156,8 +1156,8 @@ The logged-in person's information will be used to complete the registrar inform
             registrationTemplate.ShowSmsOptIn = cbShowSmsOptIn.Checked;
             registrationTemplate.RegistrarOption = ddlRegistrarOption.SelectedValueAsEnum<RegistrarOption>();
 
-            registrationTemplate.RegistrationWorkflowTypeId = wtpRegistrationWorkflow.SelectedValueAsInt();
-            registrationTemplate.RegistrantWorkflowTypeId = wtpRegistrantWorkflow.SelectedValueAsInt();
+            registrationTemplate.RegistrationWorkflowTypeId = GetAllowedWorkflowTypeId( wtpRegistrationWorkflow.SelectedValueAsInt(), registrationTemplate.RegistrationWorkflowTypeId );
+            registrationTemplate.RegistrantWorkflowTypeId = GetAllowedWorkflowTypeId( wtpRegistrantWorkflow.SelectedValueAsInt(), registrationTemplate.RegistrantWorkflowTypeId );
             registrationTemplate.Notify = notify;
             registrationTemplate.AddPersonNote = cbAddPersonNote.Checked;
             registrationTemplate.LoginRequired = cbLoginRequired.Checked;
@@ -3243,6 +3243,27 @@ The logged-in person's information will be used to complete the registrar inform
             }
         }
 
+        /// <summary>
+        /// Gets the workflow type identifier to store from a posted workflow type picker value.
+        /// </summary>
+        /// <param name="postedWorkflowTypeId">The workflow type identifier posted by the client.</param>
+        /// <param name="currentWorkflowTypeId">The workflow type identifier currently on the registration template.</param>
+        /// <returns>The posted identifier when it is empty, unchanged or a workflow type the current person can view; otherwise the current identifier.</returns>
+        private int? GetAllowedWorkflowTypeId( int? postedWorkflowTypeId, int? currentWorkflowTypeId )
+        {
+            if ( !postedWorkflowTypeId.HasValue || postedWorkflowTypeId == currentWorkflowTypeId )
+            {
+                return postedWorkflowTypeId;
+            }
+
+            // The picker offers inactive workflow types, so only VIEW is checked.
+            var workflowType = WorkflowTypeCache.Get( postedWorkflowTypeId.Value );
+
+            return workflowType?.IsAuthorized( Authorization.VIEW, CurrentPerson ) == true
+                ? postedWorkflowTypeId
+                : currentWorkflowTypeId;
+        }
+
         #endregion
 
         #region Registrant Forms/FieldFilter Methods
@@ -4265,6 +4286,9 @@ The logged-in person's information will be used to complete the registrar inform
             {
                 RegistrationTemplatePlacementState.Remove( registrationTemplatePlacement );
 
+                // A new placement posted with this Guid must not inherit the deleted placement's groups.
+                RegistrationTemplatePlacementGuidGroupIdsState.Remove( registrationTemplatePlacement.Guid );
+
                 BindPlacementConfigurationsGrid();
             }
         }
@@ -4290,7 +4314,25 @@ The logged-in person's information will be used to complete the registrar inform
             registrationTemplatePlacement.GroupTypeId = gtpPlacementConfigurationGroupTypeEdit.SelectedGroupTypeId.Value;
             registrationTemplatePlacement.IconCssClass = tbPlacementConfigurationIconCssClass.Text;
             registrationTemplatePlacement.AllowMultiplePlacements = cbPlacementConfigurationAllowMultiple.Checked;
-            RegistrationTemplatePlacementGuidGroupIdsState.AddOrReplace( registrationTemplatePlacement.Guid, hfPlacementConfigurationSharedGroupIdList.Value.SplitDelimitedValues().AsIntegerList() );
+
+            // Groups already linked are kept as-is.
+            // Only newly posted groups must match the placement's group type and be viewable by the current person.
+            var postedGroupIds = hfPlacementConfigurationSharedGroupIdList.Value.SplitDelimitedValues().AsIntegerList();
+            var currentGroupIds = RegistrationTemplatePlacementGuidGroupIdsState.GetValueOrNull( registrationTemplatePlacement.Guid ) ?? new List<int>();
+            var newGroupIds = postedGroupIds.Except( currentGroupIds ).ToList();
+            var allowedNewGroupIds = new GroupService( new RockContext() )
+                .GetByIds( newGroupIds )
+                .ToList()
+                .Where( g => g.GroupTypeId == registrationTemplatePlacement.GroupTypeId
+                    && g.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                .Select( g => g.Id )
+                .ToList();
+
+            var sharedGroupIds = postedGroupIds
+                .Where( id => currentGroupIds.Contains( id ) || allowedNewGroupIds.Contains( id ) )
+                .ToList();
+
+            RegistrationTemplatePlacementGuidGroupIdsState.AddOrReplace( registrationTemplatePlacement.Guid, sharedGroupIds );
             dlgPlacementConfiguration.Hide();
 
             BindPlacementConfigurationsGrid();
