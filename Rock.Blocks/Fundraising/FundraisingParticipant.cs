@@ -727,10 +727,7 @@ namespace Rock.Blocks.Fundraising
                 return null;
             }
 
-            var contentChannelItems = new ContentChannelItemService( RockContext ).Queryable()
-                .Where( a => a.ContentChannelId == contentChannel.Id )
-                .AsNoTracking()
-                .ToList();
+            var contentChannelItems = FundraisingUpdateItems.GetViewableItems( RockContext, contentChannel.Id, RequestContext.CurrentPerson );
 
             itemCount = contentChannelItems.Count;
 

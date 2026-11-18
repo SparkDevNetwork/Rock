@@ -244,10 +244,10 @@ namespace Rock.Blocks.Fundraising
         }
 
         /// <summary>
-        /// Determines whether the current person is a leader of the opportunity group, which
-        /// is required to view the toolbox.
+        /// Determines whether the current person is an active leader of the opportunity group,
+        /// which is required to view the toolbox.
         /// </summary>
-        /// <returns><c>true</c> when the current person is a leader of the group.</returns>
+        /// <returns><c>true</c> when the current person has an active leader membership in the group.</returns>
         private bool IsCurrentPersonLeader()
         {
             var currentPersonId = RequestContext.CurrentPerson?.Id;
@@ -256,11 +256,20 @@ namespace Rock.Blocks.Fundraising
                 return false;
             }
 
+            /*
+                11/18/2026 - MSE
+
+                Only an Active leader membership counts. A leader whose membership was set to Inactive
+                or Pending is no longer leading the opportunity and must not open the toolbox.
+
+                Reason: Leader Toolbox access should require an Active leader membership.
+            */
             return new GroupMemberService( RockContext )
                 .Queryable()
                 .Any( m => m.GroupId == GroupId
                     && m.PersonId == currentPersonId.Value
-                    && m.GroupRole.IsLeader );
+                    && m.GroupRole.IsLeader
+                    && m.GroupMemberStatus == GroupMemberStatus.Active );
         }
 
         /// <inheritdoc/>
