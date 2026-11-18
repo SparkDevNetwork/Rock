@@ -68,6 +68,12 @@ export type RegistrationInstanceSendPaymentReminderInitializationBox = {
     instructionsHtml?: string | null;
 
     /**
+     * Gets or sets a value indicating whether sending reminders is
+     * disabled because the current person isn't authorized to send them.
+     */
+    isSendDisabled: boolean;
+
+    /**
      * Gets or sets the default message body (Lava source) taken from the
      * registration template's PaymentReminderEmailTemplate.
      */

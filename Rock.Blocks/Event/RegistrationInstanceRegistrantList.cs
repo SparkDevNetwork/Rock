@@ -1534,8 +1534,12 @@ WHERE [g].[GroupTypeId] = @FamilyGroupTypeId
         {
             var registrantService = new RegistrationRegistrantService( RockContext );
             var registrant = registrantService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
+            var registrationInstance = GetRegistrationInstance();
+            var isRegistrantInListedInstance = registrant?.Registration != null
+                && registrationInstance != null
+                && registrant.Registration.RegistrationInstanceId == registrationInstance.Id;
 
-            if ( registrant == null )
+            if ( !isRegistrantInListedInstance )
             {
                 return ActionBadRequest( $"{RegistrationRegistrant.FriendlyTypeName} not found." );
             }

@@ -70,11 +70,11 @@ namespace Rock.Blocks.Event
         {
             var bag = new RegistrantWaitListMoveBag();
 
-            var registrants = GetRegistrantsFromEntitySet();
+            var registrants = GetRegistrantsFromEntitySet( true );
 
             if ( registrants == null || !registrants.Any() )
             {
-                bag.UpdateMessage = "No registrants found.";
+                bag.UpdateMessage = "No registrants were found, or you are not allowed to move them.";
                 return bag;
             }
 
@@ -113,13 +113,14 @@ namespace Rock.Blocks.Event
         /// <summary>
         /// Loads the list of <see cref="RegistrationRegistrant"/> records from the
         /// entity set identified by the <see cref="PageParameterKey.EntitySetId"/> page parameter.
-        /// Returns an empty list when the parameter is missing or the set cannot be found.
         /// </summary>
-        private List<RegistrationRegistrant> GetRegistrantsFromEntitySet()
+        /// <param name="isExpirationChecked"><c>true</c> to treat an expired entity set as missing.</param>
+        /// <returns>The registrants, or <c>null</c> when the parameter is missing, the set isn't a registrant set the current person created, or the current person isn't allowed to move the registrants.</returns>
+        private List<RegistrationRegistrant> GetRegistrantsFromEntitySet( bool isExpirationChecked )
         {
             var entitySetId = PageParameter( PageParameterKey.EntitySetId ).AsIntegerOrNull();
 
-            if ( !entitySetId.HasValue )
+            if ( !entitySetId.HasValue || !IsOwnRegistrantEntitySet( entitySetId.Value, isExpirationChecked ) )
             {
                 return null;
             }
@@ -140,7 +141,79 @@ namespace Rock.Blocks.Event
                 .Where( r => registrantIds.Contains( r.Id ) )
                 .ToList();
 
+            if ( !CanMoveRegistrants( registrants ) )
+            {
+                return null;
+            }
+
             return registrants;
+        }
+
+        /// <summary>
+        /// Determines whether the entity set is a set of registrants that the current person created.
+        /// </summary>
+        /// <param name="entitySetId">The entity set identifier.</param>
+        /// <param name="isExpirationChecked"><c>true</c> to treat an expired entity set as not usable.</param>
+        /// <returns><c>true</c> if the entity set can be used by the current person; otherwise <c>false</c>.</returns>
+        private bool IsOwnRegistrantEntitySet( int entitySetId, bool isExpirationChecked )
+        {
+            var currentPersonId = RequestContext.CurrentPerson?.Id;
+
+            if ( !currentPersonId.HasValue )
+            {
+                return false;
+            }
+
+            var registrantEntityTypeId = EntityTypeCache.GetId<RegistrationRegistrant>();
+            var entitySet = new EntitySetService( RockContext ).Queryable().AsNoTracking()
+                .Where( s => s.Id == entitySetId )
+                .Select( s => new
+                {
+                    s.EntityTypeId,
+                    s.ExpireDateTime,
+                    CreatedByPersonId = ( int? ) s.CreatedByPersonAlias.PersonId
+                } )
+                .FirstOrDefault();
+
+            if ( entitySet == null )
+            {
+                return false;
+            }
+
+            // The set expires while the person is still sending emails, so only the move on page load checks it.
+            var isUnexpired = !isExpirationChecked
+                || !entitySet.ExpireDateTime.HasValue
+                || entitySet.ExpireDateTime.Value > RockDateTime.Now;
+
+            return entitySet.EntityTypeId == registrantEntityTypeId
+                && entitySet.CreatedByPersonId == currentPersonId
+                && isUnexpired;
+        }
+
+        /// <summary>
+        /// Determines whether the current person may move the registrants off the wait list.
+        /// </summary>
+        /// <param name="registrants">The registrants to move.</param>
+        /// <returns><c>true</c> if the person can edit the block, or can edit or administrate every registration instance involved; otherwise <c>false</c>.</returns>
+        private bool CanMoveRegistrants( List<RegistrationRegistrant> registrants )
+        {
+            if ( registrants.Any( r => r.Registration?.RegistrationInstance == null ) )
+            {
+                return false;
+            }
+
+            var currentPerson = RequestContext.CurrentPerson;
+
+            if ( BlockCache.IsAuthorized( Authorization.EDIT, currentPerson ) )
+            {
+                return true;
+            }
+
+            return registrants
+                .Select( r => r.Registration.RegistrationInstance )
+                .DistinctBy( i => i.Id )
+                .All( i => i.IsAuthorized( Authorization.EDIT, currentPerson )
+                    || i.IsAuthorized( Authorization.ADMINISTRATE, currentPerson ) );
         }
 
         /// <summary>
@@ -314,7 +387,7 @@ namespace Rock.Blocks.Event
                 return ActionOk( string.Empty );
             }
 
-            var registrants = GetRegistrantsFromEntitySet();
+            var registrants = GetRegistrantsFromEntitySet( false );
 
             if ( registrants == null || !registrants.Any() )
             {
@@ -359,7 +432,7 @@ namespace Rock.Blocks.Event
             var sendCount = 0;
             var errorMessage = "";
 
-            var transitionedByRegistration = ( GetRegistrantsFromEntitySet() ?? new List<RegistrationRegistrant>() )
+            var transitionedByRegistration = ( GetRegistrantsFromEntitySet( false ) ?? new List<RegistrationRegistrant>() )
                 .GroupBy( r => r.RegistrationId )
                 .ToDictionary( g => g.Key, g => g.ToList() );
 
