@@ -353,6 +353,13 @@
                                         <Rock:EventItemPicker ID="eipSelectedEvent" runat="server" Label="Event" Required="true" />
                                     </div>
                                 </div>
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <Rock:NotificationBox ID="nbNotAuthorizedEvent" runat="server" NotificationBoxType="Danger" Visible="false" Heading="Not Authorized">
+                                            You are not authorized to add an occurrence to the selected event. Please choose another event.
+                                        </Rock:NotificationBox>
+                                    </div>
+                                </div>
                             </asp:Panel>
                             <asp:Panel ID="pnlNewEvent" runat="server" Visible="false">
                                 <div class="row">
