@@ -53,7 +53,9 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the parent security authority for this GroupRequirement.
+        /// Gets the parent security authority for this GroupRequirement. This is the
+        /// owning <see cref="Group"/>, or the <see cref="GroupType"/> for group type level
+        /// requirements. The <see cref="GroupRequirementType"/> is used as the fallback.
         /// </summary>
         /// <value>
         /// The parent security authority for this GroupRequirement.
@@ -62,7 +64,7 @@ namespace Rock.Model
         {
             get
             {
-                return this.GroupRequirementType != null ? this.GroupRequirementType : base.ParentAuthority;
+                return ( Security.ISecured ) this.Group ?? this.GroupType ?? this.GroupRequirementType ?? base.ParentAuthority;
             }
         }
 
