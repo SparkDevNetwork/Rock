@@ -5059,6 +5059,8 @@ describe("New message", () => {
         expect(history.attributes("inert")).toBeDefined();
         expect(history.findAll("[data-message-id]").map(row => row.attributes("data-message-id"))).toEqual(["41", "42"]);
         expect(history.text()).toContain("See you Saturday");
+        // The To and the notice sit over the history with no band: its feed draws no header rule.
+        expect(history.get(".chat-feed-frame").classes()).toContain("is-top-open");
     });
 
     test("the conversation found opens from its strip, closing the view", async () => {
