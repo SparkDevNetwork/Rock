@@ -143,8 +143,8 @@ describe("a photo avatar", () => {
         expect(parseFloat(face.style.width)).toBe(34);
     });
 
-    // A face with a photo is a photo face from the first paint, its letters on its hue the base,
-    // and the photo stays hidden over them until its decode lands.
+    // A face with a photo is a photo face from the first paint, resting on a neutral disc, and the
+    // photo stays hidden over it until its decode lands.
     test("marks a face with a photo as one from the start and holds the photo hidden until it is decoded", async () => {
         const decodes: Array<() => void> = [];
         const original = Object.getOwnPropertyDescriptor(HTMLImageElement.prototype, "decode");
@@ -187,28 +187,18 @@ describe("a photo avatar", () => {
         expect(face.textContent!.trim()).toBe("AL");
     });
 
-    // The letters are the base the photo fades in over, as a channel's tile is under its photo, so
-    // a face never arrives into an empty disc. They are painted by the sheet from the face's own
-    // letters, under the photo in the same cell, and are never the face's text.
-    test("carries the person's letters as the base under the photo, as the face without one draws them", () => {
-        const [large] = faces(draw([{ name: "Anna Lee", photoUrl: "https://church.example/a.jpg" }], 36));
-        const [small] = faces(draw([{ name: "Anna Lee", photoUrl: "https://church.example/a.jpg" }], 20));
-        const [none] = faces(draw([{ name: "Anna Lee", photoUrl: null }], 36));
+    // A face whose photo is known is that photo: until it shows, the face rests on a neutral disc,
+    // never the person's letters, which would read as a second face swapped for the photo.
+    test("draws no letters on a face whose photo is known, in its text or painted by the sheet", () => {
+        const [face] = faces(draw([{ name: "Anna Lee", photoUrl: "https://church.example/a.jpg" }], 36));
 
-        expect(large.getAttribute("data-letters")).toBe("AL");
-        expect(small.getAttribute("data-letters")).toBe("A");
-        expect(large.textContent!.trim()).toBe("");
-        expect(none.hasAttribute("data-letters")).toBe(false);
+        expect(face.textContent!.trim()).toBe("");
+        expect(face.hasAttribute("data-letters")).toBe(false);
+        expect(styleRules(chatSheet, /^\.chat-av\.is-photo::before$/)).toHaveLength(0);
     });
 
-    test("paints the letters on the person's hue under the photo, with no neutral disc in their place", () => {
-        const base = styleRules(chatSheet, /^\.chat-av\.is-photo::before$/).join(";");
-        const photo = styleRules(chatSheet, /^\.chat-av\.is-photo > \.chat-av-photo$/).join(";");
-
-        expect(base).toMatch(/content:\s*attr\(data-letters\)/);
-        expect(base).toMatch(/grid-area:\s*1 \/ 1/);
-        expect(photo).toMatch(/grid-area:\s*1 \/ 1/);
-        expect(styleRules(chatSheet, /^\.chat-av\.is-photo$/).join(";")).not.toMatch(/background/);
+    test("rests a face whose photo is known on a neutral disc, never the person's hue", () => {
+        expect(styleRules(chatSheet, /^\.chat-av\.is-photo$/).join(";")).toMatch(/background:\s*var\(--chat-line-strong\)/);
     });
 });
 

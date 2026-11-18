@@ -24,8 +24,9 @@
 // On the first load the page's reveal is the one owner of when the first screen appears: until it
 // has released, every image waits for it, each one still to decode is reported to it so it can
 // wait a short grace for them, and what has decoded by the release shows with it, with no fade of
-// its own, since the page's crossfade is the fade; only a region with no veil over it fades its
-// images in itself. After the release the batch and the image's own fade apply as usual.
+// its own, since the page's crossfade is the fade. A region with no veil over it is drawn final
+// from the first paint, so the page holds nothing there. After the release the batch and the
+// image's own fade apply as usual.
 import { computed, Directive, inject, onBeforeUnmount, Ref, watch } from "vue";
 import { tokenDuration } from "./brand.partial";
 import { pageRevealKey } from "../pageLoad.partial";
@@ -41,8 +42,9 @@ export const imageInClass = "chat-img-in";
 
 /**
  * Marks a region of the first screen drawn final from the first paint with no veil over it, as the
- * sidebar's foot is. The page's crossfade does not pass over it, so at the release an image in it
- * fades in on its own over the same moment rather than appearing at once.
+ * sidebar's foot is. The page's reveal does not hold an image in it, since there is no veil to
+ * lift with: it shows at once when cached and fades in as it decodes, beside the words already
+ * drawn there, and the page never waits on it.
  */
 export const unveiledAttribute = "data-unveiled";
 
@@ -60,6 +62,8 @@ type Member = {
     isReady: boolean;
     /** Shown without a fade, because it was already in the cache. */
     isCached: boolean;
+    /** In a region with no veil over it, which the page's hold never reaches. */
+    isUnveiled: boolean;
     isRevealed: boolean;
     cleanup: (() => void) | null;
     /** Settles the decode reported to the page; null when none was reported or it has settled. */
@@ -140,7 +144,8 @@ export function createImageReveal(options: {
     let ownBatch: Batch | null = null;
     let isStopped = false;
 
-    const isHeld = (): boolean => options.hold?.value === true;
+    /** Whether the page's hold keeps this member back; it never reaches a region with no veil. */
+    const isHeld = (member: Member): boolean => options.hold?.value === true && !member.isUnveiled;
 
     /**
      * Shows one member now if nothing holds it; otherwise it waits for the hold to release.
@@ -155,7 +160,7 @@ export function createImageReveal(options: {
 
         member.isReady = true;
 
-        if (isHeld()) {
+        if (isHeld(member)) {
             return;
         }
 
@@ -208,7 +213,7 @@ export function createImageReveal(options: {
 
         // While the page holds, a decode is marked at once and never waits on the batch: the
         // release shows every decoded image together, which is the first screen's reveal.
-        if (isHeld()) {
+        if (isHeld(member)) {
             member.isReady = true;
             return;
         }
@@ -288,7 +293,9 @@ export function createImageReveal(options: {
                 return;
             }
 
-            const member: Member = { img, owner: reveal, batch: null, isReady: false, isCached: false, isRevealed: false, cleanup: null, settle: null };
+            // Read as it is drawn: the directive runs once the component's whole tree is in place.
+            const isUnveiled = img.closest(`[${unveiledAttribute}]`) !== null;
+            const member: Member = { img, owner: reveal, batch: null, isReady: false, isCached: false, isUnveiled, isRevealed: false, cleanup: null, settle: null };
             members.set(img, member);
             img.classList.add(imageHoldClass);
 
@@ -299,18 +306,22 @@ export function createImageReveal(options: {
                 return;
             }
 
-            if (options.isShared) {
-                member.batch = sharedBatch();
-            }
-            else {
-                ownBatch ??= newBatch();
-                member.batch = ownBatch;
+            // An unveiled region's image shows as it decodes: the faces it would batch with on the
+            // first screen are held by the page, so a batch would only keep it waiting on them.
+            if (!isUnveiled) {
+                if (options.isShared) {
+                    member.batch = sharedBatch();
+                }
+                else {
+                    ownBatch ??= newBatch();
+                    member.batch = ownBatch;
+                }
+
+                member.batch.members.add(member);
             }
 
-            member.batch.members.add(member);
-
-            // The page waits for what is still decoding, up to its grace.
-            if (isHeld() && options.reportDecode) {
+            // The page waits for what it holds that is still decoding, up to its grace.
+            if (isHeld(member) && options.reportDecode) {
                 options.reportDecode(new Promise<void>(resolve => {
                     member.settle = (): void => {
                         member.settle = null;
@@ -351,7 +362,7 @@ export function createImageReveal(options: {
                 for (const member of members.values()) {
                     if (member.isReady) {
                         leave(member);
-                        show(member, !member.isCached && !!member.img.closest(`[${unveiledAttribute}]`));
+                        show(member, false);
                     }
                 }
             }

@@ -932,17 +932,11 @@
 }
 
 /*
-    A person with a photo: their letters on their hue are the base under it, as a channel's tile is
-    under its photo, painted from the face's own letters in the photo's cell, so the photo fades in
-    over the face rather than into an empty disc. They are never the face's text.
+    A person with a photo rests on a neutral disc, never their hue or their letters, until the photo
+    is revealed: the photo is their face, so letters first would read as a second face swapped out.
 */
-.chat-av.is-photo::before {
-    content: attr(data-letters);
-    grid-area: 1 / 1;
-}
-
-.chat-av.is-photo > .chat-av-photo {
-    grid-area: 1 / 1;
+.chat-av.is-photo {
+    background: var(--chat-line-strong);
 }
 
 /*

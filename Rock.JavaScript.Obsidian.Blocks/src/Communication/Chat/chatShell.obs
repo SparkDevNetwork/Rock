@@ -43,7 +43,7 @@
                                 :statusChoice="statusChoice"
                                 :statusClosedReason="statusClosedReason"
                                 :isStatusRetrying="isStatusRetrying"
-                                :isActivityOffered="shell.state.phase === 'ready'"
+                                :isActivityInert="shell.state.phase === 'starting'"
                                 :isActivityOpen="panelKind === 'activity'"
                                 :hasMentionDot="shell.mentions.state.hasDot"
                                 :isOver="sidebarFold === 'over'"

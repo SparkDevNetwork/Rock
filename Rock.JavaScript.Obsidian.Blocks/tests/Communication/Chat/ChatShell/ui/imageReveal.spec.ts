@@ -264,28 +264,41 @@ describe("the image reveal", () => {
         expect(isFading(loaded.img)).toBe(false);
     });
 
-    test("at the release, fades in a face that has no veil over it, as the veils' crossfade carries the rest", async () => {
+    // A region with no veil over it is drawn final from the first paint, so the page's reveal holds
+    // nothing in it: its face is there at once when cached and fades in as it decodes, while the
+    // veiled faces beside it still wait for the release, and the page never waits on it.
+    test("shows a face that has no veil over it while the page holds, at once when cached and as it decodes otherwise", async () => {
         const hold = ref(true);
-        const reveal = createImageReveal({ hold });
+        const reported: Array<Promise<void>> = [];
+        const reveal = createImageReveal({ hold, isShared: true, reportDecode: decoded => reported.push(decoded) });
         const region = document.createElement("div");
         region.setAttribute(unveiledAttribute, "");
         document.body.append(region);
+        const cachedFoot = makeImage({ cached: true });
         const foot = makeImage();
         const listed = makeImage();
-        region.append(foot.img);
+        region.append(cachedFoot.img, foot.img);
         document.body.append(listed.img);
 
         try {
+            reveal.track(cachedFoot.img);
             reveal.track(foot.img);
             reveal.track(listed.img);
+
+            expect(isHidden(cachedFoot.img)).toBe(false);
+            expect(isFading(cachedFoot.img)).toBe(false);
+            expect(reported).toHaveLength(1);
+
             foot.decode.resolve();
             listed.decode.resolve();
             await settle();
 
-            hold.value = false;
-
             expect(isHidden(foot.img)).toBe(false);
             expect(isFading(foot.img)).toBe(true);
+            expect(isHidden(listed.img)).toBe(true);
+
+            hold.value = false;
+
             expect(isHidden(listed.img)).toBe(false);
             expect(isFading(listed.img)).toBe(false);
         }

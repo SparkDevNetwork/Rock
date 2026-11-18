@@ -52,11 +52,14 @@
     The foot's face: its own round button, a hover disc a touch wider than the face, so lighting it
     never lights the settings button beside it. The badge is ringed in the sidebar's fill, which the
     foot sets, and over it in whatever fill the button takes, hovered, pressed or open, in the
-    button's own order, so the ring always reads as the disc behind it.
+    button's own order, so the ring always reads as the disc behind it. The shared icon button is a
+    square with the control's corners, so the face's own button states its disc, which its fills
+    and its focus ring then follow, never a square box around the round face.
 */
 .chat-status-menu .chat-status-face {
     width: 40px;
     height: 40px;
+    border-radius: var(--chat-r-full);
 }
 
 .chat-status-menu .chat-status-face:hover {
