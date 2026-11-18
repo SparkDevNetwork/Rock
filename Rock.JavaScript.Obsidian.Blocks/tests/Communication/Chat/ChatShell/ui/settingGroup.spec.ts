@@ -147,7 +147,9 @@ describe("a settings group", () => {
                 expect(ana.classList).not.toContain("chat-move");
                 expect(ana.style.transform).toBe("");
                 expect(ana.style.transition).toBe("");
-                expect(listening.mock.calls.filter(([type]) => type === "transitionend")).toHaveLength(0);
+                // the leaving row's own fade listens for its end; the row that stayed must not
+                const anaListens = listening.mock.calls.filter(([type], call) => type === "transitionend" && listening.mock.contexts[call] === ana);
+                expect(anaListens).toHaveLength(0);
             }
             finally {
                 window.matchMedia = matchMedia;

@@ -82,6 +82,7 @@
 <script setup lang="ts">
     import { ComponentPublicInstance, computed, PropType, provide, ref } from "vue";
     import { newGuid } from "@Obsidian/Utility/guid";
+    import { isMotionReduced } from "./viewport.partial";
 
     const props = defineProps({
         /** The short label over the group, or null for a group with none, such as Leave's. */
@@ -172,11 +173,14 @@
      */
     function onRowGone(): void {
         const rows = listRows();
+        // Where less motion is asked for the move takes no time, so no transition would end to take
+        // it off again: the rows below stand in their new places at once.
+        const isGlideShown = !isMotionReduced();
         const gliding = rows.filter(row => {
             const before = placeOf.get(row);
             const shift = before === undefined || row.classList.contains("is-leaving") ? 0 : before - row.offsetTop;
             placeOf.set(row, row.offsetTop);
-            if (shift === 0) {
+            if (shift === 0 || !isGlideShown) {
                 return false;
             }
             const seen = row.getBoundingClientRect().top;
