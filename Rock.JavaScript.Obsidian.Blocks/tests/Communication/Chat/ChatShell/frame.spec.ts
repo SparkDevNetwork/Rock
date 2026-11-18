@@ -6033,13 +6033,16 @@ describe("a start still signing in", () => {
         return w;
     }
 
-    const region = (w: VueWrapper): HTMLElement => w.get("[data-testid='start-status']").element as HTMLElement;
+    /** The chat's one polite voice, which the start speaks through as every other part does. */
+    const region = (w: VueWrapper): HTMLElement => w.get("[data-testid='announcer-polite']").element as HTMLElement;
 
-    test("one status region at the block's root, empty at mount, inside nothing hidden, inert or busy", async () => {
+    test("speaks through the chat's one voice at the block's root, with no region of its own, empty at mount, inside nothing hidden, inert or busy", async () => {
         const w = await mountStarting(1200);
         const status = region(w);
 
-        expect(status.getAttribute("role")).toBe("status");
+        expect(w.find("[data-testid='start-status']").exists()).toBe(false);
+        expect(w.findAll("[aria-live]").filter(live => !(live.attributes("data-testid") ?? "").startsWith("announcer-"))).toEqual([]);
+        expect(status.parentElement).toBe(shellRoot(w));
         expect(status.getAttribute("aria-live")).toBe("polite");
         expect(status.textContent?.trim()).toBe("");
         for (let node: HTMLElement | null = status; node; node = node.parentElement) {
@@ -6077,11 +6080,15 @@ describe("a start still signing in", () => {
         const w = await mountStarting(1200);
         stateOf().startWait = "slow";
         await settle();
+        const said: string[] = [];
+        const observer = new MutationObserver(() => said.push(region(w).textContent?.trim() ?? ""));
+        observer.observe(region(w), { childList: true, characterData: true, subtree: true });
 
         stateOf().phase = "ready";
         await settle();
+        observer.disconnect();
 
-        expect(region(w).textContent?.trim()).toBe("");
+        expect(said).toEqual([]);
     });
 
     test.each([
