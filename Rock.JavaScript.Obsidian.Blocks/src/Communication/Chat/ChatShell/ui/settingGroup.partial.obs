@@ -11,18 +11,20 @@
             A list's rows leave by the Leave motion: each row draws its own fade where it stands,
             and once it has gone the list glides the rows below into the gap by its one move. The
             group itself moves nothing, so a row whose ask closes as it starts to leave neither
-            glides itself nor sets the rows below gliding while it fades.
+            glides itself nor sets the rows below gliding while it fades. A row has gone once its
+            own fade has ended.
         -->
         <TransitionGroup v-else-if="isList"
                          ref="listGroup"
                          tag="div"
                          class="chat-sg"
                          role="list"
-                         leaveActiveClass="is-leaving"
-                         leaveToClass="is-left"
+                         :leaveActiveClass="leavingClass"
+                         :leaveToClass="leftClass"
                          :aria-labelledby="label && !ariaLabel ? labelId : undefined"
                          :aria-label="ariaLabel ?? undefined"
                          @beforeLeave="onRowLeaving"
+                         @leave="onRowFading"
                          @afterLeave="onRowGone">
             <slot :labelId="labelId"></slot>
         </TransitionGroup>
@@ -130,6 +132,10 @@
     /** The block's one move, which a list's rows glide by. */
     const moveClass = "chat-move";
 
+    /** A leaving row's classes, which settingRow draws the Leave motion's fade by: under way, and at its end. */
+    const leavingClass = "is-leaving";
+    const leftClass = "is-left";
+
     /** A list's own transition, whose element holds its rows. */
     const listGroup = ref<ComponentPublicInstance | null>(null);
 
@@ -178,6 +184,38 @@
         for (const row of listRows()) {
             placeOf.set(row, placeOnScreen(row, top));
         }
+    }
+
+    /**
+     * A row is fading: it goes once its own fade has played to its end, or been cut short. Vue
+     * alone would end the leave by a timer of the fade's length from when the end class goes on,
+     * but a page busy with other work, such as redrawing the conversation an unblock reads again,
+     * draws the fade's first frame later than that; the timer then took the row away with its fade
+     * cut short, or before any of it was seen. Taking the done callback is what tells Vue the
+     * leave's end is decided here.
+     *
+     * @param row The leaving row.
+     * @param done Ends the leave: the row is taken away, and onRowGone follows.
+     */
+    function onRowFading(row: Element, done: () => void): void {
+        const whenFaded = (): void => {
+            // Vue ended the leave itself, as it does when a row of the same key comes back, so nothing waits.
+            if (!row.classList.contains(leavingClass)) {
+                return;
+            }
+            // Vue puts the end class on a frame or two after the leave starts, and the fade runs
+            // from it; until then there is nothing to wait on.
+            if (!row.classList.contains(leftClass)) {
+                requestAnimationFrame(whenFaded);
+                return;
+            }
+            // The row's own animations: the fade, and no others of a row. A row that draws no
+            // fade, such as one not shown or taken out of the page, has none and goes at once; a
+            // fade cut short goes too.
+            const fades = typeof row.getAnimations === "function" ? row.getAnimations() : [];
+            void Promise.allSettled(fades.map(fade => fade.finished)).then(done);
+        };
+        requestAnimationFrame(whenFaded);
     }
 
     /**
