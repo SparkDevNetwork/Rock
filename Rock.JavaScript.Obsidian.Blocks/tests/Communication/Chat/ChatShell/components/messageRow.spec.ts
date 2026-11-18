@@ -2041,10 +2041,11 @@ describe("the reactions row", () => {
 });
 
 // A message's author, by name or face, and a person's chip in its body each open that person's
-// profile card: the row asks for it as one more message action, naming the person and the element
-// the card opens beside. The room's @all chip names no one, so it opens nothing.
+// profile card: the row asks for it as one more message action, naming the person, the element
+// the card opens from and where it stands: under the row for the author, at the chip for a chip.
+// The room's @all chip names no one, so it opens nothing.
 describe("the profile card's openers", () => {
-    type PersonRequest = { kind: string, personAliasGuid: string, anchor: HTMLElement };
+    type PersonRequest = { kind: string, personAliasGuid: string, anchor: HTMLElement, place: string };
 
     function personRequests(wrapper: VueWrapper): PersonRequest[] {
         return ((wrapper.emitted("messageAction") ?? []) as Array<[PersonRequest]>).map(([request]) => request).filter(request => request.kind === "person");
@@ -2068,6 +2069,7 @@ describe("the profile card's openers", () => {
         expect(requests.map(r => r.personAliasGuid)).toEqual([anna, anna]);
         expect(requests[0].anchor).toBe(name.element);
         expect(requests[1].anchor).toBe(face.element);
+        expect(requests.map(r => r.place)).toEqual(["row", "row"]);
 
         // a row still sending is not stored yet, so it names no one to open
         const sending = mount(MessageRow, inSession({
@@ -2118,6 +2120,7 @@ describe("the profile card's openers", () => {
         const requests = personRequests(wrapper);
         expect(requests.map(r => r.personAliasGuid)).toEqual([mentionLee.person_alias_guid]);
         expect(requests[0].anchor).toBe(lee.element);
+        expect(requests[0].place).toBe("opener");
     });
 });
 

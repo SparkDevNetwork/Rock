@@ -93,15 +93,17 @@ function setUp(activeChannelId: string | null, thread: { channelId: string, root
     return { view, actions, openCard, openReactionPicker };
 }
 
-test("an author pressed opens their card beside what was pressed, for the room it was pressed in", () => {
+test("an author or chip pressed opens their card where the opener says, for the room it was pressed in", () => {
     const { view, openCard } = setUp(team, { channelId: pair, rootId: 7 });
     const anchor = document.createElement("button");
 
-    view.onMessageAction({ kind: "person", personAliasGuid: anna, anchor } as MessageActionRequest, null);
-    view.onMessageAction({ kind: "person", personAliasGuid: anna, anchor } as MessageActionRequest, 7);
+    view.onMessageAction({ kind: "person", personAliasGuid: anna, anchor, place: "row" } as MessageActionRequest, null);
+    expect(view.cardPlace.value).toBe("row");
+    view.onMessageAction({ kind: "person", personAliasGuid: anna, anchor, place: "opener" } as MessageActionRequest, 7);
 
     expect(openCard.mock.calls).toEqual([[anna, team], [anna, pair]]);
     expect(view.cardAnchor.value).toBe(anchor);
+    expect(view.cardPlace.value).toBe("opener");
     expect(view.cardOpenCount.value).toBe(2);
 });
 

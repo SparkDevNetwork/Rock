@@ -528,6 +528,7 @@
                          :person="shell.profile.state.card.person"
                          :campuses="campuses"
                          :anchor="cardAnchor"
+                         :place="cardPlace"
                          :face="cardFace"
                          :isBlockBusy="!!shell.blocks.state.busy[shell.profile.state.card.person.person_alias_guid.toLowerCase()]"
                          @close="shell.profile.closeCard"
@@ -1164,7 +1165,7 @@
      * editor and confirms, with where a message's bar and menu send their actions.
      */
     const {
-        isDetailsOpen, isSettingsOpen, cardAnchor, cardFace, cardOpenCount, onCardMessage, onLeave, onRename, closeDetails, onRoomChoice,
+        isDetailsOpen, isSettingsOpen, cardAnchor, cardPlace, cardFace, cardOpenCount, onCardMessage, onLeave, onRename, closeDetails, onRoomChoice,
         onCardDetails, onPanelBlock, onPanelUnblock, onPanelSettings, onPanelOpenRoom, onCardBlock, onCardUnblock, onSettingsUnblock, onCardSettings, closeSettings, onMemberMessage, onMemberPerson, onDetailsMembers,
         conversationQuoteKey, threadQuoteKey, conversationQuote, threadQuote, confirmingDelete, deleteBody, isOwnQuote,
         editingIdIn, editErrorIn, isEditSavingIn, onEditLast, onEditLastReply, onCancelQuote, onMessageAction, onCancelDelete, onConfirmDelete,

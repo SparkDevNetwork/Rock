@@ -229,7 +229,7 @@
     import { cardStatusWords, shownStatus } from "../ui/face.partial";
     import { usePopover } from "../ui/popover.partial";
     import { overlayHostOf } from "../ui/tooltip.partial";
-    import { PersonProfile } from "../types.partial";
+    import { CardPlace, PersonProfile } from "../types.partial";
     import { useFaceStatus } from "../composables/usePresenceStatus.partial";
 
     const props = defineProps({
@@ -255,6 +255,12 @@
         anchor: {
             type: Object as PropType<HTMLElement | null>,
             default: null
+        },
+
+        /** Where the card stands, which its opener says: under the message row, beside the panel, or at the opener. */
+        place: {
+            type: String as PropType<CardPlace>,
+            default: "opener"
         },
 
         /** The face of the panel's row the card opens from, which the card's own face lines up with. */
@@ -306,13 +312,14 @@
     const outGraceMs = 50;
 
     /**
-     * Opened from a message, the card stands under the whole row, its left edge on the row's face
-     * column, so the person's message stays readable whether the face or the name was pressed; the
-     * shared popover's flip takes it above the row where there is no room below. A row's face
-     * column is the bubble layout's face or the community layout's gutter, drawn in every row of
-     * the group, so a reply's card lines up as the first message's does.
+     * Opened from a message's author, the card stands under the whole row, its left edge on the
+     * row's face column, so the person's message stays readable whether the face or the name was
+     * pressed; the shared popover's flip takes it above the row where there is no room below. A
+     * row's face column is the bubble layout's face or the community layout's gutter, drawn in
+     * every row of the group, so a reply's card lines up as the first message's does. A chip in
+     * the words names someone else, pressed to see them, so its card stands at the chip.
      */
-    const row = props.anchor?.closest<HTMLElement>("[data-message-id], [data-reply-id]") ?? null;
+    const row = props.place === "row" ? props.anchor?.closest<HTMLElement>("[data-message-id], [data-reply-id]") ?? null : null;
     const faceColumn = row?.querySelector<HTMLElement>(".chat-msg-face, .chat-cm-gutter") ?? null;
 
     /**
@@ -320,7 +327,7 @@
      * over the list, its own face level with the row's; where the panel leaves no room beside it,
      * as a phone's panel that fills the frame, it opens below the opener as any other card does.
      */
-    const panel = row ? null : props.anchor?.closest<HTMLElement>(".chat-panel") ?? null;
+    const panel = props.place === "panel" ? props.anchor?.closest<HTMLElement>(".chat-panel") ?? null : null;
     const besideGap = 8;
     const cardWidth = 300;
     const isBeside = !!panel && panel.getBoundingClientRect().left - besideGap - cardWidth >= 8;

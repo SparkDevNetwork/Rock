@@ -1187,3 +1187,14 @@ export type BoxLayer = "bar" | "tray" | "picker";
 export type ColumnKind = "conversation" | "thread";
 
 // #endregion The message box
+
+// #region The profile card
+
+/**
+ * Where a profile card stands, which what opened it says: under the whole message row its
+ * author's face or name was pressed in, beside the right-hand panel a member's row was pressed in,
+ * or at the opener itself, as a person's chip in a message's words.
+ */
+export type CardPlace = "row" | "panel" | "opener";
+
+// #endregion The profile card

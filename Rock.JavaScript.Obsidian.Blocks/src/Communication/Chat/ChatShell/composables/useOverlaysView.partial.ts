@@ -29,7 +29,7 @@ import { computed, getCurrentScope, nextTick, onBeforeUnmount, ref, Ref, shallow
 import { PickerOpening } from "../components/emojiPicker.partial.obs";
 import { isOwnMessage } from "../feedLayout.partial";
 import type { ChatShell } from "../shell.partial";
-import { ChatError, ChatPerson, ColumnKind, PersonProfile, TimelineMessage } from "../types.partial";
+import { CardPlace, ChatError, ChatPerson, ColumnKind, PersonProfile, TimelineMessage } from "../types.partial";
 import { personName } from "../ui/face.partial";
 import { MessageActionRequest, MessageActionsState, quoteKey } from "./useMessageActions.partial";
 import { shownMembers } from "./useMembers.partial";
@@ -86,6 +86,9 @@ export function useOverlaysView(dependencies: OverlaysViewDependencies) {
      */
     const cardAnchor = shallowRef<HTMLElement | null>(null);
     const cardOpenCount = ref(0);
+
+    /** Where the card stands, as its opener said: under a message row, beside the panel, or at the opener. */
+    const cardPlace = ref<CardPlace>("opener");
 
     /** The face of a Members row the card was opened from, which the card's own face lines up with; null from anywhere else. */
     const cardFace = shallowRef<HTMLElement | null>(null);
@@ -282,7 +285,7 @@ export function useOverlaysView(dependencies: OverlaysViewDependencies) {
 
         // Safari leaves a pressed button unfocused, and the card hands focus back to what held it.
         who.focus({ preventScroll: true });
-        openCard(who, personAliasGuid, channelId, face);
+        openCard(who, personAliasGuid, channelId, "panel", face);
     }
 
     /** The details dialog's member count gives way to the members panel, which takes focus. */
@@ -385,7 +388,7 @@ export function useOverlaysView(dependencies: OverlaysViewDependencies) {
 
             // the person is read for the room the author or chip was pressed in
             case "person":
-                openCard(request.anchor, request.personAliasGuid, channelId);
+                openCard(request.anchor, request.personAliasGuid, channelId, request.place);
                 break;
         }
     }
@@ -461,9 +464,10 @@ export function useOverlaysView(dependencies: OverlaysViewDependencies) {
 
     // #region Functions
 
-    /** Opens a person's card for a room beside what asked, drawn afresh each time. */
-    function openCard(anchor: HTMLElement, personAliasGuid: string, channelId: string, face: HTMLElement | null = null): void {
+    /** Opens a person's card for a room where what asked says it stands, drawn afresh each time. */
+    function openCard(anchor: HTMLElement, personAliasGuid: string, channelId: string, place: CardPlace, face: HTMLElement | null = null): void {
         cardAnchor.value = anchor;
+        cardPlace.value = place;
         cardFace.value = face;
         cardOpenCount.value++;
         notePersonOpener(anchor);
@@ -612,7 +616,7 @@ export function useOverlaysView(dependencies: OverlaysViewDependencies) {
     });
 
     return {
-        isDetailsOpen, isSettingsOpen, cardAnchor, cardFace, cardOpenCount, onCardMessage, onLeave, onRename, closeDetails, onRoomChoice,
+        isDetailsOpen, isSettingsOpen, cardAnchor, cardPlace, cardFace, cardOpenCount, onCardMessage, onLeave, onRename, closeDetails, onRoomChoice,
         onCardDetails, onPanelBlock, onPanelUnblock, onPanelSettings, onPanelOpenRoom, onCardBlock, onCardUnblock, onSettingsUnblock, onCardSettings, closeSettings, onMemberMessage, onMemberPerson, onDetailsMembers,
         conversationQuoteKey, threadQuoteKey, conversationQuote, threadQuote, confirmingDelete, deleteBody, isOwnQuote,
         editingIdIn, editErrorIn, isEditSavingIn, onEditLast, onEditLastReply, onCancelQuote, onMessageAction, onCancelDelete, onConfirmDelete,
