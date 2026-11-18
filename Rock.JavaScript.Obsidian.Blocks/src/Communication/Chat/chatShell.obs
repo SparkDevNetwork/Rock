@@ -755,7 +755,11 @@
     transform: none;
 }
 
-/* A phone: one pane fills the frame and the other waits beside it, the list a little to the left. */
+/*
+    A phone: one pane fills the frame and the other waits beside it, faded, the list a quarter of
+    the way to the left. Each moves by the shared sheet distance, as a sheet's pages do, which
+    reduced motion takes to nothing, so the panes then fade in place.
+*/
 .chat-shell[data-phone="true"] .chat-frame {
     display: block;
 }
@@ -781,10 +785,12 @@
 .chat-shell[data-phone="true"] .chat-frame-panel {
     z-index: var(--chat-z-panel);
     border-left: 0;
-    transform: translateX(100%);
+    opacity: 0;
+    transform: translateX(var(--chat-rise-sheet));
 }
 
 .chat-shell[data-phone="true"] .chat-frame[data-pane="panel"] .chat-frame-panel {
+    opacity: 1;
     transform: none;
 }
 
@@ -796,12 +802,13 @@
 .chat-shell[data-phone="true"] .chat-frame[data-pane="panel"] .chat-frame-side {
     pointer-events: none;
     opacity: 0;
-    transform: translateX(-24%);
+    transform: translateX(calc(var(--chat-rise-sheet) / -4));
 }
 
 .chat-shell[data-phone="true"] .chat-frame[data-pane="list"] .chat-frame-main {
     pointer-events: none;
-    transform: translateX(100%);
+    opacity: 0;
+    transform: translateX(var(--chat-rise-sheet));
 }
 
 /* No box of its own: the header, the feed and the composer stay the column's own flex items. */
