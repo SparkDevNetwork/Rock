@@ -266,6 +266,61 @@ namespace Rock.Model
 
         private static Regex digitsOnly = new Regex( @"[^\d]" );
 
+        /// <summary>
+        /// Sets the country code and number, and updates <see cref="IsMessagingEnabled"/>.
+        /// When no messaging choice is given, the stored setting is kept only if the number
+        /// itself did not change. A different number has no recorded SMS consent, so messaging
+        /// is turned off for it.
+        /// </summary>
+        /// <param name="countryCode">The new country code. Formatting characters are ignored.</param>
+        /// <param name="number">The new number. Formatting characters are ignored.</param>
+        /// <param name="isMessagingEnabled">The messaging setting the person chose, or <c>null</c> if they made no choice.</param>
+        internal void SetNumberAndMessagingEnabled( string countryCode, string number, bool? isMessagingEnabled )
+        {
+            var newCountryCode = CleanNumber( countryCode );
+            var newNumber = CleanNumber( number );
+            var isSameNumber = newNumber == CleanNumber( Number )
+                && IsSameCountryCode( newCountryCode, CleanNumber( CountryCode ) );
+
+            CountryCode = newCountryCode;
+            Number = newNumber;
+
+            if ( isMessagingEnabled.HasValue )
+            {
+                IsMessagingEnabled = isMessagingEnabled.Value;
+            }
+            else if ( !isSameNumber )
+            {
+                IsMessagingEnabled = false;
+            }
+        }
+
+        /// <summary>
+        /// Determines whether two cleaned country codes are the same. An empty
+        /// country code is saved as the default country code, so it matches the default.
+        /// </summary>
+        /// <param name="firstCountryCode">The first country code, digits only.</param>
+        /// <param name="secondCountryCode">The second country code, digits only.</param>
+        /// <returns><c>true</c> if both refer to the same country code.</returns>
+        private static bool IsSameCountryCode( string firstCountryCode, string secondCountryCode )
+        {
+            if ( firstCountryCode == secondCountryCode )
+            {
+                return true;
+            }
+
+            if ( firstCountryCode.IsNotNullOrWhiteSpace() && secondCountryCode.IsNotNullOrWhiteSpace() )
+            {
+                return false;
+            }
+
+            var defaultCountryCode = DefaultCountryCode();
+            var first = firstCountryCode.IsNullOrWhiteSpace() ? defaultCountryCode : firstCountryCode;
+            var second = secondCountryCode.IsNullOrWhiteSpace() ? defaultCountryCode : secondCountryCode;
+
+            return first == second;
+        }
+
         #endregion
     }
 }
