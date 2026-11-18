@@ -1093,7 +1093,7 @@ describe("the page load", () => {
         expect(h.shell.timelines.state(channelA).messages.map(m => m.id)).toEqual([10]);
     });
 
-    // Open from the preview ends the visit before the room is on screen, so the room it hands over
+    // Open from the preview puts the room on screen, then ends the visit, so the room it hands over
     // keeps the page the person just read: the open draws it at once while its own read is out,
     // never a skeleton in its place.
     test("keeps the page of the room Open hands over when the visit ends, while that room's open is still reading", async () => {
@@ -1113,8 +1113,8 @@ describe("the page load", () => {
         h.history[channelC]?.shift()?.resolve(fakeResponse(200, page(30)));
         await toC;
 
-        await h.shell.readPreview(null, channelB);
         const opening = h.shell.selectChannel(channelB);
+        await h.shell.readPreview(null);
         await settle();
 
         expect(h.shell.timelines.state(channelB).isLoaded).toBe(true);

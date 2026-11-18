@@ -576,23 +576,33 @@ describe("a full view", () => {
         expect(focused()).toBe("join-channel");
     });
 
-    test("opening a room from it hands that room to the preview's end, so its page is kept; closing it hands over none", async () => {
+    // The preview's end keeps the room on screen, so Open puts its room there before letting the
+    // preview go, and the page the person just read is kept for the open to draw.
+    test("opening a room from it puts the room on screen before the preview is let go", async () => {
         mounted = mountFrame();
         const { frame, shell, state } = mounted;
         state.activeChannelId = team;
         await settle();
         await frame.openMainView("directory");
         frame.onPreview(volunteers);
+        const select = shell.selectChannel as unknown as jest.Mock;
+        const read = shell.readPreview as unknown as jest.Mock;
+        select.mockImplementation(() => {
+            state.activeChannelId = volunteers;
+            return new Promise<void>(() => undefined);
+        });
+        let shownAtLetGo: string | null = null;
+        read.mockImplementation(async (channelId: string | null) => {
+            if (channelId === null) {
+                shownAtLetGo = state.activeChannelId;
+            }
+        });
 
-        await frame.openFromMainView(volunteers);
+        void frame.openFromMainView(volunteers);
+        await settle();
 
-        expect(shell.readPreview).toHaveBeenLastCalledWith(null, volunteers);
-
-        await frame.openMainView("directory");
-        frame.onPreview(volunteers);
-        frame.closeMainView();
-
-        expect(shell.readPreview).toHaveBeenLastCalledWith(null, null);
+        expect(read).toHaveBeenLastCalledWith(null);
+        expect(shownAtLetGo).toBe(volunteers);
     });
 
     test("opening the conversation already underneath from it still closes the view", async () => {
