@@ -72,8 +72,28 @@ export function useRoomsView(dependencies: RoomsViewDependencies) {
      */
     const isJoinBarShown = computed((): boolean => activeKind.value === "channel" && !!activeRow.value && !activeRow.value.is_member);
 
+    /**
+     * The kind the feed is drawn as. The feed never waits for the kind: on a reload the history
+     * often lands before the facts and the sidebar, so until either says the kind, the room opened
+     * last is drawn as the kind remembered for it and any other room as a channel. That memory is
+     * written from the room's facts, so they agree when they land and the feed is laid out once.
+     */
+    const drawnKind = computed((): RoomKind | null => {
+        const channelId = shell.value.state.activeChannelId;
+        if (!channelId || activeKind.value) {
+            return activeKind.value;
+        }
+
+        const remembered = shell.value.reveal.state;
+        if (remembered.room !== channelId) {
+            return "channel";
+        }
+
+        return remembered.kind === "direct" ? "person" : remembered.kind;
+    });
+
     /** A conversation with one other person, where a name over each bubble would only repeat the header. */
-    const isActiveDirectMessage = computed((): boolean => activeKind.value === "person");
+    const isActiveDirectMessage = computed((): boolean => drawnKind.value === "person");
 
     /**
      * The other people of the open direct message, with their photos, as the sidebar sent them, or
@@ -97,25 +117,13 @@ export function useRoomsView(dependencies: RoomsViewDependencies) {
         return facts?.name?.trim() || startedTitle(facts?.people ?? []);
     });
 
-    /**
-     * A channel in Community's flat rows, a direct message in Conversational's bubbles, by kind
-     * alone. The feed never waits for the kind: on a reload the history often lands before the
-     * facts and the sidebar, so until either says the kind, the room opened last draws in the look
-     * remembered for it and any other room in a channel's. That memory is written from the room's
-     * facts, so they agree when they land and the feed is laid out once.
-     */
+    /** A channel in Community's flat rows, a direct message in Conversational's bubbles, by the kind drawn alone. */
     const look = computed((): FeedLayout | null => {
-        const channelId = shell.value.state.activeChannelId;
-        if (!channelId) {
+        if (!drawnKind.value) {
             return null;
         }
 
-        if (activeKind.value) {
-            return activeKind.value === "channel" ? "community" : "conversational";
-        }
-
-        const remembered = shell.value.reveal.state;
-        return remembered.room === channelId && remembered.kind === "direct" ? "conversational" : "community";
+        return drawnKind.value === "channel" ? "community" : "conversational";
     });
 
     /**

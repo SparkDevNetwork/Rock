@@ -117,9 +117,11 @@ export function writeRememberedChannel(storage: StorageLike | null, key: string,
 
 /**
  * The look the first screen's skeleton takes: a channel's (mark, title and description, flat
- * rows) or a direct message's (face and name, bubbles).
+ * rows) or a direct message's (face and name, bubbles). A group is told apart from a two-person
+ * conversation, though its skeleton is the same, since only a pair's feed drops the names over
+ * its bubbles.
  */
-export type RoomLook = "channel" | "direct";
+export type RoomLook = "channel" | "direct" | "group";
 
 /**
  * The key beside the remembered channel that holds its look, so a reload draws the right
@@ -145,7 +147,8 @@ function rememberedKindKey(channelKey: string): string {
  */
 export function readRememberedKind(storage: StorageLike | null, channelKey: string): RoomLook {
     try {
-        return storage?.getItem(rememberedKindKey(channelKey)) === "direct" ? "direct" : "channel";
+        const kind = storage?.getItem(rememberedKindKey(channelKey));
+        return kind === "direct" || kind === "group" ? kind : "channel";
     }
     catch {
         // Intentionally ignored: storage blocked by the browser only loses the memory.
@@ -797,7 +800,7 @@ export function createRoomOpener(dependencies: RoomOpenerDependencies): RoomOpen
                 // The look is the room's own, so the next load's skeleton has its shape.
                 const facts = rooms.factsOf(channelId);
                 if (facts) {
-                    writeRememberedKind(storage, storageKey, facts.channel_type === "dm" ? "direct" : "channel");
+                    writeRememberedKind(storage, storageKey, facts.channel_type !== "dm" ? "channel" : facts.room_kind === "group" ? "group" : "direct");
                 }
                 reveal.factsAnswered();
             }
