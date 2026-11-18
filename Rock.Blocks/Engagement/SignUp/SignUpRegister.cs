@@ -1024,8 +1024,9 @@ namespace Rock.Blocks.Engagement.SignUp
                     existingRegistration = null;
 
                     // Note that this query and lookup will only use arguments that are defined, so it's safe to pass nulls, Etc. into this constructor.
+                    // The candidates are ordered from most to least likely match.
                     var personQuery = new PersonService.PersonMatchQuery( registrant.FirstName?.Trim(), registrant.LastName?.Trim(), registrant.Email?.Trim(), registrant.MobilePhoneNumber?.Trim() );
-                    var person = _personService.FindPerson( personQuery, updatePrimaryEmail: false );
+                    var candidatePeople = _personService.FindPersons( personQuery ).ToList();
 
                     var wasFirstNameProvided = !string.IsNullOrWhiteSpace( registrant.FirstName );
                     var wasLastNameProvided = !string.IsNullOrWhiteSpace( registrant.LastName );
@@ -1039,25 +1040,28 @@ namespace Rock.Blocks.Engagement.SignUp
                         ? PhoneNumber.CleanNumber( registrant.MobilePhoneNumber )
                         : null;
 
+                    Person person;
+
                     // In the event that someone provides both an email address and a mobile phone number, they must both match.
                     // Otherwise, we're going to create a new Person record to play it safe; better to have duplicates to merge
                     // than to allow someone to maliciously/accidentally overwrite a Person's existing communication records.
-                    if ( person != null && wasEmailProvided && wasMobilePhoneProvided )
+                    if ( wasEmailProvided && wasMobilePhoneProvided )
                     {
-                        if ( person.Email?.Trim().ToUpper() != registrantEmailUpper )
-                        {
-                            // Email doesn't match; create a new Person.
-                            person = null;
-                        }
-                        else
-                        {
-                            var mobilePhoneNumber = person.GetPhoneNumber( MobilePhoneDefinedValueCache.Guid );
-                            if ( mobilePhoneNumber == null || PhoneNumber.CleanNumber( mobilePhoneNumber.Number ) != registrantCleanMobilePhoneNumber )
-                            {
-                                // Number doesn't match; create a new Person.
-                                person = null;
-                            }
-                        }
+                        /*
+                            11/16/2026 - KH
+
+                            Check every candidate, not just the top-ranked one. When two people share a name and email
+                            but have different mobile numbers, they score the same, so the top-ranked candidate might be
+                            the other person. Rejecting it without checking the rest created a new duplicate Person on
+                            every registration, even though an exact match existed.
+
+                            Reason: Prevent duplicate people when the exact match isn't the top-ranked candidate.
+                        */
+                        person = candidatePeople.FirstOrDefault( p => IsEmailAndMobilePhoneMatch( p, registrantEmailUpper, registrantCleanMobilePhoneNumber ) );
+                    }
+                    else
+                    {
+                        person = candidatePeople.FirstOrDefault();
                     }
 
                     // Final attempt to prevent a duplicate person: If we didn't find a Person and neither email address
@@ -1732,6 +1736,25 @@ namespace Rock.Blocks.Engagement.SignUp
                 UnsuccessfulRegistrantNames = unsuccessful.Select( r => r.FullName ).ToList(),
                 WarningMessage = warningMessage
             };
+        }
+
+        /// <summary>
+        /// Determines whether the person's email address and mobile phone number both match the values a registrant provided.
+        /// </summary>
+        /// <param name="person">The person to check.</param>
+        /// <param name="registrantEmailUpper">The registrant's trimmed, uppercase email address.</param>
+        /// <param name="registrantCleanMobilePhoneNumber">The registrant's cleaned mobile phone number.</param>
+        /// <returns><c>true</c> if both the email address and mobile phone number match; otherwise, <c>false</c>.</returns>
+        private bool IsEmailAndMobilePhoneMatch( Person person, string registrantEmailUpper, string registrantCleanMobilePhoneNumber )
+        {
+            if ( person.Email?.Trim().ToUpper() != registrantEmailUpper )
+            {
+                return false;
+            }
+
+            var mobilePhoneNumber = person.GetPhoneNumber( MobilePhoneDefinedValueCache.Guid );
+
+            return mobilePhoneNumber != null && PhoneNumber.CleanNumber( mobilePhoneNumber.Number ) == registrantCleanMobilePhoneNumber;
         }
 
         /// <summary>
