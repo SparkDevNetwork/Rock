@@ -63,19 +63,21 @@ namespace Rock.Communication.Transport
         Order = 2,
         IsRequired = true )]
 
-    [TextField( "API Key",
+    [EncryptedTextField( "API Key",
         Key = AttributeKey.APIKey,
         Description = @"The API Key provided by Mailgun. Newly-created Mailgun accounts should use one of the account-wide ""Mailgun API keys"" or domain-specific ""Sending API keys"" for this value. Preexisting Mailgun accounts might refer to this value as the ""Private API key"".",
         DefaultValue = "",
         Order = 3,
-        IsRequired = true )]
+        IsRequired = true,
+        IsPassword = true )]
 
-    [TextField( "HTTP Webhook Signing Key",
+    [EncryptedTextField( "HTTP Webhook Signing Key",
         Key = AttributeKey.HTTPWebhookSigningKey,
         Description = "The HTTP Webhook Signing Key provided by Mailgun. Newly-created Mailgun accounts will have separate API and Webhook keys.",
         DefaultValue = "",
         Order = 4,
-        IsRequired = true )]
+        IsRequired = true,
+        IsPassword = true )]
 
     [BooleanField( "Track Opens",
         Key = AttributeKey.TrackOpens,
@@ -193,10 +195,22 @@ namespace Rock.Communication.Transport
         {
             var restRequest = GetRestRequestFromRockEmailMessage( rockEmailMessage );
 
+            /*
+                11/16/2026 - JPH
+
+                The API key is stored encrypted. A value saved before the key
+                became an encrypted field stays plain text until start-up
+                encrypts it, so fall back to the stored value.
+
+                Reason: Keep transport secrets encrypted at rest.
+            */
+            var storedApiKey = GetAttributeValue( AttributeKey.APIKey );
+            var apiKey = Rock.Security.Encryption.DecryptString( storedApiKey ) ?? storedApiKey;
+
             var restClient = new RestClient
             {
                 BaseUrl = new Uri( GetAttributeValue( AttributeKey.BaseURL ) ),
-                Authenticator = new HttpBasicAuthenticator( "api", GetAttributeValue( AttributeKey.APIKey ) )
+                Authenticator = new HttpBasicAuthenticator( "api", apiKey )
             };
 
             var retriableStatusCode = new List<HttpStatusCode>()
