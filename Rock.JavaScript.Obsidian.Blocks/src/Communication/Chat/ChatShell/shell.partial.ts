@@ -298,6 +298,13 @@ export type ChatShell = {
     /** Opens a channel the person chose. */
     selectChannel: (channelId: string) => Promise<void>;
 
+    /**
+     * Reads the newest page of the room Browse previews beside the conversation on screen, which
+     * stays the open one: no topic is joined, nothing is tracked or marked read. A failure is told
+     * by the toast. Null, or another room, lets the last one go, so an answer still on its way lands nothing.
+     */
+    readPreview: (channelId: string | null) => Promise<void>;
+
     /** A message of the open channel was on screen. */
     seen: (messageId: number) => void;
 
@@ -331,8 +338,11 @@ export type ChatShell = {
     /** The app icon's count: each unread conversation between people, and each channel's mentions by name. */
     appBadge: () => number;
 
-    /** Fetches older messages of the open channel; a failure is reported, and fails for the caller too. */
-    loadOlder: () => Promise<void>;
+    /**
+     * Fetches older messages of the open channel, or of the room named, as Browse's preview names
+     * its own; a failure is reported, and fails for the caller too.
+     */
+    loadOlder: (channelId?: string) => Promise<void>;
 
     /** Dismisses the failure the person closed. */
     dismissError: (error: ChatError) => void;
@@ -1136,6 +1146,9 @@ export function createChatShell(options: ShellOptions): ChatShell {
         isStopped: () => isStopped
     });
 
+    /** The room Browse previews beside the conversation on screen, which the next preview lets go. */
+    let previewedChannelId: string | null = null;
+
     const opener = createRoomOpener({
         state,
         modules: { reveal, channels, timelines, messageActions, rooms, directMessages },
@@ -1260,7 +1273,23 @@ export function createChatShell(options: ShellOptions): ChatShell {
 
         selectChannel: (channelId: string): Promise<void> => opener.select(channelId),
 
-        seen: (messageId: number): void => tracker.seen(messageId),
+        readPreview: async (channelId: string | null): Promise<void> => {
+            const before = previewedChannelId;
+            previewedChannelId = channelId;
+            // The room on screen keeps its own catch-up; any other is let go, so its answer lands nothing.
+            if (before && before !== channelId && before !== state.activeChannelId) {
+                timelines.leave(before);
+            }
+
+            // The room on screen is held and live already.
+            if (!channelId || isStopped || channelId === state.activeChannelId) {
+                return;
+            }
+
+            await timelines.loadNewest(channelId).catch(error => report(classifyPlatformError(error)));
+        },
+
+        seen:(messageId: number): void => tracker.seen(messageId),
 
         // The same save as reading the message on screen, sent now rather than when the page
         // next loses focus, because the person asked for it.
@@ -1358,9 +1387,10 @@ export function createChatShell(options: ShellOptions): ChatShell {
 
         // The toast says why; the caller learns it failed, so the feed offers it again rather than
         // asking again by itself.
-        loadOlder: async (): Promise<void> => {
-            if (state.activeChannelId) {
-                await timelines.loadOlder(state.activeChannelId).catch(error => {
+        loadOlder: async (channelId?: string): Promise<void> => {
+            const id = channelId ?? state.activeChannelId;
+            if (id) {
+                await timelines.loadOlder(id).catch(error => {
                     report(classifyPlatformError(error));
                     throw error;
                 });

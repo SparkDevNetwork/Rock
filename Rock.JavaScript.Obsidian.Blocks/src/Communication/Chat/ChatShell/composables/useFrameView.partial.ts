@@ -170,6 +170,12 @@ export type Frame = MembersPanelViews & ThreadsPanelWiring & Landings & {
      */
     mainView: Ref<MainViewKind | null>;
 
+    /**
+     * The room Browse previews, which is never the room on screen: previewing it marks nothing
+     * read, adds no sidebar row and keeps the link. Null for none.
+     */
+    previewId: Ref<string | null>;
+
     /** What the column draws: the open panel, kept through its close so it narrows over its content. */
     shownPanel: Ref<PanelKind | null>;
 
@@ -282,6 +288,12 @@ export type Frame = MembersPanelViews & ThreadsPanelWiring & Landings & {
     /** A room chosen in the full view: previewed if it has no sidebar row, opened, and the view closed. */
     openFromMainView: (channelId: string) => Promise<void>;
 
+    /** Browse previews a room beside its list, or none, reading the room's history for the preview. */
+    onPreview: (channelId: string | null) => void;
+
+    /** Join from Browse's preview; once it lands the preview reads the room again, for the door's line. */
+    onPreviewJoin: (channelId: string) => Promise<void>;
+
     /** Add people for a room: its dialog, never for a conversation of two, which Rock keeps as it is. */
     openAddPeople: (channelId: string) => void;
 
@@ -365,6 +377,8 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
     const mainViewElement = ref<HTMLElement>();
 
     const mainView = ref<MainViewKind | null>(null);
+
+    const previewId = ref<string | null>(null);
 
     /** What had focus as the full view opened, which its close and a phone's Back return to. */
     let mainViewOpener: HTMLElement | null = null;
@@ -746,6 +760,26 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
         await askFocus(["join", "composer", "header"], { within: "main" });
     }
 
+    /**
+     * Browse previews a room beside its list: the frame holds it apart from the room on screen,
+     * and the shell reads its history for the preview's feed. None lets the last one go.
+     */
+    function onPreview(channelId: string | null): void {
+        previewId.value = channelId;
+        void shell.value.readPreview(channelId);
+    }
+
+    /**
+     * Join from Browse's preview. Once it lands the preview's history is read again, since the
+     * room's topic is not the one joined: the door's line, and what a member may read, come with it.
+     */
+    async function onPreviewJoin(channelId: string): Promise<void> {
+        await shell.value.rooms.join(channelId);
+        if (previewId.value === channelId && shell.value.rooms.joinOf(channelId).kind === "joined") {
+            await shell.value.readPreview(channelId);
+        }
+    }
+
     // #endregion Event Handlers
 
     // #region Functions
@@ -772,6 +806,7 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
         mainView.value = null;
         mainViewOpener = null;
         if (kind === "directory") {
+            onPreview(null);
             shell.value.rooms.closeDirectory();
         }
         else {
@@ -1261,6 +1296,7 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
         goneStyle,
         panelKind,
         mainView,
+        previewId,
         shownPanel,
         activityTab,
         shownList,
@@ -1299,6 +1335,8 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
         openMainView,
         closeMainView,
         openFromMainView,
+        onPreview,
+        onPreviewJoin,
         openAddPeople,
         threadOpenCount: () => threadOpenCount,
         focusStop,

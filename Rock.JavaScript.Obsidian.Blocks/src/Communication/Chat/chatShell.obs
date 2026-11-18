@@ -225,6 +225,8 @@
                     <ChannelDirectory v-if="mainView === 'directory'"
                                       :directory="shell.rooms.state.directory"
                                       :joins="shell.rooms.state.joins"
+                                      :leaves="shell.rooms.state.leaves"
+                                      :previewId="previewId"
                                       :campuses="campuses"
                                       :personCampusGuid="personCampusGuid"
                                       @back="onBack"
@@ -236,8 +238,23 @@
                                       @clearFilters="shell.rooms.clearFilters"
                                       @loadMore="shell.rooms.loadMore"
                                       @retry="shell.rooms.retry"
-                                      @join="shell.rooms.join"
-                                      @open="openFromMainView" />
+                                      @join="onPreviewJoin"
+                                      @leave="shell.rooms.leave"
+                                      @preview="onPreview"
+                                      @open="openFromMainView">
+                        <!-- The chosen room's own feed, read only: it is not the room on screen, so nothing in it is read or marked. -->
+                        <template #feed="{ channelId }">
+                            <MessageFeed :key="channelId"
+                                         :timeline="shell.timelines.state(channelId)"
+                                         :pending="[]"
+                                         :readCursor="null"
+                                         :isChannel="true"
+                                         :facts="shell.rooms.factsOf(channelId)"
+                                         :campuses="campuses"
+                                         :loadOlder="() => shell.loadOlder(channelId)"
+                                         isPreviewing />
+                        </template>
+                    </ChannelDirectory>
 
                     <!-- Its first message is drawn as a direct message is, whatever the conversation under it. -->
                     <NewMessage v-else-if="mainView === 'newdm'"
@@ -1048,7 +1065,7 @@
         panelKind, shownPanel, shownList, activityTab, sidebarFold, isMembersOffered, panelElement, sidebarElement, mainElement, mainViewElement, drawnThread, threadOrigin, personOrigin, focusStop,
         onResize, onFocusIn, onFocusOut, onSelect, onBack, onListPanel, onActivityTab, onPanelLeave, onSidebarOver, onSidebarAway, onThreadsTab, openThreadFromList, onOpenThread, onThreadBack, onPersonBack, onMentionOpen,
         openThreadFromMentions, openFromTap, closeThreadDrawer, closePanel,
-        mainView, openMainView, closeMainView, openFromMainView, openAddPeople,
+        mainView, openMainView, closeMainView, openFromMainView, previewId, onPreview, onPreviewJoin, openAddPeople,
         landingReplyId, landingMessageId, onJump, landInConversation,
         membersView, removeView, addView,
         threadList, drawerFollowError, listFollowError, onThreadsRefresh, loadMoreThreads, onFollowFromList, onFollowThread
