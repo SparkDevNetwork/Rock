@@ -81,4 +81,10 @@ export type ChatShellInitializationBox = {
      * browser forgets the unsent drafts it keeps when the sign-in ends with it too.
      */
     isSignInPersisted: boolean;
+
+    /**
+     * Gets or sets a value indicating whether the block's Person Profile Page lets this
+     * person view it, asked as the page was built: a profile offers View profile only then.
+     */
+    mayViewProfile: boolean;
 };

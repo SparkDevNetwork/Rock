@@ -27,7 +27,9 @@ using Rock.Data;
 using Rock.Lava;
 using Rock.Logging;
 using Rock.Model;
+using Rock.Security;
 using Rock.ViewModels.Blocks.Communication.Chat.ChatShell;
+using Rock.Web;
 using Rock.Web.Cache;
 
 namespace Rock.Communication.Chat.Platform.Doors
@@ -73,10 +75,11 @@ namespace Rock.Communication.Chat.Platform.Doors
         /// <param name="viewer">The person looking.</param>
         /// <param name="personAliasGuid">The person on the card, by any of their aliases.</param>
         /// <param name="configuration">The church's chat settings.</param>
+        /// <param name="personProfilePage">The block's Person Profile Page setting as Rock stores a linked page, or blank for none.</param>
         /// <param name="mergeFields">Makes the page's common merge fields for the person looking, which the template sees beside the person on the card; called only when the template runs.</param>
         /// <param name="rockContext">The context read in.</param>
         /// <returns>The details, or an empty answer wherever chat would not show this person to this viewer.</returns>
-        internal static ChatProfileDetailsBag GetProfileDetails( Person viewer, Guid personAliasGuid, ChatPlatformConfiguration configuration, Func<IDictionary<string, object>> mergeFields, RockContext rockContext )
+        internal static ChatProfileDetailsBag GetProfileDetails( Person viewer, Guid personAliasGuid, ChatPlatformConfiguration configuration, string personProfilePage, Func<IDictionary<string, object>> mergeFields, RockContext rockContext )
         {
             // The session gates and nothing more: the Direct Message Access data view is not read,
             // since nothing here starts a conversation.
@@ -104,10 +107,18 @@ namespace Rock.Communication.Chat.Platform.Doors
             // person whose alias leaked from another page.
             if ( target == null
                 || !ChatSessionHelper.Evaluate( target, context, rockContext ).Success
-                || !IsEnrolledInChat( target.Id, rockContext )
-                || !IsShowingProfileDetails( target.IsChatProfilePublic, configuration.AreChatProfilesVisible ) )
+                || !IsEnrolledInChat( target.Id, rockContext ) )
             {
                 return new ChatProfileDetailsBag();
+            }
+
+            // Given whether or not the person shows their details: the page asks its own security,
+            // so their chat setting cannot hide their record from staff who may open it anyway.
+            var personProfileUrl = PersonProfileUrlOf( personProfilePage, viewer, target );
+
+            if ( !IsShowingProfileDetails( target.IsChatProfilePublic, configuration.AreChatProfilesVisible ) )
+            {
+                return new ChatProfileDetailsBag { PersonProfileUrl = personProfileUrl };
             }
 
             var mobile = ReadListedMobilePhone( target.Id, rockContext );
@@ -115,6 +126,7 @@ namespace Rock.Communication.Chat.Platform.Doors
             return new ChatProfileDetailsBag
             {
                 IsShown = true,
+                PersonProfileUrl = personProfileUrl,
 
                 // An address Rock knows no longer works is left out; one the person asked not to be
                 // sent bulk email at is still theirs to be reached at one to one.
@@ -123,6 +135,48 @@ namespace Rock.Communication.Chat.Platform.Doors
                 MobilePhoneUri = mobile != null ? ToTelUri( mobile.CountryCode, mobile.Number ) : null,
                 LavaHtml = RenderProfileTemplate( configuration, mergeFields, viewer, target )
             };
+        }
+
+        /// <summary>
+        /// Whether the person looking may open the block's person profile page, which decides
+        /// whether chat offers a link to a person's page in Rock at all.
+        /// </summary>
+        /// <param name="personProfilePage">The block's Person Profile Page setting as Rock stores a linked page, or blank for none.</param>
+        /// <param name="viewer">The person looking, or null when nobody is signed in.</param>
+        /// <returns>True when the page exists and lets the person view it.</returns>
+        internal static bool MayViewProfile( string personProfilePage, Person viewer )
+        {
+            if ( viewer == null )
+            {
+                return false;
+            }
+
+            // The setting names a page, and maybe one of its routes, by guid; a page since deleted
+            // reads as none.
+            var reference = new PageReference( personProfilePage );
+            var page = reference.PageId > 0 ? PageCache.Get( reference.PageId ) : null;
+
+            return page != null && page.IsAuthorized( Authorization.VIEW, viewer );
+        }
+
+        /// <summary>
+        /// The address of a person's page in Rock for the person looking, or null when the block's
+        /// person profile page does not let them view it.
+        /// </summary>
+        /// <param name="personProfilePage">The block's Person Profile Page setting as Rock stores a linked page, or blank for none.</param>
+        /// <param name="viewer">The person looking.</param>
+        /// <param name="target">The person whose page it is, whom chat already shows to the viewer.</param>
+        /// <returns>The address on this site, or null.</returns>
+        private static string PersonProfileUrlOf( string personProfilePage, Person viewer, Person target )
+        {
+            if ( !MayViewProfile( personProfilePage, viewer ) )
+            {
+                return null;
+            }
+
+            // The person's key rather than their id, as Rock's own lists link to the page, so the
+            // address does not count off the church's records one by one.
+            return new PageReference( personProfilePage, new Dictionary<string, string> { ["PersonId"] = target.IdKey } ).BuildUrl();
         }
 
         /// <summary>

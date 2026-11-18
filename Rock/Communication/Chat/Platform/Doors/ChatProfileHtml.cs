@@ -50,6 +50,20 @@ namespace Rock.Communication.Chat.Platform.Doors
             "h1", "h2", "h3", "h4", "h5", "h6", "img"
         };
 
+        // The classes a card's details may carry: Font Awesome's and Tabler's icon sets, whose other
+        // classes all start "fa-" or "ti-", and the text colors. Any other class is the page's own,
+        // the chat's or Bootstrap's layout and display classes, with which a template could hide,
+        // move or cover the chat around the card. Matched as written, since a browser matches a
+        // class name with its case.
+        private static readonly HashSet<string> AllowedClasses = new HashSet<string>( StringComparer.Ordinal )
+        {
+            "fa", "fas", "far", "fal", "fad", "fab", "ti",
+            "text-muted", "text-primary", "text-success", "text-info", "text-warning", "text-danger"
+        };
+
+        // The whitespace a browser splits a class attribute on.
+        private static readonly char[] ClassSeparators = { ' ', '\t', '\n', '\f', '\r' };
+
         // Elements written without a closing tag.
         private static readonly HashSet<string> VoidElements = new HashSet<string>( StringComparer.Ordinal ) { "br", "img" };
 
@@ -218,6 +232,14 @@ namespace Rock.Communication.Chat.Platform.Doors
                 switch ( attribute.Name )
                 {
                     case "class":
+                        var classes = KeptClasses( value );
+                        if ( classes.Length > 0 )
+                        {
+                            AppendAttribute( attributes, "class", classes );
+                        }
+
+                        break;
+
                     case "title":
                     case "alt":
                         AppendAttribute( attributes, attribute.Name, value );
@@ -268,6 +290,25 @@ namespace Rock.Communication.Chat.Platform.Doors
 
             output.Append( '<' ).Append( name ).Append( attributes ).Append( '>' );
             return true;
+        }
+
+        /// <summary>
+        /// The classes of a class attribute that only draw an icon or tint words, in their order.
+        /// </summary>
+        /// <param name="value">The attribute's value, its classes split by spaces as a browser splits them.</param>
+        /// <returns>The kept classes joined by single spaces, or an empty string when none is kept.</returns>
+        private static string KeptClasses( string value )
+        {
+            var kept = new List<string>();
+            foreach ( var name in value.Split( ClassSeparators, StringSplitOptions.RemoveEmptyEntries ) )
+            {
+                if ( AllowedClasses.Contains( name ) || name.StartsWith( "fa-", StringComparison.Ordinal ) || name.StartsWith( "ti-", StringComparison.Ordinal ) )
+                {
+                    kept.Add( name );
+                }
+            }
+
+            return string.Join( " ", kept );
         }
 
         /// <summary>

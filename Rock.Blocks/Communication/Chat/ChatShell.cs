@@ -52,6 +52,13 @@ namespace Rock.Blocks.Communication.Chat
         BooleanControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         Order = 0 )]
 
+    [LinkedPage( "Person Profile Page",
+        Description = "The page a profile in chat links to with View profile, opened in a new tab, for those this page lets view it. Leave it blank to offer no link.",
+        DefaultValue = Rock.SystemGuid.Page.PERSON_PROFILE_PERSON_PAGES,
+        IsRequired = false,
+        Key = AttributeKey.PersonProfilePage,
+        Order = 1 )]
+
     #endregion Block Attributes
 
     [Rock.SystemGuid.EntityTypeGuid( "31F2556F-3BF1-4D8A-85B5-D6B3DD3646B6" )]
@@ -67,6 +74,11 @@ namespace Rock.Blocks.Communication.Chat
             /// narrowed to the person's campus. A room the person is in always shows.
             /// </summary>
             public const string FilterSharedChannelsByCampus = "FilterSharedChannelsByCampus";
+
+            /// <summary>
+            /// The page a profile's View profile opens, with the person's key as PersonId.
+            /// </summary>
+            public const string PersonProfilePage = "PersonProfilePage";
         }
 
         private static class PageParameterKey
@@ -99,7 +111,8 @@ namespace Rock.Blocks.Communication.Chat
             // stylesheet rather than a component, so it loads with the page and not with the script.
             RequestContext.Response.AddCssLink( RequestContext.ResolveRockUrl( "~/Styles/Blocks/Communication/Chat/chat.css" ), true );
 
-            var session = ChatSessionHelper.OpenSession( GetChatPerson(), RockContext );
+            var person = GetChatPerson();
+            var session = ChatSessionHelper.OpenSession( person, RockContext );
             var box = ChatSessionHelper.BuildInitializationBox(
                 session,
                 GlobalAttributesCache.Value( Rock.SystemKey.GlobalAttributeKey.ORGANIZATION_NAME ),
@@ -110,6 +123,10 @@ namespace Rock.Blocks.Communication.Chat
             box.AreSharedChannelsFilteredByCampus = GetAttributeValue( AttributeKey.FilterSharedChannelsByCampus ).AsBoolean();
             box.Campuses = ChatSessionHelper.ListActiveCampuses( CampusCache.All( RockContext ) );
             box.IsSignInPersisted = ChatSessionHelper.IsSignInPersisted( System.Web.HttpContext.Current?.User );
+
+            // Asked once as the page is built, so a profile shows View profile from its first draw
+            // and nobody the page refuses is ever shown a link that would fail.
+            box.MayViewProfile = ChatDoorHelper.MayViewProfile( GetAttributeValue( AttributeKey.PersonProfilePage ), person );
 
             return box;
         }
@@ -267,7 +284,8 @@ namespace Rock.Blocks.Communication.Chat
 
         /// <summary>
         /// Reads what Rock adds to a person's profile card as it opens: their email, mobile phone
-        /// and the church's template, when they show their public profile details.
+        /// and the church's template, when they show their public profile details, and the link
+        /// to their page in Rock for a person the Person Profile Page lets view it.
         /// </summary>
         /// <param name="personAliasGuid">The person on the card, by any of their aliases.</param>
         /// <returns>The details, or an empty answer where chat would not show them.</returns>
@@ -278,7 +296,7 @@ namespace Rock.Blocks.Communication.Chat
 
             // The template sees the page's own merge fields for the person looking, made only
             // when a template will run.
-            return ActionOk( ChatDoorHelper.GetProfileDetails( person, personAliasGuid, ChatPlatformConfigurationService.Read(), () => RequestContext.GetCommonMergeFields( person ), RockContext ) );
+            return ActionOk( ChatDoorHelper.GetProfileDetails( person, personAliasGuid, ChatPlatformConfigurationService.Read(), GetAttributeValue( AttributeKey.PersonProfilePage ), () => RequestContext.GetCommonMergeFields( person ), RockContext ) );
         }
 
         /// <summary>
