@@ -25,7 +25,7 @@ import { nextTick } from "vue";
 import JoinBar from "../../../../../src/Communication/Chat/ChatShell/components/joinBar.partial.obs";
 import { JoinState } from "../../../../../src/Communication/Chat/ChatShell/composables/useRooms.partial";
 import Icon from "../../../../../src/Communication/Chat/ChatShell/ui/icon.partial.obs";
-import SettingNote from "../../../../../src/Communication/Chat/ChatShell/ui/settingNote.partial.obs";
+import InlineNotice from "../../../../../src/Communication/Chat/ChatShell/ui/inlineNotice.partial.obs";
 import { providedSession } from "../sessionShapes";
 
 let wrapper: VueWrapper | null = null;
@@ -98,7 +98,7 @@ describe("previewing", () => {
         const bar = w.get("[data-testid='join-bar']");
         expect(bar.attributes("data-state")).toBe("failed");
         expect(w.get("[data-testid='join-bar-title']").text()).toBe("You're previewing Volunteers");
-        const failure = w.getComponent(SettingNote);
+        const failure = w.getComponent(InlineNotice);
         expect(failure.attributes("data-testid")).toBe("join-bar-failure");
         expect(failure.props("note")).toEqual({ kind: "error", text: "You're offline. Try again when you're back." });
         // over the bar, as a failed send's notice stands over the box; Join channel is its way on
@@ -170,7 +170,7 @@ describe("refused", () => {
         const bar = w.get("[data-testid='join-bar']");
         expect(bar.attributes("data-state")).toBe("refused");
         // the bar is the inline notice, a failure: no second red card of its own
-        const notice = w.getComponent(SettingNote);
+        const notice = w.getComponent(InlineNotice);
         expect(notice.element).toBe(bar.element);
         expect(notice.props("note").kind).toBe("error");
         expect(w.get("[data-testid='join-bar-title']").text()).toBe("You can't join Tech Team");

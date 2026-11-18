@@ -21,7 +21,7 @@ import { join } from "path";
 import { mount, VueWrapper } from "@vue/test-utils";
 import { nextTick, reactive } from "vue";
 import Attachments from "../../../../../src/Communication/Chat/ChatShell/components/attachments.partial.obs";
-import SettingNote from "../../../../../src/Communication/Chat/ChatShell/ui/settingNote.partial.obs";
+import InlineNotice from "../../../../../src/Communication/Chat/ChatShell/ui/inlineNotice.partial.obs";
 import { AttachmentTray, attachmentViewsKey, createAttachments, TrayFile } from "../../../../../src/Communication/Chat/ChatShell/composables/useAttachments.partial";
 import { AttachmentItem, FileItem, GifItem } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 import { pageRevealKey } from "../../../../../src/Communication/Chat/ChatShell/pageLoad.partial";
@@ -938,7 +938,7 @@ describe("the composer's strip", () => {
         tray.notice = "A message can carry up to 10 files.";
         const { wrapper } = await mountFiles([], harness(), { tray });
 
-        const notice = wrapper.getComponent(SettingNote);
+        const notice = wrapper.getComponent(InlineNotice);
         expect(notice.attributes("data-testid")).toBe("attachment-tray-notice");
         expect(notice.props("note")).toEqual({ kind: "info", text: "A message can carry up to 10 files." });
         expect(ruleOf("components/attachments.partial.obs", ".chat-attach-notice")["flex-basis"]).toBe("100%");

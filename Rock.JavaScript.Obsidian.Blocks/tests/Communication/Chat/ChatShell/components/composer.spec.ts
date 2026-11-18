@@ -26,7 +26,7 @@ import { flushPromises, mount, VueWrapper } from "@vue/test-utils";
 import { nextTick, Ref, ref } from "vue";
 import Composer from "../../../../../src/Communication/Chat/ChatShell/components/composer.partial.obs";
 import ChipEditor from "../../../../../src/Communication/Chat/ChatShell/ui/chipEditor.partial.obs";
-import SettingNote from "../../../../../src/Communication/Chat/ChatShell/ui/settingNote.partial.obs";
+import InlineNotice from "../../../../../src/Communication/Chat/ChatShell/ui/inlineNotice.partial.obs";
 import { AttachmentTray, createAttachments } from "../../../../../src/Communication/Chat/ChatShell/composables/useAttachments.partial";
 import { Gifs, gifsKey } from "../../../../../src/Communication/Chat/ChatShell/composables/useGifs.partial";
 import { presenceStatusKey } from "../../../../../src/Communication/Chat/ChatShell/composables/usePresenceStatus.partial";
@@ -928,7 +928,7 @@ describe("the composer's strip for a failed send", () => {
         expect(strip(wrapper).get("[data-testid='composer-failed-lead']").text()).toBe("Your message wasn't sent");
         expect(strip(wrapper).get("[data-testid='composer-failed-reason']").text()).toBe("You're offline.");
         // the one inline notice, a failure: its mark, its words, Try again and Delete at its end
-        const notice = wrapper.findComponent(SettingNote);
+        const notice = wrapper.findComponent(InlineNotice);
         expect(notice.attributes("data-testid")).toBe("composer-failed");
         expect(notice.props("note").kind).toBe("error");
         expect(strip(wrapper).get("[data-testid='composer-failed-retry']").text()).toBe("Try again");

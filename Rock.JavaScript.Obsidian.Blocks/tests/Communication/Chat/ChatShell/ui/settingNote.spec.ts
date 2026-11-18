@@ -21,12 +21,12 @@
 import { mount } from "@vue/test-utils";
 import Button from "../../../../../src/Communication/Chat/ChatShell/ui/button.partial.obs";
 import Icon from "../../../../../src/Communication/Chat/ChatShell/ui/icon.partial.obs";
-import SettingNote from "../../../../../src/Communication/Chat/ChatShell/ui/settingNote.partial.obs";
+import InlineNotice from "../../../../../src/Communication/Chat/ChatShell/ui/inlineNotice.partial.obs";
 import { partRuleBreaks, ruleOf, styleOf } from "./partStyle";
 
 describe("the inline notice", () => {
     test("a note says its words beside an info mark, with nothing to press", () => {
-        const note = mount(SettingNote, { props: { note: { kind: "info", text: "Only leaders can post in this channel." } } });
+        const note = mount(InlineNotice, { props: { note: { kind: "info", text: "Only leaders can post in this channel." } } });
 
         expect(note.attributes("data-kind")).toBe("info");
         expect(note.findComponent(Icon).props("name")).toBe("info");
@@ -35,7 +35,7 @@ describe("the inline notice", () => {
     });
 
     test("a failure carries the alert mark, and one that can be asked again offers Try again at its end", () => {
-        const note = mount(SettingNote, { props: { note: { kind: "error", text: "Couldn't save the name.", retry: () => undefined } } });
+        const note = mount(InlineNotice, { props: { note: { kind: "error", text: "Couldn't save the name.", retry: () => undefined } } });
         const retry = note.findComponent(Button);
 
         expect(note.attributes("data-kind")).toBe("error");
@@ -52,7 +52,7 @@ describe("the inline notice", () => {
     });
 
     test("a failure that cannot be asked again offers nothing to press", () => {
-        const note = mount(SettingNote, { props: { note: { kind: "error", text: "He doesn't accept messages from everyone." } } });
+        const note = mount(InlineNotice, { props: { note: { kind: "error", text: "He doesn't accept messages from everyone." } } });
 
         expect(note.findComponent(Button).exists()).toBe(false);
     });
@@ -61,22 +61,22 @@ describe("the inline notice", () => {
         const retry = jest.fn();
         const rowPress = jest.fn();
         const host = mount({
-            components: { SettingNote },
+            components: { InlineNotice },
             data: () => ({ note: { kind: "error", text: "Couldn't save the name.", retry } }),
             methods: { rowPress },
-            template: `<div @click="rowPress"><SettingNote :note="note" @retry="$emit('handed')" /></div>`
+            template: `<div @click="rowPress"><InlineNotice :note="note" @retry="$emit('handed')" /></div>`
         }, { attachTo: document.body });
 
         await host.get("[data-testid='note-retry']").trigger("click");
 
         expect(retry).toHaveBeenCalledTimes(1);
-        expect(host.findComponent(SettingNote).emitted("retry")).toHaveLength(1);
+        expect(host.findComponent(InlineNotice).emitted("retry")).toHaveLength(1);
         expect(rowPress).not.toHaveBeenCalled();
         host.unmount();
     });
 
     test("a holder may write its own words in place of the text, the mark and Try again still the notice's", () => {
-        const note = mount(SettingNote, {
+        const note = mount(InlineNotice, {
             props: { note: { kind: "error", text: "Not sent.", retry: () => undefined } },
             slots: { default: "<b>Not sent.</b> <span>You're offline.</span>" }
         });
@@ -87,7 +87,7 @@ describe("the inline notice", () => {
     });
 
     test("a holder's own actions follow Try again at the end", () => {
-        const note = mount(SettingNote, {
+        const note = mount(InlineNotice, {
             props: { note: { kind: "error", text: "Not sent.", retry: () => undefined } },
             slots: { end: "<button data-testid='x-delete'>Delete</button>" }
         });
@@ -97,13 +97,13 @@ describe("the inline notice", () => {
     });
 
     test("takes the attributes for its Try again from where it is drawn, as the empty state's action does", () => {
-        const note = mount(SettingNote, { props: { note: { kind: "error", text: "Not sent.", retry: () => undefined }, retryAttrs: { "data-testid": "x-retry" } } });
+        const note = mount(InlineNotice, { props: { note: { kind: "error", text: "Not sent.", retry: () => undefined }, retryAttrs: { "data-testid": "x-retry" } } });
 
         expect(note.findComponent(Button).attributes("data-testid")).toBe("x-retry");
     });
 
     test("takes its test id and id from where it is drawn", () => {
-        const note = mount(SettingNote, { props: { note: { kind: "info", text: "Hi" } }, attrs: { "data-testid": "x-note", id: "x-1" } });
+        const note = mount(InlineNotice, { props: { note: { kind: "info", text: "Hi" } }, attrs: { "data-testid": "x-note", id: "x-1" } });
 
         expect(note.attributes("data-testid")).toBe("x-note");
         expect(note.attributes("id")).toBe("x-1");
@@ -111,7 +111,7 @@ describe("the inline notice", () => {
 });
 
 describe("the inline notice's look", () => {
-    const style = styleOf("settingNote.partial.obs");
+    const style = styleOf("inlineNotice.partial.obs");
 
     test("is one soft box: 12px corners, the interface's size, words in the text colour", () => {
         const box = ruleOf(style, ".chat-set-note");
@@ -131,6 +131,6 @@ describe("the inline notice's look", () => {
     });
 
     test("holds no motion, priority, reach or capitals of its own", () => {
-        expect(partRuleBreaks("settingNote.partial.obs")).toEqual([]);
+        expect(partRuleBreaks("inlineNotice.partial.obs")).toEqual([]);
     });
 });

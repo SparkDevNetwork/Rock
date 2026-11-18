@@ -68,7 +68,7 @@
             A door that refuses leaves nothing to join here, so the bar is the inline notice: the
             door's own sentence and the way back to Browse channels.
         -->
-        <SettingNote v-if="drawn === 'refused'"
+        <InlineNotice v-if="drawn === 'refused'"
                      :note="{ kind: 'error', text: refusal }"
                      data-testid="join-bar"
                      :data-state="drawn">
@@ -81,11 +81,11 @@
                         data-testid="join-bar-browse"
                         @click="emit('browse')">Browse channels</Button>
             </template>
-        </SettingNote>
+        </InlineNotice>
 
         <template v-else>
             <!-- A Join that did not reach the door says why over the bar, whose Join channel asks again. -->
-            <SettingNote v-if="drawn === 'failed'"
+            <InlineNotice v-if="drawn === 'failed'"
                          :note="{ kind: 'error', text: failure }"
                          data-testid="join-bar-failure" />
 
@@ -244,7 +244,7 @@
     import { useChatSession } from "../chatSession.partial";
     import Button from "../ui/button.partial.obs";
     import Icon from "../ui/icon.partial.obs";
-    import SettingNote from "../ui/settingNote.partial.obs";
+    import InlineNotice from "../ui/inlineNotice.partial.obs";
     import { leaveSentence, useLeaveQuestion } from "../composables/useLeaveQuestion.partial";
     import { JoinState, LeaveState } from "../composables/useRooms.partial";
 

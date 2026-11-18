@@ -55,14 +55,14 @@
                          :load="loadOlderPage" />
 
             <!-- A failed page, the one notice, where the replies it would have brought stand; said at once. -->
-            <SettingNote v-if="pageNote"
+            <InlineNotice v-if="pageNote"
                          ref="pageNotePart"
                          class="chat-th-err"
                          :note="pageNote"
                          data-testid="thread-error" />
 
             <!-- A refused follow change, beside the bell it put back; said at once. -->
-            <SettingNote v-if="followNote"
+            <InlineNotice v-if="followNote"
                          class="chat-th-err"
                          :note="followNote"
                          data-testid="thread-follow-error"
@@ -258,7 +258,7 @@
     import LoadMoreRow from "../ui/loadMoreRow.partial.obs";
     import PanelHost from "../ui/panelHost.partial.obs";
     import Pill from "../ui/pill.partial.obs";
-    import SettingNote, { Note } from "../ui/settingNote.partial.obs";
+    import InlineNotice, { Note } from "../ui/inlineNotice.partial.obs";
     import Skeleton from "../ui/skeleton.partial.obs";
     import { useAnnouncer } from "../ui/announcer.partial";
     import { overlayHostOf, useTooltip } from "../ui/tooltip.partial";
@@ -499,7 +499,7 @@
 
     const olderRow = ref<InstanceType<typeof LoadMoreRow>>();
 
-    const pageNotePart = ref<InstanceType<typeof SettingNote>>();
+    const pageNotePart = ref<InstanceType<typeof InlineNotice>>();
 
     const followPill = ref<InstanceType<typeof Pill>>();
 

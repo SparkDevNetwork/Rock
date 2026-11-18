@@ -10,7 +10,7 @@
         -->
         <Transition name="chat-strip" :key="conversationKey">
             <div v-if="sendFailure" ref="stripElement" class="chat-composer-failed-wrap">
-                <SettingNote class="chat-composer-failed" :note="failedNote" :retryAttrs="{ 'data-testid': 'composer-failed-retry' }" data-testid="composer-failed">
+                <InlineNotice class="chat-composer-failed" :note="failedNote" :retryAttrs="{ 'data-testid': 'composer-failed-retry' }" data-testid="composer-failed">
                     <b data-testid="composer-failed-lead">{{ failedLead }}</b>
                     <span v-if="failedReason" class="chat-composer-failed-reason" data-testid="composer-failed-reason">{{ failedReason }}</span>
                     <template #end>
@@ -20,7 +20,7 @@
                                 data-testid="composer-failed-discard"
                                 @click="onDiscardFailed">{{ sendFailure.count > 1 ? "Delete all" : "Delete" }}</Button>
                     </template>
-                </SettingNote>
+                </InlineNotice>
             </div>
         </Transition>
 
@@ -601,7 +601,7 @@
     import ChipEditor from "../ui/chipEditor.partial.obs";
     import Icon from "../ui/icon.partial.obs";
     import IconButton from "../ui/iconButton.partial.obs";
-    import SettingNote, { Note } from "../ui/settingNote.partial.obs";
+    import InlineNotice, { Note } from "../ui/inlineNotice.partial.obs";
     import Menu, { MenuItem } from "../ui/menu.partial.obs";
     import Switch from "../ui/switch.partial.obs";
     import { overlayHostOf, useTooltip } from "../ui/tooltip.partial";

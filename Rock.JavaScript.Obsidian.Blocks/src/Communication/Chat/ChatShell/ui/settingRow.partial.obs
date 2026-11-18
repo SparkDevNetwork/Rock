@@ -11,7 +11,7 @@
             <b v-if="title" :id="`${baseId}-l`" class="chat-sg-title">{{ title }}</b>{{ " " }}
             <slot name="text"></slot>{{ " " }}
             <span v-if="sub" :id="`${baseId}-d`" class="chat-sg-sub">{{ sub }}</span>
-            <SettingNote v-if="note"
+            <InlineNotice v-if="note"
                          :id="`${baseId}-n`"
                          class="chat-sg-note"
                          :note="note"
@@ -152,7 +152,7 @@
     import { computed, inject, PropType } from "vue";
     import { newGuid } from "@Obsidian/Utility/guid";
     import Icon from "./icon.partial.obs";
-    import SettingNote, { Note } from "./settingNote.partial.obs";
+    import InlineNotice, { Note } from "./inlineNotice.partial.obs";
 
     /** The ids of the row's words, for its control to be named and described by; null for a line it does not have. */
     export type RowIds = { title: string | null, sub: string | null, note: string | null };

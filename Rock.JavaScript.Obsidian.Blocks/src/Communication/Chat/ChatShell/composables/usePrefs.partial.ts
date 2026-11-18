@@ -39,7 +39,7 @@ import { failureWords, finalWords, isOfflineFailure, offlineWords } from "../err
 import { ChannelStore, RowPrefs } from "../stores/channelStore.partial";
 import { ChatError, FailureWords, SidebarRow } from "../types.partial";
 import type { Politeness } from "../ui/announcer.partial";
-import { Note } from "../ui/settingNote.partial.obs";
+import { Note } from "../ui/inlineNotice.partial.obs";
 import { ActionNotice } from "./useMessageActions.partial";
 import { createSaveRule, failureNote, SaveChange, saveFailed, SaveOutcome } from "./saveRule.partial";
 import { createStatusTabs, StatusDependencies } from "./statusTabs.partial";

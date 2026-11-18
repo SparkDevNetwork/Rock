@@ -53,7 +53,7 @@ import Composer from "../../../../../src/Communication/Chat/ChatShell/components
 import MessageRow from "../../../../../src/Communication/Chat/ChatShell/components/messageRow.partial.obs";
 import LoadMoreRow from "../../../../../src/Communication/Chat/ChatShell/ui/loadMoreRow.partial.obs";
 import Pill from "../../../../../src/Communication/Chat/ChatShell/ui/pill.partial.obs";
-import SettingNote from "../../../../../src/Communication/Chat/ChatShell/ui/settingNote.partial.obs";
+import InlineNotice from "../../../../../src/Communication/Chat/ChatShell/ui/inlineNotice.partial.obs";
 import Skeleton from "../../../../../src/Communication/Chat/ChatShell/ui/skeleton.partial.obs";
 import { readFileSync } from "fs";
 import { join } from "path";
@@ -1347,7 +1347,7 @@ describe("loading older replies", () => {
         await w.setProps({ olderError: { code: "net.offline", severity: "degraded", text: null } });
         await nextTick();
 
-        const notice = w.getComponent(SettingNote);
+        const notice = w.getComponent(InlineNotice);
         expect(notice.attributes("data-testid")).toBe("thread-error");
         expect(w.findComponent(LoadMoreRow).exists()).toBe(false);
         expect(document.querySelector("[data-testid='announcer-assertive']")?.textContent).toBe(plain(notice.find(".chat-set-note-words").text()));
@@ -1461,7 +1461,7 @@ describe("the drawer's states, drawn by the shared parts", () => {
         await w.setProps({ isLoading: false, error: { code: "net.offline", severity: "degraded", text: null } });
         await nextTick();
 
-        const notice = w.getComponent(SettingNote);
+        const notice = w.getComponent(InlineNotice);
         expect(notice.attributes("data-testid")).toBe("thread-error");
         expect(document.querySelector("[data-testid='announcer-assertive']")?.textContent).toBe(plain(notice.find(".chat-set-note-words").text()));
     });

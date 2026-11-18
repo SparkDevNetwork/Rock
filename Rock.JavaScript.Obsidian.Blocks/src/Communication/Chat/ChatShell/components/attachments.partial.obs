@@ -48,7 +48,7 @@
                                 data-testid="attachment-tray-remove"
                                 @click="tray.remove(file.localId)" />
                 </div>
-                <SettingNote v-if="tray.notice" class="chat-attach-notice" :note="{ kind: 'info', text: tray.notice }" data-testid="attachment-tray-notice" />
+                <InlineNotice v-if="tray.notice" class="chat-attach-notice" :note="{ kind: 'info', text: tray.notice }" data-testid="attachment-tray-notice" />
             </div>
 
             <Teleport :to="tipHost ?? 'body'" :disabled="!tipHost">
@@ -613,7 +613,7 @@ a.chat-attach-file:focus-visible {
     import Button from "../ui/button.partial.obs";
     import Dialog from "../ui/dialog.partial.obs";
     import Icon from "../ui/icon.partial.obs";
-    import SettingNote from "../ui/settingNote.partial.obs";
+    import InlineNotice from "../ui/inlineNotice.partial.obs";
     import IconButton from "../ui/iconButton.partial.obs";
     import { useImageReveal, vReveal } from "../ui/imageReveal.partial";
     import { isCutShort, overlayHostOf, useTooltip } from "../ui/tooltip.partial";

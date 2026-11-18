@@ -26,7 +26,7 @@
 import { failedWords } from "../errors.partial";
 import { longestTimerMs } from "../feedLayout.partial";
 import { FailureWords } from "../types.partial";
-import { Note } from "../ui/settingNote.partial.obs";
+import { Note } from "../ui/inlineNotice.partial.obs";
 
 /** What a save that failed without the server's words says, as a call that threw. */
 export const saveFailed: FailureWords = failedWords("Couldn't save.");

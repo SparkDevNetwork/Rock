@@ -1012,7 +1012,7 @@ describe("the components' own styles", () => {
 
         expect(normalize(keyframesBody(sheetPath, "chat-enter") ?? "")).toContain(normalize("transform: translateY(var(--chat-enter-from, var(--chat-rise)))"));
         expect(declarationOf(resolve(components, "reactionCard.partial.obs"), ".chat-rx-card", "animation")).toBe(normalize("chat-pop-in var(--chat-t-base) var(--chat-ease-in)"));
-        expect(declarationOf(resolve(shell, "ui/settingNote.partial.obs"), ".chat-set-note", "--chat-enter-from")).toBe(normalize("var(--chat-rise-sm)"));
+        expect(declarationOf(resolve(shell, "ui/inlineNotice.partial.obs"), ".chat-set-note", "--chat-enter-from")).toBe(normalize("var(--chat-rise-sm)"));
         expect(declarationOf(resolve(components, "conversationDetails.partial.obs"), ".chat-leave-box", "--chat-enter-from")).toBe(normalize("var(--chat-rise-sm)"));
     });
 

@@ -95,7 +95,7 @@
                                     @click="onFollow(drawn)" />
                     </template>
                 </ListRow>
-                <SettingNote v-if="drawn.error"
+                <InlineNotice v-if="drawn.error"
                              class="chat-ls-rowerr"
                              :note="drawn.error"
                              data-testid="thread-row-error"
@@ -203,7 +203,7 @@
     import ListRow from "../ui/listRow.partial.obs";
     import ListPanel from "../ui/listPanel.partial.obs";
     import LoadMoreRow from "../ui/loadMoreRow.partial.obs";
-    import SettingNote, { Note } from "../ui/settingNote.partial.obs";
+    import InlineNotice, { Note } from "../ui/inlineNotice.partial.obs";
     import { newGuid } from "@Obsidian/Utility/guid";
     import MessageBody from "./messageBody.partial.obs";
     import { messageOrOffline } from "../errors.partial";
