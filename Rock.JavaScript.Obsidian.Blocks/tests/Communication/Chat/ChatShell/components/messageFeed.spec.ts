@@ -2040,11 +2040,12 @@ describe("a feed holding its reader at the newest message", () => {
             }
         }
 
-        test("not yet held, keeps the skeleton and paints no message row", async () => {
+        // Opened after the first load, as a mention is, the feed is blank until the landing is held.
+        test("not yet held, draws no skeleton and paints no message row", async () => {
             const wrapper = draw({ timeline: timeline([2, 3].map(id => message(id, anna, at(14, id))), { hasMore: true }), landOnId: 1 });
             await ticks();
 
-            expect(wrapper.find("[data-testid='history-skeleton']").exists()).toBe(true);
+            expect(wrapper.find("[data-testid='history-skeleton']").exists()).toBe(false);
             expect(wrapper.findAll("[data-message-id]")).toHaveLength(0);
             expect(wrapper.emitted("firstShown")).toBeUndefined();
         });
@@ -2379,11 +2380,12 @@ describe("a block post's buttons", () => {
 });
 
 describe("the history skeleton", () => {
-    // The skeleton is the final frame for a room still loading: drawn on the first render, still,
-    // and gone the moment the first page lands, with no wait before it and no fade after it.
-    test("shows on the first render of a room with no page yet, with no wait, and is gone at once when the page lands", async () => {
+    // The skeleton is the first load's final frame for a room still loading: drawn on the first
+    // render, still, and gone the moment the first page lands, with no wait before it and no fade
+    // after it. The first load is a feed mounted before the reveal showed the column.
+    test("shows on the first load's first render of a room with no page yet, with no wait, and is gone at once when the page lands", async () => {
         const state = timeline([], { isLoaded: false });
-        const wrapper = draw({ timeline: state });
+        const wrapper = draw({ timeline: state }, { isMainRevealed: false });
 
         expect(wrapper.find("[data-testid='history-skeleton']").exists()).toBe(true);
 
@@ -2397,7 +2399,7 @@ describe("the history skeleton", () => {
     });
 
     test("stands over the feed rather than in it, so the first page lands under it in place", async () => {
-        const wrapper = draw({ timeline: timeline([], { isLoaded: false }) });
+        const wrapper = draw({ timeline: timeline([], { isLoaded: false }) }, { isMainRevealed: false });
 
         const skeleton = wrapper.get("[data-testid='history-skeleton']").element;
         expect(wrapper.get("[data-testid='message-feed']").element.contains(skeleton)).toBe(false);
@@ -2405,8 +2407,8 @@ describe("the history skeleton", () => {
     });
 
     test("draws a channel's rows as the shared skeleton's feed groups and a direct message's as its bubbles", () => {
-        const channel = draw({ timeline: timeline([], { isLoaded: false }), isChannel: true });
-        const direct = draw({ timeline: timeline([], { isLoaded: false }), isDirectMessage: true });
+        const channel = draw({ timeline: timeline([], { isLoaded: false }), isChannel: true }, { isMainRevealed: false });
+        const direct = draw({ timeline: timeline([], { isLoaded: false }), isDirectMessage: true }, { isMainRevealed: false });
 
         const shapes = (wrapper: VueWrapper): string[] => wrapper.findAllComponents(Skeleton).map(row => row.props("shape"));
         expect(shapes(channel)).toEqual(Array(5).fill("group"));

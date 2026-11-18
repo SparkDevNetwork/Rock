@@ -159,10 +159,11 @@
 
         <!--
             Rows of the look the conversation will draw, standing at the feed's foot so nothing
-            jumps when the page lands: the final frame of a room still loading, drawn at once and
-            still. Over the feed rather than in it, so the first page lands under it in place.
+            jumps when the page lands: the final frame of a room still loading on the first load,
+            drawn at once and still. Over the feed rather than in it, so the first page lands under
+            it in place. A feed opened after the first load is blank until its rows are drawn.
         -->
-        <div v-if="!isDrawn" class="chat-feed-skeleton" data-testid="history-skeleton" aria-hidden="true">
+        <div v-if="isFirstLoad && !isDrawn" class="chat-feed-skeleton" data-testid="history-skeleton" aria-hidden="true">
             <template v-if="layout === 'community'">
                 <!-- Every other row shorter, so the column reads as messages rather than stripes. -->
                 <Skeleton v-for="index in 5" :key="index" shape="group" :widths="index % 2 === 0 ? [46, 30] : [64, 40]" data-testid="skeleton-row" />
@@ -872,6 +873,15 @@
      * once under the veil and again when the reveal ends.
      */
     const page = inject(pageRevealKey, null);
+
+    /**
+     * Whether this feed is part of the first load, mounted before the reveal showed the column:
+     * only then does it draw the skeleton, which stands under the veil and carries on past the
+     * reveal's ceiling while the page is still out. A feed mounted later (a switch, a Browse
+     * preview, a found conversation) reads a page that lands in tens of milliseconds, so it stays
+     * blank until its rows are drawn rather than flashing a skeleton. Read once, as it mounts.
+     */
+    const isFirstLoad = !!page && !page.state.isMainRevealed;
 
     // #endregion Values
 
