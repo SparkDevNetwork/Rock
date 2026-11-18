@@ -575,6 +575,17 @@ describe("the remembered room's look", () => {
         expect(readRememberedKind(storage, key)).toBe("channel");
     });
 
+    // Both are bubbles, but only a pair drops the names over them, so the two are told apart.
+    test("tells a group from a two-person conversation", () => {
+        const storage = memory();
+
+        writeRememberedKind(storage, key, "group");
+        expect(readRememberedKind(storage, key)).toBe("group");
+
+        writeRememberedKind(storage, key, "direct");
+        expect(readRememberedKind(storage, key)).toBe("direct");
+    });
+
     test("is kept beside the channel's id, which still reads as before", () => {
         const storage = memory();
         writeRememberedChannel(storage, key, remembered);

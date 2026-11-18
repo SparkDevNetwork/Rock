@@ -1390,6 +1390,20 @@ describe("the page load's reveal", () => {
         expect(h.stored[`${key}:kind`]).toBe("direct");
     });
 
+    test("remembers a group's look apart from a two-person conversation's", async () => {
+        const h = build();
+        h.channelFacts[channelA] = memberFacts(channelA, { channel_type: "dm", room_kind: "group", member_count: 3 });
+        const starting = h.shell.start();
+        await settle();
+        answerHistory(h, channelA, 10);
+        await starting;
+        await settle();
+
+        const key = rememberedChannelKey(tenant, person);
+        expect(h.stored[`${key}:kind`]).toBe("group");
+        expect(build({ stored: { [key]: channelA, [`${key}:kind`]: "group" } }).shell.reveal.state.kind).toBe("group");
+    });
+
     test("stopped mid-load reveals nothing later and leaves no reveal timer", async () => {
         jest.useFakeTimers({ doNotFake: ["queueMicrotask", "nextTick"] });
         const h = build();

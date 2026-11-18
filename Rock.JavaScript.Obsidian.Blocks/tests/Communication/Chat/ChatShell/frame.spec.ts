@@ -1695,6 +1695,28 @@ describe("the look, by the open conversation's kind", () => {
             expect(lookOf(w)).toBe("community");
         });
 
+        // A two-person conversation and a group are both bubbles, but only a pair drops the names
+        // over them, so the memory tells the two apart and the feed is laid out once either way.
+        test.each([
+            ["direct", "person", 2, true],
+            ["group", "group", 3, false]
+        ] as const)("keeps a remembered %s look's bubbles and names as the facts land", async (kind, roomKind, memberCount, isPair) => {
+            const w = await mountBlock(1200);
+            await openUnlisted({ kind, room: unlisted });
+
+            const feed = w.get(".chat-feed-frame").element;
+            const classes = [...feed.classList].join(" ");
+            expect(lookOf(w)).toBe("conversational");
+            expect(feed.classList.contains("is-pair")).toBe(isPair);
+
+            roomsOf().state.facts[unlisted] = roomFacts({ channel_id: unlisted, name: null, channel_type: "dm", room_kind: roomKind, member_count: memberCount });
+            await settle();
+
+            expect(w.get(".chat-feed-frame").element).toBe(feed);
+            expect([...feed.classList].join(" ")).toBe(classes);
+            expect(lookOf(w)).toBe("conversational");
+        });
+
         test("draws a room with no remembered look in a channel's look, the neutral one", async () => {
             const w = await mountBlock(1200);
             await openUnlisted({ kind: "direct", room: dmAnna.channel_id });
