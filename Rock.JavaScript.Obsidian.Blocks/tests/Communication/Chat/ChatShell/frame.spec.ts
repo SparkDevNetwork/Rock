@@ -193,7 +193,9 @@ function fakeShell(): Record<string, unknown> {
         isComposerOpen: true,
         limits: { dm_max_others: 8, dm_name_max_length: 100 },
         isPushOffered: false,
-        push: "offered"
+        push: "offered",
+        // Browse's preview, none until a row is chosen
+        preview: { channelId: null as string | null, isLoading: false, error: null as Record<string, unknown> | null }
     });
 
     const threads = fakeThreads();
@@ -4463,6 +4465,42 @@ describe("Browse channels", () => {
         });
 
         await w.get("[data-testid='directory-preview'] [data-testid='join-channel']").trigger("click");
+        await settle();
+
+        expect((mockShell!.readPreview as jest.Mock).mock.calls.filter(call => call[0] === volunteers.channel_id)).toHaveLength(2);
+    });
+
+    // A join Rock made that the platform has not taken yet lands later, once a sidebar reload
+    // shows the membership; the preview reads its history again then, as for a join that lands at once.
+    test("a pending join reads the preview's history again once it lands", async () => {
+        const w = await previewVolunteers();
+        roomsOf().join.mockImplementation(async (channelId: string) => {
+            roomsOf().state.joins[channelId] = { kind: "pending" };
+        });
+
+        await w.get("[data-testid='directory-preview'] [data-testid='join-channel']").trigger("click");
+        await settle();
+        expect((mockShell!.readPreview as jest.Mock).mock.calls.filter(call => call[0] === volunteers.channel_id)).toHaveLength(1);
+
+        roomsOf().state.joins[volunteers.channel_id] = { kind: "joined", isFresh: false };
+        await settle();
+
+        expect((mockShell!.readPreview as jest.Mock).mock.calls.filter(call => call[0] === volunteers.channel_id)).toHaveLength(2);
+    });
+
+    // The preview's feed stands in for its history; a read that failed says so in its place, as
+    // Browse's list does, with Try again reading it again, never a skeleton pulsing for good.
+    test("a preview whose read failed draws the empty state with Try again in the feed's place, which reads it again", async () => {
+        const w = await previewVolunteers();
+        const state = mockShell!.state as { preview: Record<string, unknown> };
+        state.preview = { channelId: volunteers.channel_id, isLoading: false, error: { code: "rpc.unavailable", severity: "failed" } };
+        await settle();
+
+        const preview = w.get("[data-testid='directory-preview']");
+        expect(preview.find("[data-testid='preview-error']").exists()).toBe(true);
+        expect(preview.find("[data-testid='history-skeleton']").exists()).toBe(false);
+
+        await preview.get("[data-testid='preview-retry']").trigger("click");
         await settle();
 
         expect((mockShell!.readPreview as jest.Mock).mock.calls.filter(call => call[0] === volunteers.channel_id)).toHaveLength(2);

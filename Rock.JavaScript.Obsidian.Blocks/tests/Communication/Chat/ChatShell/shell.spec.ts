@@ -1009,6 +1009,90 @@ describe("the page load", () => {
         expect(h.shell.timelines.state(channelB).messages).toEqual([]);
     });
 
+    test("the preview's read is held as the preview's state: on its way, then failed with the error, then read again", async () => {
+        const h = build();
+        const starting = h.shell.start();
+        await settle();
+        answerHistory(h, channelA, 10);
+        await starting;
+        await settle();
+
+        const reading = h.shell.readPreview(channelB);
+        await settle();
+        expect(h.shell.state.preview).toEqual({ channelId: channelB, isLoading: true, error: null });
+        h.history[channelB]?.shift()?.resolve(fakeResponse(500, { message: "down" }));
+        await reading;
+        expect(h.shell.state.preview.channelId).toBe(channelB);
+        expect(h.shell.state.preview.isLoading).toBe(false);
+        expect(h.shell.state.preview.error).not.toBeNull();
+
+        const again = h.shell.readPreview(channelB);
+        await settle();
+        expect(h.history[channelB]).toHaveLength(1);
+        expect(h.shell.state.preview).toEqual({ channelId: channelB, isLoading: true, error: null });
+        h.history[channelB]?.shift()?.resolve(fakeResponse(200, page(20)));
+        await again;
+
+        expect(h.shell.state.preview).toEqual({ channelId: channelB, isLoading: false, error: null });
+        expect(h.shell.timelines.state(channelB).messages.map(m => m.id)).toEqual([20]);
+
+        await h.shell.readPreview(null);
+        expect(h.shell.state.preview).toEqual({ channelId: null, isLoading: false, error: null });
+    });
+
+    test("a preview let go before its read fails raises no toast and no failed state", async () => {
+        const h = build();
+        const starting = h.shell.start();
+        await settle();
+        answerHistory(h, channelA, 10);
+        await starting;
+        await settle();
+
+        const first = h.shell.readPreview(channelB);
+        await settle();
+        void h.shell.readPreview(channelC);
+        await settle();
+        h.history[channelB]?.shift()?.resolve(fakeResponse(500, { message: "down" }));
+        await first;
+
+        expect(h.shell.state.errors).toEqual([]);
+        expect(h.shell.state.preview).toEqual({ channelId: channelC, isLoading: true, error: null });
+    });
+
+    // Moving through Browse's rows with the arrow keys previews each in turn; a room whose page
+    // this visit read is held, so coming back to it reads nothing. Browse let go drops what the
+    // preview read, so no page held for a room with no live topic outlives the visit.
+    test("a room the preview read this visit is not read again as the preview comes back to it, and the visit's end drops its pages", async () => {
+        const h = build();
+        const starting = h.shell.start();
+        await settle();
+        answerHistory(h, channelA, 10);
+        await starting;
+        await settle();
+
+        const toB = h.shell.readPreview(channelB);
+        await settle();
+        h.history[channelB]?.shift()?.resolve(fakeResponse(200, page(20)));
+        await toB;
+        const toC = h.shell.readPreview(channelC);
+        await settle();
+        h.history[channelC]?.shift()?.resolve(fakeResponse(200, page(30)));
+        await toC;
+
+        const back = h.shell.readPreview(channelB);
+        await settle();
+        expect(h.history[channelB] ?? []).toHaveLength(0);
+        await back;
+        expect(h.shell.state.preview).toEqual({ channelId: channelB, isLoading: false, error: null });
+        expect(h.shell.timelines.state(channelB).messages.map(m => m.id)).toEqual([20]);
+
+        await h.shell.readPreview(null);
+
+        expect(h.shell.timelines.state(channelB).messages).toEqual([]);
+        expect(h.shell.timelines.state(channelC).messages).toEqual([]);
+        expect(h.shell.timelines.state(channelA).messages.map(m => m.id)).toEqual([10]);
+    });
+
     test("a reload that fails once the list is drawn is still told by the error toast, as nothing else shows it", async () => {
         const h = build({ linkedChannelId: null });
         await h.shell.start();
