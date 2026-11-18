@@ -10,6 +10,7 @@
                :error="error ? messageOrOffline(error, offlineRefresh) : null"
                :skeletonCount="4"
                :isEmpty="rows.length === 0"
+               emptyIcon="at"
                emptyTitle="No mentions yet"
                emptyText="When someone @mentions you or uses @all, it shows up here so you can jump straight to it."
                :loadedSentence="loadedSentence"

@@ -99,6 +99,7 @@
                 </SettingGroup>
                 <EmptyState v-else-if="shownBlocked.length === 0 && !isListDrawn"
                             ref="blockedEmpty"
+                            icon="ban"
                             title="No one blocked"
                             tabindex="-1"
                             data-testid="blocked-empty" />

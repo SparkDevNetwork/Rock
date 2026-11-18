@@ -31,12 +31,14 @@
             <EmptyState v-if="refusal === 'not_member'"
                         data-testid="members-state"
                         data-state="not_member"
+                        icon="users"
                         title="Join to see who's here"
                         :text="`Members of ${channelName} can see its member list.`" />
 
             <EmptyState v-else-if="refusal === 'no_roster_right'"
                         data-testid="members-state"
                         data-state="no_roster_right"
+                        icon="eye-off"
                         title="Only leaders can see who's here"
                         :text="`${channelName} keeps its member list private. You can still message people you know.`" />
 

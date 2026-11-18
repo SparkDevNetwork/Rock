@@ -75,7 +75,7 @@
                         @action="emit('retry')" />
 
             <div v-else-if="rows.length === 0" class="chat-side-empty" data-testid="sidebar-empty">
-                <EmptyState title="No conversations yet" text="Message someone from your groups, or browse channels to join." />
+                <EmptyState icon="message" title="No conversations yet" text="Message someone from your groups, or browse channels to join." />
                 <div class="chat-side-empty-actions">
                     <Button v-if="isNewMessageShown" kind="brand" icon="compose" data-testid="empty-new-message" @click="emit('newMessage')">New message</Button>
                     <!-- With no New message beside it, this is the one way in, so it is the filled one. -->
@@ -84,7 +84,7 @@
             </div>
 
             <template v-else>
-                <EmptyState v-if="isNoResults" title="No results" data-testid="sidebar-no-results" />
+                <EmptyState v-if="isNoResults" icon="search" title="No results" data-testid="sidebar-no-results" />
                 <div v-for="section in sections"
                      :key="section.key"
                      data-testid="sidebar-section"

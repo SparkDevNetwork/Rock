@@ -1,6 +1,7 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <div class="chat-empty" :class="`is-${tone}`">
+        <span v-if="icon" class="chat-empty-tile" aria-hidden="true"><Icon :name="icon" /></span>
         <p class="chat-empty-title">{{ title }}</p>
         <p v-if="text" class="chat-empty-text">{{ text }}</p>
         <Button v-if="actionLabel"
@@ -13,27 +14,44 @@
 </template>
 
 <style scoped>
-/* A few words, centred in what holds them, with no tile; an error is the same words with its action. */
+/*
+    The list's mark in a tinted tile over a few words, centred in what holds them; an error is its
+    words with its action and no tile.
+*/
 .chat-empty {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 6px;
     align-items: center;
     padding: 48px 32px 24px;
     text-align: center;
 }
 
+/* The brand-tinted mark Browse's head draws beside its title, larger here, in the same corner. */
+.chat-empty-tile {
+    --chat-ic-size: 22px;
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    margin-bottom: 6px;
+    color: var(--chat-brand-ink);
+    background: var(--chat-brand-tint);
+    border-radius: var(--chat-r-surface);
+}
+
+/* A message's size: the tile leads, so the words under it stay quiet. */
 .chat-empty-title {
     margin: 0;
-    font-size: var(--chat-fs-display);
+    font-size: var(--chat-fs-body);
     font-weight: 650;
     color: var(--chat-text);
     text-wrap: balance;
 }
 
-/* Balanced, so no word is left alone on a last line. */
+/* Narrow and balanced, so no word is left alone on a last line. */
 .chat-empty-text {
-    max-width: 30ch;
+    max-width: 32ch;
     margin: 0;
     font-size: var(--chat-fs-ui);
     line-height: 1.45;
@@ -47,17 +65,25 @@
 }
 
 .chat-empty-action {
-    margin-top: 12px;
+    margin-top: 10px;
 }
 </style>
 
 <script setup lang="ts">
     import { PropType } from "vue";
     import Button from "./button.partial.obs";
+    import Icon from "./icon.partial.obs";
 
-    // What a list or a panel says when it has nothing to show, or could not load: words only, one
-    // look and one place for both, so an error never sits above a list that says the opposite.
+    // What a list or a panel says when it has nothing to show, or could not load: its mark and a
+    // few words, one look and one place for both, so an error never sits above a list that says the
+    // opposite.
     defineProps({
+        /** The list's own mark, drawn in the tile over the title; an error, which has none, draws no tile. */
+        icon: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
         /** The one line that says what is so, in sentence case. */
         title: {
             type: String as PropType<string>,

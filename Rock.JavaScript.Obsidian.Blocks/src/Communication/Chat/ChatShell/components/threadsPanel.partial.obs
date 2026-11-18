@@ -9,6 +9,7 @@
                :isRefreshing="isRefreshing"
                :error="error ? messageOrOffline(error, offlineRefresh) : null"
                :isEmpty="rows.length === 0"
+               :emptyIcon="tab === 'all' ? 'bell' : 'thread'"
                :emptyTitle="emptyTitle"
                :emptyText="emptyBody"
                :emptyActionLabel="tab === 'channel' ? 'See all followed threads' : ''"
