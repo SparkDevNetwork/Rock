@@ -4,10 +4,14 @@
            :isOpen="popover.isOpen.value"
            :label="label"
            :height="sheetHeight"
+           isFocusReturnedByOwner
            @dismiss="popover.close({ isFocusReturned: true })">
         <div :ref="setFloating" class="chat-popover-sheet" :role="role || undefined" :aria-label="label" v-bind="$attrs">
             <slot />
         </div>
+        <template v-if="$slots.pages" #pages>
+            <slot name="pages" />
+        </template>
     </Sheet>
     <Teleport v-else :to="overlayHost ?? 'body'" :disabled="!overlayHost">
         <Transition leave-active-class="is-leaving">
@@ -62,7 +66,9 @@
 
     // The surface every popover is drawn on: beside its anchor, grown from it, with the chat's
     // surface look; on a phone a bottom sheet instead. Its coming and going is the popover's
-    // (usePopover); what it holds is the caller's, in the slot.
+    // (usePopover); what it holds is the caller's, in the slot, and as a sheet the pages the
+    // caller turns it into. The popover gives focus back on every close, so the sheet's trap
+    // returns none of its own, which would land after it on what opened the sheet.
     //
     // Beside its anchor it is drawn in the chat's root when there is one, since a feed's faded edges
     // would fade or cut a surface drawn inside it; in place where there is no root, as when a part
