@@ -52,9 +52,12 @@ namespace Rock.Communication.Chat.Platform.Doors
 
         // The classes a card's details may carry: Font Awesome's and Tabler's icon sets, whose other
         // classes all start "fa-" or "ti-", and the text colors. Any other class is the page's own,
-        // the chat's or Bootstrap's layout and display classes, with which a template could hide,
-        // move or cover the chat around the card. Matched as written, since a browser matches a
-        // class name with its case.
+        // the chat's or Bootstrap's layout and display classes, which a template would borrow to
+        // hide, move or cover the chat around the card. The kept ones are not all inert: an icon
+        // set's stacking and list classes place a glyph absolutely, and its sizes compound. The
+        // client draws the details in a section that contains its own layout and paint, so whatever
+        // these classes do stays inside that section. Matched as written, since a browser matches
+        // a class name with its case.
         private static readonly HashSet<string> AllowedClasses = new HashSet<string>( StringComparer.Ordinal )
         {
             "fa", "fas", "far", "fal", "fad", "fab", "ti",

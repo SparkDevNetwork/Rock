@@ -472,6 +472,33 @@ describe("a sheet turned into another page", () => {
             ]);
         });
 
+        // A picker page runs to the sheet's edges, so the sheet's side inset goes as it turns to
+        // one and comes back on Back: moved with the height, never snapped under the sliding pages.
+        it("moves its side inset with its height as it turns to a picker page and back", async () => {
+            const insets = document.createElement("style");
+            insets.textContent = ".chat-sheet-panel { padding-left: 12px; padding-right: 12px; } .chat-sheet-panel.is-picker { padding-left: 0px; padding-right: 0px; }";
+            document.head.appendChild(insets);
+            try {
+                turning({ height: "picker" });
+                await settle();
+                const sheet = find("sheet") as HTMLElement;
+                heights.size(sheet, () => sheet.classList.contains("is-picker") ? 600 : 137);
+
+                await turn();
+                (find("page-back") as HTMLElement).click();
+                await settle();
+
+                const insetOf = (frame: Keyframe | undefined): unknown[] => [frame?.paddingLeft, frame?.paddingRight];
+                expect(heights.frames.map(frames => [insetOf(frames[0]), insetOf(frames[frames.length - 1])])).toEqual([
+                    [["12px", "12px"], ["0px", "0px"]],
+                    [["0px", "0px"], ["12px", "12px"]]
+                ]);
+            }
+            finally {
+                insets.remove();
+            }
+        });
+
         it("changes its height at once where less motion is asked for, the pages only fading", async () => {
             window.matchMedia = ((query: string) => ({ media: query, matches: query === "(prefers-reduced-motion: reduce)" })) as unknown as typeof window.matchMedia;
             turning({ height: "picker" });

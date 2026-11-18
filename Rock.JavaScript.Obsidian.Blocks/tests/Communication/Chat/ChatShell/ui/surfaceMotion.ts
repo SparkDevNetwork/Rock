@@ -36,13 +36,16 @@ export const panelMotion = { duration: 300, easing: "cubic-bezier(.2, 0, 0, 1)" 
  *
  * @returns The height changes played, how to size a surface, and how to restore the browser.
  */
-export function standInHeights(): { played: HeightPlayed[], size: (surface: HTMLElement, height: () => number) => void, restore: () => void } {
+export function standInHeights(): { played: HeightPlayed[], frames: Keyframe[][], size: (surface: HTMLElement, height: () => number) => void, restore: () => void } {
     const played: HeightPlayed[] = [];
+    // every change's whole frames, for what moves with the height, such as the surface's inset
+    const frames: Keyframe[][] = [];
     const proto = HTMLElement.prototype as { animate?: unknown };
     const original = proto.animate;
 
     proto.animate = function (this: HTMLElement, keyframes: Keyframe[], options: KeyframeAnimationOptions): Animation {
         played.push({ element: this, from: keyframes[0]?.height, to: keyframes[keyframes.length - 1]?.height, duration: options.duration, easing: options.easing });
+        frames.push(keyframes);
         return { cancel: () => undefined } as unknown as Animation;
     };
 
@@ -61,5 +64,5 @@ export function standInHeights(): { played: HeightPlayed[], size: (surface: HTML
         }
     }
 
-    return { played, size, restore };
+    return { played, frames, size, restore };
 }

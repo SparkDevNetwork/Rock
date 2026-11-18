@@ -97,7 +97,15 @@ function build(rawSettings: Record<string, unknown> = {}) {
     // a shallow ref, as the session holds them, so a change of the switch is seen as it lands
     const settings = shallowRef(readSettings({ ...current, ...rawSettings }));
     const token = { value: "token-1" as string | null };
-    const state = reactive({ activeChannelId: group as string | null, connection: null as ChatError | null, isComposerOpen: true });
+    // the page's switch as the shell holds it once an exchange has landed: the church's
+    const state = reactive({
+        activeChannelId: group as string | null,
+        connection: null as ChatError | null,
+        isComposerOpen: true,
+        get isStatusShown(): boolean {
+            return settings.value.flags.online === true;
+        }
+    });
     const rows: Record<string, Partial<SidebarRow>> = {
         [group]: { channel_id: group, room_kind: "group", can_post: true },
         [otherGroup]: { channel_id: otherGroup, room_kind: "person", can_post: true },
@@ -123,6 +131,7 @@ function build(rawSettings: Record<string, unknown> = {}) {
         state: prefs.state,
         shownStatus: () => prefs.pending ?? { busy_until: prefs.state.me.busy_until, appear_offline: prefs.state.me.appear_offline },
         isChoicePending: () => prefs.pending !== null,
+        isStatusKnown: () => prefs.state.isMeRead || prefs.pending !== null,
         noteInput: (at: number) => toldInputs.push(at)
     };
     // The newest message the person's client holds for each place, by place key.

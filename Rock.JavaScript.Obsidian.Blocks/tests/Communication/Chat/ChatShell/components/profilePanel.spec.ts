@@ -417,6 +417,27 @@ describe("the church's template", () => {
         expect(rule).not.toMatch(/overflow-y/);
     });
 
+    // Rock keeps every icon class, and an icon set's stacking and list classes place a glyph
+    // absolutely while its sizes compound, so a hostile template can still ask for a huge, white
+    // or positioned block wrapped in an off-site link. The region is the boundary: it contains its
+    // layout and its paint, so it is the box every such block is placed in and clipped to, and
+    // nothing the template draws reaches the chat around it.
+    test("a hostile template's positioned and sized icon classes stay inside the region, which contains their layout and paint", () => {
+        const hostile = "<a href=\"https://example.com/sign-in\"><span class=\"fa-stack-2x fa-inverse\">x</span></a>"
+            + "<div class=\"fa-stack-1x fa-5x text-danger\">Session expired. Sign in again</div>"
+            + "<ul><li class=\"fa-li fa-pull-right fa-spin\">One</li></ul><i class=\"ti-stacked-2x fa-layers-counter\"></i>";
+        const w = mountCard(profile(), { rock: answered({ lavaHtml: hostile }) });
+
+        const panel = w.element as HTMLElement;
+        const lava = w.get("[data-testid='profile-lava']").element as HTMLElement;
+        const placed = Array.from(panel.querySelectorAll("[class*='fa-'], [class*='ti-'], a[href^='https://example.com']"));
+        expect(placed).toHaveLength(5);
+        expect(placed.every(element => lava.contains(element) && element !== lava)).toBe(true);
+
+        const rule = styleRules(join(shellFolder, "components/profilePanel.partial.obs"), /^\.chat-pp-lava$/).join(";");
+        expect(rule).toMatch(/contain:\s*layout paint/);
+    });
+
     test("is left out when Rock rendered nothing", () => {
         const w = mountCard(profile(), { rock: answered({ lavaHtml: null }), isLavaConfigured: true });
 

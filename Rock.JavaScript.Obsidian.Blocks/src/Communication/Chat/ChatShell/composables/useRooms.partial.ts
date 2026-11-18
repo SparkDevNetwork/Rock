@@ -971,9 +971,7 @@ export function createRooms(dependencies: RoomsDependencies): Rooms {
                 return;
             }
             // Not reached, the person may press Join again; only a code the door answered itself is a refusal.
-            // A leave from before is over, so nothing reads this join as a room still left.
             const door = dependencies.joinChannel;
-            delete state.leaves[channelId];
             state.joins[channelId] = { kind: "joining" };
             const answer = await askDoor(() => door(channelId), kind => failJoin(channelId, kind));
             if (!answer) {
@@ -986,6 +984,11 @@ export function createRooms(dependencies: RoomsDependencies): Rooms {
                 dependencies.announce(text, "assertive");
                 return;
             }
+
+            // The join has landed, so a leave from before is over. Kept until now: while the door
+            // has not answered, or never was reached, the leave is what tells this client the room
+            // is left though the sidebar still holds the row its sync has not taken out.
+            delete state.leaves[channelId];
 
             if (answer.isPending) {
                 state.joins[channelId] = { kind: "pending" };

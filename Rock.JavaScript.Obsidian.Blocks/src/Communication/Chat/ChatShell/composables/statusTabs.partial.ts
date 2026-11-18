@@ -77,6 +77,15 @@ export type StatusDependencies = {
 
     /** The window, whose pagehide and pageshow say the tab left for the back-forward cache and came back. */
     targets?: PageEventTargets["window"];
+
+    /**
+     * Her status as her settings held it at her last load on this browser, which her faces draw
+     * until her settings are read; null for none. Never compared with a choice: only the read is.
+     */
+    remembered?: StatusChoice | null;
+
+    /** Keeps her status as her settings now hold it, for the next load's first paint. */
+    remember?: (choice: StatusChoice) => void;
 };
 
 /**
@@ -210,7 +219,7 @@ type StatusPost =
     | { kind: "input", at: number };
 
 /** Her status's half of the settings. */
-export type StatusTabs = Pick<Prefs, "setStatus" | "shownStatus" | "isChoicePending" | "isStatusRetrying" | "statusSaving" | "noteInput" | "statusWake" | "stop"> & {
+export type StatusTabs = Pick<Prefs, "setStatus" | "shownStatus" | "isStatusKnown" | "isChoicePending" | "isStatusRetrying" | "statusSaving" | "noteInput" | "statusWake" | "stop"> & {
     /** A sidebar load has written her status into me. */
     sidebarRead: () => void;
 };
@@ -739,6 +748,14 @@ export function createStatusTabs(state: PrefsState, rule: SaveRule, dependencies
         post({ kind: "input", at: inputToPost });
     }
 
+    // What her settings hold once read, a landed save's too, is kept for the next load's first
+    // paint; the remembered status is drawn only until then.
+    const stopRemembering = watch(() => state.isMeRead ? [state.me.busy_until, state.me.appear_offline] as const : null, held => {
+        if (held && !isStopped()) {
+            reach?.remember?.({ busy_until: held[0], appear_offline: held[1] });
+        }
+    }, { flush: "sync" });
+
     if (channel) {
         channel.onmessage = event => heard(event.data);
         if (locks) {
@@ -765,9 +782,17 @@ export function createStatusTabs(state: PrefsState, rule: SaveRule, dependencies
             post({ kind: "choice", record });
         },
 
-        shownStatus: (): StatusChoice => isPending() && tab.newest
-            ? { ...tab.newest.choice }
-            : { busy_until: state.me.busy_until, appear_offline: state.me.appear_offline },
+        shownStatus: (): StatusChoice => {
+            if (isPending() && tab.newest) {
+                return { ...tab.newest.choice };
+            }
+            const remembered = reach?.remembered;
+            return !state.isMeRead && remembered
+                ? { ...remembered }
+                : { busy_until: state.me.busy_until, appear_offline: state.me.appear_offline };
+        },
+
+        isStatusKnown: (): boolean => state.isMeRead || isPending() || !!reach?.remembered,
 
         isChoicePending: isPending,
 
@@ -826,6 +851,7 @@ export function createStatusTabs(state: PrefsState, rule: SaveRule, dependencies
         },
 
         stop: (): void => {
+            stopRemembering();
             sendWaits.forEach(letGo => letGo());
             if (inputTimer !== null) {
                 clearTimeout(inputTimer);

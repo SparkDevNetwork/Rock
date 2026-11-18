@@ -45,6 +45,7 @@ test("a Busy ending two days on, told just after midnight on the day daylight sa
     const page = { visibilityState: "visible", addEventListener: () => undefined, removeEventListener: () => undefined };
     const status = createPresenceStatus({
         settings: () => readSettings({ flags: { online: true } }),
+        isStatusShown: () => true,
         personAliasGuid: me,
         me: () => ({ busy_until: null, appear_offline: false }),
         ownInputAt: () => 0,
@@ -89,6 +90,7 @@ test("her own Busy ending two days on, chosen just after midnight on the day day
     const refreshes: string[] = [];
     const status = createPresenceStatus({
         settings: () => readSettings({ flags: { online: true } }),
+        isStatusShown: () => true,
         personAliasGuid: me,
         me: () => ({ busy_until: new Date(2026, 10, 3, 8, 0).toISOString(), appear_offline: false }),
         ownInputAt: () => 0,

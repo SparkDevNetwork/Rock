@@ -1207,7 +1207,8 @@ describe("Leave", () => {
 
 // Join and Leave pressed on one room in one Browse visit, in either order: a leave that lands ends
 // the membership everywhere a join started it (its Join, its directory row, its facts), and a join
-// asked after a leave is asked of the door, its old leave forgotten.
+// asked after a leave is asked of the door, its old leave forgotten once the join lands. A join
+// that fails keeps the leave, so the sidebar's old row cannot make the room look joined again.
 describe("Join and Leave in one visit", () => {
     test("a join, then a leave that lands: the room is not joined anywhere the client holds it, and Join asks the door again", async () => {
         jest.useFakeTimers();
@@ -1237,6 +1238,10 @@ describe("Join and Leave in one visit", () => {
         void s.rooms.join(volunteers);
         expect(s.joinCalls.map(c => c.channelId)).toEqual([volunteers, volunteers]);
         expect(s.rooms.joinOf(volunteers)).toEqual({ kind: "joining" });
+
+        // the old leave is forgotten once the join lands, not before the door answers
+        s.joinCalls[1].answer.resolve(door("ok"));
+        await settle();
         expect(s.rooms.leaveOf(volunteers)).toEqual({ kind: "idle" });
     });
 
@@ -1250,11 +1255,51 @@ describe("Join and Leave in one visit", () => {
 
         void s.rooms.join(volunteers);
         expect(s.joinCalls.map(c => c.channelId)).toEqual([volunteers]);
-        expect(s.rooms.leaveOf(volunteers)).toEqual({ kind: "idle" });
 
         s.joinCalls[0].answer.resolve(door("ok"));
         await settle();
         expect(s.rooms.joinOf(volunteers)).toEqual({ kind: "joined", isFresh: true });
+        expect(s.rooms.leaveOf(volunteers)).toEqual({ kind: "idle" });
+    });
+
+    test("a leave, then a join that fails while the sidebar's row still says member: the leave holds, and Join asks the door again", async () => {
+        const s = setup();
+        sidebarOfThree(s);
+
+        void s.rooms.leave(volunteers);
+        s.leaveCalls[0].answer.resolve(door("ok", null, true));
+        await settle();
+
+        void s.rooms.join(volunteers);
+        // the door has not answered, so the leave still stands
+        expect(s.rooms.leaveOf(volunteers)).toEqual({ kind: "left" });
+        s.joinCalls[0].answer.resolve(door("door.unavailable", "An error occurred."));
+        await settle();
+
+        expect(s.rooms.joinOf(volunteers)).toEqual({ kind: "failed", text: "Couldn't join. Try again in a moment." });
+        expect(s.rooms.leaveOf(volunteers)).toEqual({ kind: "left" });
+
+        void s.rooms.join(volunteers);
+        expect(s.joinCalls.map(c => c.channelId)).toEqual([volunteers, volunteers]);
+    });
+
+    test("a leave, then a join while offline: the leave holds and Join may be pressed again once back", async () => {
+        const s = setup();
+        sidebarOfThree(s);
+
+        void s.rooms.leave(volunteers);
+        s.leaveCalls[0].answer.resolve(door("ok", null, true));
+        await settle();
+
+        s.offline.value = true;
+        void s.rooms.join(volunteers);
+        await settle();
+        expect(s.rooms.joinOf(volunteers)).toEqual({ kind: "failed", text: "You're offline. Try again when you're back." });
+        expect(s.rooms.leaveOf(volunteers)).toEqual({ kind: "left" });
+
+        s.offline.value = false;
+        void s.rooms.join(volunteers);
+        expect(s.joinCalls.map(c => c.channelId)).toEqual([volunteers]);
     });
 
     test("a room on screen as a stand-in, joined then left, turns not joined again, so its join bar comes back", async () => {

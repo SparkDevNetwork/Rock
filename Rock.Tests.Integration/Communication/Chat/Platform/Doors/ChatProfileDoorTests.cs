@@ -484,6 +484,27 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Doors
         }
 
         [TestMethod]
+        public void NoLinkIsGivenToStaffPastTheirReadsForTheMinute()
+        {
+            using ( var scene = new ChatDoorScene() )
+            {
+                // The page would let this viewer open the record, but the read limit is counted
+                // before anything about the person is read, the link included, so the limit bounds
+                // finding records through the card for staff as for anyone.
+                var viewer = scene.AddChatPerson( "Viewer" );
+                MakeRockAdministrator( scene, viewer );
+                var target = AddReachablePerson( scene, "Target" );
+
+                for ( var i = 0; i < ChatDoorHelper.MaxProfilesReadPerMinute; i++ )
+                {
+                    Details( scene, viewer, Guid.NewGuid() );
+                }
+
+                AssertNothingShown( Details( scene, viewer, scene.Alias( target ) ), "one more person in the same minute" );
+            }
+        }
+
+        [TestMethod]
         public void NoLinkIsGivenWithoutAPersonProfilePage()
         {
             using ( var scene = new ChatDoorScene() )

@@ -63,6 +63,7 @@ export function createStatusStore({ isSeeded = true, clock = "fixtures" }: { isS
     const page = { visibilityState: "visible", addEventListener: () => undefined, removeEventListener: () => undefined };
     const store = createPresenceStatus({
         settings: () => readSettings({ flags: { online: isOn.value }, limits: { presence_idle_seconds: 600 } }),
+        isStatusShown: () => isOn.value,
         personAliasGuid: viewer,
         me: () => mine.value,
         ownInputAt: () => 0,
