@@ -54,6 +54,9 @@ export type RegistrationInstanceBag = {
     /** Gets or sets the contact phone number. */
     contactPhone?: string | null;
 
+    /** Gets or sets the identifier key of the registration instance that this new registration instance was copied from. */
+    copiedFromRegistrationInstanceIdKey?: string | null;
+
     /** Gets or sets the per-registrant cost when the template allows cost to be set on the instance. */
     cost?: number | null;
 
