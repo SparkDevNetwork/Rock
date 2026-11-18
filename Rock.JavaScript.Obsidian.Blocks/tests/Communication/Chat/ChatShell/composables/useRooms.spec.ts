@@ -1205,6 +1205,78 @@ describe("Leave", () => {
     });
 });
 
+// Join and Leave pressed on one room in one Browse visit, in either order: a leave that lands ends
+// the membership everywhere a join started it (its Join, its directory row, its facts), and a join
+// asked after a leave is asked of the door, its old leave forgotten.
+describe("Join and Leave in one visit", () => {
+    test("a join, then a leave that lands: the room is not joined anywhere the client holds it, and Join asks the door again", async () => {
+        jest.useFakeTimers();
+        const s = setup();
+        await opened(s, [directoryRow(volunteers, "Volunteers"), directoryRow(outreach, "Local Outreach")]);
+        jest.useRealTimers();
+        s.channels.setSidebar([sidebarRow(team)]);
+
+        void s.rooms.join(volunteers);
+        s.joinCalls[0].answer.resolve(door("ok"));
+        await settle();
+        s.channelCalls[0].answer.resolve({ ok: true, facts: facts(volunteers, "Volunteers", { is_member: true, can_leave: true }) });
+        s.channels.setSidebar([sidebarRow(team), sidebarRow(volunteers, { name: "Volunteers" })]);
+        s.rooms.sidebarLoaded();
+        await settle();
+
+        void s.rooms.leave(volunteers);
+        s.leaveCalls[0].answer.resolve(door("ok"));
+        await settle();
+
+        expect(s.rooms.leaveOf(volunteers)).toEqual({ kind: "left" });
+        expect(s.rooms.joinOf(volunteers)).toEqual({ kind: "idle" });
+        expect(s.rooms.state.directory.rows.find(r => r.channel_id === volunteers)?.is_member).toBe(false);
+        expect(s.rooms.factsOf(volunteers)?.is_member).toBe(false);
+
+        // The sidebar still holds the row its sync has not taken out yet; Join is asked all the same.
+        void s.rooms.join(volunteers);
+        expect(s.joinCalls.map(c => c.channelId)).toEqual([volunteers, volunteers]);
+        expect(s.rooms.joinOf(volunteers)).toEqual({ kind: "joining" });
+        expect(s.rooms.leaveOf(volunteers)).toEqual({ kind: "idle" });
+    });
+
+    test("a leave, then a join before the sync takes the sidebar's row out: the door is asked and the room joined again", async () => {
+        const s = setup();
+        sidebarOfThree(s);
+
+        void s.rooms.leave(volunteers);
+        s.leaveCalls[0].answer.resolve(door("ok", null, true));
+        await settle();
+
+        void s.rooms.join(volunteers);
+        expect(s.joinCalls.map(c => c.channelId)).toEqual([volunteers]);
+        expect(s.rooms.leaveOf(volunteers)).toEqual({ kind: "idle" });
+
+        s.joinCalls[0].answer.resolve(door("ok"));
+        await settle();
+        expect(s.rooms.joinOf(volunteers)).toEqual({ kind: "joined", isFresh: true });
+    });
+
+    test("a room on screen as a stand-in, joined then left, turns not joined again, so its join bar comes back", async () => {
+        const s = setup();
+        s.channels.setSidebar([sidebarRow(team)]);
+        s.active.value = volunteers;
+        void s.rooms.channelOpened(volunteers);
+        s.channelCalls[0].answer.resolve({ ok: true, facts: facts(volunteers, "Volunteers") });
+        await settle();
+        void s.rooms.join(volunteers);
+        s.joinCalls[0].answer.resolve(door("ok"));
+        await settle();
+        expect(s.channels.rowOf(volunteers)?.is_member).toBe(true);
+
+        void s.rooms.leave(volunteers);
+        s.leaveCalls[0].answer.resolve(door("ok"));
+        await settle();
+
+        expect(s.channels.rowOf(volunteers)?.is_member).toBe(false);
+    });
+});
+
 describe("Rename", () => {
     test("the door is asked for the trimmed name; once saved the rename is idle again, and the new name is announced", async () => {
         const s = setup();

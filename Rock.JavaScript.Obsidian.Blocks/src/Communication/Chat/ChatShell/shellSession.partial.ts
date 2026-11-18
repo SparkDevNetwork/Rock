@@ -226,10 +226,25 @@ export function churchTokenFromAction(result: MintActionResult): ChurchTokenResu
 export function createShellSession(dependencies: ShellSessionDependencies): ShellSession {
     const { state, options, projectUrl, publishableKey, personAliasGuid, report, showSettings, setAuth, end, status } = dependencies;
 
+    /** Asks Rock for a church token, marking when it answered. */
+    async function askRock(): Promise<MintActionResult> {
+        const result = await options.mintChurchToken();
+        options.mark("chat:mint");
+        return result;
+    }
+
+    // Every load waits on the church token before it reads anything, so it is asked for the
+    // moment the page arrives, while the page is still drawn, and the start takes that answer as
+    // its first mint; every later mint asks afresh. A page Rock already turned away asks nothing.
+    let arrivalMint: Promise<MintActionResult> | null = state.gate === "ok" ? askRock() : null;
+    // The start meets its failure; this only keeps one never read, a shell stopped unstarted, quiet.
+    arrivalMint?.catch(() => undefined);
+
     const session: ChatSession = createSession({
         mintChurchToken: async (): Promise<ChurchTokenResult> => {
-            const result = await options.mintChurchToken();
-            options.mark("chat:mint");
+            const asked = arrivalMint ?? askRock();
+            arrivalMint = null;
+            const result = await asked;
 
             if (!result.isSuccess && !churchTokenFromAction(result).isUnreachable) {
                 report(classifyActionFailure(result.statusCode));

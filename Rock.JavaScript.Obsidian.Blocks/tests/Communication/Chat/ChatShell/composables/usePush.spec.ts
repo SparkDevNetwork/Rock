@@ -440,7 +440,7 @@ describe("the browser row's state", () => {
             expect(refusal).toEqual({
                 code: "push.register_failed",
                 severity: "failed",
-                text: failure === "platform" ? "Read only tonight." : "Notifications couldn't be turned on for this browser. Try again in a moment."
+                text: failure === "platform" ? "Read only tonight." : "Couldn't turn on notifications for this browser. Try again in a moment."
             });
         }
         else {
@@ -606,7 +606,7 @@ describe("the browser row's state", () => {
         const refusal = await push.turnOff();
 
         expect(refusal?.code).toBe("push.unregister_failed");
-        expect(refusal?.text).toBe("Notifications couldn't be turned off on this browser. Try again in a moment.");
+        expect(refusal?.text).toBe("Couldn't turn off notifications for this browser. Try again in a moment.");
         expect(cookies[cookies.length - 1]).toBe("fcm-token-1");
         expect(flag.read()).toBe("off");
         expect(push.state()).toBe("offered");

@@ -7,14 +7,26 @@
             <div v-if="isOpen"
                  ref="sheetElement"
                  class="chat-sheet-panel"
-                 :class="{ 'is-picker': height === 'picker' }"
+                 :class="{ 'is-picker': shownHeight === 'picker' }"
                  role="dialog"
                  aria-modal="true"
-                 :aria-label="label"
+                 :aria-label="pages.isTurned.value ? pages.title.value : label"
                  data-testid="sheet"
                  @keydown="onKeydown">
                 <div class="chat-sheet-handle" aria-hidden="true"></div>
-                <slot />
+                <!-- Turned to another page: Back and the page's title under the handle, which stays. -->
+                <div v-if="pages.isTurned.value" class="chat-sheet-head">
+                    <IconButton icon="left" label="Back" data-testid="page-back" @click="pages.back()" />
+                    <h3 class="chat-sheet-title" data-testid="page-title">{{ pages.title.value }}</h3>
+                </div>
+                <!-- A sheet whose choices lead to other pages draws its own body as the first of them. -->
+                <div v-if="$slots.pages" class="chat-sheet-pages">
+                    <SurfacePage isFirst>
+                        <slot />
+                    </SurfacePage>
+                    <slot name="pages" />
+                </div>
+                <slot v-else />
             </div>
         </Transition>
     </Teleport>
@@ -69,13 +81,53 @@
     background: var(--chat-line-strong);
     border-radius: var(--chat-r-full);
 }
+
+/* A turned sheet's head: Back at the start, then the page's title. */
+.chat-sheet-head {
+    display: flex;
+    flex: none;
+    gap: 4px;
+    align-items: center;
+    padding-bottom: 6px;
+}
+
+/* A picker's sheet runs its content to its edges, so its head keeps the sheet's own inset. */
+.chat-sheet-panel.is-picker .chat-sheet-head {
+    padding-right: 12px;
+    padding-left: 12px;
+}
+
+/* Rock's theme styles every heading, so the title states its whole face. */
+.chat-sheet-title {
+    flex: 1;
+    min-width: 0;
+    margin: 0;
+    overflow: hidden;
+    font-size: var(--chat-fs-title);
+    font-weight: 700;
+    color: var(--chat-text);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* The pages, the one on top in the flow; a page set aside or going back is placed over it. */
+.chat-sheet-pages {
+    position: relative;
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-height: 0;
+}
 </style>
 
 <script setup lang="ts">
-    import { onMounted, PropType, ref } from "vue";
+    import { computed, onMounted, PropType, ref } from "vue";
+    import IconButton from "./iconButton.partial.obs";
     import Scrim from "./scrim.partial.obs";
+    import SurfacePage from "./surfacePage.partial.obs";
     import { useAnnouncerModal } from "./announcer.partial";
     import { useFocusTrap } from "./focusTrap.partial";
+    import { provideSurfacePages } from "./surfacePages.partial";
     import { overlayHostOf } from "./tooltip.partial";
     import { SheetHeight } from "../types.partial";
 
@@ -83,6 +135,9 @@
     // modal: focus starts inside it and stays there, Escape or a tap on the scrim asks it to
     // close, a screen reader hears only it, and announcements made while it is open are spoken
     // from inside it. It has two heights: as tall as its content, or the taller picker height.
+    // A choice that leads to another turns it in place into that page (the pages slot), never a
+    // second sheet over it; the page asks for one of the two heights, and the sheet grows or shrinks
+    // to it as the pages slide.
 
     const props = defineProps({
         isOpen: {
@@ -100,6 +155,15 @@
         height: {
             type: String as PropType<SheetHeight>,
             default: "content"
+        },
+
+        /**
+         * Whether the sheet's owner gives focus back itself as the sheet closes, as a popover drawn
+         * as a sheet does; the sheet then leaves focus where its owner put it.
+         */
+        isFocusReturnedByOwner: {
+            type: Boolean,
+            default: false
         }
     });
 
@@ -114,17 +178,32 @@
     /** The chat's root, which the sheet covers from its bottom edge; null where it is drawn alone. */
     const overlayHost = ref<HTMLElement | null>(null);
 
+    /** The pages a choice in the sheet turns it into, one at a time, in this one sheet, which grows and shrinks to each. */
+    const pages = provideSurfacePages({
+        isOpen: () => props.isOpen,
+        surface: () => sheetElement.value
+    });
+
+    /** The sheet's height now: the turned-to page's own while one is, else the sheet's. */
+    const shownHeight = computed((): SheetHeight => pages.height.value ?? props.height);
+
     // Ended the moment it closes, not after it slides away, so focus is never left on a vanishing control.
     const trapped = (): HTMLElement | undefined => props.isOpen ? sheetElement.value : undefined;
-    useFocusTrap(trapped);
+    useFocusTrap(trapped, { isFocusReturned: () => !props.isFocusReturnedByOwner });
     useAnnouncerModal(trapped);
 
     function onKeydown(event: KeyboardEvent): void {
         if (event.key === "Escape" && !event.isComposing) {
-            // The sheet's Escape is its own, never also the panel's behind it.
+            // The sheet's Escape is its own, never also the panel's behind it: back one page while
+            // turned, else close.
             event.preventDefault();
             event.stopPropagation();
-            emit("dismiss");
+            if (pages.isTurned.value) {
+                pages.back();
+            }
+            else {
+                emit("dismiss");
+            }
         }
     }
 

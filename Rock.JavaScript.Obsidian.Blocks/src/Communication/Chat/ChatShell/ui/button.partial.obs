@@ -1,7 +1,9 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <button ref="buttonElement"
-            type="button"
+    <component :is="href ? 'a' : 'button'"
+            ref="buttonElement"
+            :type="href ? undefined : 'button'"
+            :href="href || undefined"
             class="chat-btn"
             :class="[`is-${kind}`, `is-${size}`, { 'is-block': block, 'is-tone-danger': tone === 'danger' }]"
             :disabled="disabled || undefined"
@@ -12,7 +14,7 @@
         <span v-if="busy" class="chat-spinner" aria-hidden="true"></span>
         <Icon v-else-if="icon" :name="icon" size="sm" />
         <slot></slot>
-    </button>
+    </component>
 </template>
 
 <style scoped>
@@ -35,6 +37,7 @@
     line-height: 1;
     color: var(--chat-text);
     white-space: nowrap;
+    text-decoration: none;
     background: transparent;
     border: 1px solid transparent;
     border-radius: var(--chat-r-control);
@@ -174,6 +177,16 @@
         icon: {
             type: String as PropType<string>,
             default: ""
+        },
+
+        /**
+         * Where it goes, which draws it as a link, so a way to another page opens as a link does;
+         * where it opens, such as a new tab, is the caller's. Without one it is a button of type
+         * button, so it never submits a form.
+         */
+        href: {
+            type: String as PropType<string>,
+            default: ""
         }
     });
 
@@ -181,7 +194,7 @@
         (e: "click", event: MouseEvent): void;
     }>();
 
-    const buttonElement = ref<HTMLButtonElement>();
+    const buttonElement = ref<HTMLButtonElement | HTMLAnchorElement>();
 
     /**
      * The width the button had at rest, held while it is busy, so shorter busy words with a

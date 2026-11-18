@@ -19,7 +19,7 @@
 // batches by the platform's signing function, each link kept until shortly before the end it answers.
 import { readFileSync } from "fs";
 import { resolve } from "path";
-import { attachmentPreviewWords, attachmentsPreview, canAttach, createAttachments, declaredType, formatFileSize, isTrayReady } from "../../../../../src/Communication/Chat/ChatShell/composables/useAttachments.partial";
+import { attachmentPreviewWords, attachmentsPreview, canAttach, createAttachments, declaredType, formatFileSize, isStoredPreview, isTrayReady } from "../../../../../src/Communication/Chat/ChatShell/composables/useAttachments.partial";
 import { FileItem, GifItem, GifResult } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 import { fakeCodec, harness, limits, picked, projectUrl, publishableKey, settle, tenant, token } from "../attachmentFakes";
 
@@ -293,7 +293,7 @@ describe("a tray's files", () => {
         expect(attachments.trayFor(`${channel}:42`, channel).files).toEqual([]);
     });
 
-    test("removing a file takes it out of the tray and lets its preview go", async () => {
+    test("removing a file takes it out of the tray and lets its local copy go", async () => {
         const sizes = new Map<Blob, { width: number, height: number }>();
         const h = harness(fakeCodec(sizes));
         const attachments = createAttachments(h.dependencies);
@@ -303,12 +303,123 @@ describe("a tray's files", () => {
 
         tray.add([photo]);
         await settle();
-        const preview = tray.files[0].previewUrl;
-        expect(preview).toMatch(/^blob:/);
+        const copy = tray.files[0].localCopyUrl;
+        expect(copy).toMatch(/^blob:/);
 
         tray.remove(tray.files[0].localId);
         expect(tray.files).toEqual([]);
-        expect(h.revoked).toEqual([preview]);
+        expect(h.revoked).toEqual([copy]);
+    });
+});
+
+/** The fake codec's every drawing, "re-encoded", as the webp data URL a preview is sent as. */
+const reEncodedPreview = "data:image/webp;base64,cmUtZW5jb2RlZA==";
+
+describe("a photo's blurred preview", () => {
+    // The tiny copy the history page carries, so a photo's shape and colours show at once in
+    // every reader's browser: drawn from the photo already decoded, sent with its begin.
+    test("a photo's begin carries a webp data URL of it within 16 on its longest side, under the cap", async () => {
+        const codec = fakeCodec();
+        const h = harness(codec);
+        const photo = picked("p.jpg", "image/jpeg");
+        codec.sizes.set(photo, { width: 800, height: 600 });
+        const attachments = createAttachments(h.dependencies);
+
+        attachments.trayFor(channel, channel).add([photo]);
+        await settle();
+
+        const preview = (h.begins[0].p_files as Array<Record<string, unknown>>)[0].preview as string;
+        expect(preview).toBe(reEncodedPreview);
+        expect(preview.length).toBeLessThanOrEqual(1024);
+        expect(codec.encoded.at(-1)).toEqual(expect.objectContaining({ width: 16, height: 12, type: "image/webp", from: photo }));
+    });
+
+    // A browser that cannot write webp hands back a PNG; the preview is then a JPEG.
+    test("where webp cannot be written, the preview is a jpeg", async () => {
+        const codec = fakeCodec();
+        const encodeUrl = codec.encodeUrl;
+        codec.encodeUrl = (image, width, height, type, quality) => type === "image/webp" ? Promise.resolve("data:image/png;base64,cG5n") : encodeUrl(image, width, height, type, quality);
+        const h = harness(codec);
+        const photo = picked("p.jpg", "image/jpeg");
+        codec.sizes.set(photo, { width: 800, height: 600 });
+
+        createAttachments(h.dependencies).trayFor(channel, channel).add([photo]);
+        await settle();
+
+        expect((h.begins[0].p_files as Array<Record<string, unknown>>)[0].preview).toBe("data:image/jpeg;base64,cmUtZW5jb2RlZA==");
+    });
+
+    // A preview is a nicety: past the cap or failing to draw, the photo goes without one.
+    test("a preview past the cap, or one that fails to draw, is left out and the photo still goes", async () => {
+        const codec = fakeCodec();
+        codec.encodeUrl = () => Promise.resolve(`data:image/webp;base64,${"A".repeat(2000)}`);
+        const h = harness(codec);
+        const photo = picked("p.jpg", "image/jpeg");
+        codec.sizes.set(photo, { width: 800, height: 600 });
+
+        createAttachments(h.dependencies).trayFor(channel, channel).add([photo]);
+        await settle();
+
+        expect((h.begins[0].p_files as Array<Record<string, unknown>>)[0]).not.toHaveProperty("preview");
+        expect(h.requests).toHaveLength(1);
+    });
+
+    // A browser that writes PNG for both asks sends no preview: a PNG would refuse the upload.
+    test("where neither webp nor jpeg can be written, the photo goes with no preview", async () => {
+        const codec = fakeCodec();
+        codec.encodeUrl = () => Promise.resolve("data:image/png;base64,cG5n");
+        const h = harness(codec);
+        const photo = picked("p.jpg", "image/jpeg");
+        codec.sizes.set(photo, { width: 800, height: 600 });
+
+        createAttachments(h.dependencies).trayFor(channel, channel).add([photo]);
+        await settle();
+
+        expect((h.begins[0].p_files as Array<Record<string, unknown>>)[0]).not.toHaveProperty("preview");
+        expect(h.requests).toHaveLength(1);
+    });
+
+    test("a GIF and a file carry none", async () => {
+        const codec = fakeCodec();
+        const h = harness(codec);
+        const gif = picked("party.gif", "image/gif", 5000);
+        codec.sizes.set(gif, { width: 320, height: 240 });
+
+        createAttachments(h.dependencies).trayFor(channel, channel).add([gif, picked("notes.pdf", "application/pdf")]);
+        await settle();
+
+        expect(h.begins.flatMap(b => b.p_files as Array<Record<string, unknown>>).some(entry => "preview" in entry)).toBe(false);
+    });
+
+    // The sender's own message draws the same preview the readers get, from the first frame.
+    test("the sent photo carries its preview, so the person's own message draws it too", async () => {
+        const codec = fakeCodec();
+        const h = harness(codec);
+        const photo = picked("p.jpg", "image/jpeg");
+        codec.sizes.set(photo, { width: 800, height: 600 });
+        const attachments = createAttachments(h.dependencies);
+        const tray = attachments.trayFor(channel, channel);
+
+        tray.add([photo]);
+        await settle();
+        h.requests[0].respond(200);
+        await settle();
+
+        const [item] = attachments.take(channel) as FileItem[];
+        expect(item.preview).toBe(reEncodedPreview);
+    });
+
+    test("only a webp or jpeg base64 data URL under the cap is a stored preview", () => {
+        expect(isStoredPreview(reEncodedPreview)).toBe(true);
+        expect(isStoredPreview("data:image/jpeg;base64,/9j/4AAQ")).toBe(true);
+        expect(isStoredPreview("data:image/svg+xml;base64,PHN2Zz4=")).toBe(false);
+        expect(isStoredPreview("https://elsewhere.example/a.webp")).toBe(false);
+        // the platform refuses 1,024 characters or more, which would refuse the whole upload
+        const prefix = "data:image/webp;base64,";
+        expect(isStoredPreview(prefix + "A".repeat(1023 - prefix.length))).toBe(true);
+        expect(isStoredPreview(prefix + "A".repeat(1024 - prefix.length))).toBe(false);
+        expect(isStoredPreview(null)).toBe(false);
+        expect(isStoredPreview(undefined)).toBe(false);
     });
 });
 
@@ -323,8 +434,8 @@ describe("photos", () => {
         attachments.trayFor(channel, channel).add([photo]);
         await settle();
 
-        expect(codec.encoded.map(e => [e.width, e.height, e.type, e.quality])).toEqual([[400, 300, "image/jpeg", 0.82]]);
-        expect(h.begins[0].p_files).toEqual([{ name: "small.jpg", type: "image/jpeg", size: "re-encoded".length, width: 400, height: 300 }]);
+        expect(codec.encoded.map(e => [e.width, e.height, e.type, e.quality])).toEqual([[400, 300, "image/jpeg", 0.82], [16, 12, "image/webp", 0.6]]);
+        expect(h.begins[0].p_files).toEqual([{ name: "small.jpg", type: "image/jpeg", size: "re-encoded".length, width: 400, height: 300, preview: reEncodedPreview }]);
         expect(h.requests[0].body).not.toBe(photo);
         expect(h.requests[0].headers["content-type"]).toBe("image/jpeg");
     });
@@ -341,13 +452,16 @@ describe("photos", () => {
         attachments.trayFor(channel, channel).add([webp, png]);
         await settle();
 
-        expect(codec.encoded.map(e => [e.width, e.height, e.type, e.quality])).toEqual([
+        // each photo, then its blurred preview within 16 on its longest side
+        const drawn = codec.encoded.map(e => [e.width, e.height, e.type, e.quality]);
+        expect(drawn.filter(([width, height]) => Math.max(width as number, height as number) > 16)).toEqual([
             [2048, 512, "image/jpeg", 0.82],
             [683, 2048, "image/png", undefined]
         ]);
+        expect(drawn.filter(([width, height]) => Math.max(width as number, height as number) <= 16)).toEqual(expect.arrayContaining([[16, 4, "image/webp", 0.6], [5, 16, "image/webp", 0.6]]));
         expect(h.begins.map(b => (b.p_files as Array<Record<string, unknown>>)[0])).toEqual([
-            { name: "wide.jpg", type: "image/jpeg", size: "re-encoded".length, width: 2048, height: 512 },
-            { name: "tall.png", type: "image/png", size: "re-encoded".length, width: 683, height: 2048 }
+            { name: "wide.jpg", type: "image/jpeg", size: "re-encoded".length, width: 2048, height: 512, preview: reEncodedPreview },
+            { name: "tall.png", type: "image/png", size: "re-encoded".length, width: 683, height: 2048, preview: reEncodedPreview }
         ]);
     });
 
@@ -378,7 +492,7 @@ describe("photos", () => {
         tray.add([readable, unreadable]);
         await settle();
 
-        expect(codec.encoded.map(e => [e.width, e.height, e.type])).toEqual([[1536, 2048, "image/jpeg"]]);
+        expect(codec.encoded.map(e => [e.width, e.height, e.type])).toEqual([[1536, 2048, "image/jpeg"], [12, 16, "image/webp"]]);
         expect(h.begins.map(b => (b.p_files as Array<Record<string, unknown>>)[0].name)).toEqual(["IMG_1.jpg"]);
         expect(tray.files.map(f => [f.name, f.status, f.failure?.alone ?? null])).toEqual([
             ["IMG_1.jpg", "uploading", null],
@@ -697,10 +811,10 @@ describe("download links", () => {
         await settle();
         h.requests[0].respond(200);
         await settle();
-        const preview = tray.files[0].previewUrl;
+        const copy = tray.files[0].localCopyUrl;
         const [item] = attachments.take(channel) ?? [];
 
-        expect(attachments.previewOf(item.id)).toBe(preview);
+        expect(attachments.localCopyOf(item.id)).toBe(copy);
     });
 });
 
@@ -757,20 +871,20 @@ describe("letting go", () => {
         h.requests[0].respond(200);
         await settle();
         const items = attachments.take(channel) ?? [];
-        const preview = attachments.previewOf(items[0].id);
-        expect(preview).toMatch(/^blob:/);
+        const copy = attachments.localCopyOf(items[0].id);
+        expect(copy).toMatch(/^blob:/);
 
         attachments.release(items);
         // nothing is left to upload again from
         expect(await attachments.reupload(channel, items)).toBeNull();
         expect(h.begins).toHaveLength(1);
         // the photo still draws from its local copy until its link can
-        expect(attachments.previewOf(items[0].id)).toBe(preview);
+        expect(attachments.localCopyOf(items[0].id)).toBe(copy);
 
         attachments.links.subscribe(items);
         await settle();
-        expect(attachments.previewOf(items[0].id)).toBeNull();
-        expect(h.revoked).toEqual([preview]);
+        expect(attachments.localCopyOf(items[0].id)).toBeNull();
+        expect(h.revoked).toEqual([copy]);
     });
 
     test("stop ends every upload and renewal, lets every local copy go, and nothing is written after", async () => {
@@ -782,7 +896,7 @@ describe("letting go", () => {
         const tray = attachments.trayFor(channel, channel);
         tray.add([photo, picked("a.pdf", "application/pdf")]);
         await settle();
-        const preview = tray.files[0].previewUrl;
+        const copy = tray.files[0].localCopyUrl;
         const linked = image("d0000000-0000-4000-8000-0000000000e1");
         attachments.links.subscribe([linked]);
         await settle();
@@ -794,7 +908,7 @@ describe("letting go", () => {
 
         expect(h.requests.map(r => r.isAborted)).toEqual([true, true]);
         expect(tray.files.map(f => [f.status, f.failure])).toEqual([["uploading", null], ["uploading", null]]);
-        expect(h.revoked).toEqual([preview]);
+        expect(h.revoked).toEqual([copy]);
         expect(attachments.links.linkOf(unsigned)).toBeNull();
         expect(h.timers).toEqual([]);
 

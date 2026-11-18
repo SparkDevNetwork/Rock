@@ -522,7 +522,6 @@
                           :personName="personName"
                           :personPhotoUrl="personPhotoUrl"
                           :campusName="personCampusName"
-                          :organizationName="organizationName"
                           :me="shell.prefs.state.me"
                           :statusChoice="statusChoice"
                           :statusClosedReason="statusClosedReason"
@@ -931,7 +930,7 @@
     // Every row's files read the session's local copies and links through this, which follows the
     // shell when it is built again, so a row never holds a session that has gone.
     provide(attachmentViewsKey, {
-        previewOf: id => shell.value.attachments.previewOf(id),
+        localCopyOf: id => shell.value.attachments.localCopyOf(id),
         links: {
             subscribe: items => shell.value.attachments.links.subscribe(items),
             linkOf: item => shell.value.attachments.links.linkOf(item),

@@ -9,14 +9,20 @@
                      data-testid="attachment-tray-file"
                      :data-status="file.status">
                     <span class="chat-attach-chip-thumb" aria-hidden="true">
-                        <img v-if="file.previewUrl" :src="file.previewUrl" alt="" />
+                        <img v-if="file.localCopyUrl" :src="file.localCopyUrl" alt="" />
                         <Icon v-else name="file" />
                     </span>
                     <span class="chat-attach-chip-main">
-                        <span class="chat-attach-chip-name" data-testid="attachment-tray-name" :title="file.name">{{ file.name }}</span>
+                        <span class="chat-attach-chip-name"
+                              data-testid="attachment-tray-name"
+                              @mouseenter="onWordsEnter($event, file.name)"
+                              @mouseleave="wordsTip.hideTip">{{ file.name }}</span>
                         <!-- A failure stands where a file's size does: its words, then Try again. -->
                         <span v-if="file.status === 'failed'" class="chat-attach-chip-line">
-                            <span class="chat-attach-chip-failure" data-testid="attachment-tray-failure" :title="failureText(file)">{{ failureText(file) }}</span>
+                            <span class="chat-attach-chip-failure"
+                                  data-testid="attachment-tray-failure"
+                                  @mouseenter="onWordsEnter($event, failureText(file))"
+                                  @mouseleave="wordsTip.hideTip">{{ failureText(file) }}</span>
                             <Button v-if="file.failure?.canRetry"
                                     kind="ghost"
                                     size="sm"
@@ -44,6 +50,14 @@
                 </div>
                 <SettingNote v-if="tray.notice" class="chat-attach-notice" :note="{ kind: 'info', text: tray.notice }" data-testid="attachment-tray-notice" />
             </div>
+
+            <Teleport :to="tipHost ?? 'body'" :disabled="!tipHost">
+                <div v-if="isWordsTipShown"
+                     ref="wordsTipElement"
+                     class="chat-tip"
+                     role="tooltip"
+                     :style="wordsTip.floatingStyles.value">{{ wordsTipText }}</div>
+            </Teleport>
         </template>
 
         <template v-else>
@@ -58,13 +72,25 @@
                         :style="images.length === 1 ? { aspectRatio: singleStyle.aspectRatio } : undefined"
                         @click="openViewer(index)">
                     <span v-if="linkOf(item)?.isUnavailable && !imageSource(item)" class="chat-attach-unavailable"><Icon name="eye-off" size="sm" />Unavailable</span>
-                    <img v-else-if="imageSource(item)"
-                         v-reveal="reveal"
-                         :src="imageSource(item) ?? undefined"
-                         :alt="item.name"
-                         :width="item.width ?? undefined"
-                         :height="item.height ?? undefined"
-                         decoding="async" />
+                    <!--
+                        The photo's stored preview, blurred, holds its shape and colours from the
+                        first frame, before any link is signed; the photo sharpens over it once
+                        decoded. A photo sent before previews has the tile's still fill alone.
+                    -->
+                    <span v-else-if="previewOf(item) || imageSource(item)" class="chat-attach-pic">
+                        <img v-if="previewOf(item)" v-reveal="previewReveal" class="chat-attach-blur" data-testid="attachment-preview" :src="previewOf(item)!" alt="" aria-hidden="true" />
+                        <img v-if="imageSource(item)"
+                             v-reveal="reveal"
+                             class="chat-attach-shot"
+                             data-testid="attachment-photo"
+                             :src="imageSource(item) ?? undefined"
+                             :alt="item.name"
+                             :width="item.width ?? undefined"
+                             :height="item.height ?? undefined"
+                             :data-broken="brokenPhotos.has(item.id) ? 'true' : undefined"
+                             decoding="async"
+                             @error="brokenPhotos.add(item.id)" />
+                    </span>
                     <span v-if="index === shownImages.length - 1 && images.length > shownImages.length" class="chat-attach-more"><Badge tone="neutral" :label="`+${images.length - shownImages.length}`" data-testid="attachment-more" /></span>
                 </button>
             </div>
@@ -352,6 +378,7 @@
     cursor: zoom-in;
     background: var(--chat-bubble);
     border: 0;
+    transition: background-color var(--chat-d-img-in) var(--chat-ease-state) var(--chat-d-img-in);
 }
 
 .chat-attach-tile:focus-visible {
@@ -359,11 +386,45 @@
     outline-offset: -2px;
 }
 
-.chat-attach-tile img {
+/* The picture's own layer, the tile's whole box: the preview under, the photo over it. */
+.chat-attach-pic {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+}
+
+.chat-attach-pic > img {
+    position: absolute;
+    inset: 0;
     display: block;
     width: 100%;
     height: 100%;
     object-fit: cover;
+}
+
+/*
+    The stored preview is 16 by 12 pixels, drawn blurred and a little larger than the tile, so its
+    blurred edge never shows. The photo fades in from nothing over it, so the preview stays whole
+    for the length of that fade (its delay) and the photo sharpens over it, never over the row
+    behind; it goes after, so nothing of it stays behind a photo with clear areas.
+*/
+.chat-attach-blur {
+    filter: blur(10px);
+    transform: scale(1.2);
+    transition: opacity var(--chat-d-img-in) var(--chat-ease-state) var(--chat-d-img-in);
+}
+
+.chat-attach-pic:has(> .chat-attach-shot:not(.chat-img-hold)) > .chat-attach-blur {
+    opacity: 0;
+}
+
+/*
+    Once its photo has loaded and faded in the tile is the photo alone, so a photo's clear areas
+    show the row behind it; the fill waits out the fade as the preview does. The reveal shows a
+    broken photo too, so only one not marked broken clears it: a failed photo keeps its tile.
+*/
+.chat-attach-tile:has(> .chat-attach-pic > .chat-attach-shot:not(.chat-img-hold):not([data-broken])) {
+    background-color: transparent;
 }
 
 /* A GIF: a single photo's box, sized from its stored width and height before anything loads. */
@@ -545,7 +606,7 @@ a.chat-attach-file:focus-visible {
 
 <script setup lang="ts">
     import { computed, inject, nextTick, onBeforeUnmount, PropType, reactive, ref, watch } from "vue";
-    import { AttachmentLink, attachmentViewsKey, AttachmentTray, formatFileSize, TrayFile } from "../composables/useAttachments.partial";
+    import { AttachmentLink, attachmentViewsKey, AttachmentTray, formatFileSize, isStoredPreview, TrayFile } from "../composables/useAttachments.partial";
     import { useIsMotionReduced } from "../ui/viewport.partial";
     import { AttachmentItem, FileItem, GifItem, isGifItem } from "../types.partial";
     import Badge from "../ui/badge.partial.obs";
@@ -555,7 +616,7 @@ a.chat-attach-file:focus-visible {
     import SettingNote from "../ui/settingNote.partial.obs";
     import IconButton from "../ui/iconButton.partial.obs";
     import { useImageReveal, vReveal } from "../ui/imageReveal.partial";
-    import { overlayHostOf } from "../ui/tooltip.partial";
+    import { isCutShort, overlayHostOf, useTooltip } from "../ui/tooltip.partial";
 
     const props = defineProps({
         /** A message's files, in the order sent: photos drawn in a grid, other files as cards. */
@@ -591,8 +652,10 @@ a.chat-attach-file:focus-visible {
     /** The session's local copies and links, provided once by the chat; none outside it. */
     const views = inject(attachmentViewsKey, null);
 
-    // One message's photos hide until decoded and reveal together.
-    const reveal = useImageReveal();
+    // One message's photos hide until decoded and reveal together. On the first load the page's
+    // reveal waits for their previews, which the history page carries, and never for the photos.
+    const reveal = useImageReveal({ isAwaited: false });
+    const previewReveal = useImageReveal();
 
     /** The photo the viewer shows, by its place among the message's photos; null while closed. */
     const viewerIndex = ref<number | null>(null);
@@ -600,6 +663,16 @@ a.chat-attach-file:focus-visible {
     /** Set at the first opening and kept, so the viewer's closing returns focus as it fades. */
     const isViewerMounted = ref(false);
     const viewerHost = ref<HTMLElement | null>(null);
+
+    // One tooltip for the strip's words, anchored to the name or failure the pointer rests on and
+    // shown only where the chip cut those words short, as the sidebar shows a room's name.
+    const wordsAnchor = ref<HTMLElement>();
+    const wordsTipText = ref("");
+    const wordsTip = useTooltip(wordsAnchor, () => !isCutShort(wordsAnchor.value));
+    const { tipElement: wordsTipElement, isTipShown: isWordsTipShown } = wordsTip;
+
+    /** The chat's root, which the tip is drawn in; null where the strip is drawn alone. */
+    const tipHost = ref<HTMLElement | null>(null);
 
     /** The card being followed by the click the chat made itself, which its handler lets through. */
     let following: HTMLAnchorElement | null = null;
@@ -616,6 +689,9 @@ a.chat-attach-file:focus-visible {
 
     /** Whether the person asked for less motion, which holds every GIF still until it is played. */
     const isMotionReduced = useIsMotionReduced();
+
+    /** The photos that failed to load, which drop their previews. */
+    const brokenPhotos = reactive(new Set<string>());
 
     /** The GIFs whose media could not be loaded, drawn as unavailable. */
     const deadGifs = reactive(new Set<string>());
@@ -673,6 +749,14 @@ a.chat-attach-file:focus-visible {
     // #endregion Computed Values
 
     // #region Event Handlers
+
+    /** The pointer rests on a chip's name or failure: those words are the tip's anchor, shown whole if the chip cut them. */
+    function onWordsEnter(event: MouseEvent, words: string): void {
+        wordsAnchor.value = event.currentTarget instanceof HTMLElement ? event.currentTarget : undefined;
+        wordsTipText.value = words;
+        tipHost.value = overlayHostOf(wordsAnchor.value);
+        wordsTip.onPointerEnter();
+    }
 
     function openViewer(index: number): void {
         viewerHost.value = overlayHostOf(document.activeElement) ?? null;
@@ -827,9 +911,17 @@ a.chat-attach-file:focus-visible {
         return props.isPending ? null : views?.links.linkOf(item) ?? null;
     }
 
+    /**
+     * The photo's stored blurred preview, when it carries one in the one form a preview may take;
+     * none once the photo failed to load, so a stand-in never outlives a photo that cannot be drawn.
+     */
+    function previewOf(item: FileItem): string | null {
+        return isStoredPreview(item.preview) && !brokenPhotos.has(item.id) ? item.preview : null;
+    }
+
     /** What a photo draws from: the person's own copy where this page sent it, else its link. */
     function imageSource(item: FileItem): string | null {
-        return views?.previewOf(item.id) ?? linkOf(item)?.url ?? null;
+        return views?.localCopyOf(item.id) ?? linkOf(item)?.url ?? null;
     }
 
     /** A failed file's words, the short ones beside its Try again. */

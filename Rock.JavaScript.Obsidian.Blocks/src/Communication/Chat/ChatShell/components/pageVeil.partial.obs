@@ -38,19 +38,13 @@
             <template v-else>
                 <!-- The header's rule and the composer's box are the frame's own, so they stand from mount. -->
                 <div class="chat-veil-header" aria-hidden="true" data-testid="veil-header">
-                    <template v-if="isMarksShown">
-                        <i v-if="kind === 'channel'" class="chat-skeleton chat-veil-mark"></i>
-                        <i v-else class="chat-skeleton chat-veil-face"></i>
-                        <span class="chat-veil-lines">
-                            <i class="chat-skeleton chat-veil-name"></i>
-                            <!-- A start that is waiting says so in the second line's place, where "Reconnecting…" sits once chat has started. -->
-                            <span v-if="statusLine" class="chat-veil-status" aria-hidden="true" data-testid="veil-status">
-                                <Dot class="chat-veil-dot" tone="info" pulse />
-                                <span :key="statusLine" class="chat-veil-status-words">{{ statusLine }}</span>
-                            </span>
-                            <i v-else-if="kind === 'channel'" class="chat-skeleton chat-veil-desc"></i>
+                    <!-- A start that is waiting says so in the second line's place, where "Reconnecting…" sits once chat has started. -->
+                    <Skeleton v-if="isMarksShown" shape="header" :isTile="kind === 'channel'" :widths="kind === 'channel' && !statusLine ? [22, 40] : [22]">
+                        <span v-if="statusLine" class="chat-veil-status" aria-hidden="true" data-testid="veil-status">
+                            <Dot class="chat-veil-dot" tone="info" pulse />
+                            <span :key="statusLine" class="chat-veil-status-words">{{ statusLine }}</span>
                         </span>
-                    </template>
+                    </Skeleton>
                 </div>
 
                 <div class="chat-veil-feed" aria-hidden="true">
@@ -108,24 +102,6 @@
     animation: chat-reveal-in var(--chat-t-base) var(--chat-ease-in) both;
 }
 
-.chat-veil i {
-    display: block;
-}
-
-.chat-veil-face {
-    flex: none;
-    width: 36px;
-    height: 36px;
-    border-radius: var(--chat-r-full);
-}
-
-.chat-veil-lines {
-    display: flex;
-    flex: 1;
-    flex-direction: column;
-    gap: 7px;
-}
-
 .chat-veil-header {
     display: flex;
     flex: none;
@@ -134,26 +110,6 @@
     height: 64px;
     padding: 0 12px 0 20px;
     border-bottom: 1px solid var(--chat-line);
-}
-
-.chat-veil-mark {
-    flex: none;
-    width: 36px;
-    height: 36px;
-}
-
-.chat-veil-header .chat-veil-lines {
-    gap: 6px;
-}
-
-.chat-veil-name {
-    width: 22%;
-    height: 12px;
-}
-
-.chat-veil-desc {
-    width: 40%;
-    height: 9px;
 }
 
 /*

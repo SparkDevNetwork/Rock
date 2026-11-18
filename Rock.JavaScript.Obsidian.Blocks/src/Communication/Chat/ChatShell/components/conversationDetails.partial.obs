@@ -345,6 +345,7 @@
     import { failureNote } from "../composables/saveRule.partial";
     import { NotifyMode, notifyOptionsFor, RoomPrefs } from "../composables/usePrefs.partial";
     import { useFaceStatus } from "../composables/usePresenceStatus.partial";
+    import { leaveSentence, useLeaveQuestion } from "../composables/useLeaveQuestion.partial";
     import { LeaveState, RenameState } from "../composables/useRooms.partial";
     import { failedWords, finalWords, offlineWords } from "../errors.partial";
     import { ChannelFacts, ChannelLeader } from "../types.partial";
@@ -490,22 +491,32 @@
      */
     const isEditedSinceAnswer = ref(false);
 
-    const isConfirmingLeave = ref(false);
-
-    /** Whether Leave was asked in this confirm, so an answer to an earlier ask is never shown in it. */
-    const hasAskedLeave = ref(false);
-
     /** The Leave row, whose own element takes focus back when the confirm is cancelled. */
     const leaveRow = ref<{ $el: HTMLElement } | null>(null);
     const leaveCancelButton = ref<InstanceType<typeof Button>>();
     const renameElement = ref<HTMLInputElement>();
+
+    // The question Leave asks, the footer of a Browse preview asking the same; the dialog closes
+    // once the leave lands and gives focus back itself.
+    const {
+        isAsking: isConfirmingLeave,
+        isLeaving,
+        error: leaveError,
+        ask: onLeaveAsk,
+        cancel: onLeaveCancel,
+        confirm: onLeaveGo
+    } = useLeaveQuestion({
+        leave: () => props.leave,
+        go: () => emit("leave"),
+        cancelButton: () => leaveCancelButton.value,
+        askButton: () => leaveRow.value?.$el
+    });
 
     const notifySegmented = ref<InstanceType<typeof Segmented>>();
 
     /** The count shows from this many characters short of the most a name may hold. */
     const countShortOf = 10;
 
-    const leaveFailed = failedWords("Couldn't leave.");
     const renameFailed = failedWords("Couldn't save the name.");
 
     // #endregion Values
@@ -607,34 +618,8 @@
 
     const countText = computed((): string | null => draftName.value.length >= props.nameMaxLength - countShortOf ? `${draftName.value.length} of ${props.nameMaxLength} characters` : null);
 
-    /** The leave as this confirm sees it: idle until it asks, so an earlier answer is never shown. */
-    const shownLeave = computed((): LeaveState => hasAskedLeave.value ? props.leave : { kind: "idle" });
-
-    const isLeaving = computed((): boolean => shownLeave.value.kind === "leaving");
-
-    /** What stopped the leave, in the door's own words, in the question's place. */
-    const leaveError = computed((): string | null => {
-        const state = shownLeave.value;
-        if (state.kind === "refused") {
-            return state.text;
-        }
-
-        if (state.kind === "failed") {
-            return leaveFailed.alone;
-        }
-
-        return state.kind === "offline" ? offlineWords.alone : null;
-    });
-
     /** What leaving means for this room: a public channel can be joined again, a private one or a group cannot. */
-    const leaveBody = computed((): string => {
-        if (props.kind === "group") {
-            return "The others will see that you left. To come back, someone in the conversation will need to add you.";
-        }
-
-        const leaving = `You'll stop getting its messages and leave the group at ${church.name}.`;
-        return props.facts.is_public ? `${leaving} You can join again from Browse channels.` : `${leaving} To come back, a leader will need to add you.`;
-    });
+    const leaveBody = computed((): string => leaveSentence(props.kind === "group", props.facts.is_public, church.name));
 
     const cannotLeaveText = computed((): string => props.kind === "channel"
         ? "This channel can't be left. Turn notifications off instead."
@@ -682,44 +667,9 @@
         }
     }
 
-    async function onLeaveAsk(): Promise<void> {
-        hasAskedLeave.value = false;
-        isConfirmingLeave.value = true;
-        await nextTick();
-        // Cancel first, so Enter never leaves by accident.
-        leaveCancelButton.value?.focus();
-    }
-
-    async function onLeaveCancel(): Promise<void> {
-        if (isLeaving.value) {
-            return;
-        }
-
-        isConfirmingLeave.value = false;
-        await nextTick();
-        leaveRow.value?.$el.focus();
-    }
-
-    function onLeaveGo(): void {
-        if (isLeaving.value) {
-            return;
-        }
-
-        hasAskedLeave.value = true;
-        emit("leave");
-    }
-
     // #endregion Event Handlers
 
     // #region Watchers
-
-    // A refusal takes the question's place with OK, which takes focus so the sentence is not missed.
-    watch(leaveError, async error => {
-        if (error && isConfirmingLeave.value) {
-            await nextTick();
-            leaveCancelButton.value?.focus();
-        }
-    });
 
     // A save that goes back to idle has landed, so the field holds the name as it was saved.
     watch(() => props.rename.kind, (kind, was) => {

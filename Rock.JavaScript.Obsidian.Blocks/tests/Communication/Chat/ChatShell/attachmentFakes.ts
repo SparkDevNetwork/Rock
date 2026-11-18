@@ -241,6 +241,10 @@ export function fakeCodec(sizes: Map<Blob, { width: number, height: number }> = 
         encode: async (image, width, height, type, quality) => {
             encoded.push({ width, height, type, quality, from: image.source as unknown as Blob });
             return new Blob(["re-encoded"], { type });
+        },
+        encodeUrl: async (image, width, height, type, quality) => {
+            encoded.push({ width, height, type, quality, from: image.source as unknown as Blob });
+            return `data:${type};base64,${btoa("re-encoded")}`;
         }
     };
 }

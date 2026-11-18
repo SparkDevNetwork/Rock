@@ -659,7 +659,7 @@
     import { useFaceStatus } from "../composables/usePresenceStatus.partial";
     import { SidebarLoadState } from "../stores/channelStore.partial";
     import { FaceStatus, SidebarRow } from "../types.partial";
-    import { overlayHostOf, useTooltip } from "../ui/tooltip.partial";
+    import { isCutShort, overlayHostOf, useTooltip } from "../ui/tooltip.partial";
     import { useChatSession } from "../chatSession.partial";
 
     // #region Types
@@ -894,11 +894,6 @@
     function anchorNameTip(target: EventTarget | null, row: SidebarRow): void {
         nameAnchor.value = target instanceof HTMLElement ? target.querySelector<HTMLElement>(".chat-row-name") ?? undefined : undefined;
         nameTipText.value = row.title;
-    }
-
-    /** Whether the column cut a name short, its words wider than the room it was given. */
-    function isCutShort(element: HTMLElement | undefined): boolean {
-        return !!element && element.scrollWidth > element.clientWidth;
     }
 
     /** A channel's row is Community's one dense line; a direct message's is Conversational's two lines. */

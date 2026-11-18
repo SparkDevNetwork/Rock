@@ -8,6 +8,10 @@
                    'is-panel': shape === 'panel',
                    'is-reactor': shape === 'reactor',
                    'is-media': shape === 'media',
+                   'is-contact': shape === 'contact',
+                   'is-text': shape === 'text',
+                   'is-header': shape === 'header',
+                   'is-directory': shape === 'directory',
                    'is-own': isOwn,
                    'is-phone': isPhone
                }" :style="shape === 'media' ? { aspectRatio: ratio } : undefined" aria-hidden="true">
@@ -18,6 +22,7 @@
                class="chat-skel-bone"
                :class="{ 'is-bubble': shape === 'bubble' }"
                :style="{ width: line.width, height: `${line.height}px` }"></i>
+            <slot />
         </span>
         <i v-if="plan.trail" class="chat-skel-bone" :style="{ width: plan.trail.width, height: `${plan.trail.height}px` }"></i>
     </component>
@@ -61,6 +66,35 @@
 .chat-skel.is-panel {
     align-items: flex-start;
     padding: 10px;
+}
+
+/* A profile's contact row: its icon and words at the row's own 32px and gap. */
+.chat-skel.is-contact {
+    gap: 9px;
+    height: 32px;
+    padding: 0;
+}
+
+/* Words still to come stand where they will be drawn, with no sides of their own. */
+.chat-skel.is-text {
+    padding: 0;
+}
+
+/* A room's head sits in the head's own row, which places it; its lines sit a little closer. */
+.chat-skel.is-header {
+    flex: 1;
+    gap: 12px;
+    padding: 0;
+}
+
+.chat-skel.is-header .chat-skel-lines {
+    gap: 6px;
+}
+
+/* A Browse row: the row's own gap and sides around its 40px tile and three lines. */
+.chat-skel.is-directory {
+    gap: 12px;
+    padding: 8px 10px;
 }
 
 /* A feed group stands as the message row does: its gutter, gap and sides, narrower on a phone. */
@@ -123,6 +157,10 @@
 .chat-skel-bone.is-bubble {
     border-radius: var(--chat-r-bubble);
 }
+
+.chat-skel-bone.is-icon {
+    border-radius: var(--chat-r-inline);
+}
 </style>
 
 <script setup lang="ts">
@@ -133,12 +171,12 @@
     // #region Types
 
     /** The row a skeleton stands in for. */
-    export type SkeletonShape = "channel" | "person" | "group" | "bubble" | "panel" | "reactor" | "media";
+    export type SkeletonShape = "channel" | "person" | "group" | "bubble" | "panel" | "reactor" | "media" | "contact" | "text" | "header" | "directory";
 
     type Bone = { width: string, height: number };
 
     type Plan = {
-        lead: "face" | "tile" | null;
+        lead: "face" | "tile" | "icon" | null;
         leadSize: number;
         lines: Bone[];
         trail: Bone | null;
@@ -153,8 +191,12 @@
          * A channel row (44px, a tile and its name), a conversation row (52px, a face, a name, a
          * line and a time), a feed group (a face, a name and lines), a bubble of a two-person
          * conversation (no face, as its rows have none), a panel row (a face over three lines), or
-         * a reactor row (40px, a 28px face and a name, as the reactions list draws a person), or
-         * a picture still to come (one fill at the picture's shape, as a GIF in the picker's grid).
+         * a reactor row (40px, a 28px face and a name, as the reactions list draws a person),
+         * a picture still to come (one fill at the picture's shape, as a GIF in the picker's grid),
+         * a contact row (32px, a small icon and a line, as a profile draws a phone or an email),
+         * text (lines alone, one per width given), or a room's head (its 36px mark, its name and,
+         * one per further width given, its second line), or a Browse row (a 40px tile beside its
+         * name, its description and its campus line).
          */
         shape: {
             type: String as PropType<SkeletonShape>,
@@ -175,6 +217,12 @@
 
         /** A bubble the reader sent: at the far side. */
         isOwn: {
+            type: Boolean,
+            default: false
+        },
+
+        /** A room's head for a channel, whose mark is a tile rather than a face. */
+        isTile: {
             type: Boolean,
             default: false
         },
@@ -224,6 +272,29 @@
 
             case "media":
                 return { lead: null, leadSize: 0, lines: [], trail: null };
+
+            case "contact":
+                return { lead: "icon", leadSize: 15, lines: [{ width: widthAt(0, 60), height: 10 }], trail: null };
+
+            case "text":
+                return { lead: null, leadSize: 0, lines: (props.widths.length ? props.widths : [88, 72]).map(width => ({ width: `${width}%`, height: 10 })), trail: null };
+
+            // The name in the head's title type, then each further line in its second line's.
+            case "header":
+                return {
+                    lead: props.isTile ? "tile" : "face",
+                    leadSize: 36,
+                    lines: (props.widths.length ? props.widths : [22]).map((width, index) => ({ width: `${width}%`, height: index === 0 ? 12 : 9 })),
+                    trail: null
+                };
+
+            case "directory":
+                return {
+                    lead: "tile",
+                    leadSize: 40,
+                    lines: [{ width: widthAt(0, 50), height: 10 }, { width: widthAt(1, 88), height: 9 }, { width: widthAt(2, 36), height: 9 }],
+                    trail: null
+                };
 
             default:
                 return {

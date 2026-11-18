@@ -18,6 +18,7 @@
 import { ComputedRef, onBeforeUnmount, Ref, ref } from "vue";
 import { tokenDuration } from "./brand.partial";
 import { focusableSelector, focusQuietly, isDrawn, isFocusQuiet } from "./focusTrap.partial";
+import { isHoverless } from "./viewport.partial";
 import { usePopover } from "./popover.partial";
 
 /** A tooltip's state and the handlers its anchor binds, and an interactive tip's own. */
@@ -90,6 +91,18 @@ export function isKeyboardFocus(target: EventTarget | null | undefined): boolean
 }
 
 /**
+ * Whether an element's words were cut short, wider than the room it gave them. A tip that only
+ * repeats words already shown whole is kept away, so a name or a file's words that fit show none.
+ *
+ * @param element The element holding the words, or nothing while it is not drawn.
+ *
+ * @returns True only where the words overflow their room.
+ */
+export function isCutShort(element: HTMLElement | undefined): boolean {
+    return !!element && element.scrollWidth > element.clientWidth;
+}
+
+/**
  * The chat's tooltip for one anchor. The caller draws the tip, class chat-tip, role tooltip, at
  * the floating styles while it is shown, and binds the anchor's handlers. A tip shows once the
  * pointer has rested or a keyboard focus has arrived, never under a press, and hides on a click.
@@ -123,9 +136,13 @@ export function useTooltip(anchor: Ref<HTMLElement | undefined>, isDisabled: () 
         isDismissable: false
     });
 
-    /** Shows the tip once the pointer has rested, so passing over a row of buttons does not flicker tips. */
+    /**
+     * Shows the tip once the pointer has rested, so passing over a row of buttons does not flicker
+     * tips. Never where nothing can hover: a finger's tap arrives as the pointer entering, and a
+     * tip shown then stands over the screen; the anchor's name is still read aloud.
+     */
     function scheduleTip(): void {
-        if (isDisabled()) {
+        if (isDisabled() || isHoverless()) {
             return;
         }
 
