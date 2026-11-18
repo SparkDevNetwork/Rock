@@ -20,7 +20,9 @@
 // next page instead of stacking a second surface over it. The surface holds the stack and draws
 // the head (Back and the top page's title); each page registers itself as it opens and closes.
 // A turn is one motion: the pages slide while the surface grows or shrinks from the height of the
-// page it leaves to the height of the page it turns to.
+// page it leaves to the height of the page it turns to. Where the pages share one scroller, as a
+// panel's body, the page sliding out of front is drawn as the view the person last saw of it, so
+// the slide never shows its top or blank space below its end.
 
 import { computed, ComputedRef, inject, InjectionKey, nextTick, provide, shallowReactive, watch } from "vue";
 import { focusQuietly } from "./focusTrap.partial";
@@ -57,6 +59,21 @@ export type SurfaceParts = {
 /** A surface's height and side inset as drawn, which a turn moves from one page's to the next's. */
 type SurfaceBox = { height: number, paddingLeft: string, paddingRight: string };
 
+/**
+ * The view a page was last seen in, which it is drawn as while it is out of front, set aside or
+ * going back, so its slide shows what the person saw rather than its own top.
+ */
+export type SurfacePageView = {
+    /** Where the page's box stands in the pages, in pixels, so it sits where it was seen at the scroll the turn sets. */
+    top: number;
+
+    /** How much of the page was seen, in pixels, which its box is no taller than. */
+    height: number;
+
+    /** How far the page was scrolled past its own top, in pixels, which it is scrolled to within its box. */
+    scrolled: number;
+};
+
 /** A surface's pages, the first one its own body and the rest turned to over it in order. */
 export type SurfacePages = {
     /** Whether a page is turned to over the surface's own body. */
@@ -74,6 +91,21 @@ export type SurfacePages = {
      * @param entry The page; null for the surface's own first page.
      */
     isCovered: (entry: SurfacePageEntry | null) => boolean;
+
+    /**
+     * The view a page out of front is drawn as; null while it is in front, or where its surface has
+     * no shared scroller and each page keeps its own scroll inside it.
+     *
+     * @param entry The page; null for the surface's own first page.
+     */
+    viewOf: (entry: SurfacePageEntry | null) => SurfacePageView | null;
+
+    /**
+     * The surface's own first page gives its drawing, which a turn reads as it sets the page aside.
+     *
+     * @param element The drawn first page.
+     */
+    holdFirst: (element: () => HTMLElement | undefined) => void;
 
     /** Goes back one page: the top page's owner is asked to close it. */
     back: () => void;
@@ -107,10 +139,53 @@ export function provideSurfacePages(parts: SurfaceParts): SurfacePages {
     /** Where the page under each page was scrolled to as it was turned to, which Back gives back. */
     const places = new Map<SurfacePageEntry, number>();
 
+    /** The view each page out of front was last seen in, the first page under null. */
+    const views = shallowReactive(new Map<SurfacePageEntry | null, SurfacePageView>());
+
+    /** The surface's own first page as drawn. */
+    let firstElement: () => HTMLElement | undefined = () => undefined;
+
     /** The surface's height change still playing, which the next turn takes over from. */
     let resizing: Animation | null = null;
 
     const top = computed((): SurfacePageEntry | null => stack[stack.length - 1] ?? null);
+
+    /**
+     * Reads the page in front as the person sees it, just before a turn takes it out of front:
+     * how far its top has scrolled out of sight, how much of it the scroller shows, and where its
+     * box must stand in the pages to sit where it was seen once the turn sets the scroller to its
+     * new place. A page in front starts at the pages' top, so its box moves by the scroll the turn
+     * takes away. Null where the pages share no scroller, or the surface is closing.
+     *
+     * @param place Where the turn sets the scroller.
+     */
+    function seenView(place: number): SurfacePageView | null {
+        const scroller = parts.scroller?.();
+        const element = top.value?.element() ?? firstElement();
+        if (!scroller || !element || !parts.isOpen()) {
+            return null;
+        }
+
+        const viewTop = scroller.getBoundingClientRect().top + scroller.clientTop;
+        const page = element.getBoundingClientRect();
+        const scrolled = Math.max(0, viewTop - page.top);
+        const seen = Math.min(page.bottom, viewTop + scroller.clientHeight) - Math.max(page.top, viewTop);
+        return { top: place - scroller.scrollTop + scrolled, height: Math.max(0, seen), scrolled };
+    }
+
+    /**
+     * The page in front leaves front: it is drawn from now as the view it was seen in, or as its
+     * own top where there is none to keep.
+     */
+    function holdView(entry: SurfacePageEntry | null, place: number): void {
+        const view = seenView(place);
+        if (view) {
+            views.set(entry, view);
+        }
+        else {
+            views.delete(entry);
+        }
+    }
 
     /**
      * The surface's height and side inset as the person sees them, mid-change included, so the
@@ -173,6 +248,9 @@ export function provideSurfacePages(parts: SurfaceParts): SurfacePages {
         openers.set(entry, document.activeElement instanceof HTMLElement ? document.activeElement : null);
         places.set(entry, parts.scroller?.()?.scrollTop ?? 0);
         const before = boxOf();
+        // the page under slides away as it was seen, while the new page starts at its top
+        holdView(top.value, 0);
+        views.delete(entry);
         stack.push(entry);
 
         // After the patch, when the page and the head are drawn; the page starts at its top.
@@ -189,6 +267,8 @@ export function provideSurfacePages(parts: SurfaceParts): SurfacePages {
     function turnFrom(entry: SurfacePageEntry): void {
         const at = stack.indexOf(entry);
         if (at < 0) {
+            // a page gone for good, its last leave long over
+            views.delete(entry);
             return;
         }
 
@@ -196,7 +276,15 @@ export function provideSurfacePages(parts: SurfaceParts): SurfacePages {
         const opener = openers.get(entry) ?? null;
         const place = places.get(entry) ?? 0;
         const before = wasTop ? boxOf() : null;
+        // the page on top goes back as it was seen, over the page under back in front at its place;
+        // a page closed while covered leaves as the view it was set aside in
+        if (wasTop) {
+            holdView(entry, place);
+        }
         stack.splice(at, 1);
+        if (wasTop) {
+            views.delete(top.value);
+        }
         openers.delete(entry);
         places.delete(entry);
 
@@ -229,6 +317,10 @@ export function provideSurfacePages(parts: SurfaceParts): SurfacePages {
         title: computed(() => top.value?.title() ?? ""),
         height: computed(() => top.value?.height() ?? null),
         isCovered: entry => entry === null ? stack.length > 0 : stack.includes(entry) && top.value !== entry,
+        viewOf: entry => views.get(entry) ?? null,
+        holdFirst: element => {
+            firstElement = element;
+        },
         back: () => top.value?.back(),
         turnTo,
         turnFrom
