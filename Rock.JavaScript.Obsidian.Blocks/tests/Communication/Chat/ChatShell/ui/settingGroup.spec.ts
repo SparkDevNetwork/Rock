@@ -153,6 +153,94 @@ describe("a settings group", () => {
             expect(ana.style.transform).toBe("");
         });
 
+        describe("on a page busy with other work", () => {
+            /** The leaving row's fade, which the test ends, or cuts short, when it chooses. */
+            let fade: { end: () => void, cut: () => void };
+
+            beforeEach(() => {
+                // A browser reads the Leave motion's fade on a leaving row, as settingRow draws it.
+                const computed = window.getComputedStyle.bind(window);
+                jest.spyOn(window, "getComputedStyle").mockImplementation((element: Element) => {
+                    const style = computed(element);
+                    if (!element.classList.contains("is-leaving")) {
+                        return style;
+                    }
+                    const fadeStyle: Record<string, string> = { transitionProperty: "opacity, transform", transitionDuration: "0.12s, 0.12s", transitionDelay: "0s, 0s" };
+                    return new Proxy(style, {
+                        get: (target, name) => typeof name === "string" && name in fadeStyle ? fadeStyle[name] : Reflect.get(target, name)
+                    });
+                });
+
+                // The fade's own animation, whose first frame a busy page draws only after its work,
+                // so it ends as long after the end class goes on as the test says.
+                const finished = new Promise<void>((resolve, reject) => {
+                    fade = { end: resolve, cut: () => reject(new DOMException("The fade was cut short", "AbortError")) };
+                });
+                finished.catch(() => undefined);
+                Object.defineProperty(HTMLElement.prototype, "getAnimations", {
+                    configurable: true,
+                    value: function (this: HTMLElement) {
+                        return this.classList.contains("is-left") ? [{ finished }] : [];
+                    }
+                });
+            });
+
+            afterEach(() => {
+                delete (HTMLElement.prototype as Partial<HTMLElement>).getAnimations;
+            });
+
+            /** Waits as long as the fade takes and more, with the fade not yet drawn to its end. */
+            async function longerThanTheFade(): Promise<void> {
+                await new Promise<void>(resolve => setTimeout(resolve, 200));
+                await nextTick();
+            }
+
+            // A busy page, such as one redrawing a conversation that an unblock reads again, draws
+            // the fade's first frame late. A row taken away by the clock rather than by its fade
+            // went with its fade cut short, or with no fade seen at all.
+            test("a row stays until its own fade has played to its end, however late the page starts drawing it", async () => {
+                const { names, wrapper } = mountList(["Sam", "Ben", "Ana"]);
+
+                names.value = ["Sam", "Ana"];
+                await nextTick();
+                await longerThanTheFade();
+                expect(rowOf(wrapper, "Ben")?.classList).toContain("is-left");
+                expect(rowOf(wrapper, "Ana")?.classList).not.toContain("chat-move");
+
+                fade.end();
+                await leaveEnds();
+                expect(rowOf(wrapper, "Ben")).toBeNull();
+                expect(rowOf(wrapper, "Ana")?.classList).toContain("chat-move");
+            });
+
+            test("a row whose fade is cut short still goes, and the rows below still glide up", async () => {
+                const { names, wrapper } = mountList(["Sam", "Ben", "Ana"]);
+
+                names.value = ["Sam", "Ana"];
+                await nextTick();
+                await leaveEnds();
+                fade.cut();
+                await leaveEnds();
+
+                expect(rowOf(wrapper, "Ben")).toBeNull();
+                expect(rowOf(wrapper, "Ana")?.classList).toContain("chat-move");
+            });
+
+            test("the only row's going is told once its own fade has ended, not before", async () => {
+                const { names, wrapper } = mountList(["Sam"]);
+
+                names.value = [];
+                await nextTick();
+                await longerThanTheFade();
+                expect(wrapper.getComponent(SettingGroup).emitted("empty")).toBeUndefined();
+
+                fade.end();
+                await leaveEnds();
+                expect(rowOf(wrapper, "Sam")).toBeNull();
+                expect(wrapper.getComponent(SettingGroup).emitted("empty")).toHaveLength(1);
+            });
+        });
+
         // Where less motion is asked for, the move takes no time and no transition ever ends, so a
         // row given the move would keep its class and its listener for good. The rows below simply
         // stand in their new places.
