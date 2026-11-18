@@ -4878,7 +4878,7 @@ BEGIN
     SET @order = (
         SELECT ISNULL(MAX([Order]), -1) + 1
         FROM [dbo].[Auth]
-        WHERE [EntityTypeId] = @entityTypeId AND [EntityId] = 0 AND [Action] = @action
+        WHERE [EntityTypeId] = @entityTypeId AND [EntityId] = @entityId AND [Action] = @action
         );
 END
 
