@@ -184,11 +184,18 @@ describe("a row", () => {
         expect(w.emitted("message")).toEqual([[anna.person_alias_guid]]);
     });
 
-    test("the row's name opens the person", async () => {
+    // The card opened from a row lines its own face up with the row's, so the row hands over its
+    // face with the button focus goes back to.
+    test("the row's name opens the person, handing over the row's button and its face", async () => {
         const w = draw();
+        const row = w.findAll("[data-testid='member-row']").find(item => item.get("[data-testid='member-who']").attributes("data-person") === anna.person_alias_guid)!;
 
-        await w.findAll("[data-testid='member-who']")[2].trigger("click");
-        expect(w.emitted("person")).toEqual([[anna.person_alias_guid]]);
+        await row.get("[data-testid='member-who']").trigger("click");
+        const asked = w.emitted("person") as Array<[string, HTMLElement, HTMLElement]>;
+        expect(asked).toHaveLength(1);
+        expect(asked[0][0]).toBe(anna.person_alias_guid);
+        expect(asked[0][1]).toBe(row.get("[data-testid='member-who']").element);
+        expect(asked[0][2]).toBe(row.get(".chat-pile").element);
     });
 });
 
@@ -571,7 +578,12 @@ describe("the row menu", () => {
 
         await openMenu(w, 2);
         document.querySelector<HTMLElement>("[data-key='profile']")!.click();
-        expect(w.emitted("person")).toEqual([[anna.person_alias_guid]]);
+        const row = w.findAll("[data-testid='member-row']").find(item => item.get("[data-testid='member-who']").attributes("data-person") === anna.person_alias_guid)!;
+        const asked = w.emitted("person") as Array<[string, HTMLElement, HTMLElement]>;
+        expect(asked).toHaveLength(1);
+        expect(asked[0][0]).toBe(anna.person_alias_guid);
+        expect(asked[0][1]).toBe(row.get("[data-testid='member-who']").element);
+        expect(asked[0][2]).toBe(row.get(".chat-pile").element);
 
         await openMenu(w, 2);
         document.querySelector<HTMLElement>("[data-key='message']")!.click();

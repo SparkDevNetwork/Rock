@@ -347,6 +347,46 @@ describe("where it is placed", () => {
         expect(placed.style.top).toBe(`${200 + 60 + 8}px`);
     });
 
+    // From a Members row the card stands beside the panel, its own face level with the row's: the
+    // two faces' middles on one line, whatever the card's name makes of its height.
+    test("from a Members row it stands 8 px left of the panel, its face's middle on the row's face's middle", async () => {
+        Object.defineProperty(document.documentElement, "clientWidth", { configurable: true, value: 1000 });
+        Object.defineProperty(document.documentElement, "clientHeight", { configurable: true, value: 800 });
+        const panel = document.createElement("div");
+        panel.className = "chat-panel";
+        const who = document.createElement("button");
+        const face = document.createElement("span");
+        panel.append(who, face);
+        document.body.append(panel);
+        boxed(panel, { left: 700, top: 0, width: 300, height: 800 });
+        boxed(who, { left: 700, top: 300, width: 300, height: 48 });
+        boxed(face, { left: 710, top: 306, width: 36, height: 36 });
+
+        // the card's face, 56 px, sits 20 px down a card whose name runs to two lines
+        const sized = jest.spyOn(HTMLElement.prototype, "offsetWidth", "get").mockImplementation(function (this: HTMLElement) {
+            return this.classList.contains("chat-pc") ? 300 : 0;
+        });
+        const tall = jest.spyOn(HTMLElement.prototype, "offsetHeight", "get").mockImplementation(function (this: HTMLElement) {
+            return this.classList.contains("chat-pc") ? 180 : this.classList.contains("chat-pile") && !!this.closest(".chat-pc-id") ? 56 : 0;
+        });
+        const down = jest.spyOn(HTMLElement.prototype, "offsetTop", "get").mockImplementation(function (this: HTMLElement) {
+            return this.classList.contains("chat-pile") && !!this.closest(".chat-pc-id") ? 20 : 0;
+        });
+
+        const w = mountCard(profile(), { anchor: who, face });
+        await settle();
+        await new Promise(resolve => setTimeout(resolve, 0));
+        await settle();
+        sized.mockRestore();
+        tall.mockRestore();
+        down.mockRestore();
+
+        const placed = card(w);
+        expect(placed.style.left).toBe(`${700 - 8 - 300}px`);
+        expect(placed.style.top).toBe(`${306 + 18 - (20 + 28)}px`);
+        panel.remove();
+    });
+
     test("with no room below the row it stands 8 px above it, its left edge still on the face", async () => {
         const placed = await openFrom({ left: 300, top: 560, width: 600, height: 60 }, "bubble");
 

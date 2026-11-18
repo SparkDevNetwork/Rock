@@ -5609,8 +5609,10 @@ describe("the members panel", () => {
         await settle();
         const card = document.querySelector<HTMLElement>("[data-testid='profile-card']")!;
         expect(card).not.toBeNull();
-        // the row is the card's anchor, inside the panel, which is what sets the card beside it
+        // the row is the card's anchor, inside the panel, which is what sets the card beside it,
+        // and the row's face is what the card's own face lines up with
         expect(w.findComponent(ProfileCardComponent).props("anchor")).toBe(who.element);
+        expect(w.findComponent(ProfileCardComponent).props("face")).toBe(who.element.closest("[data-testid='member-row']")!.querySelector(".chat-pile"));
         expect(who.element.closest(".chat-panel")).not.toBeNull();
 
         card.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
