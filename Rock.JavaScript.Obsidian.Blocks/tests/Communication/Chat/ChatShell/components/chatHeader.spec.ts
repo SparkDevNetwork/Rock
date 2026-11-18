@@ -664,27 +664,27 @@ describe("the way into the members panel", () => {
         expect(pile().attributes("aria-label")).toBe("13,536 members, open member list");
     });
 
-    // A group's face beside its title already draws its people with a "+N" of its own, so the
-    // button draws the people icon and the head count, never a second "+N" that counts otherwise.
-    test("is the same button for a group, the people icon and its head count, and nothing for a conversation of two", async () => {
+    // A group's button draws its people as a channel's does: the pile of faces is how a person
+    // tells one group from another at a glance, so it is the same three faces and "+N" rule.
+    test("is the same button for a group, its other people's faces then +N, and nothing for a conversation of two", async () => {
         const people = [person(1, "Caleb", "Brooks"), person(2, "Hannah", "Diaz"), person(3, "Iris", "Moore"), person(4, "Jon", "Park")];
         const group = mountHeader({ title: "Hike planning", kind: "group", people, otherCount: 5, isMembersOffered: true });
 
         const members = group.get("[data-testid='header-members']");
         expect(members.classes()).toContain("chat-header-pile");
         expect(members.attributes("aria-label")).toBe("6 members, open member list");
-        expect(members.findAll(".chat-av")).toHaveLength(0);
-        expect(countOf(members)).toBe("6");
-        expect(hasIcon(group, members, "users")).toBe(true);
-        expect(group.get("[data-testid='group-face-more']").text()).toBe("+3");
+        expect(members.findAll(".chat-av")).toHaveLength(3);
+        // 6 members less the reader and the three drawn
+        expect(countOf(members)).toBe("+2");
+        expect(hasIcon(group, members, "users")).toBe(false);
         await members.trigger("click");
         expect(group.emitted("members")).toHaveLength(1);
 
-        // once read, the room's facts give the head count
-        await group.setProps({ people: people.slice(0, 2), otherCount: null, facts: facts({ channel_type: "dm", member_count: 4 }) });
+        // once read, the room's facts give the head count; with every other person a face, no +N
+        await group.setProps({ people: people.slice(0, 3), otherCount: null, facts: facts({ channel_type: "dm", member_count: 4 }) });
         expect(members.attributes("aria-label")).toBe("4 members, open member list");
-        expect(members.findAll(".chat-av")).toHaveLength(0);
-        expect(countOf(members)).toBe("4");
+        expect(members.findAll(".chat-av")).toHaveLength(3);
+        expect(countOf(members)).toBeNull();
         group.unmount();
 
         const pair = mountHeader({ title: "Anna Kim", kind: "person", people: [person(5, "Anna", "Kim")], isMembersOffered: true, facts: facts({ channel_type: "dm", member_count: 2 }) });

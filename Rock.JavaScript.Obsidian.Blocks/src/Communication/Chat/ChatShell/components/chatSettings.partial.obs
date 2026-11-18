@@ -3,7 +3,6 @@
     <Dialog :isOpen="isOpen"
             title="Chat settings"
             isPanel
-            placement="top"
             sheet="phone"
             @close="emit('close')">
         <template #tools>
@@ -99,6 +98,7 @@
                 </SettingGroup>
                 <EmptyState v-else-if="shownBlocked.length === 0 && !isListDrawn"
                             ref="blockedEmpty"
+                            icon="ban"
                             title="No one blocked"
                             tabindex="-1"
                             data-testid="blocked-empty" />
@@ -314,7 +314,7 @@
         (e: "status", choice: StatusChoice): void;
     }>();
 
-    // Anchored at the top, so a note coming or going below a row moves only the dialog's foot.
+    // Centred in the frame as every dialog is; a page turn grows or shrinks it about its middle.
     // Blocked people is a page the one dialog turns to and back from, where Unblock asks in the
     // person's row, naming what changes, and only its yes unblocks.
 

@@ -22,11 +22,12 @@
 //
 //   props: title, subtitle, name (plural, as "mentions"), itemName (as "mention"), entranceKeys,
 //          isLoading, isRefreshing, error (the strip's sentence or null), skeletonCount, isEmpty,
-//          emptyTitle, emptyText, emptyActionLabel, loadedSentence, upToDateSentence, bodyAttrs
+//          emptyIcon, emptyTitle, emptyText, emptyActionLabel, loadedSentence, upToDateSentence, bodyAttrs
 //   emits: refresh, close, emptyAction
 //   marks: <name>-refresh, <name>-error, <name>-empty, <itemName>-skeleton
 import { mount, VueWrapper } from "@vue/test-utils";
 import { defineComponent, h, nextTick } from "vue";
+import EmptyState from "../../../../../src/Communication/Chat/ChatShell/ui/emptyState.partial.obs";
 import ListPanel from "../../../../../src/Communication/Chat/ChatShell/ui/listPanel.partial.obs";
 
 let wrapper: VueWrapper | null = null;
@@ -85,6 +86,13 @@ describe("the list panel", () => {
 
         await empty.get("button").trigger("click");
         expect(w.emitted("emptyAction")).toHaveLength(1);
+    });
+
+    test("an empty list's state draws the list's own mark in its tile", () => {
+        const w = draw({ isEmpty: true, emptyIcon: "at" });
+
+        expect(w.getComponent(EmptyState).props("icon")).toBe("at");
+        expect(w.find("[data-testid='mentions-empty'] .chat-empty-tile").exists()).toBe(true);
     });
 
     test("a failed refresh leaves its sentence over the rows it kept, with Try again", async () => {

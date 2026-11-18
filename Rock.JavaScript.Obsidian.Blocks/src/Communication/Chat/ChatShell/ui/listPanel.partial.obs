@@ -36,6 +36,7 @@
             </template>
 
             <EmptyState v-else-if="isEmpty"
+                        :icon="emptyIcon"
                         :title="emptyTitle"
                         :text="emptyText"
                         :actionLabel="emptyActionLabel"
@@ -153,6 +154,12 @@
         isEmpty: {
             type: Boolean,
             default: false
+        },
+
+        /** The list's mark, in the empty state's tile. */
+        emptyIcon: {
+            type: String as PropType<string>,
+            default: ""
         },
 
         emptyTitle: {

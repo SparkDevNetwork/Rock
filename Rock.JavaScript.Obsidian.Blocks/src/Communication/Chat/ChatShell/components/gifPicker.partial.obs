@@ -84,6 +84,7 @@
                 </div>
 
                 <EmptyState v-else-if="view === 'empty'"
+                            icon="search"
                             title="No GIFs found"
                             text="Try another word, like Thanks or Amen."
                             data-testid="gif-empty" />
