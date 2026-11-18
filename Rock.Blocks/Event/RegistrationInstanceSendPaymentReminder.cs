@@ -96,6 +96,8 @@ namespace Rock.Blocks.Event
                 return box;
             }
 
+            box.IsSendDisabled = !CanSendReminders( registrationInstance );
+
             var template = registrationInstance.RegistrationTemplate;
 
             if ( template == null )
@@ -176,6 +178,20 @@ namespace Rock.Blocks.Event
             }
 
             return registrationInstance;
+        }
+
+        /// <summary>
+        /// Determines whether the current person may send payment reminders for the registration instance.
+        /// </summary>
+        /// <param name="registrationInstance">The registration instance the reminders are for.</param>
+        /// <returns><c>true</c> if the person can edit the block, or can edit or administrate the registration instance; otherwise <c>false</c>.</returns>
+        private bool CanSendReminders( RegistrationInstance registrationInstance )
+        {
+            var currentPerson = RequestContext.CurrentPerson;
+
+            return BlockCache.IsAuthorized( Rock.Security.Authorization.EDIT, currentPerson )
+                || registrationInstance.IsAuthorized( Rock.Security.Authorization.EDIT, currentPerson )
+                || registrationInstance.IsAuthorized( Rock.Security.Authorization.ADMINISTRATE, currentPerson );
         }
 
         /// <summary>
@@ -402,6 +418,11 @@ namespace Rock.Blocks.Event
                 return ActionBadRequest( "Registration Instance not found." );
             }
 
+            if ( !CanSendReminders( registrationInstance ) )
+            {
+                return ActionForbidden( "You are not authorized to send payment reminders for this registration instance." );
+            }
+
             var sampleRegistration = ResolveSampleRegistration( registrationInstance, request.SampleRegistrationKey );
 
             if ( sampleRegistration == null )
@@ -448,6 +469,11 @@ namespace Rock.Blocks.Event
             if ( registrationInstance == null )
             {
                 return ActionBadRequest( "Registration Instance not found." );
+            }
+
+            if ( !CanSendReminders( registrationInstance ) )
+            {
+                return ActionForbidden( "You are not authorized to send payment reminders for this registration instance." );
             }
 
             var disablePredictableIds = PageCache.Layout.Site.DisablePredictableIds;

@@ -651,7 +651,12 @@ namespace Rock.Blocks.Event
 
             var registration = registrationService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
 
-            if ( registration == null )
+            var registrationInstance = GetRegistrationInstance();
+            var isRegistrationInListedInstance = registration != null
+                && registrationInstance != null
+                && registration.RegistrationInstanceId == registrationInstance.Id;
+
+            if ( !isRegistrationInListedInstance )
             {
                 return ActionBadRequest( $"{Registration.FriendlyTypeName} not found." );
             }
