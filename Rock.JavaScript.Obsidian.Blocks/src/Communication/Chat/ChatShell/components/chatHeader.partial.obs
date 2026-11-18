@@ -57,7 +57,7 @@
         </div>
 
         <div class="chat-header-actions">
-            <!-- A channel's other people then "+N", or the people icon and the head count where no face is drawn. -->
+            <!-- A channel's or a group's other people then "+N", or the people icon and the head count where no face is drawn. -->
             <button v-if="membersButton && !isPhone"
                     ref="pileElement"
                     type="button"
@@ -759,10 +759,10 @@ button.chat-header-name-row:hover .chat-header-chev {
             shown = props.facts.is_member ? (props.facts.faces ?? []).slice(0, 3).map(personFace) : [];
         }
         else if (membersKind.value === "group") {
-            // The group's face beside the title already draws its people and a "+N" of its own,
-            // so the button counts heads rather than drawing a second "+N" that counts otherwise.
+            // A group's people are the faces the header already has, drawn as a channel's are:
+            // the pile is how a group is told from another at a glance.
             total = props.facts?.member_count ?? (props.otherCount ?? props.people.length) + 1;
-            shown = [];
+            shown = faces.value.slice(0, 3);
         }
         else {
             return null;
