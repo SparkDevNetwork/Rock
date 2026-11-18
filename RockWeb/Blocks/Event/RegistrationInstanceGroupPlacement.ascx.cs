@@ -386,6 +386,37 @@ namespace RockWeb.Blocks.Event
         }
 
         /// <summary>
+        /// Determines whether the current person can attach placement groups to the registration instance, or to the template in shared mode.
+        /// </summary>
+        /// <param name="registrationInstance">The registration instance, or <c>null</c> when in registration template mode.</param>
+        /// <param name="registrationTemplatePlacement">The registration template placement.</param>
+        /// <returns><c>true</c> if the person can edit the block, or can edit or administrate the instance or template; otherwise, <c>false</c>.</returns>
+        private bool CanEditPlacementTarget( RegistrationInstance registrationInstance, RegistrationTemplatePlacement registrationTemplatePlacement )
+        {
+            if ( UserCanEdit )
+            {
+                return true;
+            }
+
+            ISecured target = registrationInstance ?? ( ISecured ) registrationTemplatePlacement.RegistrationTemplate;
+
+            return target != null
+                && ( target.IsAuthorized( Rock.Security.Authorization.EDIT, this.CurrentPerson )
+                    || target.IsAuthorized( Rock.Security.Authorization.ADMINISTRATE, this.CurrentPerson ) );
+        }
+
+        /// <summary>
+        /// Determines whether the current person can add members to the group through placement.
+        /// </summary>
+        /// <param name="group">The group to attach as a placement group.</param>
+        /// <returns><c>true</c> if the person can edit or manage the members of the group; otherwise, <c>false</c>.</returns>
+        private bool CanManagePlacementGroup( Group group )
+        {
+            return group.IsAuthorized( Rock.Security.Authorization.EDIT, this.CurrentPerson )
+                || group.IsAuthorized( Rock.Security.Authorization.MANAGE_MEMBERS, this.CurrentPerson );
+        }
+
+        /// <summary>
         /// Shows the details.
         /// </summary>
         protected void ShowDetails()
@@ -478,6 +509,11 @@ namespace RockWeb.Blocks.Event
             hfOptionsFilterFeeItemIds.Value = placementConfiguration.FilterFeeOptionIds.ToJson();
 
             hfRegistrationTemplatePlacementId.Value = registrationTemplatePlacementId.ToString();
+
+            RegistrationInstance placementRegistrationInstance;
+            RegistrationTemplatePlacement placementTemplatePlacement;
+            btnAddPlacementGroup.Visible = TryGetPlacementContext( rockContext, out placementRegistrationInstance, out placementTemplatePlacement )
+                && CanEditPlacementTarget( placementRegistrationInstance, placementTemplatePlacement );
 
             RegistrationTemplatePlacement registrationTemplatePlacement = null;
             int? registrationTemplatePlacementGroupTypeId = null;
@@ -859,6 +895,17 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnAddPlacementGroup_Click( object sender, EventArgs e )
         {
+            using ( var rockContext = new RockContext() )
+            {
+                RegistrationInstance registrationInstance;
+                RegistrationTemplatePlacement registrationTemplatePlacement;
+                if ( !TryGetPlacementContext( rockContext, out registrationInstance, out registrationTemplatePlacement )
+                    || !CanEditPlacementTarget( registrationInstance, registrationTemplatePlacement ) )
+                {
+                    return;
+                }
+            }
+
             var newGroup = new Group() { GroupTypeId = hfRegistrationTemplatePlacementGroupTypeId.Value.AsInteger() };
 
             // set up Attribute Values Container
@@ -1271,7 +1318,8 @@ namespace RockWeb.Blocks.Event
             // page parameters the same way ShowDetails does.
             RegistrationInstance registrationInstance;
             RegistrationTemplatePlacement registrationTemplatePlacement;
-            if ( !TryGetPlacementContext( rockContext, out registrationInstance, out registrationTemplatePlacement ) )
+            if ( !TryGetPlacementContext( rockContext, out registrationInstance, out registrationTemplatePlacement )
+                || !CanEditPlacementTarget( registrationInstance, registrationTemplatePlacement ) )
             {
                 mdAddPlacementGroup.Hide();
                 return;
@@ -1297,6 +1345,13 @@ namespace RockWeb.Blocks.Event
                         continue;
                     }
 
+                    if ( !CanManagePlacementGroup( existingPlacementGroup ) )
+                    {
+                        nbAddExistingPlacementGroupWarning.Visible = true;
+                        nbAddExistingPlacementGroupWarning.Text = string.Format( "You are not authorized to add members to {0}. Please choose another group.", existingPlacementGroup.Name.EncodeHtml() );
+                        return;
+                    }
+
                     placementGroups.Add( existingPlacementGroup );
                 }
             }
@@ -1304,6 +1359,14 @@ namespace RockWeb.Blocks.Event
             {
                 var parentGroupId = gpAddExistingPlacementGroupsFromParent.SelectedValueAsId();
                 if ( parentGroupId == null )
+                {
+                    nbAddExistingPlacementMultipleGroupsWarning.Visible = true;
+                    nbAddExistingPlacementMultipleGroupsWarning.Text = "Please select a parent group to add the groups.";
+                    return;
+                }
+
+                var parentGroup = new GroupService( rockContext ).Get( parentGroupId.Value );
+                if ( parentGroup == null || !parentGroup.IsAuthorized( Rock.Security.Authorization.VIEW, this.CurrentPerson ) )
                 {
                     nbAddExistingPlacementMultipleGroupsWarning.Visible = true;
                     nbAddExistingPlacementMultipleGroupsWarning.Text = "Please select a parent group to add the groups.";
@@ -1319,7 +1382,14 @@ namespace RockWeb.Blocks.Event
                 }
 
                 var existingPlacementGroups = new GroupService( rockContext ).Queryable().Where( a => a.ParentGroupId == parentGroupId && a.IsActive == true ).ToList();
-                placementGroups = existingPlacementGroups;
+                placementGroups = existingPlacementGroups.Where( g => CanManagePlacementGroup( g ) ).ToList();
+
+                if ( !placementGroups.Any() )
+                {
+                    nbAddExistingPlacementMultipleGroupsWarning.Visible = true;
+                    nbAddExistingPlacementMultipleGroupsWarning.Text = "You are not authorized to add members to any of this group's child groups.";
+                    return;
+                }
             }
             else
             {

@@ -70,7 +70,7 @@ namespace RockWeb.Blocks.Event
             this.AddConfigurationUpdateTrigger( upnlContent );
 
             var entitySetId = PageParameter( "WaitListSetId" ).AsIntegerOrNull();
-            if ( entitySetId.HasValue )
+            if ( entitySetId.HasValue && IsOwnRegistrantEntitySet( entitySetId.Value ) )
             {
                 // get the registrant Ids
                 var registrantIds = new EntitySetItemService( _rockContext )
@@ -84,6 +84,12 @@ namespace RockWeb.Blocks.Event
                     .Queryable()
                     .Where( r => registrantIds.Contains( r.Id ) )
                     .ToList();
+
+                if ( !CanMoveRegistrants( _registrants ) )
+                {
+                    _registrants = null;
+                    return;
+                }
 
                 // get the first registration
                 _firstRegistration = _registrants
@@ -167,7 +173,7 @@ namespace RockWeb.Blocks.Event
                 else
                 {
                     nbUpdate.NotificationBoxType = NotificationBoxType.Warning;
-                    nbUpdate.Text = "Could not find an entity set in the query string.";
+                    nbUpdate.Text = "No registrants were found, or you are not allowed to move them.";
                 }
             }
 
@@ -259,6 +265,13 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnSendEmail_Click( object sender, EventArgs e )
         {
+            if ( _registrants == null )
+            {
+                nbUpdate.NotificationBoxType = NotificationBoxType.Warning;
+                nbUpdate.Text = "The wait list selection has expired or you are not allowed to email these registrants. No emails were sent.";
+                return;
+            }
+
             int sendCount = 0;
 
             foreach ( RepeaterItem repeaterItem in rptRecipients.Items )
@@ -383,6 +396,53 @@ namespace RockWeb.Blocks.Event
             mergeObjects.Add( "AdditionalFieldsNeeded", additionalFieldsNeeded );
 
             return mergeObjects;
+        }
+
+        /// <summary>
+        /// Determines whether the entity set is a registrant set that the current person created and, on the first page load, has not expired.
+        /// </summary>
+        /// <param name="entitySetId">The identifier of the entity set from the page parameter.</param>
+        /// <returns><c>true</c> if the set may be used by the current person; otherwise, <c>false</c>.</returns>
+        private bool IsOwnRegistrantEntitySet( int entitySetId )
+        {
+            var entitySet = new EntitySetService( _rockContext ).Get( entitySetId );
+
+            if ( entitySet == null || CurrentPersonId == null )
+            {
+                return false;
+            }
+
+            var isRegistrantSet = entitySet.EntityTypeId == EntityTypeCache.Get<RegistrationRegistrant>().Id;
+
+            // The move happens on the first load. Postbacks only send the transition email,
+            // which may come after the set's short expiry, so expiry is checked only then.
+            var isUnexpired = Page.IsPostBack || !entitySet.ExpireDateTime.HasValue || entitySet.ExpireDateTime.Value > RockDateTime.Now;
+            var isCreatedByCurrentPerson = entitySet.CreatedByPersonAlias != null && entitySet.CreatedByPersonAlias.PersonId == CurrentPersonId;
+
+            return isRegistrantSet && isUnexpired && isCreatedByCurrentPerson;
+        }
+
+        /// <summary>
+        /// Determines whether the current person may move every registrant off the wait list.
+        /// </summary>
+        /// <param name="registrants">The registrants named by the entity set.</param>
+        /// <returns><c>true</c> if the person can edit the block or every registrant's registration instance; otherwise, <c>false</c>.</returns>
+        private bool CanMoveRegistrants( List<RegistrationRegistrant> registrants )
+        {
+            if ( registrants.Any( r => r.Registration == null || r.Registration.RegistrationInstance == null ) )
+            {
+                return false;
+            }
+
+            if ( UserCanEdit )
+            {
+                return true;
+            }
+
+            return registrants
+                .Select( r => r.Registration.RegistrationInstance )
+                .Distinct()
+                .All( i => i.IsAuthorized( Authorization.EDIT, CurrentPerson ) || i.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) );
         }
 
         #endregion
