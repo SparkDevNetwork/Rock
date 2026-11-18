@@ -56,6 +56,35 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Determines whether the specified <paramref name="viewerPersonId"/> either
+        /// created the note or is permitted to view the note based on its private
+        /// flag and approval status. This is the in-memory version of
+        /// <see cref="AreViewableBy(IQueryable{Note}, int?)"/> and must be kept in
+        /// step with it.
+        /// </summary>
+        /// <param name="note">The note to evaluate.</param>
+        /// <param name="viewerPersonId">The identifier of the Person to evaluate for viewability.</param>
+        /// <returns><c>true</c> if the note is viewable by the person; otherwise <c>false</c>.</returns>
+        internal static bool IsViewableBy( this Note note, int? viewerPersonId )
+        {
+            // The note is not private and is either approved or not required to be approved.
+            // This is checked first so the author is only loaded when needed.
+            var requiresApprovals = Rock.Web.Cache.NoteTypeCache.Get( note.NoteTypeId )?.RequiresApprovals ?? false;
+
+            if ( !note.IsPrivateNote && ( !requiresApprovals || note.ApprovalStatus == NoteApprovalStatus.Approved ) )
+            {
+                return true;
+            }
+
+            // The viewer is the creator of the note and the approval status is not denied.
+            return viewerPersonId.HasValue
+                && viewerPersonId.Value > 0
+                && note.ApprovalStatus != NoteApprovalStatus.Denied
+                && note.CreatedByPersonAlias != null
+                && note.CreatedByPersonAlias.PersonId == viewerPersonId.Value;
+        }
+
+        /// <summary>
         /// Includes the <see cref="NoteType" /> and filters to those where
         /// the specified notification hasn't yet been sent,
         /// the note type allows watching,

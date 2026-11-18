@@ -5155,6 +5155,7 @@ namespace Rock.Lava
             var notes = new NoteService( LavaHelper.GetRockContextFromLavaContext( context ) )
                 .Queryable().AsNoTracking()
                 .Include( n => n.CreatedByPersonAlias )
+                .AreViewableBy( GetCurrentPerson( context )?.Id )
                 .Where( n => n.EntityId == entityId );
 
             if ( noteTypeIds.Count > 0 )
