@@ -128,6 +128,31 @@ describe("a settings group", () => {
             expect(rowOf(wrapper, "Sam")).toBeNull();
             expect(wrapper.getComponent(SettingGroup).emitted("empty")).toHaveLength(1);
         });
+
+        // Where less motion is asked for, the move takes no time and no transition ever ends, so a
+        // row given the move would keep its class and its listener for good. The rows below simply
+        // stand in their new places.
+        test("where less motion is asked for, the rows below stand in their places with no move left on them", async () => {
+            const matchMedia = window.matchMedia;
+            window.matchMedia = ((query: string) => ({ media: query, matches: query === "(prefers-reduced-motion: reduce)" })) as unknown as typeof window.matchMedia;
+            const listening = jest.spyOn(HTMLElement.prototype, "addEventListener");
+            try {
+                const { names, wrapper } = mountList(["Sam", "Ben", "Ana"]);
+
+                names.value = ["Sam", "Ana"];
+                await nextTick();
+                await leaveEnds();
+
+                const ana = rowOf(wrapper, "Ana") as HTMLElement;
+                expect(ana.classList).not.toContain("chat-move");
+                expect(ana.style.transform).toBe("");
+                expect(ana.style.transition).toBe("");
+                expect(listening.mock.calls.filter(([type]) => type === "transitionend")).toHaveLength(0);
+            }
+            finally {
+                window.matchMedia = matchMedia;
+            }
+        });
     });
 
     // A group spaces itself from what comes before it, so a page that opens on a group, as Blocked
