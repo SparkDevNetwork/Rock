@@ -36,7 +36,7 @@ namespace Rock.Tests.Security
         [DataTestMethod]
         [DataRow( typeof( MailgunHttp ), "APIKey" )]
         [DataRow( typeof( MailgunHttp ), "HTTPWebhookSigningKey" )]
-        [DataRow( typeof( Twilio ), TwilioAttributeKey.AuthToken )]
+        [DataRow( typeof( Rock.Communication.Transport.Twilio ), TwilioAttributeKey.AuthToken )]
         [DataRow( typeof( Firebase ), "ServerKey" )]
         [DataRow( typeof( Firebase ), "ServiceAccountJson" )]
         [DataRow( typeof( RockMobilePush ), "ServerKey" )]
