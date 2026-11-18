@@ -300,7 +300,6 @@ const namedLiterals: Named[] = [
     { name: "fs-ui", value: "13px" },
     { name: "fs-body", value: "14.5px" },
     { name: "fs-title", value: "16px" },
-    { name: "fs-display", value: "20px" },
     { name: "emoji-sm", value: "16px" },
     { name: "emoji-md", value: "22px" },
     { name: "emoji-lg", value: "28px" },
