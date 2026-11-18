@@ -24,7 +24,7 @@ namespace Rock.Model
         #region ISecured
 
         /// <inheritdoc/>
-        public override ISecured ParentAuthority => GroupRequirement ?? base.ParentAuthority;
+        public override ISecured ParentAuthority => ( ISecured ) GroupMember ?? GroupRequirement ?? base.ParentAuthority;
 
         #endregion
 
