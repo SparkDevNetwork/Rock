@@ -576,6 +576,25 @@ describe("a full view", () => {
         expect(focused()).toBe("join-channel");
     });
 
+    test("opening a room from it hands that room to the preview's end, so its page is kept; closing it hands over none", async () => {
+        mounted = mountFrame();
+        const { frame, shell, state } = mounted;
+        state.activeChannelId = team;
+        await settle();
+        await frame.openMainView("directory");
+        frame.onPreview(volunteers);
+
+        await frame.openFromMainView(volunteers);
+
+        expect(shell.readPreview).toHaveBeenLastCalledWith(null, volunteers);
+
+        await frame.openMainView("directory");
+        frame.onPreview(volunteers);
+        frame.closeMainView();
+
+        expect(shell.readPreview).toHaveBeenLastCalledWith(null, null);
+    });
+
     test("opening the conversation already underneath from it still closes the view", async () => {
         mounted = mountFrame();
         const { frame, state } = mounted;

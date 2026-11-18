@@ -1093,6 +1093,38 @@ describe("the page load", () => {
         expect(h.shell.timelines.state(channelA).messages.map(m => m.id)).toEqual([10]);
     });
 
+    // Open from the preview ends the visit before the room is on screen, so the room it hands over
+    // keeps the page the person just read: the open draws it at once while its own read is out,
+    // never a skeleton in its place.
+    test("keeps the page of the room Open hands over when the visit ends, while that room's open is still reading", async () => {
+        const h = build();
+        const starting = h.shell.start();
+        await settle();
+        answerHistory(h, channelA, 10);
+        await starting;
+        await settle();
+
+        const toB = h.shell.readPreview(channelB);
+        await settle();
+        h.history[channelB]?.shift()?.resolve(fakeResponse(200, page(20)));
+        await toB;
+        const toC = h.shell.readPreview(channelC);
+        await settle();
+        h.history[channelC]?.shift()?.resolve(fakeResponse(200, page(30)));
+        await toC;
+
+        await h.shell.readPreview(null, channelB);
+        const opening = h.shell.selectChannel(channelB);
+        await settle();
+
+        expect(h.shell.timelines.state(channelB).isLoaded).toBe(true);
+        expect(h.shell.timelines.state(channelB).messages.map(m => m.id)).toEqual([20]);
+        expect(h.shell.timelines.state(channelC).messages).toEqual([]);
+
+        answerHistory(h, channelB, 21);
+        await opening;
+    });
+
     test("a reload that fails once the list is drawn is still told by the error toast, as nothing else shows it", async () => {
         const h = build({ linkedChannelId: null });
         await h.shell.start();
