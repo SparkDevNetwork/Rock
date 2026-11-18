@@ -87,6 +87,9 @@ export function useOverlaysView(dependencies: OverlaysViewDependencies) {
     const cardAnchor = shallowRef<HTMLElement | null>(null);
     const cardOpenCount = ref(0);
 
+    /** The face of a Members row the card was opened from, which the card's own face lines up with; null from anywhere else. */
+    const cardFace = shallowRef<HTMLElement | null>(null);
+
     /** Moved on by every change a member row's Message may not outlive; see the sync watcher below. */
     let memberMessageGeneration = 0;
 
@@ -267,18 +270,19 @@ export function useOverlaysView(dependencies: OverlaysViewDependencies) {
         }
     }
 
-    /** A member row's face or name: the card is anchored on the row, beside the panel, and Escape gives focus back to it. */
-    function onMemberPerson(personAliasGuid: string): void {
+    /**
+     * A member row's face or name: the card is anchored on the row's button, beside the panel, its
+     * face level with the row's, and Escape gives focus back to the row.
+     */
+    function onMemberPerson(personAliasGuid: string, who: HTMLElement, face: HTMLElement | null): void {
         const channelId = shell.value.members.state.channelId;
         if (!channelId) {
             return;
         }
 
         // Safari leaves a pressed button unfocused, and the card hands focus back to what held it.
-        const row = focusStop([{ stop: "member", match: `[data-person='${personAliasGuid}']` }], { within: "panel", preventScroll: true });
-        if (row) {
-            openCard(row, personAliasGuid, channelId);
-        }
+        who.focus({ preventScroll: true });
+        openCard(who, personAliasGuid, channelId, face);
     }
 
     /** The details dialog's member count gives way to the members panel, which takes focus. */
@@ -458,8 +462,9 @@ export function useOverlaysView(dependencies: OverlaysViewDependencies) {
     // #region Functions
 
     /** Opens a person's card for a room beside what asked, drawn afresh each time. */
-    function openCard(anchor: HTMLElement, personAliasGuid: string, channelId: string): void {
+    function openCard(anchor: HTMLElement, personAliasGuid: string, channelId: string, face: HTMLElement | null = null): void {
         cardAnchor.value = anchor;
+        cardFace.value = face;
         cardOpenCount.value++;
         notePersonOpener(anchor);
         shell.value.profile.openCard(personAliasGuid, channelId);
@@ -607,7 +612,7 @@ export function useOverlaysView(dependencies: OverlaysViewDependencies) {
     });
 
     return {
-        isDetailsOpen, isSettingsOpen, cardAnchor, cardOpenCount, onCardMessage, onLeave, onRename, closeDetails, onRoomChoice,
+        isDetailsOpen, isSettingsOpen, cardAnchor, cardFace, cardOpenCount, onCardMessage, onLeave, onRename, closeDetails, onRoomChoice,
         onCardDetails, onPanelBlock, onPanelUnblock, onPanelSettings, onPanelOpenRoom, onCardBlock, onCardUnblock, onSettingsUnblock, onCardSettings, closeSettings, onMemberMessage, onMemberPerson, onDetailsMembers,
         conversationQuoteKey, threadQuoteKey, conversationQuote, threadQuote, confirmingDelete, deleteBody, isOwnQuote,
         editingIdIn, editErrorIn, isEditSavingIn, onEditLast, onEditLastReply, onCancelQuote, onMessageAction, onCancelDelete, onConfirmDelete,

@@ -507,7 +507,8 @@
         (e: "retry"): void;
         (e: "retrySearch"): void;
         (e: "message", personAliasGuid: string): void;
-        (e: "person", personAliasGuid: string): void;
+        /** A row's person, with the row's own button, which focus goes back to, and its face, which a card lines its own up with. */
+        (e: "person", personAliasGuid: string, who: HTMLElement, face: HTMLElement | null): void;
         (e: "close"): void;
         (e: "addPeople"): void;
         (e: "remove", personAliasGuid: string): void;
@@ -626,7 +627,7 @@
 
     function onMenuSelect(personAliasGuid: string, key: string): void {
         if (key === "profile") {
-            emit("person", personAliasGuid);
+            openPerson(personAliasGuid);
         }
         else if (key === "message") {
             emit("message", personAliasGuid);
@@ -677,7 +678,7 @@
     /** The row's own press opens the profile; a row the door is working on takes none until it answers. */
     function onWho(row: DrawnMember): void {
         if (!row.isRemoving) {
-            emit("person", row.guid);
+            openPerson(row.guid);
         }
     }
 
@@ -762,6 +763,19 @@
     /** A row's own button, found by the person it names. */
     function whoOf(personAliasGuid: string): HTMLElement | null {
         return listElement.value?.querySelector<HTMLElement>(`[data-member='${personAliasGuid}']`) ?? null;
+    }
+
+    /** A row's face, found by the person it names. */
+    function faceOf(personAliasGuid: string): HTMLElement | null {
+        return listElement.value?.querySelector<HTMLElement>(`[data-hot-id='${personAliasGuid}'] .chat-lrow-lead .chat-pile`) ?? null;
+    }
+
+    /** Asks for the person's profile from their row, by the row's name or its More. */
+    function openPerson(personAliasGuid: string): void {
+        const who = whoOf(personAliasGuid);
+        if (who) {
+            emit("person", personAliasGuid, who, faceOf(personAliasGuid));
+        }
     }
 
     // #endregion Functions

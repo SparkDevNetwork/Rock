@@ -255,6 +255,12 @@
         anchor: {
             type: Object as PropType<HTMLElement | null>,
             default: null
+        },
+
+        /** The face of the panel's row the card opens from, which the card's own face lines up with. */
+        face: {
+            type: Object as PropType<HTMLElement | null>,
+            default: null
         }
     });
 
@@ -310,12 +316,12 @@
     const faceColumn = row?.querySelector<HTMLElement>(".chat-msg-face, .chat-cm-gutter") ?? null;
 
     /**
-     * Opened from the right-hand panel's list, the card stands beside the panel at the opener's
-     * height rather than over the list; where the panel leaves no room beside it, as a phone's
-     * panel that fills the frame, it opens below the opener as any other card does.
+     * Opened from the right-hand panel's list, the card stands 8 px beside the panel rather than
+     * over the list, its own face level with the row's; where the panel leaves no room beside it,
+     * as a phone's panel that fills the frame, it opens below the opener as any other card does.
      */
     const panel = row ? null : props.anchor?.closest<HTMLElement>(".chat-panel") ?? null;
-    const besideGap = 10;
+    const besideGap = 8;
     const cardWidth = 300;
     const isBeside = !!panel && panel.getBoundingClientRect().left - besideGap - cardWidth >= 8;
 
@@ -385,11 +391,25 @@
         return { x: left, y: box.top, left, top: box.top, right: box.right, bottom: box.bottom, width: box.right - left, height: box.height, toJSON: () => ({}) } as DOMRect;
     }
 
-    /** A point at the panel's left edge, a little above the opener's top, which the card stands beside. */
+    /**
+     * A point at the panel's left edge, at the height that puts the card's face middle on the row's
+     * face middle, which the card stands beside; on the opener's middle where no face was given.
+     */
     function besideBox(): DOMRect {
         const left = (panel as HTMLElement).getBoundingClientRect().left;
-        const top = (props.anchor as HTMLElement).getBoundingClientRect().top - 12;
+        const face = (props.face ?? props.anchor as HTMLElement).getBoundingClientRect();
+        const top = face.top + face.height / 2 - cardFaceMiddle();
         return { x: left, y: top, left, top, right: left, bottom: top, width: 0, height: 0, toJSON: () => ({}) } as DOMRect;
+    }
+
+    /**
+     * How far down the card its own face's middle is, measured, since a name that runs to two
+     * lines moves the face down. The card is fixed, so it is its face's offset parent, and the
+     * offset ignores the card's pop-in scale.
+     */
+    function cardFaceMiddle(): number {
+        const face = cardElement.value?.querySelector<HTMLElement>(".chat-pc-id .chat-pile");
+        return face ? face.offsetTop + face.offsetHeight / 2 : 0;
     }
 
     /**
