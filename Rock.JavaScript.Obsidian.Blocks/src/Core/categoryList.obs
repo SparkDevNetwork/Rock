@@ -400,5 +400,7 @@
 
     // #endregion
 
-    gridDataSource.value = loadGridData();
+    if (config.options?.isBlockVisible) {
+        gridDataSource.value = loadGridData();
+    }
 </script>
