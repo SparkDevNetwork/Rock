@@ -303,7 +303,9 @@ public abstract class TwilioDefaultResponseAsync : IAsyncResult
         var authToken = string.Empty;
         if ( twilioComponent.AttributeValues.ContainsKey( TwilioAttributeKey.AuthToken ) )
         {
-            authToken = twilioComponent.AttributeValues[TwilioAttributeKey.AuthToken].Value;
+            // A plain text value is still stored until start-up encrypts it.
+            var storedAuthToken = twilioComponent.AttributeValues[TwilioAttributeKey.AuthToken].Value;
+            authToken = Rock.Security.Encryption.DecryptString( storedAuthToken ) ?? storedAuthToken;
         }
 
         if ( authToken.IsNullOrWhiteSpace() )

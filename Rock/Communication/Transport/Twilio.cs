@@ -52,9 +52,10 @@ namespace Rock.Communication.Transport
         IsRequired = true,
         Order = 0,
         Key = TwilioAttributeKey.Sid )]
-    [TextField( "Auth Token",
+    [EncryptedTextField( "Auth Token",
         Description = "Your Twilio Account Token",
         IsRequired = true,
+        IsPassword = true,
         Order = 1,
         Key = TwilioAttributeKey.AuthToken )]
     [IntegerField( "Long-Code Throttling",
@@ -171,8 +172,18 @@ namespace Rock.Communication.Transport
             string publicAppRoot = globalAttributes.GetValue( "PublicApplicationRoot" );
             var callbackUrl = publicAppRoot + "Webhooks/Twilio.ashx";
 
+            /*
+                11/16/2026 - JPH
+
+                The auth token is stored encrypted. A value saved before it
+                became an encrypted field stays plain text until start-up
+                encrypts it, so fall back to the stored value.
+
+                Reason: Keep transport secrets encrypted at rest.
+            */
             var accountSid = GetAttributeValue( TwilioAttributeKey.Sid );
-            var authToken = GetAttributeValue( TwilioAttributeKey.AuthToken );
+            var storedAuthToken = GetAttributeValue( TwilioAttributeKey.AuthToken );
+            var authToken = Rock.Security.Encryption.DecryptString( storedAuthToken ) ?? storedAuthToken;
 
             TwilioClient.Init( accountSid, authToken );
 
@@ -259,7 +270,8 @@ namespace Rock.Communication.Transport
                 }
 
                 string accountSid = GetAttributeValue( TwilioAttributeKey.Sid );
-                string authToken = GetAttributeValue( TwilioAttributeKey.AuthToken );
+                var storedAuthToken = GetAttributeValue( TwilioAttributeKey.AuthToken );
+                var authToken = Rock.Security.Encryption.DecryptString( storedAuthToken ) ?? storedAuthToken;
                 TwilioClient.Init( accountSid, authToken );
 
                 // Common Merge Field

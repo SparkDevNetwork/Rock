@@ -258,6 +258,20 @@ public class Mailgun : IHttpHandler
                 }
             }
 
+            /*
+                11/16/2026 - JPH
+
+                Both keys are stored encrypted. A value saved before they
+                became encrypted fields stays plain text until start-up
+                encrypts it, so fall back to the stored value.
+
+                Reason: Keep transport secrets encrypted at rest.
+            */
+            if ( webhookSigningKey.IsNotNullOrWhiteSpace() )
+            {
+                webhookSigningKey = Rock.Security.Encryption.DecryptString( webhookSigningKey ) ?? webhookSigningKey;
+            }
+
             if ( webhookSigningKey.IsNullOrWhiteSpace() )
             {
                 response.Write( "HTTP webhook signing key not defined." );

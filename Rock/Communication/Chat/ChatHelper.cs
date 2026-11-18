@@ -411,8 +411,11 @@ namespace Rock.Communication.Chat
         /// <returns>The Rock mobile push service account JSON string.</returns>
         internal static string GetRockMobilePushServiceAccountJson()
         {
-            return TransportContainer.GetComponent( typeof( Transport.RockMobilePush ).FullName )
+            var storedJson = TransportContainer.GetComponent( typeof( Transport.RockMobilePush ).FullName )
                 ?.GetAttributeValue( "ServiceAccountJson" );
+
+            // A plain text value is still stored until start-up encrypts it.
+            return Encryption.DecryptString( storedJson ) ?? storedJson;
         }
 
         /// <summary>
