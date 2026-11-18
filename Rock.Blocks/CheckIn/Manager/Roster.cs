@@ -370,8 +370,6 @@ namespace Rock.Blocks.CheckIn.Manager
                 }
             }
 
-            await topicChannels.AddToChannelAsync( connectionId, EntityUpdatedTopic.GetAttendanceDeletedChannel() );
-
             return ActionOk();
         }
 
