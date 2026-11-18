@@ -201,6 +201,7 @@ type FeedProps = {
     isDirectMessage?: boolean;
     isEntering?: boolean;
     isCovered?: boolean;
+    isTopOpen?: boolean;
     typing?: Typing | null;
     readCursor?: number | null;
     loadOlder?: () => Promise<void>;
@@ -908,11 +909,28 @@ describe("day sections", () => {
         const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/messageFeed.partial.obs"), "utf8");
         const style = source.slice(source.indexOf("<style"), source.indexOf("</style>"));
         const edge = /\.chat-feed-frame::before\s*\{([^}]*)\}/.exec(style)?.[1] ?? "";
-        const scrolled = /\.chat-feed-frame\.is-scrolled::before\s*\{([^}]*)\}/.exec(style)?.[1] ?? "";
+        const scrolled = /\.chat-feed-frame\.is-scrolled:not\(\.is-top-open\)::before\s*\{([^}]*)\}/.exec(style)?.[1] ?? "";
         expect(edge).toMatch(/border-bottom:\s*1px solid var\(--chat-line\)/);
         expect(edge).toMatch(/box-shadow:\s*var\(--chat-shadow-strip\)/);
         expect(edge).toMatch(/opacity:\s*0/);
         expect(scrolled).toMatch(/opacity:\s*1/);
+    });
+
+    // A feed under its holder's own content, as the look at a found conversation stands under New
+    // message's To and its notice, has no header rule to meet, so it draws no line once scrolled:
+    // the To and the notice sit over the history with no band of their own.
+    test("draws no line at its top, scrolled or not, when its top stands open under its holder's content", async () => {
+        const wrapper = draw({ timeline: timeline([message(1, anna, at(9, 0)), message(2, anna, at(9, 5))]), isTopOpen: true });
+
+        placeScroll(wrapper, 120);
+        await nextTick();
+        expect(wrapper.classes()).toContain("is-top-open");
+
+        const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/messageFeed.partial.obs"), "utf8");
+        const style = source.slice(source.indexOf("<style"), source.indexOf("</style>"));
+        const scrolled = /\.chat-feed-frame\.is-scrolled:not\(\.is-top-open\)::before\s*\{([^}]*)\}/.exec(style)?.[1] ?? "";
+        expect(scrolled).toMatch(/opacity:\s*1/);
+        expect(style).not.toMatch(/\.chat-feed-frame\.is-scrolled::before/);
     });
 
     test("finds its day pills itself, never by a test id", () => {
