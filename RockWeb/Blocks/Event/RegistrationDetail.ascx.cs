@@ -828,6 +828,11 @@ namespace RockWeb.Blocks.Event
 
         protected void lbShowMoveRegistrationDialog_Click( object sender, EventArgs e )
         {
+            if ( !EditAllowed )
+            {
+                return;
+            }
+
             if ( RegistrationId.HasValue )
             {
                 // add current registration instance name
@@ -877,6 +882,12 @@ namespace RockWeb.Blocks.Event
 
         protected void btnMoveRegistration_Click( object sender, EventArgs e )
         {
+            if ( !EditAllowed )
+            {
+                mdMoveRegistration.Hide();
+                return;
+            }
+
             // set the new registration id
             using ( var rockContext = new RockContext() )
             {
@@ -889,10 +900,19 @@ namespace RockWeb.Blocks.Event
                 var oldRegistrationInstanceName = registration.RegistrationInstance.Name;
                 var newRegistrationInstanceId = ddlNewRegistrationInstance.SelectedValue.AsInteger();
 
-                registration.RegistrationInstanceId = newRegistrationInstanceId;
-
                 // Get new registration instance so we have it's properties for history
                 var newRegistrationInstance = new RegistrationInstanceService( rockContext ).Get( newRegistrationInstanceId );
+                int? groupId = ddlMoveGroup.SelectedValueAsInt();
+
+                if ( !CanMoveRegistrationTo( registration, newRegistrationInstance, groupId ) )
+                {
+                    mdMoveRegistration.Hide();
+                    nbSecurityWarning.Text = "You are not allowed to move this registration to the selected instance.";
+                    nbSecurityWarning.Visible = true;
+                    return;
+                }
+
+                registration.RegistrationInstanceId = newRegistrationInstanceId;
 
                 //
                 // Add History record
@@ -915,7 +935,6 @@ namespace RockWeb.Blocks.Event
 
                 //
                 // Move registrants to new group
-                int? groupId = ddlMoveGroup.SelectedValueAsInt();
                 if ( groupId.HasValue )
                 {
                     registration.GroupId = groupId;
@@ -1081,6 +1100,11 @@ namespace RockWeb.Blocks.Event
 
         protected void lbResendConfirmation_Click( object sender, EventArgs e )
         {
+            if ( !EditAllowed )
+            {
+                return;
+            }
+
             if ( RegistrationId.HasValue )
             {
                 string appRoot = ResolveRockUrlIncludeRoot( "~/" );
@@ -1253,6 +1277,11 @@ namespace RockWeb.Blocks.Event
 
         protected void lbGroupMember_Click( object sender, EventArgs e )
         {
+            if ( !EditAllowed )
+            {
+                return;
+            }
+
             var lb = sender as LinkButton;
             if ( lb != null )
             {
@@ -1349,6 +1378,11 @@ namespace RockWeb.Blocks.Event
 
         private void lbResendDocumentRequest_Click( object sender, EventArgs e )
         {
+            if ( !EditAllowed )
+            {
+                return;
+            }
+
             var lb = sender as LinkButton;
             if ( lb != null )
             {
@@ -1650,6 +1684,33 @@ namespace RockWeb.Blocks.Event
         }
 
         /// <summary>
+        /// Determines whether the current person can move the registration to the target instance and group.
+        /// </summary>
+        /// <param name="registration">The registration being moved.</param>
+        /// <param name="newRegistrationInstance">The target registration instance.</param>
+        /// <param name="groupId">The identifier of the target group, or <c>null</c> when only the instance changes.</param>
+        /// <returns><c>true</c> if the target uses the same template, the person can manage registrations in it, and the group is linked to it; otherwise <c>false</c>.</returns>
+        private bool CanMoveRegistrationTo( Registration registration, RegistrationInstance newRegistrationInstance, int? groupId )
+        {
+            if ( newRegistrationInstance == null || newRegistrationInstance.RegistrationTemplateId != registration.RegistrationInstance.RegistrationTemplateId )
+            {
+                return false;
+            }
+
+            var canEditNewInstance = UserCanEdit
+                || newRegistrationInstance.IsAuthorized( "Register", CurrentPerson )
+                || newRegistrationInstance.IsAuthorized( Authorization.EDIT, CurrentPerson )
+                || newRegistrationInstance.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
+
+            if ( !canEditNewInstance )
+            {
+                return false;
+            }
+
+            return !groupId.HasValue || newRegistrationInstance.Linkages.Any( l => l.GroupId == groupId.Value );
+        }
+
+        /// <summary>
         /// Clears the registration state and shows the not authorized message.
         /// </summary>
         private void ShowNotAuthorizedToView()
@@ -1856,7 +1917,8 @@ namespace RockWeb.Blocks.Event
 
             lConfirmationEmail.Text = registration.ConfirmationEmail.EncodeHtml();
             lConfirmationEmail.Visible = !string.IsNullOrWhiteSpace( registration.ConfirmationEmail );
-            lbResendConfirmation.Visible = lConfirmationEmail.Visible;
+            lbResendConfirmation.Visible = lConfirmationEmail.Visible && EditAllowed;
+            lbShowMoveRegistrationDialog.Visible = EditAllowed;
 
             if ( registration.Group != null )
             {
@@ -2853,13 +2915,16 @@ namespace RockWeb.Blocks.Event
                 divSigAction.AddCssClass( "col-md-3 text-right" );
                 divSigAlert.Controls.Add( divSigAction );
 
-                var lbResendDocumentRequest = new LinkButton();
-                lbResendDocumentRequest.CausesValidation = false;
-                lbResendDocumentRequest.ID = string.Format( "lbResendDocumentRequest_{0}", registrant.Id );
-                lbResendDocumentRequest.Text = registrant.SignatureDocumentLastSent.HasValue ? "Resend Signature Request" : "Send Signature Request";
-                lbResendDocumentRequest.CssClass = "btn btn-warning btn-sm";
-                lbResendDocumentRequest.Click += lbResendDocumentRequest_Click;
-                divSigAction.Controls.Add( lbResendDocumentRequest );
+                if ( EditAllowed )
+                {
+                    var lbResendDocumentRequest = new LinkButton();
+                    lbResendDocumentRequest.CausesValidation = false;
+                    lbResendDocumentRequest.ID = string.Format( "lbResendDocumentRequest_{0}", registrant.Id );
+                    lbResendDocumentRequest.Text = registrant.SignatureDocumentLastSent.HasValue ? "Resend Signature Request" : "Send Signature Request";
+                    lbResendDocumentRequest.CssClass = "btn btn-warning btn-sm";
+                    lbResendDocumentRequest.Click += lbResendDocumentRequest_Click;
+                    divSigAction.Controls.Add( lbResendDocumentRequest );
+                }
 
                 divSigAlert.Controls.Add( new LiteralControl( "</div>" ) );
             }
@@ -2904,7 +2969,7 @@ namespace RockWeb.Blocks.Event
                         pGroupMember.Controls.Add( aProfileLink );
                         aProfileLink.Controls.Add( new LiteralControl( string.IsNullOrWhiteSpace( registrant.GroupName ) ? "Group" : registrant.GroupName ) );
                     }
-                    else
+                    else if ( EditAllowed )
                     {
                         pGroupMember.Controls.Add( new LiteralControl( "None (" ) );
 
@@ -2916,6 +2981,10 @@ namespace RockWeb.Blocks.Event
                         pGroupMember.Controls.Add( lbGroupMember );
 
                         pGroupMember.Controls.Add( new LiteralControl( ")" ) );
+                    }
+                    else
+                    {
+                        pGroupMember.Controls.Add( new LiteralControl( "None" ) );
                     }
                 }
             }
