@@ -34,8 +34,8 @@ export type PopoverOptions = {
     fallbackPlacements?: () => Placement[];
 
     /**
-     * What it is kept inside, 4px in, as the message box is kept in its column; the window, 8px in,
-     * where none is given.
+     * What it is kept inside, 4px in on every edge, as the message box is kept in its column; the
+     * window, 8px in along its side, where none is given.
      */
     boundary?: () => Element | null | undefined;
 
@@ -223,11 +223,20 @@ export function usePopover(anchor: Readonly<Ref<HTMLElement | undefined>>, float
         return element ? { padding: boundaryInsetPx, boundary: element } : { padding: 8 };
     };
 
+    // Kept inside a boundary it is given on both axes: the side it stands on as well as along it.
+    // Placed under a point above its column, as a channel row's box whose row top has scrolled out
+    // of view, it would otherwise stand over what is drawn above the column, the conversation's
+    // header and its buttons. Inside the window alone it slides only along its side, as before.
+    const shifting = (): { padding: number, boundary?: Element, crossAxis: boolean } => {
+        const within = boundary();
+        return { ...within, crossAxis: !!within.boundary };
+    };
+
     const asked = computed((): Placement => (typeof placement === "function" ? placement() : placement) ?? "bottom-end");
     const middleware = [
         offset(() => typeof distance === "function" ? distance() : distance),
         flip(() => ({ crossAxis: false, flipAlignment: false, ...(options.fallbackPlacements ? { fallbackPlacements: options.fallbackPlacements() } : {}), ...boundary() })),
-        shift(() => boundary())
+        shift(shifting)
     ];
 
     // Where it was last placed, and on which side its room put it. Held here rather than in the
