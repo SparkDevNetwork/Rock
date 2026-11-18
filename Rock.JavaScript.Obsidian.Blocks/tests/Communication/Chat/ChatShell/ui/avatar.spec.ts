@@ -143,9 +143,9 @@ describe("a photo avatar", () => {
         expect(parseFloat(face.style.width)).toBe(34);
     });
 
-    // A neutral disc stands in while the photo loads, so a hue never flashes before a face; the
-    // photo stays hidden until its decode lands.
-    test("holds a neutral disc and a hidden photo until the photo is decoded", async () => {
+    // A face with a photo is a photo face from the first paint, its letters on its hue the base,
+    // and the photo stays hidden over them until its decode lands.
+    test("marks a face with a photo as one from the start and holds the photo hidden until it is decoded", async () => {
         const decodes: Array<() => void> = [];
         const original = Object.getOwnPropertyDescriptor(HTMLImageElement.prototype, "decode");
         HTMLImageElement.prototype.decode = () => new Promise<void>(resolve => decodes.push(resolve));
