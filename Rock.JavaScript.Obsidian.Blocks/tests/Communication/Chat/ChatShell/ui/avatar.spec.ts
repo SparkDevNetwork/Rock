@@ -25,6 +25,7 @@ import Avatar from "../../../../../src/Communication/Chat/ChatShell/ui/avatar.pa
 import { nextTick } from "vue";
 import { createPageReveal, pageRevealKey } from "../../../../../src/Communication/Chat/ChatShell/pageLoad.partial";
 import { imageHoldClass, imageInClass } from "../../../../../src/Communication/Chat/ChatShell/ui/imageReveal.partial";
+import { chatSheet, styleRules } from "../statusStore";
 
 type Person = { name: string, photoUrl?: string | null };
 
@@ -184,6 +185,30 @@ describe("a photo avatar", () => {
 
         expect(face.querySelector("img")).toBeNull();
         expect(face.textContent!.trim()).toBe("AL");
+    });
+
+    // The letters are the base the photo fades in over, as a channel's tile is under its photo, so
+    // a face never arrives into an empty disc. They are painted by the sheet from the face's own
+    // letters, under the photo in the same cell, and are never the face's text.
+    test("carries the person's letters as the base under the photo, as the face without one draws them", () => {
+        const [large] = faces(draw([{ name: "Anna Lee", photoUrl: "https://church.example/a.jpg" }], 36));
+        const [small] = faces(draw([{ name: "Anna Lee", photoUrl: "https://church.example/a.jpg" }], 20));
+        const [none] = faces(draw([{ name: "Anna Lee", photoUrl: null }], 36));
+
+        expect(large.getAttribute("data-letters")).toBe("AL");
+        expect(small.getAttribute("data-letters")).toBe("A");
+        expect(large.textContent!.trim()).toBe("");
+        expect(none.hasAttribute("data-letters")).toBe(false);
+    });
+
+    test("paints the letters on the person's hue under the photo, with no neutral disc in their place", () => {
+        const base = styleRules(chatSheet, /^\.chat-av\.is-photo::before$/).join(";");
+        const photo = styleRules(chatSheet, /^\.chat-av\.is-photo > \.chat-av-photo$/).join(";");
+
+        expect(base).toMatch(/content:\s*attr\(data-letters\)/);
+        expect(base).toMatch(/grid-area:\s*1 \/ 1/);
+        expect(photo).toMatch(/grid-area:\s*1 \/ 1/);
+        expect(styleRules(chatSheet, /^\.chat-av\.is-photo$/).join(";")).not.toMatch(/background/);
     });
 });
 

@@ -20,7 +20,7 @@
 // and leaves no timer; and the page's hold signal delays every reveal.
 import { computed, nextTick, ref } from "vue";
 import { createPageReveal, faceGraceMs } from "../../../../../src/Communication/Chat/ChatShell/pageLoad.partial";
-import { createImageReveal, imageHoldClass, imageInClass } from "../../../../../src/Communication/Chat/ChatShell/ui/imageReveal.partial";
+import { createImageReveal, imageHoldClass, imageInClass, unveiledAttribute } from "../../../../../src/Communication/Chat/ChatShell/ui/imageReveal.partial";
 
 type Decode = { resolve: () => void, reject: () => void };
 
@@ -262,6 +262,37 @@ describe("the image reveal", () => {
         expect(isHidden(loaded.img)).toBe(false);
         // The page's own crossfade is the fade, so a decoded face does not fade a second time.
         expect(isFading(loaded.img)).toBe(false);
+    });
+
+    test("at the release, fades in a face that has no veil over it, as the veils' crossfade carries the rest", async () => {
+        const hold = ref(true);
+        const reveal = createImageReveal({ hold });
+        const region = document.createElement("div");
+        region.setAttribute(unveiledAttribute, "");
+        document.body.append(region);
+        const foot = makeImage();
+        const listed = makeImage();
+        region.append(foot.img);
+        document.body.append(listed.img);
+
+        try {
+            reveal.track(foot.img);
+            reveal.track(listed.img);
+            foot.decode.resolve();
+            listed.decode.resolve();
+            await settle();
+
+            hold.value = false;
+
+            expect(isHidden(foot.img)).toBe(false);
+            expect(isFading(foot.img)).toBe(true);
+            expect(isHidden(listed.img)).toBe(false);
+            expect(isFading(listed.img)).toBe(false);
+        }
+        finally {
+            region.remove();
+            listed.img.remove();
+        }
     });
 
     test("while the page holds, a face decoded before the release shows at once on release, whatever its batch is waiting on", async () => {

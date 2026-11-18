@@ -1420,6 +1420,22 @@ describe("the section label", () => {
         expect(tag.exec(text)?.[0]).toMatch(/class="[^"]*\bchat-section-label\b/);
         expect(styleRules(path, selector).join(";")).not.toMatch(/font-size|font-weight|color:|text-transform|letter-spacing/);
     });
+
+    // The list's section heading and the loading veil's stand-in for it are one heading, so the
+    // words stand still when the list takes over: its box (no margin, the chat's family, a
+    // whole-pixel 16px line) has one home in the sheet, and each screen keeps only its place.
+    test("draws the list's heading and the veil's from one heading box in the sheet, neither keeping a copy", () => {
+        const body = styleRules(sheetPath, /^\.chat-shell \.chat-list-heading$/).join(";");
+        expect(body).toMatch(/margin:\s*0/);
+        expect(body).toMatch(/font-family:\s*inherit/);
+        expect(body).toMatch(/line-height:\s*16px/);
+
+        for (const [file, tag, selector] of [holders[0], holders[5]]) {
+            const path = resolve(shell, file);
+            expect(tag.exec(readFileSync(path, "utf8"))?.[0]).toMatch(/class="[^"]*\bchat-list-heading\b/);
+            expect(styleRules(path, selector).join(";")).not.toMatch(/margin|font-family|line-height/);
+        }
+    });
 });
 
 // #endregion

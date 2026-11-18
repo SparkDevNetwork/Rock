@@ -29,6 +29,7 @@ import ChannelSidebar from "../../../../../src/Communication/Chat/ChatShell/comp
 import MembersPanel from "../../../../../src/Communication/Chat/ChatShell/components/membersPanel.partial.obs";
 import Avatar from "../../../../../src/Communication/Chat/ChatShell/ui/avatar.partial.obs";
 import { avatarHue } from "../../../../../src/Communication/Chat/ChatShell/ui/brand.partial";
+import { unveiledAttribute } from "../../../../../src/Communication/Chat/ChatShell/ui/imageReveal.partial";
 import { FaceStatus, SidebarRow } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 import { presenceStatusKey } from "../../../../../src/Communication/Chat/ChatShell/composables/usePresenceStatus.partial";
 import { anna, badgesIn, ben, createStatusStore, provideStatus, setsBothRings, shellFolder, StatusStore, viewer } from "../statusStore";
@@ -1130,6 +1131,17 @@ describe("the sidebar's foot", () => {
 
         const side = w.get("[data-testid='channel-sidebar']").element;
         expect(side.lastElementChild?.contains(w.get("[data-testid='sidebar-me']").element)).toBe(true);
+    });
+
+    // The foot is drawn final from the first paint, with no veil over it, so its face fades in on
+    // its own at the first load's reveal while the list's veil crossfades beside it.
+    test("is a region with no veil over it, the face in it and in its status face both inside", () => {
+        const w = mountSidebar({ personName: "Jordan Lee", isStatusShown: true });
+
+        const foot = w.get("[data-testid='sidebar-me']").element.closest(`[${unveiledAttribute}]`);
+        expect(foot).not.toBeNull();
+        expect(foot!.contains(w.get("[data-testid='status-face']").element)).toBe(true);
+        expect(w.get(".chat-side-list").element.closest(`[${unveiledAttribute}]`)).toBeNull();
     });
 });
 
