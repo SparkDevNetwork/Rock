@@ -219,7 +219,7 @@ namespace RockWeb
             context.Response.AddHeader( "content-disposition", string.Format( "{1};filename={0}", fileName.MakeValidFileName(), sendAsAttachment ? "attachment" : "inline" ) );
             context.Response.AddHeader( "content-length", responseLength.ToString() );
 
-            AddResponseSecurityHeaders( context );
+            AddResponseSecurityHeaders( context, mimeType );
 
             rockCacheability.SetupHttpCachePolicy( context.Response.Cache );
 
@@ -310,13 +310,29 @@ namespace RockWeb
         /// call Rock's API as the viewing user. default-src 'none' additionally blocks the file from
         /// making any outbound request, preventing data exfiltration and hardening the response if the
         /// sandbox is ever relaxed. nosniff is included so a file with a benign declared type cannot be
-        /// sniffed into a dangerous one.
+        /// sniffed into a dangerous one. PDF files are the one exception to the sandbox directive,
+        /// see the comment in the method body.
         /// </summary>
         /// <param name="context">The context.</param>
-        private void AddResponseSecurityHeaders( HttpContext context )
+        /// <param name="mimeType">The mime type the file is being sent with.</param>
+        private void AddResponseSecurityHeaders( HttpContext context, string mimeType )
         {
+            /*
+                11/16/2026 - KH
+
+                PDF files are sent without the sandbox directive. Some PDF viewer browser extensions
+                (such as Adobe Acrobat for Chrome) block a sandboxed PDF opened directly, showing
+                ERR_BLOCKED_BY_CLIENT. A response sent as application/pdf is displayed by the browser's
+                PDF viewer, never as an HTML or SVG document, so the sandbox is not what keeps script
+                from running in it. default-src 'none' and nosniff are still sent.
+
+                Reason: Issue #7153 (PDFs blocked in Chrome since the sandbox header was added).
+            */
+            var mediaType = mimeType?.Split( ';' )[0].Trim();
+            var isPdf = string.Equals( mediaType, "application/pdf", StringComparison.OrdinalIgnoreCase );
+
             // allow-downloads keeps the attachment download path working without re-enabling scripting.
-            context.Response.AddHeader( "Content-Security-Policy", "default-src 'none'; sandbox allow-downloads" );
+            context.Response.AddHeader( "Content-Security-Policy", isPdf ? "default-src 'none'" : "default-src 'none'; sandbox allow-downloads" );
             context.Response.AddHeader( "X-Content-Type-Options", "nosniff" );
         }
 
