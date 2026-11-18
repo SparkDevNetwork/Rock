@@ -214,6 +214,7 @@ namespace Rock.Model
         /// The payment plan <see cref="Rock.Model.FinancialScheduledTransaction"/> identifier.
         /// </value>
         [DataMember]
+        [NotClientWritable]
         public int? PaymentPlanFinancialScheduledTransactionId { get; set; }
 
         #endregion Entity Properties

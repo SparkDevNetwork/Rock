@@ -171,6 +171,21 @@ namespace Rock.Rest
                     */
                     NotClientWritableAttribute.ClearValues( rockContext, entity, typeof( TEntity ) );
 
+                    /*
+                        11/18/2026 - MSE
+
+                        Some file columns (such as the Site logo) may only name a file the caller
+                        uploaded. Otherwise a new record could take over a file that belongs to
+                        another record, and the cleanup job could later delete it. This applies to
+                        every caller, since it is about who owns the file.
+
+                        Reason: Clients may only attach files they uploaded.
+                    */
+                    if ( !UploadedBinaryFileOnlyAttribute.AreValuesAllowed( rockContext, entity, typeof( TEntity ), _controller.RockRequestContext.CurrentPerson ) )
+                    {
+                        return BadRequest( "Invalid file." );
+                    }
+
                     rockContext.SaveChanges();
                 }
 
@@ -325,6 +340,13 @@ namespace Rock.Rest
                         var errorMessage = targetEntity.ValidationResults.Select( r => r.ErrorMessage ).JoinStrings( ", " );
 
                         return BadRequest( errorMessage );
+                    }
+
+                    // Some file columns may only keep their stored file or name a file the
+                    // caller uploaded. See Create.
+                    if ( !UploadedBinaryFileOnlyAttribute.AreValuesAllowed( rockContext, targetEntity, typeof( TEntity ), _controller.RockRequestContext.CurrentPerson ) )
+                    {
+                        return BadRequest( "Invalid file." );
                     }
 
                     rockContext.SaveChanges();
@@ -529,6 +551,13 @@ namespace Rock.Rest
                         var errorMessage = entity.ValidationResults.Select( r => r.ErrorMessage ).JoinStrings( ", " );
 
                         return BadRequest( errorMessage );
+                    }
+
+                    // Some file columns may only keep their stored file or name a file the
+                    // caller uploaded. See Create.
+                    if ( !UploadedBinaryFileOnlyAttribute.AreValuesAllowed( rockContext, entity, typeof( TEntity ), _controller.RockRequestContext.CurrentPerson ) )
+                    {
+                        return BadRequest( "Invalid file." );
                     }
 
                     rockContext.SaveChanges();
