@@ -481,7 +481,7 @@ describe("a row", () => {
     // which says nothing about how many are in it, so it is never drawn as 0.
     test("draws its campus alone, in the row and the preview, for a new room the platform has not counted yet", () => {
         // the row type still reads a count as present or absent; null is the platform's not-yet
-        const fresh = room({ channel_id: "c0000004-0000-4000-8000-000000000000", name: "Young Adults", member_count: null as unknown as number });
+        const fresh = room({ channel_id: "c0000004-0000-4000-8000-000000000000", name: "Young Adults", member_count: null });
         const w = mountDirectory({ directory: directory({ rows: [fresh, volunteers] }), previewId: fresh.channel_id });
 
         expect(rowOf(w, fresh.channel_id).findAll("[data-testid='directory-row-meta'] > span").map(part => part.text())).toEqual(["Whole church"]);

@@ -257,7 +257,7 @@ describe("the actions", () => {
 
 describe("shared conversations", () => {
     test("lists the channels and group conversations the two share, each opening its room", async () => {
-        const w = mountPanel(profile({ shared_conversations: [shared("Young adults"), shared("Hike planning", "group")], shared_conversations_total: 2 }));
+        const w = mountPanel(profile({ shared_conversations: [shared("Young adults"), shared("Hike planning", "group")], shared_conversations_more: false }));
 
         const section = w.get("[data-testid='profile-shared']");
         expect(section.get("h3").text().replace(/\s+/g, " ")).toBe("Shared conversations 2");
@@ -269,14 +269,17 @@ describe("shared conversations", () => {
         expect(section.find("[data-testid='profile-shared-more']").exists()).toBe(false);
     });
 
-    test("says how many more in words past the ones listed", () => {
-        const w = mountPanel(profile({ shared_conversations: [shared("Young adults")], shared_conversations_total: 24 }));
+    // The platform lists at most 20 and says only whether there are more, never how many, so a
+    // count past the cap is never shown as if it were exact.
+    test("says there are more past the ones listed, with the heading's count marked as past the cap", () => {
+        const w = mountPanel(profile({ shared_conversations: [shared("Young adults")], shared_conversations_more: true }));
 
-        expect(w.get("[data-testid='profile-shared-more']").text()).toBe("and 23 more");
+        expect(w.get("[data-testid='profile-shared-more']").text()).toBe("and more");
+        expect(w.get("[data-testid='profile-shared'] h3").text().replace(/\s+/g, " ")).toBe("Shared conversations 1+");
     });
 
     test("is left out where they share none, or the platform has not said", () => {
-        const none = mountPanel(profile({ shared_conversations: [], shared_conversations_total: 0 }));
+        const none = mountPanel(profile({ shared_conversations: [], shared_conversations_more: false }));
         expect(none.find("[data-testid='profile-shared']").exists()).toBe(false);
         none.unmount();
 
@@ -285,7 +288,7 @@ describe("shared conversations", () => {
     });
 
     test("is left out of the person's own panel", () => {
-        const w = mountPanel(profile({ is_self: true, shared_conversations: [shared("Young adults")], shared_conversations_total: 1 }));
+        const w = mountPanel(profile({ is_self: true, shared_conversations: [shared("Young adults")], shared_conversations_more: false }));
 
         expect(w.find("[data-testid='profile-shared']").exists()).toBe(false);
     });
