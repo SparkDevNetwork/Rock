@@ -468,6 +468,16 @@
                                       @block="onPanelBlock"
                                       @unblock="onPanelUnblock"
                                       @openRoom="onPanelOpenRoom" />
+
+                        <!-- A phone opens the profile before its person is read: its way back, and a skeleton where the head will be. -->
+                        <PanelHost v-else-if="shownList === 'person' && shell.profile.state.card"
+                                   title="Profile"
+                                   :backLabel="personOrigin === 'members' ? 'Members' : null"
+                                   @close="closePersonPanel"
+                                   @back="onPersonBack">
+                            <span class="chat-sr-only">Loading profile</span>
+                            <Skeleton shape="person" data-testid="profile-skeleton" />
+                        </PanelHost>
                     </Transition>
                 </div>
             </aside>
@@ -885,8 +895,10 @@
     import { provideChatSession } from "./ChatShell/chatSession.partial";
     import { Announcer, provideAnnouncer } from "./ChatShell/ui/announcer.partial";
     import Dialog from "./ChatShell/ui/dialog.partial.obs";
+    import PanelHost from "./ChatShell/ui/panelHost.partial.obs";
     import Scrim from "./ChatShell/ui/scrim.partial.obs";
     import Segmented, { SegmentedOption } from "./ChatShell/ui/segmented.partial.obs";
+    import Skeleton from "./ChatShell/ui/skeleton.partial.obs";
 
     // #region Types
 

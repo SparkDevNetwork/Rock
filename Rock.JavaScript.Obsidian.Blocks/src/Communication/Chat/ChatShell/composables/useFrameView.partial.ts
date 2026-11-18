@@ -269,9 +269,10 @@ export type Frame = MembersPanelViews & ThreadsPanelWiring & Landings & {
 
     /**
      * The profile open as a card moves into the column in full. One opened from the members panel
-     * keeps that list to go back to; any other panel gives the profile its place.
+     * keeps that list to go back to; any other panel gives the profile its place. Focus goes back
+     * to what opened it, while it is drawn, once the profile closes with its card.
      */
-    openPersonPanel: () => void;
+    openPersonPanel: (returnTo?: HTMLElement | null) => void;
 
     /** Back from a profile to the members list it was opened from, with focus on its person's row. */
     onPersonBack: () => Promise<void>;
@@ -389,6 +390,9 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
 
     const threadOrigin = ref<ThreadOrigin>(null);
     const personOrigin = ref<PersonOrigin>(null);
+
+    /** What opened the profile in the column, which focus goes back to when the profile closes with its card. */
+    let personReturn: HTMLElement | null = null;
 
     /** The conversation the open thread belongs to, which the drawer stays open over. */
     let threadChannelId: string | null = null;
@@ -928,7 +932,8 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
         void askFocus([returnTo?.isConnected ? returnTo : null, button, "more", "header"]);
     }
 
-    function openPersonPanel(): void {
+    function openPersonPanel(returnTo: HTMLElement | null = null): void {
+        personReturn = returnTo;
         const origin: PersonOrigin = panelKind.value === "members" ? "members" : null;
         // A thread or another list gives the profile its place; the members list stays to go back to.
         if (origin === null && panelKind.value !== "person") {
@@ -1201,6 +1206,16 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
         leaveMainView();
     });
 
+    // The profile in the column is the open card's person, so it follows the card: a card let go
+    // of, by another room, a read that failed or a person the platform does not list, ends the
+    // column, and with it the members list it was opened from. One rule for every way a card goes,
+    // so nothing leaves the column standing empty.
+    watch(() => shell.value.profile.state.card, card => {
+        if (!card && panelKind.value === "person") {
+            closePanel(personReturn);
+        }
+    });
+
     // The drawer keeps the thread it last drew, so a closing drawer still has its content.
     watch(() => shell.value.threads.state.thread, thread => {
         if (thread) {
@@ -1238,13 +1253,6 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
     // as it is.
     watch(activeChannelId, channelId => {
         const kind = panelKind.value;
-        // A profile is the person's wherever the reader is, but the members list it came from was
-        // the room left, so it no longer stands behind it.
-        if (kind === "person" && personOrigin.value === "members") {
-            personOrigin.value = null;
-            shell.value.members.close();
-        }
-
         if (kind !== "threads" && kind !== "members") {
             return;
         }

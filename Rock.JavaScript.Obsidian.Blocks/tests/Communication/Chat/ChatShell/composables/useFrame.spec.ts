@@ -83,6 +83,11 @@ function fakeShell(calls: Calls): { shell: ChatShell, state: { activeChannelId: 
                 calls.push(`rooms.previewRoom:${channelId}`);
             })
         },
+        // no card open, which a profile in the column would follow
+        profile: {
+            state: { card: null },
+            closeCard: jest.fn()
+        },
         // A channel and a conversation of two with Anna.
         channels: {
             rows: [

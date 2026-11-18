@@ -174,7 +174,7 @@ export function useOverlaysView(dependencies: OverlaysViewDependencies) {
 
     /** The card's Details: the profile moves into the panel column in full, and the card gives way to it. */
     function onCardDetails(): void {
-        openPersonPanel();
+        openPersonPanel(cardAnchor.value);
     }
 
     /** The profile panel's X: focus goes back to the face or name that opened the profile, while it is drawn. */
@@ -466,7 +466,7 @@ export function useOverlaysView(dependencies: OverlaysViewDependencies) {
         shell.value.profile.openCard(personAliasGuid, channelId);
         // A phone has no room for a glance beside the face, so the profile opens full screen at once.
         if (isPhone.value) {
-            openPersonPanel();
+            openPersonPanel(anchor);
         }
     }
 
@@ -576,7 +576,8 @@ export function useOverlaysView(dependencies: OverlaysViewDependencies) {
     }, { flush: "sync" });
 
     // A picker or a card belongs to a message on screen, so another conversation or a full view
-    // over it closes them; so are the details, which belong to the conversation.
+    // over it closes them, and the frame closes a profile in the panel column with its card; so
+    // are the details, which belong to the conversation.
     watch([activeChannelId, mainView], () => {
         closeReactionPicker();
         if (shell.value.profile.state.card) {
