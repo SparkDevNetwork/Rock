@@ -445,7 +445,7 @@ describe("the subtitle", () => {
 // Changing who is in the room. Where Rock lets the reader manage the room's people, an Add people
 // button is pinned to the panel's foot under the list, there from the first frame and under a
 // query too (a group of nine keeps it disabled, "Full, 9 of 9" under it), and each other row
-// gains a More menu: View profile, Message where the person can be messaged, then Remove, or for a
+// gains a More menu: Details (the full profile, never the Rock page), Message where the person can be messaged, then Remove, or for a
 // leader's row seen by someone who is not a Chat Administrator, a lock note in Remove's place. A
 // row being removed dims with "Removing"; a refusal shows under the row in the door's words with a
 // dismiss X.
@@ -548,14 +548,14 @@ describe("the row menu", () => {
         expect(draw().find("[data-testid='member-more']").exists()).toBe(false);
     });
 
-    test("a manager's More on another person's row offers View profile, Message, then Remove from the channel", async () => {
+    test("a manager's More on another person's row offers Details, Message, then Remove from the channel", async () => {
         const w = draw({ canManageMembers: true, isChatAdministrator: true });
 
         const mores = w.findAll("[data-testid='member-more']");
         expect(mores.map(m => m.attributes("aria-label"))).toEqual(["More for Tom Hale", "More for Grace Kim", "More for Anna Reyes", "More for Ben Okafor"]);
 
         await openMenu(w, 2);
-        expect(menuItems()).toEqual(["View profile", "Message", "Remove from young-adults"]);
+        expect(menuItems()).toEqual(["Details", "Message", "Remove from young-adults"]);
         expect(document.querySelector("[data-key='remove']")?.classList.contains("is-danger")).toBe(true);
     });
 
@@ -563,7 +563,7 @@ describe("the row menu", () => {
         const w = draw({ canManageMembers: true, isChannel: false, channelName: "Hike planning", members: [ben, anna, self] });
 
         await openMenu(w, 0);
-        expect(menuItems()).toEqual(["View profile", "Remove from this conversation"]);
+        expect(menuItems()).toEqual(["Details", "Remove from this conversation"]);
     });
 
     test("each item asks for what it says", async () => {
@@ -586,7 +586,7 @@ describe("the row menu", () => {
         const w = draw({ canManageMembers: true, isChatAdministrator: false });
 
         await openMenu(w, 0);
-        expect(menuItems()).toEqual(["View profile", "Message"]);
+        expect(menuItems()).toEqual(["Details", "Message"]);
         expect(document.querySelector("[data-key='remove']")).toBeNull();
         expect(read(document.querySelector("[data-testid='menu-note']")!)).toBe("Only Chat Administrators can remove a leader");
     });
@@ -595,7 +595,7 @@ describe("the row menu", () => {
         const w = draw({ canManageMembers: true, isChatAdministrator: true });
 
         await openMenu(w, 0);
-        expect(menuItems()).toEqual(["View profile", "Message", "Remove from young-adults"]);
+        expect(menuItems()).toEqual(["Details", "Message", "Remove from young-adults"]);
         expect(document.querySelector("[data-testid='menu-note']")).toBeNull();
     });
 });
