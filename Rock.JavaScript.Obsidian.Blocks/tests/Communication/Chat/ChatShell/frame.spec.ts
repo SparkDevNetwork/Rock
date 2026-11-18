@@ -2605,6 +2605,52 @@ describe("the thread drawer", () => {
         expect(calls.filter(call => call.options?.preventScroll !== true)).toEqual([]);
     });
 
+    /** Puts an element at a height on the page, as a browser's layout would. */
+    function placeAt(element: Element, top: number, bottom: number): void {
+        element.getBoundingClientRect = (): DOMRect => ({ x: 0, y: top, top, left: 0, right: 600, bottom, width: 600, height: bottom - top, toJSON: () => ({}) }) as DOMRect;
+    }
+
+    // A thread opened from a list, a mention, a link or a push names no opener in the conversation.
+    // Its root's pill scrolled far above what the feed shows would take focus out of sight, as the
+    // close never scrolls, so focus goes to the conversation's title, which is always in view.
+    test("closes a thread with no opener to the conversation's title when the root is out of the feed's view, without scrolling", async () => {
+        mockThreadPages = { newest: [41, 42], older: [] };
+        const w = await mountBlock(1200);
+        await openFromLabel(w, false);
+        placeAt(w.get("[data-testid='frame-main'] [data-chat-scroller]").element, 100, 700);
+        const root = w.get("[data-testid='frame-main'] [data-message-id='40']").element;
+        placeAt(root, -3000, -2900);
+        placeAt(root.querySelector("[data-testid='thread-summary']")!, -2930, -2905);
+
+        const calls = await closeWatched(w, "x");
+
+        expect(document.activeElement).toBe(w.get("[data-testid='frame-main'] [data-testid='header-title']").element);
+        expect(calls.filter(call => call.options?.preventScroll !== true)).toEqual([]);
+    });
+
+    // The hover bar floats over the conversation from outside its column. Its Reply in thread on a
+    // reply also sent to the conversation names that reply's row as the opener, which the close
+    // gives focus back to, rather than the root's pill far above it.
+    test("closes a thread opened by the bar's Reply in thread back to the row the bar was on", async () => {
+        mockThreadPages = { newest: [41, 42], older: [] };
+        const w = await mountBlock(1200, true);
+        await openWithRoot(w, [storedMessage(41, { parent_id: 40, shown_in_channel: true } as Partial<TimelineMessage>)]);
+        await w.get("[data-testid='frame-main'] [data-hot-id='41']").trigger("pointerover");
+        await new Promise(resolve => setTimeout(resolve, 170));
+        await settle();
+        const reply = w.get("[data-testid='message-box'] [data-testid='action-bar'] button[aria-label='Reply in thread']").element as HTMLElement;
+        reply.focus();
+        reply.click();
+        await settle();
+        await settle();
+        expect(panelOpen(w)).toBe("true");
+
+        const calls = await closeWatched(w, "x");
+
+        expect(document.activeElement).toBe(w.get("[data-testid='frame-main'] [data-message-id='41']").element);
+        expect(calls.filter(call => call.options?.preventScroll !== true)).toEqual([]);
+    });
+
     /** Whether the drawer flashes the reply, the one it landed on. */
     function isReplyFlashing(w: VueWrapper, id: number): boolean {
         return !!w.element.querySelector(`[data-testid='frame-panel'] [data-reply-id='${id}']`)?.classList.contains("is-flashing");
