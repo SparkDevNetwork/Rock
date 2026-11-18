@@ -19,8 +19,9 @@
 // status words and campus line, and one row of actions, Message and Details at equal widths and a
 // square More holding Block, or Unblock for someone blocked. The person's own card offers Chat
 // settings in Message's place and no More. Their contact, badges and the church's template are
-// the profile panel's, which Details opens. Opened from a message, it stands 8 px under the whole
-// row with its left edge on the face, and above the row only where there is no room below. The
+// the profile panel's, which Details opens. Opened from a message's author, it stands 8 px under
+// the whole row with its left edge on the face, and above the row only where there is no room
+// below; opened from a person's chip in the words, it stands 8 px under the chip. The
 // card is a dialog named for the person, takes focus as it opens, and Escape gives focus back to
 // what opened it.
 /* eslint-disable @typescript-eslint/naming-convention */
@@ -299,8 +300,10 @@ describe("the look", () => {
     });
 });
 
-// Opened from a message, the card leaves the message readable: under the whole row, its left edge
-// on the face column, whether the face or the name was pressed; above the row only without room.
+// Each opener says where the card stands. Opened from a message's author, the card leaves the
+// message readable: under the whole row, its left edge on the face column, whether the face or the
+// name was pressed; above the row only without room. A chip in the words is pressed to see that
+// person, so the card stands at the chip.
 describe("where it is placed", () => {
     type Box = { left: number, top: number, width: number, height: number };
 
@@ -308,8 +311,12 @@ describe("where it is placed", () => {
         element.getBoundingClientRect = () => ({ ...box, x: box.left, y: box.top, right: box.left + box.width, bottom: box.top + box.height, toJSON: () => box }) as DOMRect;
     }
 
-    /** Opens the card from a name inside a message row, in a window 1000 by 800; the card is 300 by 180. */
-    async function openFrom(row: Box, layout: "bubble" | "community"): Promise<HTMLElement> {
+    /**
+     * Opens the card from inside a message row, in a window 1000 by 800; the card is 300 by 180.
+     * The author's name opens it under the row; a chip in the words, 200 px in and 30 px down the
+     * row, at the chip.
+     */
+    async function openFrom(row: Box, layout: "bubble" | "community", opener: "author" | "chip" = "author"): Promise<HTMLElement> {
         Object.defineProperty(document.documentElement, "clientWidth", { configurable: true, value: 1000 });
         Object.defineProperty(document.documentElement, "clientHeight", { configurable: true, value: 800 });
         const message = document.createElement("div");
@@ -317,11 +324,13 @@ describe("where it is placed", () => {
         const face = document.createElement("span");
         face.className = layout === "bubble" ? "chat-msg-face" : "chat-cm-gutter";
         const name = document.createElement("button");
-        message.append(face, name);
+        const chip = document.createElement("span");
+        message.append(face, name, chip);
         document.body.append(message);
         boxed(message, row);
         boxed(face, { left: row.left + 16, top: row.top + 4, width: 36, height: 36 });
         boxed(name, { left: row.left + 64, top: row.top + 4, width: 80, height: 18 });
+        boxed(chip, { left: row.left + 200, top: row.top + 30, width: 90, height: 20 });
 
         const sized = jest.spyOn(HTMLElement.prototype, "offsetWidth", "get").mockImplementation(function (this: HTMLElement) {
             return this.classList.contains("chat-pc") ? 300 : 0;
@@ -330,7 +339,7 @@ describe("where it is placed", () => {
             return this.classList.contains("chat-pc") ? 180 : 0;
         });
 
-        const w = mountCard(profile(), { anchor: name });
+        const w = mountCard(profile(), opener === "author" ? { anchor: name, place: "row" } : { anchor: chip, place: "opener" });
         await settle();
         await new Promise(resolve => setTimeout(resolve, 0));
         await settle();
@@ -375,7 +384,7 @@ describe("where it is placed", () => {
             return this.classList.contains("chat-pile") && !!this.closest(".chat-pc-id") ? 20 : 0;
         });
 
-        const w = mountCard(profile(), { anchor: who, face });
+        const w = mountCard(profile(), { anchor: who, face, place: "panel" });
         await settle();
         await new Promise(resolve => setTimeout(resolve, 0));
         await settle();
@@ -394,6 +403,13 @@ describe("where it is placed", () => {
 
         expect(placed.style.left).toBe("316px");
         expect(placed.style.top).toBe(`${560 - 8 - 180}px`);
+    });
+
+    test.each(["bubble", "community"] as const)("from a chip in the words in the %s layout it stands 8 px under the chip, its left edge on the chip's", async layout => {
+        const placed = await openFrom({ left: 300, top: 200, width: 600, height: 60 }, layout, "chip");
+
+        expect(placed.style.left).toBe("500px");
+        expect(placed.style.top).toBe(`${200 + 30 + 20 + 8}px`);
     });
 });
 

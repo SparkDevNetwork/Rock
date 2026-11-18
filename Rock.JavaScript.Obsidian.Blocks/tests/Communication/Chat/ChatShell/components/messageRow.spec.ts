@@ -1924,17 +1924,16 @@ describe("the reactions row", () => {
         expect(w.emitted("messageAction")).toEqual([[{ kind: "react", message: target, code: "heart" }]]);
     });
 
-    // The add chip goes with the last chip a choice in the picker takes away, so the picker is
-    // placed on what stays, the bubble or a channel's whole row, and the add chip is only where
-    // focus comes back to.
-    test.each([["a direct message", false, ".chat-bubble"], ["a channel", true, null]] as const)("its add chip asks for the picker placed on the message in %s, focus coming back to the add chip", async (_kind, isChannel, bubble) => {
+    // The add chip is what the person pressed and is looking at, so the message box's tray stands
+    // at it, and focus comes back to it; the box keeps to the message should the chip go.
+    test.each([["a direct message", false], ["a channel", true]] as const)("its add chip asks for the picker placed at the add chip in %s, focus coming back to it", async (_kind, isChannel) => {
         const w = draw({ message: message({ reactions: [heart] } as Partial<TimelineMessage>), isChannel, reactionHost: host([]) });
 
         await w.get("[data-testid='reaction-add']").trigger("click");
 
         const [request] = (w.emitted("messageAction") ?? [])[0] as [{ kind: string, anchor: HTMLElement, opener?: HTMLElement, opening?: unknown }];
         expect(request.kind).toBe("openPicker");
-        expect(request.anchor).toBe(bubble ? w.get(bubble).element : root(w));
+        expect(request.anchor).toBe(w.get("[data-testid='reaction-add']").element);
         expect(request.opener).toBe(w.get("[data-testid='reaction-add']").element);
         expect(request.opening).toBeUndefined();
     });
@@ -2041,10 +2040,11 @@ describe("the reactions row", () => {
 });
 
 // A message's author, by name or face, and a person's chip in its body each open that person's
-// profile card: the row asks for it as one more message action, naming the person and the element
-// the card opens beside. The room's @all chip names no one, so it opens nothing.
+// profile card: the row asks for it as one more message action, naming the person, the element
+// the card opens from and where it stands: under the row for the author, at the chip for a chip.
+// The room's @all chip names no one, so it opens nothing.
 describe("the profile card's openers", () => {
-    type PersonRequest = { kind: string, personAliasGuid: string, anchor: HTMLElement };
+    type PersonRequest = { kind: string, personAliasGuid: string, anchor: HTMLElement, place: string };
 
     function personRequests(wrapper: VueWrapper): PersonRequest[] {
         return ((wrapper.emitted("messageAction") ?? []) as Array<[PersonRequest]>).map(([request]) => request).filter(request => request.kind === "person");
@@ -2068,6 +2068,7 @@ describe("the profile card's openers", () => {
         expect(requests.map(r => r.personAliasGuid)).toEqual([anna, anna]);
         expect(requests[0].anchor).toBe(name.element);
         expect(requests[1].anchor).toBe(face.element);
+        expect(requests.map(r => r.place)).toEqual(["row", "row"]);
 
         // a row still sending is not stored yet, so it names no one to open
         const sending = mount(MessageRow, inSession({
@@ -2118,6 +2119,7 @@ describe("the profile card's openers", () => {
         const requests = personRequests(wrapper);
         expect(requests.map(r => r.personAliasGuid)).toEqual([mentionLee.person_alias_guid]);
         expect(requests[0].anchor).toBe(lee.element);
+        expect(requests[0].place).toBe("opener");
     });
 });
 

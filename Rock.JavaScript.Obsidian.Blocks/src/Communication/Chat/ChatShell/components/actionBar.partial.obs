@@ -368,19 +368,35 @@ img.chat-tool-glyph {
     /** The chat's root, which the box is drawn in; null where it is drawn alone, in place. */
     const overlayHost = ref<HTMLElement | null>(null);
 
+    /** The block's grown box while it is this column's; read as the box is placed, so set before it. */
+    const held = computed(() => {
+        const box = bars?.held.value ?? null;
+        return box && box.column === bars?.kindOf(guard.value) ? box : null;
+    });
+
+    /**
+     * The control outside the box its grown form stands at, as the smile-plus under a message's
+     * chips, which the person pressed and is looking at; null where the box grew from its own place
+     * in the row, as the bar's Add reaction asks, or from what holds that place, its bubble or row.
+     */
+    const control = computed((): HTMLElement | null => {
+        const anchor = held.value?.anchor ?? null;
+        return anchor && guard.value && !anchor.contains(guard.value) ? anchor : null;
+    });
+
     /**
      * The box's floating: beside the bubble, away from the face, its top on the bubble's top; over
      * the bubble's top at its own edge, or under the bubble, only where the column has no room
      * beside for even the tools alone. A channel's at its row's top right, from the edge where its
-     * top goes. Kept inside its column. It is open, on the block's stack of floating layers, only
-     * while it is the tray or the picker: Escape, a press elsewhere or Tab past its end then give
-     * the bar back.
+     * top goes. Grown by a control outside it, at that control instead. Kept inside its column. It
+     * is open, on the block's stack of floating layers, only while it is the tray or the picker:
+     * Escape, a press elsewhere or Tab past its end then give the bar back.
      */
     const pop = usePopover(guard, boxElement, {
         placement: placementOf,
-        offset: () => props.isCommunity ? 0 : side.value === "beside" ? besideGapPx : overGapPx,
+        offset: () => control.value ? overGapPx : props.isCommunity ? 0 : side.value === "beside" ? besideGapPx : overGapPx,
         fallbackPlacements: fallbacksOf,
-        virtualAnchor: () => props.isCommunity ? channelEdge() : hostElement()?.getBoundingClientRect() ?? null,
+        virtualAnchor: anchorBox,
         boundary: columnElement,
         isSheet: () => session.isPhone.value,
         returnTo: returnTarget,
@@ -390,12 +406,6 @@ img.chat-tool-glyph {
     // #endregion Values
 
     // #region Computed Values
-
-    /** The block's grown box while it is this column's. */
-    const held = computed(() => {
-        const box = bars?.held.value ?? null;
-        return box && box.column === bars?.kindOf(guard.value) ? box : null;
-    });
 
     const layer = computed((): BoxLayer => held.value?.layer ?? "bar");
 
@@ -654,6 +664,25 @@ img.chat-tool-glyph {
         return guard.value?.parentElement?.parentElement ?? null;
     }
 
+    /**
+     * What the box is placed against: the control that grew it while that control is drawn, else
+     * its message, the box going by the message's bubble or row where the control has gone, as a
+     * chip row another person's change takes away; a channel's bar hangs from its row's edge.
+     */
+    function anchorBox(): DOMRect | null {
+        const at = control.value;
+        if (at?.isConnected) {
+            return at.getBoundingClientRect();
+        }
+
+        return props.isCommunity && !at ? channelEdge() : hostElement()?.getBoundingClientRect() ?? null;
+    }
+
+    /** A control under a message stands at the message's start, but under the reader's own bubble at its end. */
+    function controlEdge(vertical: "top" | "bottom"): PopoverPlacement {
+        return props.isOwn && !props.isCommunity ? `${vertical}-end` : `${vertical}-start`;
+    }
+
     /** The scrolling column the box's message is in, which the box is kept inside. */
     function columnElement(): HTMLElement | null {
         return guard.value?.closest<HTMLElement>("[data-chat-scroller]") ?? null;
@@ -683,6 +712,10 @@ img.chat-tool-glyph {
     }
 
     function placementOf(): PopoverPlacement {
+        if (control.value) {
+            return controlEdge("top");
+        }
+
         if (props.isCommunity) {
             return "bottom-end";
         }
@@ -699,9 +732,13 @@ img.chat-tool-glyph {
      * and a bar fitted beside its bubble stays there; over the bubble it goes under it where the
      * column's top leaves no room. The tray and the picker, grown from the bar, grow up from where
      * a channel's bar stood, or up beside a bubble's rather than down, else over or under the
-     * bubble, as room allows.
+     * bubble, as room allows. Grown at a control, under it where there is no room over it.
      */
     function fallbacksOf(): PopoverPlacement[] {
+        if (control.value) {
+            return [controlEdge("bottom")];
+        }
+
         if (props.isCommunity) {
             return layer.value === "bar" ? [] : ["top-end"];
         }
@@ -863,8 +900,9 @@ img.chat-tool-glyph {
     // Each swap is placed at its new size before it paints, and only once that place is drawn
     // revealed from the old edges; measured sooner, a box keeping its far edge, beside the reader's
     // own bubble or a channel row's end, would reveal from the wrong side and jump. The bar given
-    // back is fitted to its message again.
-    watch(layer, async next => {
+    // back is fitted to its message again. A box that moved, to the control that grew it or from
+    // there back to the bar's place, shares no edges with where it was, so it is simply there.
+    watch([layer, control], async ([next, at], [, wasAt]) => {
         const box = boxElement.value;
         const before = box?.getBoundingClientRect();
         await nextTick();
@@ -875,7 +913,7 @@ img.chat-tool-glyph {
             await pop.place();
         }
 
-        if (box && before && box === boxElement.value) {
+        if (box && before && box === boxElement.value && at === wasAt) {
             reveal(box, before);
         }
     });

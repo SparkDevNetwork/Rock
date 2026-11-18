@@ -781,16 +781,16 @@ img.chat-sheet-glyph {
 
     // #region Event Handlers
 
-    /** Asks for the author's card beside the name or face pressed. */
+    /** Asks for the author's card under the whole row, from the name or face pressed. */
     function onAuthor(event: MouseEvent): void {
         if (authorGuid.value) {
-            onPerson(authorGuid.value, event.currentTarget as HTMLElement);
+            emit("messageAction", { kind: "person", personAliasGuid: authorGuid.value, anchor: event.currentTarget as HTMLElement, place: "row" });
         }
     }
 
-    /** Asks for a person's card, from the author or a chip in the body, beside what was pressed. */
+    /** Asks for the card of a person a chip in the body names, at the chip pressed. */
     function onPerson(personAliasGuid: string, anchor: HTMLElement): void {
-        emit("messageAction", { kind: "person", personAliasGuid, anchor });
+        emit("messageAction", { kind: "person", personAliasGuid, anchor, place: "opener" });
     }
 
     /** The thread pill under a root and the label over a reply also sent: the thread the message belongs to. */
@@ -805,8 +805,7 @@ img.chat-sheet-glyph {
         message: () => props.message,
         request: (request: MessageActionRequest) => emit("messageAction", request),
         openThread: place => emit("openThread", place),
-        pickerAnchor,
-        messageAnchor
+        pickerAnchor
     });
 
     /**
@@ -866,8 +865,8 @@ img.chat-sheet-glyph {
     }
 
     /**
-     * The message a picker asked for by a control that can go is placed on: its bubble, or the
-     * whole row in a channel, which draws no bubble, so the picker clears the name and the text.
+     * The message a picker asked for from the sheet is placed on: its bubble, or the whole row in
+     * a channel, which draws no bubble, so the picker clears the name and the text.
      */
     function messageAnchor(): HTMLElement | null {
         return rowElement.value?.querySelector<HTMLElement>(".chat-bubble") ?? rowElement.value ?? null;

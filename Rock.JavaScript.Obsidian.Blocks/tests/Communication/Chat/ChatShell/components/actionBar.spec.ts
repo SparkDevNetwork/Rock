@@ -1431,3 +1431,151 @@ describe("growing beside the reader's own bubble", () => {
         expect(animate.mock.calls[0][0][0]).toEqual({ clipPath: "inset(0px 0px 6px 120px)" });
     });
 });
+
+// The box's tray opened by a control outside it, as the smile-plus under a message's chips,
+// stands at that control, from its start, over it where there is room; the hover bar's own Add
+// reaction keeps growing the box where the bar stands. A control that goes while the tray is up
+// leaves the tray by its message rather than at the window's corner.
+describe("grown from a control outside the box", () => {
+    const animate = jest.fn();
+    let sheet: HTMLStyleElement;
+    const sizes: Record<string, [number, number]> = { bar: [200, 38], tray: [320, 44] };
+
+    const offsetWidth = Object.getOwnPropertyDescriptor(HTMLElement.prototype, "offsetWidth");
+    const offsetHeight = Object.getOwnPropertyDescriptor(HTMLElement.prototype, "offsetHeight");
+    const rectOf = Element.prototype.getBoundingClientRect;
+
+    function sizeOf(element: HTMLElement): [number, number] {
+        return element.getAttribute("data-testid") === "message-box" ? sizes[element.getAttribute("data-layer") ?? "bar"] : [0, 0];
+    }
+
+    function rect(left: number, right: number, top: number, bottom: number): DOMRect {
+        return { x: left, y: top, top, left, right, bottom, width: right - left, height: bottom - top, toJSON: () => ({}) } as DOMRect;
+    }
+
+    beforeEach(() => {
+        animate.mockClear();
+        (HTMLElement.prototype as unknown as { animate: unknown }).animate = animate;
+        sheet = document.createElement("style");
+        sheet.textContent = ".chat-box { --chat-d-move: 220ms; }";
+        document.head.append(sheet);
+        Object.defineProperty(HTMLElement.prototype, "offsetWidth", { configurable: true, get(this: HTMLElement) { return sizeOf(this)[0]; } });
+        Object.defineProperty(HTMLElement.prototype, "offsetHeight", { configurable: true, get(this: HTMLElement) { return sizeOf(this)[1]; } });
+        Element.prototype.getBoundingClientRect = function (this: Element): DOMRect {
+            if (this instanceof HTMLElement && this.getAttribute("data-testid") === "message-box") {
+                const [width, height] = sizeOf(this);
+                const left = parseFloat(this.style.left) || 0;
+                const top = parseFloat(this.style.top) || 0;
+                return rect(left, left + width, top, top + height);
+            }
+            return rectOf.call(this);
+        };
+        Object.defineProperty(document.documentElement, "clientWidth", { configurable: true, value: 1200 });
+        Object.defineProperty(document.documentElement, "clientHeight", { configurable: true, value: 800 });
+    });
+
+    afterEach(() => {
+        delete (HTMLElement.prototype as unknown as { animate?: unknown }).animate;
+        sheet.remove();
+        Object.defineProperty(HTMLElement.prototype, "offsetWidth", offsetWidth as PropertyDescriptor);
+        Object.defineProperty(HTMLElement.prototype, "offsetHeight", offsetHeight as PropertyDescriptor);
+        Element.prototype.getBoundingClientRect = rectOf;
+        delete (document.documentElement as unknown as Record<string, unknown>).clientWidth;
+        delete (document.documentElement as unknown as Record<string, unknown>).clientHeight;
+    });
+
+    async function settled(): Promise<void> {
+        for (let i = 0; i < 40; i++) {
+            await settle();
+        }
+    }
+
+    /**
+     * Draws another person's bubble at 60 to 500 across and 200 to 260 down a 900 by 600 column,
+     * the bar beside it, and the smile-plus under its chips at 70 to 98 across, 266 to 290 down.
+     */
+    async function drawn(): Promise<{ bars: ActionBars, guard: HTMLElement, chipAdd: HTMLElement }> {
+        const scroller = document.createElement("div");
+        scroller.setAttribute("data-chat-scroller", "");
+        scroller.getBoundingClientRect = () => rect(0, 900, 0, 600);
+        Object.defineProperty(scroller, "clientWidth", { value: 900 });
+        Object.defineProperty(scroller, "clientHeight", { value: 600 });
+        const host = document.createElement("div");
+        const chipAdd = document.createElement("button");
+        chipAdd.getBoundingClientRect = () => rect(70, 98, 266, 290);
+        scroller.append(host, chipAdd);
+        document.body.append(scroller);
+
+        let bars: ActionBars | null = null;
+        const shell = shallowRef({
+            reactions: { favorites, state: reactive({ catalog: null, recents: [] }), loadCatalog: jest.fn(async () => null), recordRecent: jest.fn(), toggleCode: jest.fn() },
+            timelines: { state: () => ({ messages: [] }) },
+            threads: { state: { thread: null } }
+        } as unknown as ChatShell);
+        const Host = defineComponent({
+            props: { id: { type: Number, default: 42 } },
+            setup(props) {
+                bars = provideActionBars(shell, "Cedar Hill", () => undefined);
+                return () => h(ActionBar, { message: message({ id: props.id }), isShown: true, favorites });
+            }
+        });
+        wrapper = mount(Host, { attachTo: host });
+        await settle();
+
+        const guard = document.querySelector<HTMLElement>("[data-testid='action-bar-guard']") as HTMLElement;
+        (guard.parentElement?.parentElement as HTMLElement).getBoundingClientRect = () => rect(60, 500, 200, 260);
+        await wrapper.setProps({ id: 43 });
+        await settled();
+        return { bars: bars as unknown as ActionBars, guard, chipAdd };
+    }
+
+    function boxAt(): [string, string] {
+        const box = document.querySelector<HTMLElement>("[data-testid='message-box']") as HTMLElement;
+        return [box.style.left, box.style.top];
+    }
+
+    test("stands over that control, from its start, 4px off it", async () => {
+        const { bars, chipAdd } = await drawn();
+        expect(boxAt()).toEqual(["506px", "200px"]);
+
+        bars.openReactionPicker("conversation", "c1", message({ id: 43 }), chipAdd, chipAdd);
+        await settled();
+
+        expect(boxAt()).toEqual(["70px", `${266 - 4 - 44}px`]);
+    });
+
+    // Revealed from the bar's edges beside the bubble, a box now far from them would sweep in
+    // from nowhere; it moved, so it is simply there, and so is the bar it gives back.
+    test("appears there whole, as the bar it gives back does beside the bubble, neither revealed from the other's edges", async () => {
+        const { bars, chipAdd } = await drawn();
+
+        bars.openReactionPicker("conversation", "c1", message({ id: 43 }), chipAdd, chipAdd);
+        await settled();
+        bars.closeReactionPicker();
+        await settled();
+
+        expect(boxAt()).toEqual(["506px", "200px"]);
+        expect(animate).not.toHaveBeenCalled();
+    });
+
+    test("the bar's own Add reaction still grows the box where the bar stands", async () => {
+        const { bars, guard } = await drawn();
+
+        bars.openReactionPicker("conversation", "c1", message({ id: 43 }), guard, guard);
+        await settled();
+
+        expect(boxAt()).toEqual(["506px", "200px"]);
+    });
+
+    test("stays by its message, not at the window's corner, once that control goes", async () => {
+        const { bars, chipAdd } = await drawn();
+        bars.openReactionPicker("conversation", "c1", message({ id: 43 }), chipAdd, chipAdd);
+        await settled();
+
+        chipAdd.remove();
+        window.dispatchEvent(new Event("resize"));
+        await settled();
+
+        expect(boxAt()).toEqual(["60px", `${200 - 4 - 44}px`]);
+    });
+});
