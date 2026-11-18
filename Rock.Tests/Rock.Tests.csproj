@@ -323,6 +323,7 @@
     <Compile Include="Security\PersonTokenScopeTests.cs" />
     <Compile Include="Security\SecretBearingModelTests.cs" />
     <Compile Include="Security\StringValueValidatorTests.cs" />
+    <Compile Include="Security\TransportSecretAttributeTests.cs" />
     <Compile Include="Slingshot\PersonCsvMapperTest.cs" />
     <Compile Include="Slingshot\PersonPhoneCsvMapperTest.cs" />
     <Compile Include="UnitTestInitializer.cs" />

@@ -2764,6 +2764,7 @@
     <Compile Include="Utility\RockCurrencyCodeInfo.cs" />
     <Compile Include="Financial\FinancialStatementTemplateReportSettings.cs" />
     <Compile Include="Utility\RockDynamic.cs" />
+    <Compile Include="Utility\SecretAttributeEncryptor.cs" />
     <Compile Include="Cms\StructuredContent\StructuredContentHelper.cs" />
     <Compile Include="Utility\RockHtmlMarkupFormatter.cs" />
     <Compile Include="Configuration\IDatabaseConfiguration.cs" />
