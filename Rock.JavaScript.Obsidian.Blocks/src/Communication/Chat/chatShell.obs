@@ -332,7 +332,10 @@
                         <Segmented :options="activityTabs" :modelValue="activityTab" optionTestId="activity-tab" hasAutofocus aria-label="Activity" @update:modelValue="onActivityTab($event as ActivityTab)" />
                     </div>
 
-                    <!-- One panel gives way to the next in one crossfade, the old laid over the new and out of reach; a profile is the card's, opened in full. -->
+                    <!--
+                        One panel gives way to the next in one crossfade, the old laid over the new and out of reach; a profile is the card's, opened in full.
+                        A phone opens the profile before its person is read, drawing its way back and a skeleton where the head will be.
+                    -->
                     <Transition name="chat-panel-swap" @beforeLeave="onPanelLeave">
                         <ThreadsPanel v-if="shownList === 'threads'"
                                       :key="shownPanel ?? undefined"
@@ -477,7 +480,6 @@
                                       @unblock="onPanelUnblock"
                                       @openRoom="onPanelOpenRoom" />
 
-                        <!-- A phone opens the profile before its person is read: its way back, and a skeleton where the head will be. -->
                         <PanelHost v-else-if="shownList === 'person' && shell.profile.state.card"
                                    title="Profile"
                                    :backLabel="personOrigin === 'members' ? 'Members' : null"
