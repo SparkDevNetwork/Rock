@@ -89,15 +89,20 @@ namespace Rock.Plugin.HotFixes
         /// </summary>
         public void JPH_MakeNextGenCheckInTheDefault_Up()
         {
-            // Move classic check-in onto the `checkin-classic` prefix first, freeing up `checkin` for Next-Gen.
+            // Move classic check-in onto the `checkin-classic` prefix first, freeing up `checkin` for Next-Gen. The
+            // guard skips the swap when it has already been made, so a re-run doesn't stack both onto `checkin-classic`.
             Sql( @"
-UPDATE [PageRoute]
-SET [Route] = STUFF([Route], 1, LEN('checkin'), 'checkin-classic')
-WHERE [Route] = 'checkin' OR [Route] LIKE 'checkin/%';
+IF EXISTS ( SELECT 1 FROM [PageRoute] WHERE [Route] = 'nextgen-checkin' OR [Route] LIKE 'nextgen-checkin/%' )
+    AND NOT EXISTS ( SELECT 1 FROM [PageRoute] WHERE [Route] = 'checkin-classic' OR [Route] LIKE 'checkin-classic/%' )
+BEGIN
+    UPDATE [PageRoute]
+    SET [Route] = STUFF([Route], 1, LEN('checkin'), 'checkin-classic')
+    WHERE [Route] = 'checkin' OR [Route] LIKE 'checkin/%';
 
-UPDATE [PageRoute]
-SET [Route] = STUFF([Route], 1, LEN('nextgen-checkin'), 'checkin')
-WHERE [Route] = 'nextgen-checkin' OR [Route] LIKE 'nextgen-checkin/%';" );
+    UPDATE [PageRoute]
+    SET [Route] = STUFF([Route], 1, LEN('nextgen-checkin'), 'checkin')
+    WHERE [Route] = 'nextgen-checkin' OR [Route] LIKE 'nextgen-checkin/%';
+END" );
 
             var nextGenCheckInLink = @"<li class=""list-group-item""><a href=""~/nextgen-checkin"">Check-in</a></li>";
             var checkInLink = @"<li class=""list-group-item""><a href=""~/checkin"">Check-in</a></li>";
@@ -149,15 +154,20 @@ WHERE [BlockId] = @BlockId
     AND {targetColumn} LIKE '%{checkInLink}%';" );
 
             // Move Next-Gen check-in back onto `nextgen-checkin` first, freeing up `checkin` for Classic. This runs
-            // before the Classic restore so the reclaimed `checkin` routes below aren't re-caught by this statement.
+            // before the Classic restore so the reclaimed `checkin` routes below aren't re-caught by this statement. The
+            // guard skips the swap when it has already been undone.
             Sql( @"
-UPDATE [PageRoute]
-SET [Route] = STUFF([Route], 1, LEN('checkin'), 'nextgen-checkin')
-WHERE [Route] = 'checkin' OR [Route] LIKE 'checkin/%';
+IF EXISTS ( SELECT 1 FROM [PageRoute] WHERE [Route] = 'checkin-classic' OR [Route] LIKE 'checkin-classic/%' )
+    AND NOT EXISTS ( SELECT 1 FROM [PageRoute] WHERE [Route] = 'nextgen-checkin' OR [Route] LIKE 'nextgen-checkin/%' )
+BEGIN
+    UPDATE [PageRoute]
+    SET [Route] = STUFF([Route], 1, LEN('checkin'), 'nextgen-checkin')
+    WHERE [Route] = 'checkin' OR [Route] LIKE 'checkin/%';
 
-UPDATE [PageRoute]
-SET [Route] = STUFF([Route], 1, LEN('checkin-classic'), 'checkin')
-WHERE [Route] = 'checkin-classic' OR [Route] LIKE 'checkin-classic/%';" );
+    UPDATE [PageRoute]
+    SET [Route] = STUFF([Route], 1, LEN('checkin-classic'), 'checkin')
+    WHERE [Route] = 'checkin-classic' OR [Route] LIKE 'checkin-classic/%';
+END" );
         }
 
         #endregion JPH_MakeNextGenCheckInTheDefault
