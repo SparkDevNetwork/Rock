@@ -410,6 +410,14 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
     let threadChannelId: string | null = null;
 
     /**
+     * The part of a message in the conversation that opened the drawer, its pill, its "Replied to
+     * a thread" label or its bar's Reply in thread, which the drawer's close gives focus back to.
+     * Null when the thread came from a list, a mention, a link or a push, or the click left focus
+     * where it was.
+     */
+    let threadOpener: HTMLElement | null = null;
+
+    /**
      * Counts every thread opened or left, so a landing on a reply that awaited an older page can
      * tell the drawer it started in is gone and stop.
      */
@@ -1008,9 +1016,17 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
      * landing it carries is the landing's to make.
      */
     async function openThreadDrawer(channelId: string, rootId: number, origin: ThreadOrigin): Promise<void> {
+        // Read before anything moves focus into the drawer: a message's part in the conversation
+        // is where the reader was, and the newest one pressed is where they come back to.
+        const active = document.activeElement;
+        const opener = active instanceof HTMLElement && !!mainElement.value?.contains(active) && !!active.closest("[data-message-id]") ? active : null;
+
         if (panelKind.value === "thread" && shell.value.threads.isOpen(channelId, rootId)) {
+            threadOpener = opener ?? threadOpener;
             return shell.value.threads.openThread(channelId, rootId);
         }
+
+        threadOpener = opener;
 
         if (origin === null && (panelKind.value === "threads" || panelKind.value === "activity" || panelKind.value === "members")) {
             releasePanel();
@@ -1041,16 +1057,20 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
     }
 
     /**
-     * Closes the drawer. Focus returns to the thread pill that opened it, else the root message,
-     * else the conversation's title.
+     * Closes the drawer. Focus returns to what in the conversation opened it, else the root's
+     * thread pill, else the root message, else the conversation's title. The conversation stays
+     * where the reader left it: a reply also sent to it can sit a long way below its root, and
+     * the focus coming back never scrolls the feed to reach the root.
      */
     function closeThreadDrawer(): void {
         const rootId = drawnThread.value?.rootId;
+        const opener = threadOpener;
+        threadOpener = null;
         releasePanel();
         finishClosing();
 
         const message = mainElement.value?.querySelector<HTMLElement>(`[data-message-id='${rootId}']`);
-        void askFocus([message ? { stop: "thread-summary", within: message } : null, message, "header"], { within: "main" });
+        void askFocus([opener, message ? { stop: "thread-summary", within: message } : null, message, "header"], { within: "main", preventScroll: true });
     }
 
     /** Keeps what the column drew until it has finished narrowing, then lets it go. */
