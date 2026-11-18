@@ -5,13 +5,6 @@
          data-testid="chat-shell"
          :data-phase="shell.state.phase"
          :data-phone="isPhone ? 'true' : 'false'">
-        <!--
-            The page's one announcement of its start, mounted empty so each change is heard: outside
-            the frame, so it outlives the frame's swap for a refusal's notice, and outside every veil,
-            inert and busy part of the page, which a screen reader would not read or would hold back.
-        -->
-        <span class="chat-sr-only" role="status" aria-live="polite" data-testid="start-status">{{ startAnnouncement }}</span>
-
         <BirthdatePrompt v-if="isPromptShown"
                          :message="birthdateMessage"
                          :isSaving="isSavingBirthdate"
@@ -1335,6 +1328,15 @@
     // #endregion Functions
 
     // #region Watchers
+
+    // The start speaks through the chat's one voice, whose regions sit at the root: outside the
+    // frame, so they outlive its swap for a refusal's notice, and outside every veil, inert and busy
+    // part, which a screen reader would not read or would hold back. Each change is said once.
+    watch(startAnnouncement, words => {
+        if (words) {
+            announcer?.announce(words);
+        }
+    });
 
     // Before the new feed mounts, which reads it once.
     watch(activeChannelId, (now, before) => {
