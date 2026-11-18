@@ -2415,10 +2415,28 @@ describe("the history skeleton", () => {
         expect(direct.findAll("[data-testid='skeleton-row']")).toHaveLength(5);
     });
 
-    test("never shows for a room whose first page is already there", () => {
-        const wrapper = draw({ timeline: timeline([message(1, anna, at(14, 0))]) });
+    // A switch, a Browse preview or a found conversation mounts its feed once the first load has
+    // revealed the column: a page there lands in tens of milliseconds, so a skeleton would only
+    // flash. The feed stays blank until its rows are drawn, then they rise in.
+    test("never shows on a switch: a feed mounted once the first load revealed the column draws nothing until its page lands", async () => {
+        const state = timeline([], { isLoaded: false });
+        const wrapper = draw({ timeline: state, isEntering: true }, { isMainRevealed: true });
 
         expect(wrapper.find("[data-testid='history-skeleton']").exists()).toBe(false);
+        expect(wrapper.findAll("[data-message-id]")).toHaveLength(0);
+
+        state.isLoaded = true;
+        state.messages.push(message(1, anna, at(14, 0)));
+        await nextTick();
+        expect(wrapper.find("[data-testid='history-skeleton']").exists()).toBe(false);
+        expect(wrapper.findAll("[data-message-id]")).toHaveLength(1);
+    });
+
+    test("never shows for a room whose first page is already there, whose rows are drawn on the first render", () => {
+        const wrapper = draw({ timeline: timeline([message(1, anna, at(14, 0))]), isEntering: true }, { isMainRevealed: true });
+
+        expect(wrapper.find("[data-testid='history-skeleton']").exists()).toBe(false);
+        expect(wrapper.findAll("[data-message-id]")).toHaveLength(1);
     });
 });
 
