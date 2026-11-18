@@ -458,4 +458,52 @@ describe("the popover surface", () => {
         expect(document.activeElement).toBe(find("anchor"));
         wrapper.unmount();
     });
+
+    // A sheet's own trap would put focus back on what opened it after the popover had placed it,
+    // so the popover, which knows where its close leaves the person, is the one owner of focus.
+    const NamedReturnHost = defineComponent({
+        setup(_props, { expose }) {
+            const anchor = ref<HTMLElement>();
+            const floating = ref<HTMLElement>();
+            const other = ref<HTMLElement>();
+            const pop = usePopover(anchor, floating, { isSheet: () => true, returnTo: () => other.value ?? null });
+            expose({ pop });
+            return () => [
+                h("button", { ref: anchor, "data-testid": "anchor" }, "open"),
+                h("button", { ref: other, "data-testid": "other" }, "other"),
+                h(Popover, { popover: pop, label: "Things" }, {
+                    default: () => h("button", { "data-testid": "inside" }, "inside"),
+                    pages: () => h("div", { "data-testid": "page" }, "a page")
+                })
+            ];
+        }
+    });
+
+    it("as a sheet, leaves focus where the popover gives it back on close, the sheet's trap returning none of its own", async () => {
+        const wrapper = mount(NamedReturnHost, { attachTo: document.body });
+        const pop = (wrapper.vm as unknown as { pop: PopoverControl }).pop;
+        find("anchor").focus();
+        await pop.open();
+        await settle();
+        find("inside").focus();
+
+        const scrim = find("scrim");
+        press(scrim);
+        scrim.click();
+        await settle();
+
+        expect(pop.isOpen.value).toBe(false);
+        expect(document.activeElement).toBe(find("other"));
+        wrapper.unmount();
+    });
+
+    it("as a sheet, draws the pages its caller gives in the sheet's own place for pages", async () => {
+        const wrapper = mount(NamedReturnHost, { attachTo: document.body });
+        const pop = (wrapper.vm as unknown as { pop: PopoverControl }).pop;
+        await pop.open();
+        await settle();
+
+        expect(find("sheet").querySelector("[data-testid='page']")).not.toBeNull();
+        wrapper.unmount();
+    });
 });
