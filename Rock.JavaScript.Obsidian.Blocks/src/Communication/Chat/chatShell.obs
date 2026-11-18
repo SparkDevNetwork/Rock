@@ -133,7 +133,7 @@
                                  :pending="shell.sender.pending(activeChannelId)"
                                  :isPersonLeader="activeRow?.is_leader ?? false"
                                  :readCursor="activeRow?.read_cursor ?? null"
-                                 :isChannel="activeKind === 'channel'"
+                                 :isChannel="look === 'community'"
                                  :isDirectMessage="isActiveDirectMessage"
                                  :isEntering="isFeedEntering"
                                  :isCovered="!!mainView"

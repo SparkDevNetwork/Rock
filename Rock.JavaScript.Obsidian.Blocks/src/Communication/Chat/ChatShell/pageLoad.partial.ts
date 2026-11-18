@@ -295,6 +295,13 @@ export type PageRevealState = {
     kind: RoomLook;
 
     /**
+     * The room opened last, whose look `kind` is, or null when none was remembered. While that room
+     * has neither facts nor a sidebar row its feed draws in this look, so it is laid out once; any
+     * other room knows nothing of its look yet and draws a channel's.
+     */
+    room: string | null;
+
+    /**
      * Whether the skeleton's marks are drawn: from the first paint, with no wait, until both regions
      * reveal, so a quick load swaps them for the list in one step and never shows an empty column.
      */
@@ -381,13 +388,14 @@ export const pageRevealKey: InjectionKey<PageRevealView> = Symbol("chatPageRevea
 /**
  * Creates the first load's reveal; the skeleton is drawn from now, the ceiling runs from sign-in.
  *
- * @param options The look to draw before anything is known.
+ * @param options The look to draw before anything is known, and the room it was remembered for.
  *
  * @returns The reveal.
  */
-export function createPageReveal(options: { kind: RoomLook }): PageReveal {
+export function createPageReveal(options: { kind: RoomLook, room?: string | null }): PageReveal {
     const state = reactive<PageRevealState>({
         kind: options.kind,
+        room: options.room ?? null,
         isSkeletonShown: true,
         isSidebarRevealed: false,
         isMainRevealed: false,

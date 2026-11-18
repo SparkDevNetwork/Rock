@@ -23,7 +23,7 @@
 import { computed, Ref } from "vue";
 import { FeedLayout } from "../feedLayout.partial";
 import type { ChatShell } from "../shell.partial";
-import { joinNames } from "../stores/channelStore.partial";
+import { joinNames, startedTitle } from "../stores/channelStore.partial";
 import { ChannelFacts, ChatPerson, RoomKind, SidebarRow } from "../types.partial";
 import { rowPeople } from "../ui/face.partial";
 import { TimelineState } from "./useHistory.partial";
@@ -60,7 +60,11 @@ export function useRoomsView(dependencies: RoomsViewDependencies) {
     /** What chat_get_channel last answered about the open conversation, or null before it lands. */
     const activeFacts = computed((): ChannelFacts | null => activeChannelId.value ? shell.value.rooms.factsOf(activeChannelId.value) : null);
 
-    const activeKind = computed((): RoomKind | null => activeRow.value?.room_kind ?? null);
+    /** The open room's kind by its sidebar row, else by its facts once they land; null before either. */
+    const activeKind = computed((): RoomKind | null => {
+        const channelId = shell.value.state.activeChannelId;
+        return channelId ? shell.value.channels.roomKindOf(channelId) : null;
+    });
 
     /**
      * Whether the open channel is one the person is not in, where the join bar stands in the
@@ -69,23 +73,49 @@ export function useRoomsView(dependencies: RoomsViewDependencies) {
     const isJoinBarShown = computed((): boolean => activeKind.value === "channel" && !!activeRow.value && !activeRow.value.is_member);
 
     /** A conversation with one other person, where a name over each bubble would only repeat the header. */
-    const isActiveDirectMessage = computed((): boolean => activeRow.value?.room_kind === "person");
+    const isActiveDirectMessage = computed((): boolean => activeKind.value === "person");
 
-    /** The other people of the open direct message, with their photos, as the sidebar sent them. */
-    const activePeople = computed((): ChatPerson[] => activeRow.value ? rowPeople(activeRow.value) : []);
+    /**
+     * The other people of the open direct message, with their photos, as the sidebar sent them, or
+     * as its facts list them while the sidebar has no row for it.
+     */
+    const activePeople = computed((): ChatPerson[] => activeRow.value ? rowPeople(activeRow.value) : activeFacts.value?.people ?? []);
 
     /** The other person of the open two-person conversation, whose Busy its composer says; null in a group or a channel. */
     const activePair = computed((): ChatPerson | null => pairOf(activeRow.value));
 
-    const activeTitle = computed((): string => activeRow.value?.title ?? "");
+    /**
+     * The platform's title from the sidebar row; while the list has no row for the room, its facts'
+     * name, or for an unnamed direct message its people as a starting conversation is titled.
+     */
+    const activeTitle = computed((): string => {
+        if (activeRow.value) {
+            return activeRow.value.title;
+        }
 
-    /** A channel in Community's flat rows, a direct message in Conversational's bubbles, by kind alone. */
+        const facts = activeFacts.value;
+        return facts?.name?.trim() || startedTitle(facts?.people ?? []);
+    });
+
+    /**
+     * A channel in Community's flat rows, a direct message in Conversational's bubbles, by kind
+     * alone. The feed never waits for the kind: on a reload the history often lands before the
+     * facts and the sidebar, so until either says the kind, the room opened last draws in the look
+     * remembered for it and any other room in a channel's. That memory is written from the room's
+     * facts, so they agree when they land and the feed is laid out once.
+     */
     const look = computed((): FeedLayout | null => {
-        if (!activeKind.value) {
+        const channelId = shell.value.state.activeChannelId;
+        if (!channelId) {
             return null;
         }
 
-        return activeKind.value === "channel" ? "community" : "conversational";
+        if (activeKind.value) {
+            return activeKind.value === "channel" ? "community" : "conversational";
+        }
+
+        const remembered = shell.value.reveal.state;
+        return remembered.room === channelId && remembered.kind === "direct" ? "conversational" : "community";
     });
 
     /**

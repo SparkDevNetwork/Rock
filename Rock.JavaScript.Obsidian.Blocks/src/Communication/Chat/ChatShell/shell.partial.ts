@@ -48,7 +48,7 @@ import { createMembers, MemberDoors, Members } from "./composables/useMembers.pa
 import { AttachmentTray, Attachments, createAttachments } from "./composables/useAttachments.partial";
 import { createGifs, Gifs } from "./composables/useGifs.partial";
 import { createPresence, Presence } from "./composables/usePresence.partial";
-import { createPageReveal, createRoomOpener, forgetRememberedRooms, PageReveal, readRememberedKind, readRememberedStatus, readRememberedStatusShown, rememberedChannelKey, writeRememberedStatus, writeRememberedStatusShown } from "./pageLoad.partial";
+import { createPageReveal, createRoomOpener, forgetRememberedRooms, PageReveal, readRememberedChannel, readRememberedKind, readRememberedStatus, readRememberedStatusShown, rememberedChannelKey, writeRememberedStatus, writeRememberedStatusShown } from "./pageLoad.partial";
 import { ChannelStore, createChannelStore } from "./stores/channelStore.partial";
 import { ChannelFacts, ChatError, DirectoryPage, FindDmAnswer, HistoryPage, MarkReadResult, PeopleSearchAnswer, PersonProfile, ReactionFavorite, RoomKind, SendAnswer, TimelineMessage } from "./types.partial";
 import type { Politeness } from "./ui/announcer.partial";
@@ -1084,7 +1084,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
 
     // From the shell's creation, which is the block's mount: the skeleton is drawn and the ceiling runs
     // from here. It draws the look of the room opened last, as nothing else is known yet.
-    const reveal = createPageReveal({ kind: readRememberedKind(options.storage, storageKey) });
+    const reveal = createPageReveal({ kind: readRememberedKind(options.storage, storageKey), room: readRememberedChannel(options.storage, storageKey) });
     const pushOffKey = `rock-chat:push-off:${tenantId.toLowerCase()}:${personAliasGuid.toLowerCase()}`;
 
     const presence = createPresence({
