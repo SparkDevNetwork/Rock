@@ -18,7 +18,7 @@
                          data-testid="switch-note"
                          @retry="emit('retry')" />
         </span>
-        <span v-if="value !== null" class="chat-sg-value" data-testid="setting-value">{{ value }}<Icon v-if="isLink" name="right" size="xs" /></span>
+        <span v-if="value !== null || isLink" class="chat-sg-value" data-testid="setting-value">{{ value }}<Icon v-if="isLink" name="right" size="xs" /></span>
         <slot :ids="ids"></slot>
     </component>
 </template>
@@ -123,25 +123,20 @@
 }
 
 /*
-    The Leave motion: a row taken out of its list stands where it was, out of the flow, fading and
-    shrinking to the popover's scale over the fast time; its height never moves. The rows below take
-    the list's one move into the gap once it has faded. Under reduced motion the scale and the move
-    are nothing, so it fades and they are simply there.
+    The Leave motion: a row taken out of its list fades and shrinks to the popover's scale where it
+    stands, over the fast time, still in the flow, so its group keeps its height and nothing below
+    moves until it has gone; then the group closes and glides the rows below up. Its height never
+    animates, and it takes no press on its way out. Under reduced motion the scale is nothing, so it
+    only fades.
 */
 .chat-sg-row.is-leaving {
-    position: absolute;
-    right: 0;
-    left: 0;
+    pointer-events: none;
     transition: opacity var(--chat-t-fast) var(--chat-ease-out), transform var(--chat-t-fast) var(--chat-ease-out);
 }
 
 .chat-sg-row.is-left {
     opacity: 0;
     transform: scale(var(--chat-pop-scale));
-}
-
-.chat-sg-row.chat-move {
-    transition-delay: var(--chat-t-fast);
 }
 
 /* A note under the row's words, set apart from them. */
@@ -197,7 +192,7 @@
             default: null
         },
 
-        /** The row leads to a page, such as Blocked people: one button, a chevron after its value. */
+        /** The row leads to a page, such as Blocked people: one button, its chevron always drawn, after its value once it has one. */
         isLink: {
             type: Boolean,
             default: false

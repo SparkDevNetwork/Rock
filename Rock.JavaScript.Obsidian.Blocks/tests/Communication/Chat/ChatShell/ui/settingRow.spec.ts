@@ -45,6 +45,14 @@ describe("a settings row", () => {
         expect(row.emitted("click")).toHaveLength(1);
     });
 
+    // Blocked people has no count while its list loads or after it failed, and still leads to its page.
+    test("a row that leads to a page shows its chevron with no value yet", () => {
+        const row = mount(SettingRow, { props: { icon: "ban", title: "Blocked people", isLink: true } });
+
+        expect(row.findAllComponents(Icon).map(icon => icon.props("name"))).toEqual(["ban", "right"]);
+        expect(row.get("[data-testid='setting-value']").text()).toBe("");
+    });
+
     test("draws no value where it has none", () => {
         const row = mount(SettingRow, { props: { title: "This browser" } });
 
@@ -60,20 +68,25 @@ describe("a settings row", () => {
         expect(ruleOf(styleOf("settingRow.partial.obs"), ".chat-sg-row.is-asking .chat-sg-sub")).toMatch(/color:\s*var\(--chat-text-2\)/);
     });
 
-    test("leaves by the Leave motion: out of the flow, fading and shrinking to the popover's scale over the fast time, its height never animated", () => {
+    // Taken out of the flow at once, the row let its group's box shrink before it faded, and the box
+    // clipped a last row away unseen; so it fades where it stands, still holding its place.
+    test("leaves by the Leave motion: in its place in the flow, fading and shrinking to the popover's scale over the fast time, its height never animated, taking no press", () => {
         const style = styleOf("settingRow.partial.obs");
         const leaving = ruleOf(style, ".chat-sg-row.is-leaving");
         const left = ruleOf(style, ".chat-sg-row.is-left");
 
-        expect(leaving).toMatch(/position:\s*absolute/);
+        expect(leaving).not.toMatch(/position/);
         expect(leaving).toMatch(/transition:[^;]*opacity var\(--chat-t-fast\)/);
         expect(leaving).toMatch(/transition:[^;]*transform var\(--chat-t-fast\)/);
+        expect(leaving).toMatch(/pointer-events:\s*none/);
         expect(left).toMatch(/opacity:\s*0/);
         expect(left).toMatch(/transform:\s*scale\(var\(--chat-pop-scale\)\)/);
         expect(`${leaving};${left}`).not.toMatch(/height/);
     });
 
+    // The rows below wait on no delay of their own: the list starts their glide once the row has
+    // gone, which settingGroup.spec plays in order.
     test("the rows below glide into the gap by the one move once the leaving row has faded", () => {
-        expect(ruleOf(styleOf("settingRow.partial.obs"), ".chat-sg-row.chat-move")).toMatch(/transition-delay:\s*var\(--chat-t-fast\)/);
+        expect(ruleOf(styleOf("settingRow.partial.obs"), ".chat-sg-row.chat-move")).not.toMatch(/transition-delay/);
     });
 });

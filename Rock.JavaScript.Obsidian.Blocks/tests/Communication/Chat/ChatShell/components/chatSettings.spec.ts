@@ -41,10 +41,13 @@ let wrapper: VueWrapper | null = null;
 
 const me = { show_profile_details: true, is_open_dm_allowed: false, reaction_push: true };
 
-/** Mounts the dialog; on a phone, as the session reads its width, it rises as a sheet. */
+/**
+ * Mounts the dialog; on a phone, as the session reads its width, it rises as a sheet. The blocked
+ * list's rows leave as they do in a browser, by its own transition, which the empty page follows.
+ */
 function mountSettings(props: Record<string, unknown> = {}, isPhone = false): VueWrapper {
     wrapper = mount(ChatSettings, {
-        global: isPhone ? { provide: providedSession({ isPhone }) } : {},
+        global: { stubs: { "transition-group": false }, ...(isPhone ? { provide: providedSession({ isPhone }) } : {}) },
         props: {
             isOpen: true,
             personName: "Jordan Lee",
@@ -91,6 +94,14 @@ function hasIcon(w: VueWrapper, inside: { element: Element }, name: string): boo
 async function settle(): Promise<void> {
     await nextTick();
     await nextTick();
+}
+
+/** Waits out a list row's Leave motion: Vue ends a leave a frame after its last class goes on. */
+async function leaveEnds(): Promise<void> {
+    for (let frame = 0; frame < 3; frame++) {
+        await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
+    }
+    await settle();
 }
 
 // #endregion Helpers
@@ -424,7 +435,15 @@ describe("Blocked people", () => {
         expect(plain(privacyRow(mountSettings({ blocked: list({ people: [] }) })).get("[data-testid='setting-value']").text())).toBe("None");
         wrapper?.unmount();
 
-        expect(privacyRow(mountSettings({ blocked: list({ listState: "loading" }) })).find("[data-testid='setting-value']").exists()).toBe(false);
+        expect(plain(privacyRow(mountSettings({ blocked: list({ listState: "loading" }) })).get("[data-testid='setting-value']").text())).toBe("");
+    });
+
+    test("keeps its chevron while the list loads and after it failed, since it still leads to the page", () => {
+        for (const listState of ["loading", "failed"]) {
+            const w = mountSettings({ blocked: list({ listState }) });
+            expect(hasIcon(w, privacyRow(w), "right")).toBe(true);
+            w.unmount();
+        }
     });
 
     test("turns the one dialog into the Blocked people page, with Back and its title, focus on the page itself; Escape returns to the row", async () => {
@@ -539,18 +558,63 @@ describe("Blocked people", () => {
         await settle();
         expect(said()).toBe("Unblocked Sam Ortiz");
         expect(document.activeElement?.getAttribute("aria-label")).toBe("Unblock Ben Okafor");
+        await leaveEnds();
 
         await unblockRow(w, 1);
         await w.setProps({ blocked: list({ people: [ben] }) });
         await settle();
         expect(said()).toBe("Unblocked Someone no longer in chat");
         expect(document.activeElement?.getAttribute("aria-label")).toBe("Unblock Ben Okafor");
+        await leaveEnds();
 
         await unblockRow(w, 0);
         await w.setProps({ blocked: list({ people: [] }) });
         await settle();
         expect(said()).toBe("Unblocked Ben Okafor");
+        await leaveEnds();
         expect(document.activeElement).toBe(w.get("[data-testid='blocked-empty']").element);
+    });
+
+    // The empty page waits for the last row's Leave motion, so unblocking the only person is seen
+    // to go before No one blocked takes its place.
+    test("unblocking the only person: the row fades in its list first, then the empty page shows and takes focus", async () => {
+        const w = mountSettings({ blocked: list({ people: [sam] }) });
+        await openPage(w);
+        await unblockRow(w, 0);
+
+        await w.setProps({ blocked: list({ people: [] }) });
+        await settle();
+        expect(said()).toBe("Unblocked Sam Ortiz");
+        expect(w.find("[data-testid='blocked-empty']").exists()).toBe(false);
+        expect(w.get("[data-testid='blocked-row']").classes()).toContain("is-leaving");
+
+        await leaveEnds();
+        expect(w.find("[data-testid='blocked-row']").exists()).toBe(false);
+        expect(document.activeElement).toBe(w.get("[data-testid='blocked-empty']").element);
+    });
+
+    // Try again under a refused unblock asks it again through the blocks; the row's unblock is then
+    // out again, so the page holds its Unblock, says it once it lands and moves focus as it does the first time.
+    test("Try again on a refused unblock is held, said and followed by focus as its first try was", async () => {
+        const w = mountSettings({ blocked: list() });
+        await openPage(w);
+        await unblockRow(w, 0);
+        // the blocks drop the note and hold the row as they ask again, before Try again is told on
+        const retry = jest.fn(() => void w.setProps({ blocked: list({ busy: { [sam.person_alias_guid]: true } }) }));
+        await w.setProps({ blocked: list({ notes: { [sam.person_alias_guid]: { kind: "error", text: "Couldn't save.", retry } } }) });
+        await settle();
+
+        const again = w.get<HTMLButtonElement>("[data-testid='blocked-row'] [data-testid='note-retry']");
+        again.element.focus();
+        await again.trigger("click");
+        await settle();
+        expect(retry).toHaveBeenCalledTimes(1);
+        expect(document.activeElement).toBe(w.findAll("[data-testid='blocked-unblock']")[0].element);
+
+        await w.setProps({ blocked: list({ people: [gone] }) });
+        await settle();
+        expect(said()).toBe("Unblocked Sam Ortiz");
+        expect(document.activeElement?.getAttribute("aria-label")).toBe("Unblock Someone no longer in chat");
     });
 
     test("two unblocks landing together are both said", async () => {

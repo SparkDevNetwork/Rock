@@ -26,6 +26,7 @@ import { readFileSync } from "fs";
 import { join } from "path";
 import { mount, VueWrapper } from "@vue/test-utils";
 import { nextTick } from "vue";
+import { ruleOf, styleOf } from "../ui/partStyle";
 import StatusMenu from "../../../../../src/Communication/Chat/ChatShell/components/statusMenu.partial.obs";
 import Button from "../../../../../src/Communication/Chat/ChatShell/ui/button.partial.obs";
 import IconButton from "../../../../../src/Communication/Chat/ChatShell/ui/iconButton.partial.obs";
@@ -564,6 +565,18 @@ describe("on a phone, inside Chat settings", () => {
         expect(checked()).toEqual(["appear_offline"]);
         expect(itemOf("appear_offline").hasAttribute("data-autofocus")).toBe(true);
         expect(document.querySelector("[data-testid='sheet']")).toBeNull();
+    });
+
+    // As a trigger the menu sits inline beside its row's words; as the page it is the page's one
+    // column, so its rows and rules run the sheet's full width rather than their own words' width.
+    test("as the page, lays out as a column the page's width, while a trigger stays inline", () => {
+        const w = mountMenu({ trigger: "page", isPhone: true });
+        const style = styleOf("../components/statusMenu.partial.obs");
+
+        expect(w.find(".chat-status-menu").classes()).toContain("is-page");
+        expect(ruleOf(style, ".chat-status-menu")).toMatch(/display:\s*inline-flex/);
+        expect(ruleOf(style, ".chat-status-menu.is-page")).toMatch(/display:\s*flex/);
+        expect(ruleOf(style, ".chat-status-menu.is-page")).toMatch(/flex-direction:\s*column/);
     });
 
     test("as the page, a choice is told with its end worked out at the choice", async () => {

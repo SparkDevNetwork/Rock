@@ -97,12 +97,17 @@
                 <SettingGroup v-else-if="blocked.listState !== 'loaded'" ariaLabel="Blocked people" aria-busy="true" data-testid="blocked-loading">
                     <Skeleton v-for="n in 3" :key="n" shape="person" />
                 </SettingGroup>
-                <EmptyState v-else-if="shownBlocked.length === 0"
+                <EmptyState v-else-if="shownBlocked.length === 0 && !isListDrawn"
                             ref="blockedEmpty"
                             title="No one blocked"
                             tabindex="-1"
                             data-testid="blocked-empty" />
-                <SettingGroup v-else ref="blockedList" ariaLabel="Blocked people" isList data-testid="blocked-list">
+                <SettingGroup v-else
+                              ref="blockedList"
+                              ariaLabel="Blocked people"
+                              isList
+                              data-testid="blocked-list"
+                              @empty="onListEmpty">
                     <SettingRow v-for="person in shownBlocked"
                                 :key="keyOf(person)"
                                 :title="askingGuid === keyOf(person) ? askTitle(person) : blockedName(person)"
@@ -111,7 +116,8 @@
                                 :isAsking="askingGuid === keyOf(person)"
                                 :data-person="keyOf(person)"
                                 data-testid="blocked-row"
-                                @keydown.esc="onRowEscape($event, person)">
+                                @keydown.esc="onRowEscape($event, person)"
+                                @retry="holdUnblocking(person)">
                         <template #lead>
                             <Avatar :people="[personFace(person)]" :size="32" />
                         </template>
@@ -341,6 +347,12 @@
     /** The rows whose Unblock was pressed, in the order pressed, each until it leaves the list or is refused. */
     const unblocking = ref<Array<{ guid: string, name: string }>>([]);
 
+    /**
+     * Whether the list draws a row, one still fading by the Leave motion included, so the empty page
+     * waits for the last row to have gone.
+     */
+    const isListDrawn = ref(false);
+
     /** The chat's one voice, which speaks from inside the dialog while it is open. */
     const { announce } = useAnnouncer();
 
@@ -490,13 +502,37 @@
         }
     }
 
-    /** The row's yes: the unblock is asked, the row's Unblock held with focus until it lands or is refused. */
+    /** The row's yes: the unblock is asked. */
     function onUnblock(person: ChatPerson): void {
-        const guid = keyOf(person);
         askingGuid.value = null;
-        unblocking.value = [...unblocking.value.filter(pressed => pressed.guid !== guid), { guid, name: blockedName(person) }];
+        holdUnblocking(person);
         emit("unblock", person);
+    }
+
+    /**
+     * A person's unblock is out, from the row's yes or from Try again under its refusal, which asks
+     * it again itself: the row's Unblock is held with focus until it lands, which is said, or is refused.
+     */
+    function holdUnblocking(person: ChatPerson): void {
+        const guid = keyOf(person);
+        unblocking.value = [...unblocking.value.filter(pressed => pressed.guid !== guid), { guid, name: blockedName(person) }];
         focusInRow(guid, "blocked-unblock");
+    }
+
+    /** Whether focus has nowhere to be, having gone with what held it. */
+    function isFocusLost(): boolean {
+        const active = document.activeElement;
+        return !active || active === document.body || !active.isConnected;
+    }
+
+    /** The last row has faded and gone: the empty page takes the list's place, and the focus that went with the row. */
+    function onListEmpty(): void {
+        isListDrawn.value = false;
+        void nextTick(() => {
+            if (isFocusLost()) {
+                (blockedEmpty.value?.$el as HTMLElement | undefined)?.focus();
+            }
+        });
     }
 
     /** A choice on the Status page is told to the block, and the sheet turns back to Change, as a menu closes on a choice. */
@@ -526,10 +562,10 @@
     });
 
     // An unblock that lands takes its row, and the button focused with it, out of the list: it is
-    // said, and focus goes to the row that took its place, else the one before, else the empty line,
-    // so a keyboard stays in the group. Unblocks out at once are each said as they land, and focus
-    // moves only when it went with a row, so one landing never pulls it off a row still there. A
-    // refusal leaves the row with its note, and focus on it.
+    // said, and focus goes to the row that took its place, else the one before, else to the empty
+    // page once the last row has faded, so a keyboard stays in the group. Unblocks out at once are
+    // each said as they land, and focus moves only when it went with a row, so one landing never
+    // pulls it off a row still there. A refusal leaves the row with its note, and focus on it.
     watch(() => [shownBlocked.value, unblocking.value.map(pressed => props.blocked.notes[pressed.guid])] as const, (_now, before) => {
         const shown = new Set(shownBlocked.value.map(person => person.person_alias_guid.toLowerCase()));
         const landed = unblocking.value.filter(pressed => !shown.has(pressed.guid));
@@ -546,8 +582,7 @@
         // Focus on a row that went, gone or still fading by the Leave motion, moves on; anywhere else it stays.
         const gone = new Set(landed.map(pressed => pressed.guid));
         const rowOf = (element: Element | null): string => element?.closest<HTMLElement>("[data-person]")?.dataset.person ?? "";
-        const active = document.activeElement;
-        if (active && active !== document.body && active.isConnected && !gone.has(rowOf(active))) {
+        if (!isFocusLost() && !gone.has(rowOf(document.activeElement))) {
             return;
         }
 
@@ -557,9 +592,14 @@
         const index = previous.slice(0, Math.max(0, last)).filter(guid => shown.has(guid)).length;
         const list = blockedList.value?.$el as HTMLElement | undefined;
         const buttons = Array.from(list?.querySelectorAll<HTMLElement>("[data-focus-stop='blocked-unblock']") ?? []).filter(button => !gone.has(rowOf(button)));
-        const next = buttons[Math.min(index, buttons.length - 1)] ?? blockedEmpty.value?.$el as HTMLElement | undefined;
-        next?.focus();
+        buttons[Math.min(index, buttons.length - 1)]?.focus();
     }, { flush: "post" });
+
+    // The list, once drawn, stays until its last row has gone, or until it is taken away with the
+    // page or for a failed read.
+    watch(blockedList, list => {
+        isListDrawn.value = !!list;
+    });
 
     // The status line keeps time only while it is seen, waking once at its next change.
     watch([() => props.isOpen, statusChangesAt], ([isOpen, changesAt]) => {

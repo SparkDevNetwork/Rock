@@ -42,6 +42,12 @@
     flex: none;
 }
 
+/* As Chat settings' Status page it is the page's one column, so its rows run the sheet's width. */
+.chat-status-menu.is-page {
+    display: flex;
+    flex-direction: column;
+}
+
 /*
     The foot's face: its own round button, a hover disc a touch wider than the face, so lighting it
     never lights the settings button beside it. The badge is ringed in the sidebar's fill, which the
