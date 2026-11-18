@@ -2535,6 +2535,76 @@ describe("the thread drawer", () => {
         expect(document.activeElement).toBe(w.get("[data-testid='frame-main'] [data-testid='thread-summary']").element);
     });
 
+    /**
+     * Records every focus put from now on, with the options it was put with, so a cell can see
+     * whether one would have scrolled what holds it.
+     */
+    function watchFocus(): { calls: Array<{ element: HTMLElement, options?: FocusOptions }>, stop: () => void } {
+        const calls: Array<{ element: HTMLElement, options?: FocusOptions }> = [];
+        const original = HTMLElement.prototype.focus;
+        const spy = jest.spyOn(HTMLElement.prototype, "focus").mockImplementation(function (this: HTMLElement, options?: FocusOptions) {
+            calls.push({ element: this, options });
+            original.call(this, options);
+        });
+        return { calls, stop: () => spy.mockRestore() };
+    }
+
+    /** Opens the thread from the label over its reply 41, also sent to the conversation, focused first when a browser would. */
+    async function openFromLabel(w: VueWrapper, isFocused: boolean): Promise<void> {
+        await openWithRoot(w, [storedMessage(41, { parent_id: 40, shown_in_channel: true } as Partial<TimelineMessage>)]);
+        const label = w.get("[data-testid='frame-main'] [data-testid='thread-reply-label']");
+        if (isFocused) {
+            (label.element as HTMLElement).focus();
+        }
+        await label.trigger("click");
+        await settle();
+        await settle();
+        expect(panelOpen(w)).toBe("true");
+    }
+
+    /** Closes the drawer by its X or by Escape, recording each focus the close puts. */
+    async function closeWatched(w: VueWrapper, how: "x" | "escape"): Promise<Array<{ element: HTMLElement, options?: FocusOptions }>> {
+        const focus = watchFocus();
+        try {
+            const close = w.get("[data-testid='frame-panel'] [data-testid='panel-close']");
+            await (how === "x" ? close.trigger("click") : close.trigger("keydown", { key: "Escape" }));
+            await settle();
+        }
+        finally {
+            focus.stop();
+        }
+        expect(panelOpen(w)).toBe("false");
+        return focus.calls;
+    }
+
+    // A reply also sent to the conversation sits far below its root. Its label opened the thread,
+    // so closing hands focus back to the label, where the reader is, and no focus the close puts
+    // scrolls the feed: the conversation stays where it was rather than leaping back to the root.
+    test.each(["x", "escape"] as const)("closes by %s from the \"Replied to a thread\" label back to that label, without scrolling the feed", async how => {
+        mockThreadPages = { newest: [41, 42], older: [] };
+        const w = await mountBlock(1200);
+        await openFromLabel(w, true);
+
+        const calls = await closeWatched(w, how);
+
+        expect(document.activeElement).toBe(w.get("[data-testid='frame-main'] [data-testid='thread-reply-label']").element);
+        expect(calls.length).toBeGreaterThan(0);
+        expect(calls.filter(call => call.options?.preventScroll !== true)).toEqual([]);
+    });
+
+    // A click that leaves focus where it was, as Safari's does on a button, names no opener: focus
+    // goes to the root's pill, and still without scrolling the feed to a root far above.
+    test("closes a thread whose opener took no focus to the root's pill, without scrolling the feed", async () => {
+        mockThreadPages = { newest: [41, 42], older: [] };
+        const w = await mountBlock(1200);
+        await openFromLabel(w, false);
+
+        const calls = await closeWatched(w, "x");
+
+        expect(document.activeElement).toBe(w.get("[data-testid='frame-main'] [data-message-id='40'] [data-testid='thread-summary']").element);
+        expect(calls.filter(call => call.options?.preventScroll !== true)).toEqual([]);
+    });
+
     /** Whether the drawer flashes the reply, the one it landed on. */
     function isReplyFlashing(w: VueWrapper, id: number): boolean {
         return !!w.element.querySelector(`[data-testid='frame-panel'] [data-reply-id='${id}']`)?.classList.contains("is-flashing");
