@@ -97,12 +97,19 @@
                                 visiblePriority="xs" />
             </Grid>
 
-            <RockButton btnType="primary"
+            <RockButton v-if="!config.isSendDisabled"
+                        btnType="primary"
                         class="margin-t-md"
                         :isLoading="isSending"
                         type="submit">
                 Send Reminders
             </RockButton>
+
+            <NotificationBox v-else
+                             alertType="info"
+                             class="margin-t-md">
+                You are not authorized to send payment reminders for this registration instance.
+            </NotificationBox>
         </RockForm>
     </Block>
 </template>
@@ -290,7 +297,8 @@
      * can avoid re-scanning the outstanding-balance list on every toggle.
      */
     watch(isPreviewMode, async (newValue) => {
-        if (!newValue) {
+        // The server only renders previews for people who can send, so the initial preview stays as is.
+        if (!newValue || config.isSendDisabled) {
             return;
         }
 

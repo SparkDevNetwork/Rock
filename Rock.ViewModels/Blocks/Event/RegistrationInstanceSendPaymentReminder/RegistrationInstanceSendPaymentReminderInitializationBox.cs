@@ -41,6 +41,12 @@ namespace Rock.ViewModels.Blocks.Event.RegistrationInstanceSendPaymentReminder
         public bool HasOutstandingBalances { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether sending reminders is
+        /// disabled because the current person isn't authorized to send them.
+        /// </summary>
+        public bool IsSendDisabled { get; set; }
+
+        /// <summary>
         /// Gets or sets the empty-state message shown when no registrations
         /// have an outstanding balance. May contain HTML.
         /// </summary>
