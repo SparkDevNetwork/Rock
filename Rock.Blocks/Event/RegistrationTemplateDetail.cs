@@ -1155,6 +1155,9 @@ namespace Rock.Blocks.Event
                 return false;
             }
 
+            // Posted ids that the server would not have offered make the whole save invalid.
+            var isValid = true;
+
             box.IfValidProperty( nameof( box.Bag.Name ),
                 () => entity.Name = box.Bag.Name );
 
@@ -1239,10 +1242,32 @@ namespace Rock.Blocks.Event
             UpdatePaymentSettingsFromBox( entity, box );
 
             box.IfValidProperty( nameof( box.Bag.RegistrationWorkflowType ),
-                () => entity.RegistrationWorkflowTypeId = box.Bag.RegistrationWorkflowType.GetEntityId<WorkflowType>( RockContext ) );
+                () =>
+                {
+                    var workflowTypeId = box.Bag.RegistrationWorkflowType.GetEntityId<WorkflowType>( RockContext );
+                    if ( IsWorkflowTypeAllowed( workflowTypeId, entity.RegistrationWorkflowTypeId ) )
+                    {
+                        entity.RegistrationWorkflowTypeId = workflowTypeId;
+                    }
+                    else
+                    {
+                        isValid = false;
+                    }
+                } );
 
             box.IfValidProperty( nameof( box.Bag.RegistrantWorkflowType ),
-                () => entity.RegistrantWorkflowTypeId = box.Bag.RegistrantWorkflowType.GetEntityId<WorkflowType>( RockContext ) );
+                () =>
+                {
+                    var workflowTypeId = box.Bag.RegistrantWorkflowType.GetEntityId<WorkflowType>( RockContext );
+                    if ( IsWorkflowTypeAllowed( workflowTypeId, entity.RegistrantWorkflowTypeId ) )
+                    {
+                        entity.RegistrantWorkflowTypeId = workflowTypeId;
+                    }
+                    else
+                    {
+                        isValid = false;
+                    }
+                } );
 
             box.IfValidProperty( nameof( box.Bag.AllowExternalRegistrationUpdates ),
                 () => entity.AllowExternalRegistrationUpdates = box.Bag.AllowExternalRegistrationUpdates );
@@ -1332,7 +1357,27 @@ namespace Rock.Blocks.Event
 
             UpdateEligibilitySettingsFromBox( entity, box );
 
-            return true;
+            return isValid;
+        }
+
+        /// <summary>
+        /// Determines whether the posted workflow type may be assigned to the registration template.
+        /// </summary>
+        /// <param name="postedWorkflowTypeId">The workflow type identifier posted by the client.</param>
+        /// <param name="currentWorkflowTypeId">The workflow type identifier currently on the registration template.</param>
+        /// <returns><c>true</c> if the posted value is empty, unchanged or an active workflow type the person can view; otherwise <c>false</c>.</returns>
+        private bool IsWorkflowTypeAllowed( int? postedWorkflowTypeId, int? currentWorkflowTypeId )
+        {
+            if ( !postedWorkflowTypeId.HasValue || postedWorkflowTypeId == currentWorkflowTypeId )
+            {
+                return true;
+            }
+
+            var workflowType = WorkflowTypeCache.Get( postedWorkflowTypeId.Value );
+
+            return workflowType != null
+                && workflowType.IsActive == true
+                && workflowType.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson );
         }
 
         /// <summary>
@@ -1959,7 +2004,7 @@ namespace Rock.Blocks.Event
 
             if ( placements != null )
             {
-                errors.AddRange( GetPlacementErrors( placements, groupsByGuid ) );
+                errors.AddRange( GetPlacementErrors( entity, placements, groupsByGuid ) );
             }
 
             if ( !errors.Any() && !entity.IsValid )
@@ -2097,12 +2142,16 @@ namespace Rock.Blocks.Event
         }
 
         /// <summary>
-        /// Validates the placement configurations. Every placement needs a group type
-        /// and its shared groups must belong to that group type.
+        /// Gets the validation errors for the placement configurations.
         /// </summary>
-        private static IEnumerable<string> GetPlacementErrors( List<RegistrationTemplatePlacementBag> placements, Dictionary<Guid, Rock.Model.Group> groupsByGuid )
+        /// <remarks>
+        /// Every placement needs a group type, its shared groups must belong to that group type,
+        /// and newly linked shared groups must be ones the person can view.
+        /// </remarks>
+        private IEnumerable<string> GetPlacementErrors( RegistrationTemplate entity, List<RegistrationTemplatePlacementBag> placements, Dictionary<Guid, Rock.Model.Group> groupsByGuid )
         {
             var errors = new List<string>();
+            var linkedGroupGuidsByPlacementGuid = GetLinkedGroupGuidsByPlacementGuid( entity );
 
             foreach ( var placement in placements )
             {
@@ -2120,7 +2169,8 @@ namespace Rock.Blocks.Event
                     continue;
                 }
 
-                var hasMismatchedGroup = GetGroupGuids( placement )
+                var groupGuids = GetGroupGuids( placement );
+                var hasMismatchedGroup = groupGuids
                     .Select( guid => groupsByGuid.TryGetValue( guid, out var group ) ? group : null )
                     .Any( group => group != null && group.GroupTypeId != groupType.Id );
 
@@ -2128,9 +2178,54 @@ namespace Rock.Blocks.Event
                 {
                     errors.Add( $"Group must have group type of {groupType.Name.EncodeHtml()}." );
                 }
+
+                // Groups already linked to this placement stay, even when the person can't view them.
+                var linkedGroupGuids = linkedGroupGuidsByPlacementGuid.GetValueOrNull( placement.Guid ) ?? new HashSet<Guid>();
+                var hasHiddenGroup = groupGuids
+                    .Where( guid => groupsByGuid.ContainsKey( guid ) && !linkedGroupGuids.Contains( guid ) )
+                    .Any( guid => !IsGroupViewable( guid ) );
+
+                if ( hasHiddenGroup )
+                {
+                    errors.Add( "You do not have access to one of the selected groups." );
+                }
             }
 
             return errors;
+        }
+
+        /// <summary>
+        /// Determines whether the current person can view the group.
+        /// </summary>
+        /// <param name="groupGuid">The unique identifier of the group.</param>
+        /// <returns><c>true</c> if the group exists and the person can view it; otherwise <c>false</c>.</returns>
+        private bool IsGroupViewable( Guid groupGuid )
+        {
+            return GroupCache.Get( groupGuid )?.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) == true;
+        }
+
+        /// <summary>
+        /// Gets the shared groups currently linked to each saved placement of the registration template.
+        /// </summary>
+        /// <param name="entity">The registration template being saved.</param>
+        /// <returns>The unique identifiers of the linked groups, keyed by the placement's unique identifier.</returns>
+        private Dictionary<Guid, HashSet<Guid>> GetLinkedGroupGuidsByPlacementGuid( RegistrationTemplate entity )
+        {
+            if ( entity.Id == 0 )
+            {
+                return new Dictionary<Guid, HashSet<Guid>>();
+            }
+
+            var placementGuidById = new RegistrationTemplatePlacementService( RockContext ).Queryable()
+                .AsNoTracking()
+                .Where( p => p.RegistrationTemplateId == entity.Id )
+                .Select( p => new { p.Id, p.Guid } )
+                .ToDictionary( p => p.Id, p => p.Guid );
+
+            return GetSharedGroupsByPlacementId( placementGuidById.Keys.ToList() )
+                .ToDictionary(
+                    kvp => placementGuidById[kvp.Key],
+                    kvp => new HashSet<Guid>( kvp.Value.Select( g => g.Value.AsGuid() ) ) );
         }
 
         /// <summary>
@@ -3321,9 +3416,23 @@ namespace Rock.Blocks.Event
                 discount.Guid = Guid.NewGuid();
             }
 
+            // Don't carry forward workflow types or shared groups that Save would refuse on the new registration template.
+            if ( !IsWorkflowTypeAllowed( original.RegistrationWorkflowTypeId, null ) )
+            {
+                bag.RegistrationWorkflowType = null;
+            }
+
+            if ( !IsWorkflowTypeAllowed( original.RegistrantWorkflowTypeId, null ) )
+            {
+                bag.RegistrantWorkflowType = null;
+            }
+
             foreach ( var placement in bag.Placements )
             {
                 placement.Guid = Guid.NewGuid();
+                placement.SharedGroups = placement.SharedGroups?
+                    .Where( g => IsGroupViewable( g?.Value.AsGuid() ?? Guid.Empty ) )
+                    .ToList();
             }
 
             return ActionOk( new ValidPropertiesBox<RegistrationTemplateBag>
