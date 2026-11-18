@@ -5658,6 +5658,30 @@ describe("the members panel", () => {
         expect(document.activeElement?.closest("[data-person]")?.getAttribute("data-person")).toBe(annaMember.person_alias_guid);
     });
 
+    // The Members row that opened the profile went with the list the profile took the place of, so
+    // its X gives focus to the header's Members button, the way back to that list.
+    test("a profile opened from Members and closed by its X gives focus to the header's Members button", async () => {
+        const w = await mountBlock(1200);
+        await openTeam(w);
+        await w.get("[data-testid='frame-main'] [data-testid='header-members']").trigger("click");
+        await settle();
+        membersOf().state.rows = [annaMember];
+        await settle();
+
+        await w.get("[data-testid='members-panel'] [data-testid='member-who']").trigger("click");
+        profileOf().state.card = { personAliasGuid: annaMember.person_alias_guid, channelId: team.channel_id, person: { ...annaMember, is_self: false, dm_channel_id: null } } as never;
+        await settle();
+        document.querySelector<HTMLElement>("[data-testid='profile-details-open']")!.click();
+        await fadeOut();
+        expect(document.querySelector("[data-testid='frame-panel'] [data-testid='profile-panel']")).not.toBeNull();
+
+        await w.get("[data-testid='frame-panel'] [data-testid='panel-close']").trigger("click");
+        await fadeOut();
+
+        expect(w.get("[data-testid='chat-frame']").attributes("data-panel-open")).toBe("false");
+        expect(document.activeElement).toBe(w.get("[data-testid='frame-main'] [data-testid='header-members']").element);
+    });
+
     test.each([1200, 390])("a member's Message opens New message with that person chosen at width %i", async width => {
         const w = await mountBlock(width);
         await openTeam(w);
