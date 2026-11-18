@@ -340,10 +340,7 @@ namespace Rock.Blocks.Fundraising
                 return null;
             }
 
-            var contentChannelItems = new ContentChannelItemService( RockContext ).Queryable()
-                .Where( a => a.ContentChannelId == contentChannel.Id )
-                .AsNoTracking()
-                .ToList();
+            var contentChannelItems = FundraisingUpdateItems.GetViewableItems( RockContext, contentChannel.Id, RequestContext.CurrentPerson );
 
             itemCount = contentChannelItems.Count;
 
@@ -414,10 +411,10 @@ namespace Rock.Blocks.Fundraising
         }
 
         /// <summary>
-        /// Determines whether the current person is a leader of the opportunity group.
+        /// Determines whether the current person is an active leader of the opportunity group.
         /// </summary>
         /// <param name="group">The opportunity group.</param>
-        /// <returns><c>true</c> when the current person has a leader role in the group.</returns>
+        /// <returns><c>true</c> when the current person has an active leader membership in the group.</returns>
         private bool IsCurrentPersonGroupLeader( Rock.Model.Group group )
         {
             var currentPersonId = RequestContext.CurrentPerson?.Id;
@@ -427,8 +424,19 @@ namespace Rock.Blocks.Fundraising
                 return false;
             }
 
+            /*
+                11/18/2026 - MSE
+
+                Only an Active leader membership counts, the same rule the Leader Toolbox block
+                enforces. GetGroupMembers returns members of every status, so the status is
+                checked here.
+
+                Reason: The Leader Toolbox button should require an Active leader membership.
+            */
             return GetGroupMembers( group.Id )
-                .Any( m => m.PersonId == currentPersonId.Value && m.GroupRole.IsLeader );
+                .Any( m => m.PersonId == currentPersonId.Value
+                    && m.GroupRole.IsLeader
+                    && m.GroupMemberStatus == GroupMemberStatus.Active );
         }
 
         /// <summary>
