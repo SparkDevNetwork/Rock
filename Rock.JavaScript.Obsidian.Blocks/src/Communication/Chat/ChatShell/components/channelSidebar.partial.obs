@@ -19,9 +19,13 @@
                    autocomplete="off"
                    data-testid="sidebar-search" />
             <span class="chat-side-acts">
-                <!-- Everything across conversations: Mentions and the Threads the person follows. -->
-                <IconButton v-if="isActivityOffered"
-                            icon="inbox"
+                <!--
+                    Everything across conversations: Mentions and the Threads the person follows.
+                    Drawn from the first paint, out of reach until chat is loaded, so the head
+                    keeps its shape and the search never narrows as the button lands.
+                -->
+                <IconButton icon="inbox"
+                            :inert="isActivityInert || undefined"
                             :label="hasMentionDot ? 'Activity, new mentions' : 'Activity'"
                             tooltip="Activity"
                             data-testid="sidebar-activity"
@@ -759,8 +763,11 @@
             default: false
         },
 
-        /** Whether the Activity inbox is offered, which needs the person's chat to be loaded. */
-        isActivityOffered: {
+        /**
+         * Whether Activity is out of reach, drawn as it always is, because the inbox needs the
+         * person's chat to be loaded; as New message is while chat signs in.
+         */
+        isActivityInert: {
             type: Boolean,
             default: false
         },
