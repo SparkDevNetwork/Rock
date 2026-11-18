@@ -738,7 +738,7 @@
      * for a channel's leader seen by someone who is not a Chat Administrator, why there is none.
      */
     function menuOf(isLeader: boolean, canMessage: boolean): { items: MenuItem[], note: string } {
-        const items: MenuItem[] = [{ key: "profile", label: "View profile", icon: "users" }];
+        const items: MenuItem[] = [{ key: "profile", label: "Details", icon: "users" }];
         if (canMessage) {
             items.push({ key: "message", label: "Message", icon: "message" });
         }
