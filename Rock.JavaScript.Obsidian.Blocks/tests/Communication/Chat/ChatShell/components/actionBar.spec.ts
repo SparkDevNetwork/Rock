@@ -1076,6 +1076,16 @@ describe("the bar beside a bubble", () => {
             const inside = await shownOnRow(tight);
             expect(placed(inside, tight)).toEqual({ top: tight.top + insideGap, endIn: endInset });
         });
+
+        // A tall row, as a photo's, scrolled until its top has gone under the column's top: the
+        // box stands inside the row's part still in view, 4px under the column's top, and never
+        // over the conversation's header above the column, covering its buttons.
+        test("on a row whose top has scrolled out of the column, stands 4px inside the column's top, never over what is above it", async () => {
+            const cut = { left: 0, right: 900, top: -30 };
+            const w = await shownOnRow(cut);
+
+            expect(placed(w, cut)).toEqual({ top: inset, endIn: endInset });
+        });
     });
 });
 
