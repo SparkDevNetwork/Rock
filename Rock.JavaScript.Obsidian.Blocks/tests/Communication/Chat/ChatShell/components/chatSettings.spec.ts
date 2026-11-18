@@ -140,10 +140,10 @@ describe("the dialog", () => {
         expect(document.querySelector("[role='tooltip']")).toBeNull();
     });
 
-    test("stands anchored at the top of the frame, so a note coming or going below a row never moves it", () => {
+    test("stands centred in the frame, as every other dialog does", () => {
         const w = mountSettings();
 
-        expect(w.get("[data-testid='dialog-scrim']").classes()).toContain("is-placed-top");
+        expect(w.get("[data-testid='dialog-scrim']").classes()).not.toContain("is-placed-top");
     });
 
     test("names the person and their campus, and not where the name comes from, since nothing here can change it", () => {
