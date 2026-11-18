@@ -805,8 +805,7 @@ img.chat-sheet-glyph {
         message: () => props.message,
         request: (request: MessageActionRequest) => emit("messageAction", request),
         openThread: place => emit("openThread", place),
-        pickerAnchor,
-        messageAnchor
+        pickerAnchor
     });
 
     /**
@@ -866,8 +865,8 @@ img.chat-sheet-glyph {
     }
 
     /**
-     * The message a picker asked for by a control that can go is placed on: its bubble, or the
-     * whole row in a channel, which draws no bubble, so the picker clears the name and the text.
+     * The message a picker asked for from the sheet is placed on: its bubble, or the whole row in
+     * a channel, which draws no bubble, so the picker clears the name and the text.
      */
     function messageAnchor(): HTMLElement | null {
         return rowElement.value?.querySelector<HTMLElement>(".chat-bubble") ?? rowElement.value ?? null;

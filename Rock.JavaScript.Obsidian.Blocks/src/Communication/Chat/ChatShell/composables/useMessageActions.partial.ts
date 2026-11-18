@@ -240,9 +240,6 @@ export type MessageRowPlace = {
 
     /** Where a picker asked for by a control is placed, for a control that may leave with its sheet. */
     pickerAnchor: (anchor: HTMLElement) => HTMLElement;
-
-    /** The message itself, its bubble or a channel's whole row. */
-    messageAnchor: () => HTMLElement | null;
 };
 
 /** A message row's handlers for each of its parts, every choice made into a request. */
@@ -272,8 +269,9 @@ export type MessageRowRequests = {
  * buttons: each choice as one request about the row's message, so every way of acting on a
  * message asks in the same words. Reply in thread opens the thread the message belongs to: its
  * own as a root, as its thread pill does, or its root's as a reply, landed on it, as its
- * "Replied to a thread" label does. A chip's add opens the picker on the message rather than on itself, since a choice
- * that takes the last chip away takes the add chip with it; focus comes back to it.
+ * "Replied to a thread" label does. A chip's add opens the box's tray at itself, which the person
+ * pressed and is looking at, and focus comes back to it; the box keeps to its message should a
+ * change take the add chip away while it is open.
  *
  * @param place Where the requests go, and the row's places a picker is set beside.
  *
@@ -302,7 +300,7 @@ export function messageRowRequests(place: MessageRowPlace): MessageRowRequests {
         },
         reactions: {
             toggle: (code: string): void => about(message => ({ kind: "react", message, code })),
-            openPicker: (opener: HTMLElement): void => about(message => ({ kind: "openPicker", message, anchor: place.messageAnchor() ?? opener, opener }))
+            openPicker: (opener: HTMLElement): void => about(message => ({ kind: "openPicker", message, anchor: opener, opener }))
         },
         editor: {
             save: (body: string): void => about(message => ({ kind: "saveEdit", message, body })),
