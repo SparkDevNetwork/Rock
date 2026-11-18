@@ -43,6 +43,16 @@ namespace Rock.Tests.Rest
         }
 
         [TestMethod]
+        public void GetPropertyNames_Registration_ReturnsOnlyThePaymentPlan()
+        {
+            var names = NotClientWritableAttribute.GetPropertyNames( typeof( Registration ) );
+
+            CollectionAssert.AreEquivalent(
+                new[] { nameof( Registration.PaymentPlanFinancialScheduledTransactionId ) },
+                names.ToArray() );
+        }
+
+        [TestMethod]
         public void GetPropertyNames_ModelWithoutAttribute_ReturnsEmpty()
         {
             Assert.AreEqual( 0, NotClientWritableAttribute.GetPropertyNames( typeof( DefinedValue ) ).Count );
@@ -90,7 +100,7 @@ namespace Rock.Tests.Rest
                 .Where( p => p.IsDefined( typeof( NotClientWritableAttribute ), true ) )
                 .ToList();
 
-            Assert.AreEqual( 3, markedProperties.Count );
+            Assert.AreEqual( 4, markedProperties.Count );
 
             foreach ( var property in markedProperties )
             {

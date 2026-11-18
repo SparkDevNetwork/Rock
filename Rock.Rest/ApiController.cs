@@ -401,6 +401,20 @@ namespace Rock.Rest
             */
             NotClientWritableAttribute.ClearValues( Service.Context, value, typeof( T ) );
 
+            /*
+                11/18/2026 - MSE
+
+                Some file columns (such as the Site logo) may only name a file the caller
+                uploaded. Otherwise a new record could take over a file that belongs to
+                another record, and the cleanup job could later delete it.
+
+                Reason: Clients may only attach files they uploaded.
+            */
+            if ( !UploadedBinaryFileOnlyAttribute.AreValuesAllowed( Service.Context, value, typeof( T ), GetPerson() ) )
+            {
+                return ControllerContext.Request.CreateErrorResponse( HttpStatusCode.BadRequest, "Invalid file." );
+            }
+
             if ( !value.IsValid )
             {
                 return ControllerContext.Request.CreateErrorResponse(
@@ -495,6 +509,13 @@ namespace Rock.Rest
             // The check above authorized the record as it is stored. Authorize it again with the
             // posted values applied, since they may change who is allowed to edit it.
             CheckCanEditAfterUpdate( targetModel );
+
+            // Some file columns may only keep their stored file or name a file the
+            // caller uploaded. See Post.
+            if ( !UploadedBinaryFileOnlyAttribute.AreValuesAllowed( Service.Context, targetModel, typeof( T ), GetPerson() ) )
+            {
+                throw new HttpResponseException( ControllerContext.Request.CreateErrorResponse( HttpStatusCode.BadRequest, "Invalid file." ) );
+            }
 
             if ( targetModel.IsValid )
             {
@@ -693,6 +714,13 @@ namespace Rock.Rest
             // The check above authorized the record as it is stored. Authorize it again with the
             // patched values applied, since they may change who is allowed to edit it.
             CheckCanEditAfterUpdate( targetModel );
+
+            // Some file columns may only keep their stored file or name a file the
+            // caller uploaded. See Post.
+            if ( !UploadedBinaryFileOnlyAttribute.AreValuesAllowed( Service.Context, targetModel, typeof( T ), GetPerson() ) )
+            {
+                throw new HttpResponseException( ControllerContext.Request.CreateErrorResponse( HttpStatusCode.BadRequest, "Invalid file." ) );
+            }
 
             // Verify model is valid before saving
             if ( targetModel.IsValid )
