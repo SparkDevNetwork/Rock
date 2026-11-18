@@ -135,7 +135,9 @@ async function setup(): Promise<{
             },
             loadOlderReplies: async () => undefined
         },
-        mentions: { threadOpened: () => undefined }
+        mentions: { threadOpened: () => undefined },
+        // no card open, which a profile in the column would follow
+        profile: { state: { card: null } }
     };
 
     host = mount(defineComponent({
