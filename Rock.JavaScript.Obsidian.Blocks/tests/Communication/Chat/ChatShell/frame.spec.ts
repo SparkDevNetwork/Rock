@@ -6404,6 +6404,20 @@ describe("a start still signing in", () => {
 
         expect(w.get("[data-testid='new-message']").attributes("inert")).toBeUndefined();
     });
+
+    // The head is drawn in its final shape from mount: Activity holds its place beside New message
+    // while chat signs in, out of reach as New message is, so the search never narrows as it lands.
+    test("Activity holds its place in the head from mount, out of reach until chat signs in", async () => {
+        const w = await mountStarting(1200);
+        const activity = w.get("[data-testid='sidebar-top'] [data-testid='sidebar-activity']");
+        expect(activity.attributes("inert")).toBeDefined();
+
+        stateOf().phase = "ready";
+        await settle();
+
+        expect(w.get("[data-testid='sidebar-activity']").element).toBe(activity.element);
+        expect(activity.attributes("inert")).toBeUndefined();
+    });
 });
 
 // Every face that shows a status reads the shell's one store through the block, and the first

@@ -180,7 +180,7 @@ describe("the sidebar's top", () => {
     // The Activity inbox, Mentions and the Threads the person follows, opens from the head beside
     // New message, and carries the new-mention dot that used to sit in the conversation's header.
     test("offers Activity beside New message, which asks for the inbox", async () => {
-        const w = mountSidebar({ isActivityOffered: true });
+        const w = mountSidebar();
         const top = w.get("[data-testid='sidebar-top']");
         const buttons = top.findAll("button").map(b => b.attributes("data-testid"));
 
@@ -195,7 +195,7 @@ describe("the sidebar's top", () => {
     });
 
     test("draws the church-colour dot on Activity while a mention waits, and says so", async () => {
-        const w = mountSidebar({ isActivityOffered: true, hasMentionDot: true });
+        const w = mountSidebar({ hasMentionDot: true });
 
         const activity = w.get("[data-testid='sidebar-activity']");
         expect(activity.attributes("aria-label")).toBe("Activity, new mentions");
@@ -209,7 +209,7 @@ describe("the sidebar's top", () => {
     // Laid over the conversation in a narrow window, the sidebar covers the header's own button,
     // so its head carries the button that puts it away, where the header's stood.
     test("while laid over the conversation, leads its head with a button that puts it away", async () => {
-        const w = mountSidebar({ isActivityOffered: true });
+        const w = mountSidebar();
         expect(w.find("[data-testid='sidebar-hide']").exists()).toBe(false);
 
         await w.setProps({ isOver: true });
@@ -222,11 +222,18 @@ describe("the sidebar's top", () => {
         expect(w.emitted("hide")).toHaveLength(1);
     });
 
-    test("leaves Activity out until it is offered, and keeps it in the list's head on a phone", () => {
-        expect(mountSidebar().find("[data-testid='sidebar-activity']").exists()).toBe(false);
+    // The head is drawn in its final shape from the first paint: while chat signs in Activity holds
+    // its place, out of reach as New message is, so the search beside it never narrows as it lands.
+    test("draws Activity while chat signs in, out of reach, and keeps it in the list's head on a phone", async () => {
+        const w = mountSidebar({ isActivityInert: true });
+        const activity = w.get("[data-testid='sidebar-top'] [data-testid='sidebar-activity']");
+        expect(activity.attributes("inert")).toBeDefined();
+
+        await w.setProps({ isActivityInert: false });
+        expect(activity.attributes("inert")).toBeUndefined();
         wrapper?.unmount();
 
-        const phone = mountSidebar({ isPhone: true, isActivityOffered: true });
+        const phone = mountSidebar({ isPhone: true });
         expect(phone.get("[data-testid='sidebar-top']").find("[data-testid='sidebar-activity']").exists()).toBe(true);
     });
 
