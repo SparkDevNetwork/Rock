@@ -996,6 +996,24 @@ describe("the switch to phone panes", () => {
 });
 
 describe("the phone panes", () => {
+    // Reduced motion takes the shared distances to nothing, so panes moved by them are left a
+    // fade, as the folded sidebar and a sheet's pages are; a pane waiting aside is faded out too.
+    test("a waiting pane moves by the shared sheet distance and fades, so reduced motion leaves a fade", () => {
+        const block = join(shellFolder, "../chatShell.obs");
+        const waiting = [
+            /\[data-phone="true"\] \.chat-frame\[data-pane="list"\] \.chat-frame-main$/,
+            /\[data-phone="true"\] \.chat-frame\[data-pane="conversation"\] \.chat-frame-side$/,
+            /\[data-phone="true"\] \.chat-frame-panel$/
+        ];
+
+        for (const selector of waiting) {
+            const rules = styleRules(block, selector).join(";");
+            expect(rules).toMatch(/opacity:\s*0;/);
+            expect(rules).toMatch(/transform:\s*translateX\([^;]*var\(--chat-rise-sheet\)/);
+            expect(rules).not.toMatch(/translateX\(-?\d+%\)/);
+        }
+    });
+
     test("show the list alone until a conversation is opened", async () => {
         const w = await mountBlock(390);
 
