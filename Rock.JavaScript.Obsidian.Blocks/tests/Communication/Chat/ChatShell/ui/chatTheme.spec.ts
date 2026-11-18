@@ -336,7 +336,7 @@ const namedLiterals: Named[] = [
     { name: "d-spring", value: "var(--chat-t-base)", reduced: "var(--chat-t-fast)" },
     { name: "d-sheet-out", value: "var(--chat-t-base)", reduced: "var(--chat-t-fast)" },
     { name: "d-progress", value: "var(--chat-t-fast)", reduced: "0ms" },
-    { name: "d-img-in", value: "220ms", reduced: "140ms" },
+    { name: "d-img-in", value: "260ms", reduced: "140ms" },
     { name: "d-reveal", value: "240ms", reduced: "140ms" },
 
     // Small shadows.

@@ -300,7 +300,7 @@
     /* The typing dots' strength between bobs, and so at rest. */
     --chat-bob-dim: .45;
     /* A photo or face fading in once decoded, and how long the first decoded one of a batch waits for the rest. */
-    --chat-d-img-in: 220ms;
+    --chat-d-img-in: 260ms;
     --chat-d-img-batch: 300ms;
 
     /*
@@ -1056,6 +1056,39 @@
 /* A photo's held box is a skeleton too while its image waits to be decoded: the same pulse as every other. */
 .chat-attach-tile:has(> .chat-img-hold) {
     animation: var(--chat-loop-stop, chat-skeleton-pulse) var(--chat-d-skeleton) var(--chat-ease-state) infinite alternate;
+}
+
+/*
+    The church's profile template, drawn in the profile panel: markup the panel did not render, so
+    its own scoped rules cannot reach it. Paragraphs, lists and headings in the panel's type and
+    spacing, bold and headings in full ink, links in the church's ink, pictures inside the panel.
+*/
+.chat-pp-lava :is(p, ul, ol, h1, h2, h3, h4, h5, h6) {
+    margin: 0 0 4px;
+}
+
+.chat-pp-lava :is(ul, ol) {
+    padding-left: 18px;
+}
+
+.chat-pp-lava :is(h1, h2, h3, h4, h5, h6) {
+    font-size: var(--chat-fs-ui);
+    font-weight: 700;
+    color: var(--chat-text);
+}
+
+.chat-pp-lava :is(b, strong) {
+    font-weight: 600;
+    color: var(--chat-text);
+}
+
+.chat-pp-lava a {
+    color: var(--chat-brand-ink);
+}
+
+.chat-pp-lava img {
+    max-width: 100%;
+    height: auto;
 }
 
 /* Read by a screen reader, never seen: a live announcement, the "@" before a mention chip's name. */
