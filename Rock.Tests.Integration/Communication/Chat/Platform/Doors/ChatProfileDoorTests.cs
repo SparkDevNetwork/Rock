@@ -28,6 +28,7 @@ using Rock.Tests.Integration.Communication.Chat.Platform.Sync;
 using Rock.Tests.Integration.TestFramework.Database;
 using Rock.Utility;
 using Rock.ViewModels.Blocks.Communication.Chat.ChatShell;
+using Rock.Web;
 using Rock.Web.Cache;
 
 namespace Rock.Tests.Integration.Communication.Chat.Platform.Doors
@@ -632,9 +633,14 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Doors
             scene.Fixture.AddMember( Rock.SystemGuid.Group.GROUP_ADMINISTRATORS.AsGuid(), personId );
         }
 
+        /// <summary>
+        /// Rock's own link to a person on its person profile page, by their key, as Rock's lists
+        /// build it. Outside a web request no route is registered, so it reads "/?PersonId=key"
+        /// here and "/Person/key" on a site.
+        /// </summary>
         private static string ProfileUrlOf( int personId )
         {
-            return "/Person/" + IdHasher.Instance.GetHash( personId );
+            return new PageReference( Rock.SystemGuid.Page.PERSON_PROFILE_PERSON_PAGES, new Dictionary<string, string> { ["PersonId"] = IdHasher.Instance.GetHash( personId ) } ).BuildUrl();
         }
 
         private static void AssertNothingShown( ChatProfileDetailsBag details, string because = null )
