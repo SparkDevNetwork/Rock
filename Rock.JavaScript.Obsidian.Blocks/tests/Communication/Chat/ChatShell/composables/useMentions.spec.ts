@@ -1023,6 +1023,37 @@ describe("the inbox", () => {
         expect(h.callsTo("chat_list_mentions")).toHaveLength(1);
     });
 
+    // The panel draws the inbox while it closes, so a closing panel keeps its rows to the end
+    // rather than saying there are no mentions.
+    test("closed, keeps the rows drawn for the panel leaving", async () => {
+        const h = setup();
+        h.answers.chat_list_mentions = [inboxAnswer([mentionRow(50, "2026-10-18T09:00:00Z"), mentionRow(40, "2026-10-17T09:00:00Z")])];
+        await h.mentions.openInbox();
+
+        h.mentions.closeInbox();
+
+        expect(h.mentions.state.inbox.rows.map(r => r.message.id)).toEqual([50, 40]);
+        expect(h.mentions.state.inbox.isLoading).toBe(false);
+        expect(h.mentions.state.inbox.isRefreshing).toBe(false);
+    });
+
+    test("opened again, afresh as at its first opening: nothing held is drawn until the first page lands", async () => {
+        const h = setup();
+        const page = deferred<CallResult>();
+        h.answers.chat_list_mentions = [inboxAnswer([mentionRow(50, "2026-10-18T09:00:00Z")]), page];
+        await h.mentions.openInbox();
+        h.mentions.closeInbox();
+
+        const opening = h.mentions.openInbox();
+
+        expect(h.mentions.state.inbox.rows).toEqual([]);
+        expect(h.mentions.state.inbox.isLoading).toBe(true);
+        page.resolve(inboxAnswer([mentionRow(60, "2026-10-18T09:30:00Z"), mentionRow(50, "2026-10-18T09:00:00Z")]));
+        await opening;
+        expect(h.mentions.state.inbox.rows.map(r => r.message.id)).toEqual([60, 50]);
+        expect(h.mentions.state.inbox.isLoading).toBe(false);
+    });
+
     test("drops a page on its way once closed", async () => {
         const h = setup();
         const answer = deferred<CallResult>();
