@@ -95,13 +95,6 @@
     line-height: 16px;
 }
 
-/* The marks fade in once they are due, so they never pop. */
-.chat-veil-marks,
-.chat-veil-header > *,
-.chat-veil-feed > * {
-    animation: chat-reveal-in var(--chat-t-base) var(--chat-ease-in) both;
-}
-
 .chat-veil-header {
     display: flex;
     flex: none;
@@ -182,7 +175,7 @@
         /** Whether the region has been revealed, which takes the veil away. */
         isRevealed: boolean;
 
-        /** Whether the marks are due; the frame draws without them first. */
+        /** Whether the marks are drawn: from the first paint until both regions reveal. */
         isMarksShown: boolean;
 
         /** The room the column's marks are shaped for. */

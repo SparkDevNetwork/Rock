@@ -1281,7 +1281,8 @@ describe("the page load's reveal", () => {
 
         expect(h.shell.reveal.state.isSidebarRevealed).toBe(false);
         expect(h.shell.reveal.state.isMainRevealed).toBe(false);
-        expect(h.shell.reveal.state.isSkeletonShown).toBe(false);
+        // the first paint's marks stand as they were when it stopped
+        expect(h.shell.reveal.state.isSkeletonShown).toBe(true);
     });
 });
 

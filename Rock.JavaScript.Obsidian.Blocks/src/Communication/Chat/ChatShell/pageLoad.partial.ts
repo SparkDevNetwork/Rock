@@ -217,12 +217,6 @@ export function writeRememberedStatusShown(storage: StorageLike | null, channelK
 }
 
 /**
- * How long a first load waits before drawing the skeleton's marks. An estimate to measure on the
- * sandbox: a load faster than this never shows them, so a quick load does not flash grey.
- */
-export const skeletonWaitMs = 150;
-
-/**
  * How long the faces of the first screen get to decode once its data is in, before the reveal
  * goes without them. An estimate to measure on the sandbox. Faces held for the reveal show with
  * it as soon as they decode, never waiting on the image batch's own cap, so this one figure
@@ -244,7 +238,10 @@ export type PageRevealState = {
     /** The look the skeleton draws, from the room opened last. */
     kind: RoomLook;
 
-    /** Whether the skeleton's marks are drawn: the first load has run past the wait. */
+    /**
+     * Whether the skeleton's marks are drawn: from the first paint, with no wait, until both regions
+     * reveal, so a quick load swaps them for the list in one step and never shows an empty column.
+     */
     isSkeletonShown: boolean;
 
     /** Whether the sidebar's list has been revealed over its skeleton. */
@@ -326,7 +323,7 @@ export type PageRevealView = Pick<PageReveal, "state" | "holdFace">;
 export const pageRevealKey: InjectionKey<PageRevealView> = Symbol("chatPageReveal");
 
 /**
- * Creates the first load's reveal; the skeleton's wait runs from now, the ceiling from sign-in.
+ * Creates the first load's reveal; the skeleton is drawn from now, the ceiling runs from sign-in.
  *
  * @param options The look to draw before anything is known.
  *
@@ -335,7 +332,7 @@ export const pageRevealKey: InjectionKey<PageRevealView> = Symbol("chatPageRevea
 export function createPageReveal(options: { kind: RoomLook }): PageReveal {
     const state = reactive<PageRevealState>({
         kind: options.kind,
-        isSkeletonShown: false,
+        isSkeletonShown: true,
         isSidebarRevealed: false,
         isMainRevealed: false,
         isReleased: false
@@ -355,12 +352,6 @@ export function createPageReveal(options: { kind: RoomLook }): PageReveal {
         return null;
     }
 
-    // The marks wait so a load that is quick never shows them.
-    let skeletonTimer: ReturnType<typeof setTimeout> | null = setTimeout(() => {
-        skeletonTimer = null;
-        state.isSkeletonShown = !(state.isSidebarRevealed && state.isMainRevealed);
-    }, skeletonWaitMs);
-
     // Past the ceiling nothing more is waited for: a region whose data has not come is revealed
     // all the same and shows its own loading state, so no call can keep the column veiled.
     let ceilingTimer: ReturnType<typeof setTimeout> | null = null;
@@ -376,7 +367,6 @@ export function createPageReveal(options: { kind: RoomLook }): PageReveal {
 
         if (state.isSidebarRevealed && state.isMainRevealed) {
             // Nothing is left to wait for or to draw.
-            skeletonTimer = clearTimer(skeletonTimer);
             ceilingTimer = clearTimer(ceilingTimer);
             state.isSkeletonShown = false;
         }
@@ -477,7 +467,6 @@ export function createPageReveal(options: { kind: RoomLook }): PageReveal {
         },
         stop: (): void => {
             isStopped = true;
-            skeletonTimer = clearTimer(skeletonTimer);
             ceilingTimer = clearTimer(ceilingTimer);
             graceTimer = clearTimer(graceTimer);
         }

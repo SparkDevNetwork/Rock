@@ -1063,7 +1063,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
         mask: message => blocks.mask(message)
     });
 
-    // From the shell's creation, which is the block's mount: the skeleton's wait and the ceiling run
+    // From the shell's creation, which is the block's mount: the skeleton is drawn and the ceiling runs
     // from here. It draws the look of the room opened last, as nothing else is known yet.
     const reveal = createPageReveal({ kind: readRememberedKind(options.storage, storageKey) });
     const pushOffKey = `rock-chat:push-off:${tenantId.toLowerCase()}:${personAliasGuid.toLowerCase()}`;
