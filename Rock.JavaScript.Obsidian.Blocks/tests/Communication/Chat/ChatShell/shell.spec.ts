@@ -962,6 +962,53 @@ describe("the page load", () => {
         expect(h.shell.state.errors).toHaveLength(1);
     });
 
+    // Browse's preview reads a room's history beside the conversation on screen, which it leaves be.
+    test("a room Browse previews has its newest page read without opening it, and its older page on ask", async () => {
+        const h = build();
+        const starting = h.shell.start();
+        await settle();
+        answerHistory(h, channelA, 10);
+        await starting;
+        await settle();
+        const topicsBefore = [...h.joined];
+
+        const reading = h.shell.readPreview(channelB);
+        await settle();
+        h.history[channelB]?.shift()?.resolve(fakeResponse(200, { ...page(20), has_more: true }));
+        await reading;
+
+        expect(h.shell.timelines.state(channelB).messages.map(m => m.id)).toEqual([20]);
+        expect(h.shell.state.activeChannelId).toBe(channelA);
+        expect(h.joined).toEqual(topicsBefore);
+
+        void h.shell.loadOlder(channelB);
+        await settle();
+        expect(h.history[channelB]).toHaveLength(1);
+    });
+
+    test("a preview's page that fails is told by the error toast, and one let go meanwhile lands nothing", async () => {
+        const h = build();
+        const starting = h.shell.start();
+        await settle();
+        answerHistory(h, channelA, 10);
+        await starting;
+        await settle();
+
+        const reading = h.shell.readPreview(channelB);
+        await settle();
+        h.history[channelB]?.shift()?.resolve(fakeResponse(500, { message: "down" }));
+        await reading;
+        expect(h.shell.state.errors).toHaveLength(1);
+
+        const again = h.shell.readPreview(channelB);
+        await settle();
+        await h.shell.readPreview(null);
+        h.history[channelB]?.shift()?.resolve(fakeResponse(200, page(20)));
+        await again;
+
+        expect(h.shell.timelines.state(channelB).messages).toEqual([]);
+    });
+
     test("a reload that fails once the list is drawn is still told by the error toast, as nothing else shows it", async () => {
         const h = build({ linkedChannelId: null });
         await h.shell.start();
