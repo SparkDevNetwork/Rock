@@ -29,6 +29,7 @@ import { mount, VueWrapper } from "@vue/test-utils";
 import { nextTick, reactive } from "vue";
 import { ChannelFacts, MentionRow, SidebarRow, TimelineMessage } from "../../../../src/Communication/Chat/ChatShell/types.partial";
 import { ShellOptions } from "../../../../src/Communication/Chat/ChatShell/shell.partial";
+import ChannelDirectoryComponent from "../../../../src/Communication/Chat/ChatShell/components/channelDirectory.partial.obs";
 import ChannelSidebarComponent from "../../../../src/Communication/Chat/ChatShell/components/channelSidebar.partial.obs";
 import EmojiPickerComponent from "../../../../src/Communication/Chat/ChatShell/components/emojiPicker.partial.obs";
 import ComposerComponent from "../../../../src/Communication/Chat/ChatShell/components/composer.partial.obs";
@@ -278,6 +279,7 @@ function fakeShell(): Record<string, unknown> {
             state.activeChannelId = channelId;
         }),
         relink: jest.fn(),
+        readPreview: jest.fn(async () => undefined),
         seen: jest.fn(),
         markRead: jest.fn(),
         firstMessageShown: jest.fn(),
@@ -4387,32 +4389,87 @@ describe("Browse channels", () => {
         expect(roomsOf().closeDirectory).toHaveBeenCalled();
     });
 
-    test("hands the search, the filters and Join on to the rooms", async () => {
+    /** Opens Browse over a conversation with the room above listed, and chooses its row. */
+    async function previewVolunteers(): Promise<VueWrapper> {
         const w = await mountBlock(1200);
+        await openRow(w, team.channel_id);
         await w.get("[data-testid='sidebar-browse']").trigger("click");
         listVolunteers();
         await settle();
+        await w.get("[data-testid='directory-row-open']").trigger("click");
+        await settle();
+        return w;
+    }
+
+    test("hands the search, the filters, and the preview's Join and Leave on to the rooms", async () => {
+        const w = await previewVolunteers();
 
         await w.get("[data-testid='directory-search']").setValue("vol");
         await w.get("[data-testid='directory-show-option'][data-value='notJoined']").trigger("click");
-        await w.get("[data-testid='directory-join']").trigger("click");
+        await w.get("[data-testid='directory-preview'] [data-testid='join-channel']").trigger("click");
+        // Leave asks first in the footer, which says so once the person confirms
+        w.findComponent(ChannelDirectoryComponent).vm.$emit("leave", volunteers.channel_id);
 
         expect(roomsOf().setQuery).toHaveBeenCalledWith("vol");
         expect(roomsOf().setShow).toHaveBeenCalledWith("notJoined");
         expect(roomsOf().join).toHaveBeenCalledWith(volunteers.channel_id);
+        expect(roomsOf().leave).toHaveBeenCalledWith(volunteers.channel_id);
     });
 
-    test("opening a row previews its room and closes the view", async () => {
-        const w = await mountBlock(1200);
-        await w.get("[data-testid='sidebar-browse']").trigger("click");
-        listVolunteers();
+    test("choosing a row previews its room in place, read only, the conversation underneath kept", async () => {
+        mockTimelines.set(volunteers.channel_id, reactive({ messages: [storedMessage(41, { channel_id: volunteers.channel_id, body: "Sign-ups are open" })], isLoaded: true, hasMore: false, readCursor: null, unreadCount: 0, firstUnreadId: null, isBehind: false, verifiedThrough: 41 }));
+        const w = await previewVolunteers();
+
+        // The view stays open on the list, with the room's preview beside it reading its history.
+        expect(w.find("[data-testid='main-view']").exists()).toBe(true);
+        const preview = w.get("[data-testid='directory-preview']");
+        expect(preview.attributes("data-channel-id")).toBe(volunteers.channel_id);
+        expect(mockShell!.readPreview).toHaveBeenLastCalledWith(volunteers.channel_id);
+        const feed = w.findAllComponents(MessageFeedComponent).find(f => preview.element.contains(f.element))!;
+        expect(feed.props("isPreviewing")).toBe(true);
+        expect(feed.props("timeline")).toBe(mockTimelines.get(volunteers.channel_id));
+        expect(preview.text()).toContain("Sign-ups are open");
+
+        // It is not the room on screen: nothing opens, no sidebar row stands in, nothing is read.
+        expect(mockShell!.selectChannel).toHaveBeenCalledTimes(1);
+        expect(roomsOf().previewRoom).not.toHaveBeenCalled();
+        feed.vm.$emit("seen", 41);
+        feed.vm.$emit("markRead", 41);
+        expect(mockShell!.seen).not.toHaveBeenCalled();
+        expect(mockShell!.markRead).not.toHaveBeenCalled();
+    });
+
+    test("a join that lands reads the preview's history again, for the door's line", async () => {
+        const w = await previewVolunteers();
+        roomsOf().join.mockImplementation(async (channelId: string) => {
+            roomsOf().state.joins[channelId] = { kind: "joined", isFresh: true };
+        });
+
+        await w.get("[data-testid='directory-preview'] [data-testid='join-channel']").trigger("click");
         await settle();
 
-        await w.get("[data-testid='directory-row-open']").trigger("click");
+        expect((mockShell!.readPreview as jest.Mock).mock.calls.filter(call => call[0] === volunteers.channel_id)).toHaveLength(2);
+    });
+
+    test("Open makes the previewed room the conversation and closes the view, letting the preview go", async () => {
+        const w = await previewVolunteers();
+
+        w.findComponent(ChannelDirectoryComponent).vm.$emit("open", volunteers.channel_id);
         await settle();
 
         expect(roomsOf().previewRoom).toHaveBeenCalledWith(volunteers.channel_id);
+        expect(mockShell!.selectChannel).toHaveBeenLastCalledWith(volunteers.channel_id);
         expect(w.find("[data-testid='main-view']").exists()).toBe(false);
+        expect(mockShell!.readPreview).toHaveBeenLastCalledWith(null);
+    });
+
+    test("closing the view lets the preview go", async () => {
+        const w = await previewVolunteers();
+
+        await w.get("[data-testid='directory-close']").trigger("click");
+        await settle();
+
+        expect(mockShell!.readPreview).toHaveBeenLastCalledWith(null);
     });
 });
 
