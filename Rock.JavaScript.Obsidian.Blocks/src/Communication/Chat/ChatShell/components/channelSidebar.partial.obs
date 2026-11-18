@@ -210,8 +210,8 @@
 
         <!--
             Who the person is, and their settings; with online status, their face sets their status.
-            Drawn final from the first paint with no veil over it, so its face fades in on its own
-            at the first load's reveal.
+            Drawn final from the first paint with no veil over it, so the first load's reveal does
+            not hold its face: the photo shows with the name, at once when cached.
         -->
         <div class="chat-side-me" data-unveiled>
             <StatusMenu v-if="isStatusShown"

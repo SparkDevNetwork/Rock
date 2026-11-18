@@ -1140,8 +1140,8 @@ describe("the sidebar's foot", () => {
         expect(side.lastElementChild?.contains(w.get("[data-testid='sidebar-me']").element)).toBe(true);
     });
 
-    // The foot is drawn final from the first paint, with no veil over it, so its face fades in on
-    // its own at the first load's reveal while the list's veil crossfades beside it.
+    // The foot is drawn final from the first paint, with no veil over it, so the first load's
+    // reveal does not hold its face while the list's veil waits beside it.
     test("is a region with no veil over it, the face in it and in its status face both inside", () => {
         const w = mountSidebar({ personName: "Jordan Lee", isStatusShown: true });
 
