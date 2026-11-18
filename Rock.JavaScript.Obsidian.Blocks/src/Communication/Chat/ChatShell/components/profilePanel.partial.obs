@@ -117,7 +117,7 @@
 
             <!-- The rooms the two are both in, newest activity first as the platform sends them, each opening its room. -->
             <section v-if="sharedRooms.length > 0" class="chat-pp-sec" data-testid="profile-shared">
-                <h3 class="chat-pp-h">Shared conversations <span class="chat-pp-count">{{ sharedTotal }}</span></h3>
+                <h3 class="chat-pp-h">Shared conversations <span class="chat-pp-count">{{ sharedRooms.length }}{{ hasMoreShared ? "+" : "" }}</span></h3>
                 <ul class="chat-pp-rooms">
                     <ListRow v-for="room in sharedRooms"
                              :key="room.channel_id"
@@ -131,7 +131,7 @@
                         <span class="chat-pp-room">{{ room.name }}</span>
                     </ListRow>
                 </ul>
-                <p v-if="sharedTotal > sharedRooms.length" class="chat-pp-more" data-testid="profile-shared-more">and {{ sharedTotal - sharedRooms.length }} more</p>
+                <p v-if="hasMoreShared" class="chat-pp-more" data-testid="profile-shared-more">and more</p>
             </section>
         </div>
     </PanelHost>
@@ -583,8 +583,8 @@
     /** The conversations the two share as the platform listed them; none on the person's own panel. */
     const sharedRooms = computed((): SharedConversation[] => props.person.is_self ? [] : props.person.shared_conversations ?? []);
 
-    /** Every conversation they share, counted past the ones listed. */
-    const sharedTotal = computed((): number => Math.max(props.person.shared_conversations_total ?? 0, sharedRooms.value.length));
+    /** Whether they share more than the ones listed, which the platform says without counting them. */
+    const hasMoreShared = computed((): boolean => props.person.shared_conversations_more === true);
 
     /**
      * The person's badges in the church's order, only when they show their details; a key the

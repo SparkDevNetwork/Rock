@@ -270,8 +270,11 @@ export type DirectoryRow = {
     description: string | null;
     group_type_name: string | null;
 
-    /** The room's present members, the count its header shows; absent from a platform before Browse showed it. */
-    member_count?: number;
+    /**
+     * The room's present members, the count its header shows; null for a room not counted yet, which
+     * shows no count rather than 0, and absent from a platform before Browse showed it.
+     */
+    member_count?: number | null;
 };
 
 /** What chat_list_directory answers: a page of rows, and every room matching, counted past the page. */
@@ -766,8 +769,8 @@ export type PersonProfile = PersonRow & {
      */
     shared_conversations?: SharedConversation[];
 
-    /** Every conversation they share, counted past the cap. */
-    shared_conversations_total?: number;
+    /** Whether they share more conversations than the ones listed; never how many, which the cap does not count. */
+    shared_conversations_more?: boolean;
 };
 
 /** A conversation the caller and a person are both in, as a profile lists it; never their direct message. */
