@@ -70,7 +70,29 @@ internal sealed partial class PrayerSkill : AgentSkillComponent
         /// The parent category to use by default when listing or adding prayer requests.
         /// </summary>
         public const string ParentCategory = "parentCategory";
+
+        /// <summary>
+        /// The number of days until an approved prayer request added by the
+        /// agent expires. Blank, zero or negative uses the default.
+        /// </summary>
+        public const string ExpireDays = "expireDays";
     }
+
+    /// <summary>
+    /// The configuration keys that are copied between the public and private
+    /// configuration without any changes.
+    /// </summary>
+    private static readonly string[] _passThroughConfigurationKeys = new[]
+    {
+        ConfigurationKey.ParentCategory,
+        ConfigurationKey.ExpireDays
+    };
+
+    /// <summary>
+    /// The number of days until an approved prayer request expires when the
+    /// skill does not configure a value. This matches the prayer blocks.
+    /// </summary>
+    private const int DefaultExpireDays = 14;
 
     /// <inheritdoc/>
     public override DynamicComponentDefinitionBag GetComponentDefinition( Dictionary<string, string> privateConfiguration, RockContext rockContext, RockRequestContext requestContext )
@@ -90,9 +112,12 @@ internal sealed partial class PrayerSkill : AgentSkillComponent
     {
         var publicConfiguration = new Dictionary<string, string>();
 
-        if ( privateConfiguration.TryGetValue( ConfigurationKey.ParentCategory, out var prayerCategoriesString ) )
+        foreach ( var key in _passThroughConfigurationKeys )
         {
-            publicConfiguration[ConfigurationKey.ParentCategory] = prayerCategoriesString;
+            if ( privateConfiguration.TryGetValue( key, out var value ) )
+            {
+                publicConfiguration[key] = value;
+            }
         }
 
         return publicConfiguration;
@@ -103,9 +128,12 @@ internal sealed partial class PrayerSkill : AgentSkillComponent
     {
         var privateConfiguration = new Dictionary<string, string>();
 
-        if ( publicConfiguration.TryGetValue( ConfigurationKey.ParentCategory, out var groupTypesString ) )
+        foreach ( var key in _passThroughConfigurationKeys )
         {
-            privateConfiguration[ConfigurationKey.ParentCategory] = groupTypesString;
+            if ( publicConfiguration.TryGetValue( key, out var value ) )
+            {
+                privateConfiguration[key] = value;
+            }
         }
 
         return privateConfiguration;

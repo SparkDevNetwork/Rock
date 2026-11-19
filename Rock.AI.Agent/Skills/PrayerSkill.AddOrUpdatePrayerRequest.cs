@@ -14,12 +14,14 @@
 // limitations under the License.
 // </copyright>
 
+using System;
 using System.ComponentModel;
 
 using Rock.AI.Agent.Annotations;
 using Rock.AI.Agent.Classes.Common;
 using Rock.AI.Agent.Classes.Entity;
 using Rock.Configuration;
+using Rock.Data;
 using Rock.Enums.AI.Agent;
 using Rock.Model;
 using Rock.SystemGuid;
@@ -34,8 +36,11 @@ internal sealed partial class PrayerSkill
     [Description( "Adds a new or updates an existing prayer request." )]
     [AgentToolGuid( "3AE458AB-C06C-47BC-AD2D-86EB19E556F1" )]
     [AgentUsage( "If a personIdKey is provided, first and last name will be determined from their Person record." )]
+    [AgentUsage( "When adding a request linked to a person without a campusIdKey, the person's campus is used." )]
+    [AgentUsage( "Approved requests expire after the number of days configured on this skill unless an expirationDate is provided. Requests that are pending approval get their expiration date when a moderator approves them." )]
     [AgentToolPrerequisite( "Call the LookupPrayerCategories function to determine available categories. Select one that matches the prayer request sentiment." )]
     [AgentToolPrerequisite( "Call the SearchPerson function to first determine if there is an idKey you can use instead of first/last name." )]
+    [AgentToolPrerequisite( "Call LookupCampuses to determine the campusIdKey when the user names a campus." )]
     public AgentToolResult AddOrUpdatePrayerRequest(
         string prayerRequestIdKey = null,
         string requestText = null,
@@ -44,7 +49,13 @@ internal sealed partial class PrayerSkill
         string firstName = null,
         string lastName = null,
         bool? isPublic = null,
-        bool? isUrgent = null )
+        bool? isUrgent = null,
+
+        [Description( "The campus the prayer request is for. When updating, leave empty to keep the current campus." )]
+        string campusIdKey = null,
+
+        [Description( "The last date the prayer request should be shown for prayer. Must be today or later. Leave empty to use the default number of days when adding, or to keep the current date when updating. A request with no date gets the default. Ignored for requests that are pending approval." )]
+        DateTime? expirationDate = null )
     {
         using var rockContext = RockApp.Current.CreateRockContext();
         var helper = new AgentToolHelper( rockContext, AgentRequestContext, _logger );
@@ -104,6 +115,14 @@ internal sealed partial class PrayerSkill
             // If this is an internal request, we will auto-approve it. If it's external, it will
             // need to be approved by a moderator.
             prayerRequest.IsApproved = AgentRequestContext.AudienceType == AudienceType.Internal;
+
+            // Record who approved it and when, the same as the Prayer Request
+            // Entry block does when it auto-approves a request.
+            if ( prayerRequest.IsApproved == true )
+            {
+                prayerRequest.ApprovedByPersonAliasId = AgentRequestContext.CurrentPerson?.PrimaryAliasId;
+                prayerRequest.ApprovedOnDateTime = RockDateTime.Now;
+            }
         }
 
         if ( helper.HasErrors )
@@ -152,6 +171,7 @@ internal sealed partial class PrayerSkill
         }
 
         helper.UpdateNavigationProperty( prayerRequest, pr => pr.Category, categoryIdKey );
+        helper.UpdateNavigationProperty( prayerRequest, pr => pr.Campus, campusIdKey );
         helper.UpdateProperty( prayerRequest, pr => pr.IsPublic, isPublic );
         helper.UpdateProperty( prayerRequest, pr => pr.IsUrgent, isUrgent );
         helper.UpdateProperty( prayerRequest, pr => pr.Text, requestText );
@@ -176,6 +196,13 @@ internal sealed partial class PrayerSkill
         helper.UpdateProperty( prayerRequest, pr => pr.FirstName, firstName );
         helper.UpdateProperty( prayerRequest, pr => pr.LastName, lastName );
         helper.UpdateProperty( prayerRequest, pr => pr.Email, email );
+
+        if ( prayerRequest.Id == 0 && campusIdKey.IsNullOrWhiteSpace() )
+        {
+            SetCampusFromRequester( rockContext, prayerRequest );
+        }
+
+        UpdateExpirationDate( helper, prayerRequest, expirationDate );
 
         // Perform error checking to make sure this prayer request is valid.
         if ( !prayerRequest.CategoryId.HasValue )
@@ -206,14 +233,19 @@ internal sealed partial class PrayerSkill
             return helper.ErrorResult;
         }
 
+        // The campus may have been set by Id only, so read the name from cache.
+        var campus = prayerRequest.CampusId.HasValue ? CampusCache.Get( prayerRequest.CampusId.Value, rockContext ) : null;
+
         var result = new PrayerRequestResult
         {
             Id = prayerRequest.Id,
             Text = prayerRequest.Text,
             Category = new KeyNameResult( prayerRequest.Category.Id, prayerRequest.Category.Name ),
+            Campus = campus != null ? new KeyNameResult( campus.Id, campus.Name ) : null,
             IsUrgent = prayerRequest.IsUrgent,
             IsApproved = prayerRequest.IsApproved,
             IsPublic = prayerRequest.IsPublic,
+            ExpirationDate = prayerRequest.ExpirationDate,
         };
 
         var toolResult = Success( result )
@@ -234,6 +266,95 @@ internal sealed partial class PrayerSkill
         }
 
         return toolResult;
+    }
+
+    #endregion
+
+    #region Private Methods
+
+    /// <summary>
+    /// Sets the campus of a new prayer request to the campus of the person
+    /// it is for. This matches the Prayer Request Entry block, which defaults
+    /// the campus to the current person's campus. Nothing changes when the
+    /// request is not linked to a person.
+    /// </summary>
+    /// <param name="rockContext">The context the prayer request was loaded from.</param>
+    /// <param name="prayerRequest">The new prayer request.</param>
+    private static void SetCampusFromRequester( RockContext rockContext, PrayerRequest prayerRequest )
+    {
+        var requester = prayerRequest.RequestedByPersonAlias?.Person;
+
+        if ( requester == null )
+        {
+            return;
+        }
+
+        // This is the same lookup as Person.GetCampus(), but it uses our
+        // context. GetCampus() falls back to a new RockContext to find the
+        // family when the primary campus is not set.
+        prayerRequest.CampusId = requester.PrimaryCampusId ?? requester.GetFamily( rockContext )?.CampusId;
+    }
+
+    /// <summary>
+    /// Sets the expiration date of an approved prayer request. A new request,
+    /// or an existing one with no expiration date, uses
+    /// <paramref name="expirationDate"/> or the configured number of days.
+    /// An existing request that already has a date only changes when a date
+    /// is provided. Requests that are pending approval are not changed,
+    /// because the moderator's approval sets the expiration date.
+    /// </summary>
+    /// <param name="helper">The helper that collects errors for the tool.</param>
+    /// <param name="prayerRequest">The prayer request being added or updated.</param>
+    /// <param name="expirationDate">The expiration date the agent asked for, if any.</param>
+    private void UpdateExpirationDate( AgentToolHelper helper, PrayerRequest prayerRequest, DateTime? expirationDate )
+    {
+        /*
+            11/19/26 - CLAUDE
+
+            Prayer Session (web and mobile) only shows requests whose
+            expiration date is today or later. A NULL expiration date fails
+            that filter, so an approved request without one is never shown
+            for prayer. Approved requests must always get an expiration date,
+            the same way the Prayer Request Entry block does when it
+            auto-approves a request. An existing approved request with no
+            date also gets the default when it is edited, which repairs
+            requests the tool added before it set this date.
+
+            Reason: Approved requests with no expiration date are hidden from Prayer Session.
+        */
+        if ( prayerRequest.IsApproved != true )
+        {
+            return;
+        }
+
+        if ( expirationDate.HasValue )
+        {
+            if ( expirationDate.Value.Date < RockDateTime.Today )
+            {
+                helper.AddError( $"The {nameof( expirationDate )} must be today or later." );
+                return;
+            }
+
+            prayerRequest.ExpirationDate = expirationDate.Value.Date;
+        }
+        else if ( prayerRequest.Id == 0 || !prayerRequest.ExpirationDate.HasValue )
+        {
+            prayerRequest.ExpirationDate = RockDateTime.Today.AddDays( GetExpireDays() );
+        }
+    }
+
+    /// <summary>
+    /// Gets the number of days until a new approved prayer request expires.
+    /// A blank, zero or negative setting uses the default of 14 days. There
+    /// is no "never expires" option, because a request with no expiration
+    /// date is hidden from Prayer Session.
+    /// </summary>
+    /// <returns>The number of days until a new request expires.</returns>
+    private int GetExpireDays()
+    {
+        var expireDays = ConfigurationValues.GetReadOnlyValueOrDefault( ConfigurationKey.ExpireDays, string.Empty ).AsIntegerOrNull();
+
+        return expireDays.HasValue && expireDays.Value > 0 ? expireDays.Value : DefaultExpireDays;
     }
 
     #endregion
