@@ -22,6 +22,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Moq;
 
+using Rock.AI.Agent.Classes.Entity;
 using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.AI.Agent;
@@ -397,7 +398,344 @@ public partial class PrayerSkillTests
         Assert.IsTrue( prayerRequest.IsApproved ?? false );
     }
 
+    [TestMethod]
+    public void AddOrUpdatePrayerRequest_InternalAgentCreate_SetsApprovalAndDefaultExpiration()
+    {
+        using var scope = TestHelper.CreateScopedRockApp();
+        var rockContext = scope.App.CreateRockContext();
+
+        var currentPerson = CreatePersonWithEmail( rockContext, "Current" );
+        var prayerRequest = SeedPrayerRequest( rockContext, 10 );
+        SetupPrayerRequestCreate( rockContext );
+
+        var skill = CreateSkill( scope.App, CreateRequestContext( rockContext, currentPerson ) );
+
+        var result = skill.AddOrUpdatePrayerRequest( requestText: "TM003-new", categoryIdKey: IdHasher.Instance.GetHash( prayerRequest.CategoryId.Value ), firstName: "Ted", lastName: "Decker" );
+
+        Assert.AreEqual( ToolStatus.Success, result.GetStatus(), string.Join( " ", result.GetErrorMessages() ?? new List<string>() ) );
+
+        var newRequest = rockContext.Set<PrayerRequest>().Single( pr => pr.Id != prayerRequest.Id );
+        Assert.IsTrue( newRequest.IsApproved ?? false );
+        Assert.AreEqual( currentPerson.PrimaryAliasId, newRequest.ApprovedByPersonAliasId );
+        Assert.IsNotNull( newRequest.ApprovedOnDateTime );
+        Assert.AreEqual( RockDateTime.Today.AddDays( 14 ), newRequest.ExpirationDate );
+        Assert.AreEqual( newRequest.ExpirationDate, ( result.GetContent() as PrayerRequestResult )?.ExpirationDate );
+        CollectionAssert.Contains( result.GetInstructions(), "The prayer request has been added and approved." );
+    }
+
+    [TestMethod]
+    public void AddOrUpdatePrayerRequest_InternalAgentCreateWithConfiguredExpireDays_UsesConfiguredDays()
+    {
+        using var scope = TestHelper.CreateScopedRockApp();
+        var rockContext = scope.App.CreateRockContext();
+
+        var currentPerson = CreatePersonWithEmail( rockContext, "Current" );
+        var prayerRequest = SeedPrayerRequest( rockContext, 10 );
+        SetupPrayerRequestCreate( rockContext );
+
+        var configuration = new Dictionary<string, string> { [ExpireDaysKey] = "30" };
+        var skill = CreateSkill( scope.App, configuration, CreateRequestContext( rockContext, currentPerson ) );
+
+        var result = skill.AddOrUpdatePrayerRequest( requestText: "TM003-new", categoryIdKey: IdHasher.Instance.GetHash( prayerRequest.CategoryId.Value ), firstName: "Ted", lastName: "Decker" );
+
+        Assert.AreEqual( ToolStatus.Success, result.GetStatus(), string.Join( " ", result.GetErrorMessages() ?? new List<string>() ) );
+
+        var newRequest = rockContext.Set<PrayerRequest>().Single( pr => pr.Id != prayerRequest.Id );
+        Assert.AreEqual( RockDateTime.Today.AddDays( 30 ), newRequest.ExpirationDate );
+    }
+
+    [TestMethod]
+    [DataRow( "" )]
+    [DataRow( "0" )]
+    [DataRow( "-5" )]
+    [DataRow( "abc" )]
+    public void AddOrUpdatePrayerRequest_InternalAgentCreateWithInvalidExpireDays_UsesDefaultDays( string expireDays )
+    {
+        using var scope = TestHelper.CreateScopedRockApp();
+        var rockContext = scope.App.CreateRockContext();
+
+        var currentPerson = CreatePersonWithEmail( rockContext, "Current" );
+        var prayerRequest = SeedPrayerRequest( rockContext, 10 );
+        SetupPrayerRequestCreate( rockContext );
+
+        var configuration = new Dictionary<string, string> { [ExpireDaysKey] = expireDays };
+        var skill = CreateSkill( scope.App, configuration, CreateRequestContext( rockContext, currentPerson ) );
+
+        var result = skill.AddOrUpdatePrayerRequest( requestText: "TM003-new", categoryIdKey: IdHasher.Instance.GetHash( prayerRequest.CategoryId.Value ), firstName: "Ted", lastName: "Decker" );
+
+        Assert.AreEqual( ToolStatus.Success, result.GetStatus(), string.Join( " ", result.GetErrorMessages() ?? new List<string>() ) );
+
+        var newRequest = rockContext.Set<PrayerRequest>().Single( pr => pr.Id != prayerRequest.Id );
+        Assert.AreEqual( RockDateTime.Today.AddDays( 14 ), newRequest.ExpirationDate );
+    }
+
+    [TestMethod]
+    public void AddOrUpdatePrayerRequest_InternalAgentCreateWithExpirationDate_UsesDateOnly()
+    {
+        using var scope = TestHelper.CreateScopedRockApp();
+        var rockContext = scope.App.CreateRockContext();
+
+        var currentPerson = CreatePersonWithEmail( rockContext, "Current" );
+        var prayerRequest = SeedPrayerRequest( rockContext, 10 );
+        SetupPrayerRequestCreate( rockContext );
+
+        var skill = CreateSkill( scope.App, CreateRequestContext( rockContext, currentPerson ) );
+
+        var result = skill.AddOrUpdatePrayerRequest( requestText: "TM003-new", categoryIdKey: IdHasher.Instance.GetHash( prayerRequest.CategoryId.Value ), firstName: "Ted", lastName: "Decker", expirationDate: RockDateTime.Today.AddDays( 45 ).AddHours( 13 ) );
+
+        Assert.AreEqual( ToolStatus.Success, result.GetStatus(), string.Join( " ", result.GetErrorMessages() ?? new List<string>() ) );
+
+        var newRequest = rockContext.Set<PrayerRequest>().Single( pr => pr.Id != prayerRequest.Id );
+        Assert.AreEqual( RockDateTime.Today.AddDays( 45 ), newRequest.ExpirationDate );
+    }
+
+    [TestMethod]
+    public void AddOrUpdatePrayerRequest_InternalAgentCreateWithTodayExpirationDate_UsesToday()
+    {
+        using var scope = TestHelper.CreateScopedRockApp();
+        var rockContext = scope.App.CreateRockContext();
+
+        var currentPerson = CreatePersonWithEmail( rockContext, "Current" );
+        var prayerRequest = SeedPrayerRequest( rockContext, 10 );
+        SetupPrayerRequestCreate( rockContext );
+
+        var skill = CreateSkill( scope.App, CreateRequestContext( rockContext, currentPerson ) );
+
+        var result = skill.AddOrUpdatePrayerRequest( requestText: "TM003-new", categoryIdKey: IdHasher.Instance.GetHash( prayerRequest.CategoryId.Value ), firstName: "Ted", lastName: "Decker", expirationDate: RockDateTime.Today );
+
+        Assert.AreEqual( ToolStatus.Success, result.GetStatus(), string.Join( " ", result.GetErrorMessages() ?? new List<string>() ) );
+
+        var newRequest = rockContext.Set<PrayerRequest>().Single( pr => pr.Id != prayerRequest.Id );
+        Assert.AreEqual( RockDateTime.Today, newRequest.ExpirationDate );
+    }
+
+    [TestMethod]
+    public void AddOrUpdatePrayerRequest_InternalAgentCreateWithPastExpirationDate_ReturnsErrorAndSavesNothing()
+    {
+        using var scope = TestHelper.CreateScopedRockApp();
+        var rockContext = scope.App.CreateRockContext();
+
+        var currentPerson = CreatePersonWithEmail( rockContext, "Current" );
+        var prayerRequest = SeedPrayerRequest( rockContext, 10 );
+        SetupPrayerRequestCreate( rockContext );
+
+        var skill = CreateSkill( scope.App, CreateRequestContext( rockContext, currentPerson ) );
+
+        var result = skill.AddOrUpdatePrayerRequest( requestText: "TM003-new", categoryIdKey: IdHasher.Instance.GetHash( prayerRequest.CategoryId.Value ), firstName: "Ted", lastName: "Decker", expirationDate: RockDateTime.Today.AddDays( -1 ) );
+
+        Assert.AreEqual( ToolStatus.Error, result.GetStatus() );
+        CollectionAssert.Contains( result.GetErrorMessages().ToList(), "The expirationDate must be today or later." );
+        Assert.IsFalse( rockContext.Set<PrayerRequest>().Any( pr => pr.Id != 0 && pr.Id != prayerRequest.Id ) );
+    }
+
+    [TestMethod]
+    public void AddOrUpdatePrayerRequest_PublicAgentCreateWithExpirationDate_StaysPendingWithoutExpiration()
+    {
+        using var scope = TestHelper.CreateScopedRockApp();
+        var rockContext = scope.App.CreateRockContext();
+
+        var currentPerson = CreatePersonWithEmail( rockContext, "Current" );
+        var prayerRequest = SeedPrayerRequest( rockContext, 10 );
+        SetupPrayerRequestCreate( rockContext );
+
+        var skill = CreateSkill( scope.App, CreateRequestContext( rockContext, currentPerson, AudienceType.Public ) );
+
+        var result = skill.AddOrUpdatePrayerRequest( requestText: "TM003-new", categoryIdKey: IdHasher.Instance.GetHash( prayerRequest.CategoryId.Value ), personIdKey: IdHasher.Instance.GetHash( currentPerson.Id ), expirationDate: RockDateTime.Today.AddDays( 30 ) );
+
+        Assert.AreEqual( ToolStatus.Success, result.GetStatus(), string.Join( " ", result.GetErrorMessages() ?? new List<string>() ) );
+
+        var newRequest = rockContext.Set<PrayerRequest>().Single( pr => pr.Id != prayerRequest.Id );
+        Assert.IsFalse( newRequest.IsApproved ?? false );
+        Assert.IsNull( newRequest.ApprovedByPersonAliasId );
+        Assert.IsNull( newRequest.ApprovedOnDateTime );
+        Assert.IsNull( newRequest.ExpirationDate );
+        CollectionAssert.Contains( result.GetInstructions(), "The prayer request has been added and is pending approval." );
+    }
+
+    [TestMethod]
+    public void AddOrUpdatePrayerRequest_CreateWithCampusIdKey_SetsCampus()
+    {
+        using var scope = TestHelper.CreateScopedRockApp();
+        var rockContext = scope.App.CreateRockContext();
+
+        var currentPerson = CreatePersonWithEmail( rockContext, "Current" );
+        var prayerRequest = SeedPrayerRequest( rockContext, 10 );
+        var campus = SeedCampus( rockContext, 21, "Campus TM003-21" );
+        SetupPrayerRequestCreate( rockContext );
+
+        var skill = CreateSkill( scope.App, CreateRequestContext( rockContext, currentPerson ) );
+
+        var result = skill.AddOrUpdatePrayerRequest( requestText: "TM003-new", categoryIdKey: IdHasher.Instance.GetHash( prayerRequest.CategoryId.Value ), firstName: "Ted", lastName: "Decker", campusIdKey: IdHasher.Instance.GetHash( campus.Id ) );
+
+        Assert.AreEqual( ToolStatus.Success, result.GetStatus(), string.Join( " ", result.GetErrorMessages() ?? new List<string>() ) );
+
+        var newRequest = rockContext.Set<PrayerRequest>().Single( pr => pr.Id != prayerRequest.Id );
+        Assert.AreEqual( campus.Id, newRequest.CampusId );
+
+        var content = result.GetContent() as PrayerRequestResult;
+        Assert.AreEqual( campus.Id, content?.Campus?.Id );
+        Assert.AreEqual( campus.Name, content?.Campus?.Name );
+    }
+
+    [TestMethod]
+    public void AddOrUpdatePrayerRequest_CreateLinkedToPersonWithoutCampusIdKey_UsesRequesterCampus()
+    {
+        using var scope = TestHelper.CreateScopedRockApp();
+        var rockContext = scope.App.CreateRockContext();
+
+        var currentPerson = CreatePersonWithEmail( rockContext, "Current" );
+        var requester = CreatePersonWithEmail( rockContext, "Requester" );
+        var prayerRequest = SeedPrayerRequest( rockContext, 10 );
+        var campus = SeedCampus( rockContext, 22, "Campus TM003-22" );
+        SetPrimaryCampus( requester, campus );
+        SetupPrayerRequestCreate( rockContext );
+
+        var skill = CreateSkill( scope.App, CreateRequestContext( rockContext, currentPerson ) );
+
+        var result = skill.AddOrUpdatePrayerRequest( requestText: "TM003-new", categoryIdKey: IdHasher.Instance.GetHash( prayerRequest.CategoryId.Value ), personIdKey: IdHasher.Instance.GetHash( requester.Id ) );
+
+        Assert.AreEqual( ToolStatus.Success, result.GetStatus(), string.Join( " ", result.GetErrorMessages() ?? new List<string>() ) );
+
+        var newRequest = rockContext.Set<PrayerRequest>().Single( pr => pr.Id != prayerRequest.Id );
+        Assert.AreEqual( campus.Id, newRequest.CampusId );
+    }
+
+    [TestMethod]
+    public void AddOrUpdatePrayerRequest_CreateLinkedToPersonWithCampusIdKey_UsesGivenCampus()
+    {
+        using var scope = TestHelper.CreateScopedRockApp();
+        var rockContext = scope.App.CreateRockContext();
+
+        var currentPerson = CreatePersonWithEmail( rockContext, "Current" );
+        var requester = CreatePersonWithEmail( rockContext, "Requester" );
+        var prayerRequest = SeedPrayerRequest( rockContext, 10 );
+        var requesterCampus = SeedCampus( rockContext, 23, "Campus TM003-23" );
+        var givenCampus = SeedCampus( rockContext, 24, "Campus TM003-24" );
+        SetPrimaryCampus( requester, requesterCampus );
+        SetupPrayerRequestCreate( rockContext );
+
+        var skill = CreateSkill( scope.App, CreateRequestContext( rockContext, currentPerson ) );
+
+        var result = skill.AddOrUpdatePrayerRequest( requestText: "TM003-new", categoryIdKey: IdHasher.Instance.GetHash( prayerRequest.CategoryId.Value ), personIdKey: IdHasher.Instance.GetHash( requester.Id ), campusIdKey: IdHasher.Instance.GetHash( givenCampus.Id ) );
+
+        Assert.AreEqual( ToolStatus.Success, result.GetStatus(), string.Join( " ", result.GetErrorMessages() ?? new List<string>() ) );
+
+        var newRequest = rockContext.Set<PrayerRequest>().Single( pr => pr.Id != prayerRequest.Id );
+        Assert.AreEqual( givenCampus.Id, newRequest.CampusId );
+    }
+
+    [TestMethod]
+    public void AddOrUpdatePrayerRequest_InternalAgentUpdateApprovedRequestWithNoExpiration_SetsDefaultExpiration()
+    {
+        using var scope = TestHelper.CreateScopedRockApp();
+        var rockContext = scope.App.CreateRockContext();
+
+        var currentPerson = CreatePersonWithEmail( rockContext, "Current" );
+        var prayerRequest = SeedPrayerRequest( rockContext, 10 );
+
+        // An approved request the tool added before it set an expiration date.
+        SetRequester( prayerRequest, currentPerson );
+        prayerRequest.IsApproved = true;
+        prayerRequest.ExpirationDate = null;
+
+        var skill = CreateSkill( scope.App, CreateRequestContext( rockContext, currentPerson ) );
+
+        var result = skill.AddOrUpdatePrayerRequest( prayerRequestIdKey: IdHasher.Instance.GetHash( prayerRequest.Id ), requestText: "TM003-edited" );
+
+        Assert.AreEqual( ToolStatus.Success, result.GetStatus(), string.Join( " ", result.GetErrorMessages() ?? new List<string>() ) );
+        Assert.AreEqual( RockDateTime.Today.AddDays( 14 ), prayerRequest.ExpirationDate );
+    }
+
+    [TestMethod]
+    public void AddOrUpdatePrayerRequest_UpdateWithoutCampusOrExpiration_LeavesThemUnchanged()
+    {
+        using var scope = TestHelper.CreateScopedRockApp();
+        var rockContext = scope.App.CreateRockContext();
+
+        var currentPerson = CreatePersonWithEmail( rockContext, "Current" );
+        var prayerRequest = SeedPrayerRequest( rockContext, 10 );
+        var requestCampus = SeedCampus( rockContext, 26, "Campus TM003-26" );
+        var requesterCampus = SeedCampus( rockContext, 27, "Campus TM003-27" );
+        var expirationDate = RockDateTime.Today.AddDays( 3 );
+
+        // The requester's campus differs from the request's campus, so the
+        // test also shows the requester campus default is not used on update.
+        SetPrimaryCampus( currentPerson, requesterCampus );
+        SetRequester( prayerRequest, currentPerson );
+        prayerRequest.CampusId = requestCampus.Id;
+        prayerRequest.Campus = requestCampus;
+        prayerRequest.ExpirationDate = expirationDate;
+
+        var skill = CreateSkill( scope.App, CreateRequestContext( rockContext, currentPerson ) );
+
+        var result = skill.AddOrUpdatePrayerRequest( prayerRequestIdKey: IdHasher.Instance.GetHash( prayerRequest.Id ), requestText: "TM003-edited" );
+
+        Assert.AreEqual( ToolStatus.Success, result.GetStatus(), string.Join( " ", result.GetErrorMessages() ?? new List<string>() ) );
+        Assert.AreEqual( "TM003-edited", prayerRequest.Text );
+        Assert.AreEqual( requestCampus.Id, prayerRequest.CampusId );
+        Assert.AreEqual( expirationDate, prayerRequest.ExpirationDate );
+    }
+
+    [TestMethod]
+    public void AddOrUpdatePrayerRequest_InternalAgentUpdateWithCampusAndExpiration_UpdatesThem()
+    {
+        using var scope = TestHelper.CreateScopedRockApp();
+        var rockContext = scope.App.CreateRockContext();
+
+        var currentPerson = CreatePersonWithEmail( rockContext, "Current" );
+        var prayerRequest = SeedPrayerRequest( rockContext, 10 );
+        var oldCampus = SeedCampus( rockContext, 28, "Campus TM003-28" );
+        var newCampus = SeedCampus( rockContext, 29, "Campus TM003-29" );
+
+        SetRequester( prayerRequest, currentPerson );
+        prayerRequest.CampusId = oldCampus.Id;
+        prayerRequest.Campus = oldCampus;
+        prayerRequest.ExpirationDate = RockDateTime.Today.AddDays( 3 );
+
+        var skill = CreateSkill( scope.App, CreateRequestContext( rockContext, currentPerson ) );
+
+        var result = skill.AddOrUpdatePrayerRequest( prayerRequestIdKey: IdHasher.Instance.GetHash( prayerRequest.Id ), campusIdKey: IdHasher.Instance.GetHash( newCampus.Id ), expirationDate: RockDateTime.Today.AddDays( 60 ) );
+
+        Assert.AreEqual( ToolStatus.Success, result.GetStatus(), string.Join( " ", result.GetErrorMessages() ?? new List<string>() ) );
+        Assert.AreEqual( newCampus.Id, prayerRequest.CampusId );
+        Assert.AreEqual( RockDateTime.Today.AddDays( 60 ), prayerRequest.ExpirationDate );
+    }
+
     private const string OwnPersonOnlyMessage = "Prayer requests can only be linked to your own person record. Use firstName and lastName for anyone else.";
+
+    private const string ExpireDaysKey = "expireDays";
+
+    private static Rock.AI.Agent.Skills.PrayerSkill CreateSkill( System.IServiceProvider serviceProvider, IReadOnlyDictionary<string, string> configurationValues, AgentRequestContext agentRequestContext )
+    {
+        return AgentSkillTestFactory.CreateSkill<Rock.AI.Agent.Skills.PrayerSkill>( serviceProvider, configurationValues, agentRequestContext );
+    }
+
+    /// <summary>
+    /// Seeds a campus with the specified identifier and name.
+    /// </summary>
+    private static Campus SeedCampus( RockContext rockContext, int id, string name )
+    {
+        var campus = new Campus
+        {
+            Id = id,
+            Guid = System.Guid.NewGuid(),
+            Name = name,
+            IsActive = true
+        };
+
+        rockContext.Set<Campus>().Add( campus );
+
+        return campus;
+    }
+
+    /// <summary>
+    /// Sets the primary campus of the person.
+    /// </summary>
+    private static void SetPrimaryCampus( Rock.Model.Person person, Campus campus )
+    {
+        person.PrimaryCampusId = campus.Id;
+        person.PrimaryCampus = campus;
+    }
 
     private static Rock.Model.Person CreatePersonWithEmail( RockContext rockContext, string firstName )
     {
@@ -412,13 +750,22 @@ public partial class PrayerSkillTests
     /// Lets the tool create a new prayer request in the mocked context, and
     /// registers the entity types the person security check needs now.
     /// Otherwise that check registers them later, and that save would give
-    /// the new, unsaved prayer request an Id in the mock database.
+    /// the new, unsaved prayer request an Id in the mock database. Also seeds
+    /// the family group type, which the requester campus default needs to
+    /// look up the person's family when they have no primary campus.
     /// </summary>
     private static void SetupPrayerRequestCreate( RockContext rockContext )
     {
         Mock.Get( rockContext.Set<PrayerRequest>() )
             .Setup( m => m.Create() )
             .Returns( () => new PrayerRequest() );
+
+        rockContext.Set<GroupType>().Add( new GroupType
+        {
+            Id = 90,
+            Guid = SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid(),
+            Name = "Family"
+        } );
 
         EntityTypeCache.Get<Rock.Model.Person>( true, rockContext );
         EntityTypeCache.Get<GlobalDefault>( true, rockContext );
