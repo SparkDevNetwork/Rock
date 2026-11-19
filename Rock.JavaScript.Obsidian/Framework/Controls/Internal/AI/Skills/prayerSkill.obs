@@ -6,18 +6,31 @@
                   :items="parentCategoryItems"
                   help="The parent category to use by default when dealing with requests."
                   rules="required" />
+
+    <NumberBox v-model="expireDays"
+               label="Expires After (Days)"
+               help="The number of days until an approved prayer request added by the agent expires. Leave blank to use the default of 14 days."
+               :minimumValue="1"
+               :decimalCount="0" />
 </template>
 
 <script setup lang="ts">
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
     import { standardDynamicComponentProps, updateRefValue } from "@Obsidian/Utility/component";
+    import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
     import { safeParseJson } from "@Obsidian/Utility/stringUtils";
     import type { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { ref, watch } from "vue";
 
+    // #region Types
+
     const enum ConfigurationKey {
         ParentCategory = "parentCategory",
+        ExpireDays = "expireDays",
     }
+
+    // #endregion Types
 
     const props = defineProps(standardDynamicComponentProps);
 
@@ -30,31 +43,36 @@
     // Single value, not an array.
     const parentCategory = ref<string>(props.modelValue[ConfigurationKey.ParentCategory] ?? "");
 
+    // Blank means the server uses its default of 14 days.
+    const expireDays = ref<number | null>(toNumberOrNull(props.modelValue[ConfigurationKey.ExpireDays]));
+
     // Match your C# key: Options["prayerCategories"] = ...
     const parentCategoryItems = ref<ListItemBag[]>(
         safeParseJson<ListItemBag[]>(props.options?.prayerCategories) ?? []
     );
 
-    // #endregion
+    // #endregion Values
 
-    // #region Watches
+    // #region Watchers
 
-    // When the local value changes, emit the new modelValue
-    watch(parentCategory, () => {
+    // When the local values change, emit the new modelValue.
+    watch([parentCategory, expireDays], () => {
         const newValues = { ...props.modelValue };
         newValues[ConfigurationKey.ParentCategory] = parentCategory.value;
+        newValues[ConfigurationKey.ExpireDays] = expireDays.value?.toString() ?? "";
         emit("update:modelValue", newValues);
     });
 
-    // When the external modelValue changes, sync our ref
-    watch(() => props.modelValue[ConfigurationKey.ParentCategory], (val) => {
-        updateRefValue(parentCategory, (val as string | undefined) ?? "");
+    // When the external modelValue changes, sync our refs.
+    watch(() => props.modelValue, () => {
+        updateRefValue(parentCategory, props.modelValue[ConfigurationKey.ParentCategory] ?? "");
+        updateRefValue(expireDays, toNumberOrNull(props.modelValue[ConfigurationKey.ExpireDays]));
     });
 
-    // When options change, re-parse items
+    // When options change, re-parse items.
     watch(() => props.options, () => {
         parentCategoryItems.value = safeParseJson<ListItemBag[]>(props.options?.prayerCategories) ?? [];
     });
 
-    // #endregion
+    // #endregion Watchers
 </script>

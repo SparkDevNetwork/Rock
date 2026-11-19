@@ -31,6 +31,11 @@ namespace Rock.AI.Agent.Classes.Entity
         public KeyNameResult Category { get; set; }
 
         /// <summary>
+        /// Gets or sets the campus the prayer request is for.
+        /// </summary>
+        public KeyNameResult Campus { get; set; }
+
+        /// <summary>
         /// Gets or sets the text.
         /// </summary>
         public string Text { get; set; }
@@ -39,6 +44,11 @@ namespace Rock.AI.Agent.Classes.Entity
         /// Gets or sets the date time the note was entered.
         /// </summary>
         public DateTime? EnteredDateTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the last date the prayer request is shown for prayer.
+        /// </summary>
+        public DateTime? ExpirationDate { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this prayer request is urgent.
