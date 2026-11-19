@@ -63,6 +63,22 @@ namespace Rock.Oidc.Authorization
         {
             if ( context.Request.IsAuthorizationCodeGrantType() || context.Request.IsRefreshTokenGrantType() )
             {
+                var ticketUserName = context.Ticket?.Identity?.GetClaim( OpenIdConnectConstants.Claims.Username );
+                if ( ticketUserName.IsNotNullOrWhiteSpace() )
+                {
+                    using ( var rockContext = new RockContext() )
+                    {
+                        var ticketLogin = new UserLoginService( rockContext ).GetByUserName( ticketUserName );
+                        if ( !IsUserLoginAllowed( ticketLogin ) )
+                        {
+                            context.Reject(
+                                error: OpenIdConnectConstants.Errors.InvalidGrant,
+                                description: "The specified user is not allowed to sign in." );
+                            return Task.CompletedTask;
+                        }
+                    }
+                }
+
                 if ( context.Request.IsAuthorizationCodeGrantType() )
                 {
                     var props = context.Ticket?.Properties?.Dictionary;
@@ -478,9 +494,13 @@ namespace Rock.Oidc.Authorization
             // See https://github.com/aspnet-contrib/AspNet.Security.OpenIdConnect.Server/issues/543
             using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
+                var authClient = new AuthClientService( rockContext ).GetByClientId( clientId );
                 var user = new UserLoginService( rockContext ).GetByUserName( userName );
-                if ( user == null )
+                if ( authClient == null || !IsUserLoginAllowed( user ) )
                 {
+                    context.Reject(
+                        error: OpenIdConnectConstants.Errors.InvalidToken,
+                        description: "The specified access token is no longer valid." );
                     return result;
                 }
 
@@ -496,6 +516,18 @@ namespace Rock.Oidc.Authorization
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// Determines whether the login exists and is confirmed and not locked out.
+        /// </summary>
+        /// <param name="userLogin">The login to check.</param>
+        /// <returns><c>true</c> if the login may be used to authenticate; otherwise <c>false</c>.</returns>
+        private static bool IsUserLoginAllowed( UserLogin userLogin )
+        {
+            return userLogin != null
+                && ( userLogin.IsConfirmed ?? true )
+                && !( userLogin.IsLockedOut ?? false );
         }
 
         /// <summary>
