@@ -62,12 +62,12 @@ export type CheckInScheduleBuilderOptionsBag = {
     /** Gets or sets the navigation urls. */
     navigationUrls?: Record<string, string> | null;
 
+    /** Gets or sets the security grant token that allows the location picker to load locations. */
+    securityGrantToken?: string | null;
+
     /**
      * Gets or sets the Guid of the currently-selected area (empty / null for "All Areas"), resolved
      * from the configuration-scoped person preference.
      */
     selectedAreaGuid?: Guid | null;
-
-    /** Gets or sets the security grant token that allows the location picker to load locations. */
-    securityGrantToken?: string | null;
 };
