@@ -1,0 +1,93 @@
+name: Asana Sync
+
+# Run by Ship to Public (private-ship.yml) after a PR ships. Does what a
+# developer used to do by hand after a ship:
+#   1. Adds "Fixed in v<x.y>" to each public issue the PR title fixes
+#      ("(Fixes #1234)"), when the PR targets a hotfix-* or release-* branch.
+#      Fixes to develop get no label. The label must already exist.
+#   2. For each Asana task the PR belongs to:
+#        - moves it to Core Pipeline > Merge Ready, and waits for the Asana rule
+#          to create the "Final GitHub Commit Link" and "Update GitHub Issue"
+#          subtasks
+#        - adds the fix and develop merge commit links to the first and
+#          completes it
+#        - notes the label in the second and completes it
+#        - moves the task to Core Pipeline > RIS/QA
+#      Asana rules then set Added to QA and add the RIS/QA Review subtask, and
+#      the GitHub sync completes the task when the issue closes.
+#   3. Comments on the PR with what it did, or what it skipped and why.
+#
+# Which task: an "Asana: DEV-1234" (or task URL) line in the PR description,
+# otherwise a DEV ID in the branch name and "(Fixes #1234)" in the title,
+# looked up as "ISSUE #1234" in Rock RMS Issues. A task is changed only when
+# exactly one matches. "Asana: DEV-1234 (partial)" marks one part of a task
+# that several PRs finish: it only adds the commit links as a comment.
+#
+# It only moves a task forward, and leaves alone a task in any other section
+# (QA Kickback, Needs Attention) or not on Core Pipeline. Every step checks
+# first, so re-running the job is safe.
+#
+# Never runs in the public repo, and nothing from the mirror goes on the
+# public issue: only the label.
+#
+# Required in the private repo:
+#   secrets.ASANA_PIPELINE_TOKEN  Asana token of the bot user. Without it only
+#                                 the label is added.
+#   vars.ASANA_PIPELINE           JSON with the Asana GIDs (workspace, projects,
+#                                 sections, DEV field). See asana-sync.mjs.
+#   vars.SHIP_APP_ID, secrets.SHIP_APP_PRIVATE_KEY  The "Rock Ship Bot" App,
+#                                 which adds the label.
+
+on:
+  workflow_call:
+    inputs:
+      pr:
+        type: number
+        required: true
+      base:
+        type: string
+        required: true
+
+jobs:
+  sync:
+    if: github.repository == 'SparkStealth/Rock-Mirror'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+    steps:
+      - name: Checkout the script
+        # From the PR's base branch, which the ship just updated.
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ inputs.base }}
+          sparse-checkout: .github/scripts
+          persist-credentials: false
+
+      - name: Create public repo token
+        id: app
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ vars.SHIP_APP_ID }}
+          private-key: ${{ secrets.SHIP_APP_PRIVATE_KEY }}
+          owner: SparkDevNetwork
+          repositories: Rock
+
+      - name: Update Asana and the public issue
+        env:
+          PR: ${{ inputs.pr }}
+          GH_TOKEN: ${{ github.token }}
+          PUBLIC_TOKEN: ${{ steps.app.outputs.token }}
+          ASANA_TOKEN: ${{ secrets.ASANA_PIPELINE_TOKEN }}
+          ASANA_CONFIG: ${{ vars.ASANA_PIPELINE }}
+          REPORT_FILE: ${{ runner.temp }}/asana-report.md
+        run: |
+          status=0
+          node .github/scripts/asana-sync.mjs || status=$?
+
+          if [ -s "$REPORT_FILE" ]; then
+            gh pr comment "$PR" -R "$GITHUB_REPOSITORY" -F "$REPORT_FILE"
+          fi
+          exit $status
