@@ -110,7 +110,13 @@ namespace Rock.Store
         /// <value>
         /// A <see cref="System.String"/> representing the Support URL of the Package.
         /// </value>
-        public string SupportUrl { get; set; }
+        public string SupportUrl
+        {
+            get => _supportUrl;
+            set => _supportUrl = GetHttpUrlOrEmpty( value );
+        }
+
+        private string _supportUrl;
 
         /// <summary>
         /// Gets or sets the date the package was added. 
@@ -208,6 +214,12 @@ namespace Rock.Store
         /// <value>
         /// A <see cref="System.String"/> representing the URL of the Vendor.
         /// </value>
-        public string Url { get; set; }
+        public string Url
+        {
+            get => _url;
+            set => _url = GetHttpUrlOrEmpty( value );
+        }
+
+        private string _url;
     }
 }
