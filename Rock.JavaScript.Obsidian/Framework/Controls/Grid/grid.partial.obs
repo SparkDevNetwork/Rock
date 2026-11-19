@@ -2174,7 +2174,21 @@ Most styles are redundent from groupedPanel.obs */
         // when the filter row wraps, so a fixed offset would overlap them.
         if (gridHeaderElement.value) {
             gridHeaderResizeObserver = new ResizeObserver((entries) => {
-                gridHeaderHeight.value = entries[0].target.clientHeight;
+                /*
+                    11/18/26 - CLAUDE
+
+                    clientHeight rounds to a whole pixel, which can leave the sticky column
+                    header up to 1px below the grid header at fractional zoom or DPR, letting
+                    scrolled rows show through the seam. The border box size keeps the
+                    fractional height.
+
+                    Reason: Avoid a 1px gap between the sticky grid header and column header.
+                */
+                const borderBoxSize = entries[0].borderBoxSize?.[0];
+
+                gridHeaderHeight.value = borderBoxSize
+                    ? borderBoxSize.blockSize
+                    : entries[0].target.getBoundingClientRect().height;
             });
             gridHeaderResizeObserver.observe(gridHeaderElement.value);
         }
