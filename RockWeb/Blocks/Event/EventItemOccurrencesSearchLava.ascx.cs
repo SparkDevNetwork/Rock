@@ -26,6 +26,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -354,10 +355,18 @@ namespace RockWeb.Blocks.Event
         {
             RockContext rockContext = new RockContext();
 
-            var qry = new EventItemOccurrenceService( rockContext ).Queryable().Where( e => e.EventItem.IsActive && e.EventItem.IsApproved );
+            var qry = new EventItemOccurrenceService( rockContext ).Queryable( "EventItem.EventCalendarItems" ).Where( e => e.EventItem.IsActive && e.EventItem.IsApproved );
 
             if ( EventCalendarId.HasValue )
             {
+                var calendar = EventCalendarCache.Get( EventCalendarId.Value );
+
+                if ( calendar == null || !( calendar.IsAuthorized( Authorization.VIEW, CurrentPerson ) || calendar.IsAuthorized( Authorization.EDIT, CurrentPerson ) ) )
+                {
+                    lResults.Text = string.Empty;
+                    return;
+                }
+
                 qry = qry.Where( e => e.EventItem.EventCalendarItems.Any( x => x.EventCalendarId == EventCalendarId.Value ) );
             }
 
@@ -424,6 +433,8 @@ namespace RockWeb.Blocks.Event
                 // default show all future
                 itemOccurrences.RemoveAll( o => o.GetStartTimes( RockDateTime.Now, RockDateTime.Now.AddDays( 365 ) ).Count() == 0 );
             }
+
+            itemOccurrences.RemoveAll( o => !CanViewEventItem( o.EventItem ) );
 
             // sort results
             itemOccurrences = itemOccurrences.OrderBy( i => i.NextStartDateTime ).ToList();
@@ -503,6 +514,47 @@ namespace RockWeb.Blocks.Event
             {
                 return null;
             }
+        }
+
+        /// <summary>
+        /// Determines whether the current person may see the event item.
+        /// </summary>
+        /// <param name="eventItem">The event item to check.</param>
+        /// <returns><c>true</c> if the event item can be shown to the current person; otherwise <c>false</c>.</returns>
+        private bool CanViewEventItem( EventItem eventItem )
+        {
+            if ( eventItem == null )
+            {
+                return false;
+            }
+
+            var isPublished = eventItem.IsActive && eventItem.IsApproved;
+
+            if ( !isPublished && !eventItem.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
+            {
+                return false;
+            }
+
+            /*
+                11/18/26 - JMH
+
+                The event's calendars are checked directly rather than through EventItem.IsAuthorized,
+                which falls back to the default security chain when no calendar allows the action.
+                An event that is not on any calendar uses its own security.
+
+                Reason: Calendar security decides who can see an event.
+            */
+            var calendarIds = eventItem.EventCalendarItems.Select( c => c.EventCalendarId ).ToList();
+
+            if ( !calendarIds.Any() )
+            {
+                return eventItem.IsAuthorized( Authorization.VIEW, CurrentPerson );
+            }
+
+            return calendarIds
+                .Select( id => EventCalendarCache.Get( id ) )
+                .Any( c => c != null
+                    && ( c.IsAuthorized( Authorization.VIEW, CurrentPerson ) || c.IsAuthorized( Authorization.EDIT, CurrentPerson ) ) );
         }
 
         #endregion Private Methods
