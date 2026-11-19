@@ -1,4 +1,5 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="PackageRating.ascx.cs" Inherits="RockWeb.Blocks.Store.PackageRating" %>
+<%@ Import Namespace="Rock" %>
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
@@ -92,9 +93,9 @@
                                     <div class="packagedetail-additionalversions">
                                         <asp:Repeater ID="rptAdditionalVersions" runat="server">
                                             <ItemTemplate>
-                                                <h4><%# Eval("VersionLabel")%></h4>
+                                                <h4><%# Eval("VersionLabel").ToStringSafe().EncodeHtml() %></h4>
                                                 <p class="margin-b-lg">
-                                                    <%# Eval("Description")%>
+                                                    <%# Eval("Description").ToStringSafe().SanitizeHtml( strict: false ) %>
                                                 </p>
                                             </ItemTemplate>
                                         </asp:Repeater>

@@ -158,14 +158,14 @@ namespace RockWeb.Blocks.Store
             // check for errors
             ErrorCheck( errorResponse );
 
-            lPackageName.Text = package.Name;
-            lPackageDescription.Text = package.Description;
-            lVendorName.Text = package.Vendor.Name;
+            lPackageName.Text = package.Name.EncodeHtml();
+            lPackageDescription.Text = package.Description.SanitizeHtml( strict: false );
+            lVendorName.Text = package.Vendor.Name.EncodeHtml();
             imgPackageImage.ImageUrl = package.PackageIconBinaryFile.ImageUrl;
             lbPackageLink.PostBackUrl = package.SupportUrl;
             lRatingSummary.Text = string.Format( "<div class='rating pull-left margin-r-sm'><small>{0}</small></div>", CreateRatingStars( package.Rating.ToString().AsInteger() ) );
 
-            lAuthorInfo.Text = string.Format( "<a href='{0}'>{1}</a>", package.Vendor.Url, package.Vendor.Name );
+            lAuthorInfo.Text = string.Format( "<a href='{0}'>{1}</a>", package.Vendor.Url.EncodeHtml(), package.Vendor.Name.EncodeHtml() );
 
             if ( package.IsFree )
             {
@@ -231,7 +231,7 @@ namespace RockWeb.Blocks.Store
                 {
                     // have a previous version installed
                     lbInstall.Text = "Update";
-                    lInstallNotes.Text = string.Format( "<small>You have {0} installed</small>", installedPackage.VersionLabel );
+                    lInstallNotes.Text = string.Format( "<small>You have {0} installed</small>", installedPackage.VersionLabel.EncodeHtml() );
 
                     // set rating link button
                     lbRate.Visible = true;
@@ -245,8 +245,8 @@ namespace RockWeb.Blocks.Store
                 rptScreenshots.DataSource = latestVersion.Screenshots;
                 rptScreenshots.DataBind();
 
-                lLatestVersionLabel.Text = latestVersion.VersionLabel;
-                lLatestVersionDescription.Text = latestVersion.Description;
+                lLatestVersionLabel.Text = latestVersion.VersionLabel.EncodeHtml();
+                lLatestVersionDescription.Text = latestVersion.Description.SanitizeHtml( strict: false );
 
                 // alert the user if a newer version exists but requires a rock update
                 if ( package.Versions.Where( v => v.Id > latestVersion.Id ).Count() > 0 )
@@ -271,7 +271,7 @@ namespace RockWeb.Blocks.Store
 
                 lRequiredRockVersion.Text = $"v{latestVersionText}";
 
-                lDocumenationLink.Text = string.Format( "<a href='{0}'>Support Link</a>", latestVersion.DocumentationUrl );
+                lDocumenationLink.Text = string.Format( "<a href='{0}'>Support Link</a>", latestVersion.DocumentationUrl.EncodeHtml() );
 
                 // fill in previous version info
                 rptAdditionalVersions.DataSource = package.Versions.Where( v => v.Id < latestVersion.Id );
@@ -349,7 +349,7 @@ namespace RockWeb.Blocks.Store
             {
                 pnlPackageDetails.Visible = false;
                 pnlError.Visible = true;
-                lErrorMessage.Text = errorResponse;
+                lErrorMessage.Text = errorResponse.EncodeHtml();
             }
         }
 
