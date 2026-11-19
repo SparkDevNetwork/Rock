@@ -298,7 +298,7 @@ namespace Rock.Blocks.Store
         /// <param name="price">The package price.</param>
         /// <returns>The HTML message.</returns>
         private static string GetInstallPurchaseMessage( string name, decimal? price ) =>
-            $"Log in below with your Rock Store account to install the <em>{name}</em> package. Your credit card on file will be charged ${price}.";
+            $"Log in below with your Rock Store account to install the <em>{name.EncodeHtml()}</em> package. Your credit card on file will be charged ${price}.";
 
         /// <summary>
         /// Builds the login message shown for a free package.
@@ -306,19 +306,20 @@ namespace Rock.Blocks.Store
         /// <param name="name">The package name.</param>
         /// <returns>The HTML message.</returns>
         private static string GetInstallFreeMessage( string name ) =>
-            $"Log in below with your Rock Store account to install free <em>{name}</em> package.";
+            $"Log in below with your Rock Store account to install free <em>{name.EncodeHtml()}</em> package.";
 
         private string GetMessage( PurchaseResult purchaseResult, string detail )
         {
+            var safeDetail = detail.EncodeHtml();
             var accountUrl = RequestContext.ResolveRockUrl( "~/RockShop/Account" );
 
             return purchaseResult switch
             {
-                PurchaseResult.AuthenticationFailed => $"<strong>Could Not Authenticate</strong> {detail} If you need further help see the <a href='https://rockrms.com/RockShopHelp'>Rock Shop Help Page</a>.",
+                PurchaseResult.AuthenticationFailed => $"<strong>Could Not Authenticate</strong> {safeDetail} If you need further help see the <a href='https://rockrms.com/RockShopHelp'>Rock Shop Help Page</a>.",
                 PurchaseResult.NoCardOnFile => $"<strong>No Card On File</strong> No credit card is on file for your organization. Please add a card from your <a href='{accountUrl}'>Account Page</a> or see the <a href='https://rockrms.com/RockShopHelp'>Rock Shop Help Page</a>.",
                 PurchaseResult.NotAuthorized => "<strong>Unauthorized</strong> You are not currently authorized to make purchases for this organization. Please see your organization's primary contact to enable your account for purchases or see the <a href='https://rockrms.com/RockShopHelp'>Rock Shop Help Page</a>.",
-                PurchaseResult.PaymentFailed => $"<strong>Payment Error</strong> An error occurred while processing the credit card on file for your organization. The error was: {detail}. Please update your card's information from your <a href='{accountUrl}'>Account Page</a> or see the <a href='https://rockrms.com/RockShopHelp'>Rock Shop Help Page</a>.",
-                _ => $"<strong>An Error Occurred</strong> {detail}"
+                PurchaseResult.PaymentFailed => $"<strong>Payment Error</strong> An error occurred while processing the credit card on file for your organization. The error was: {safeDetail}. Please update your card's information from your <a href='{accountUrl}'>Account Page</a> or see the <a href='https://rockrms.com/RockShopHelp'>Rock Shop Help Page</a>.",
+                _ => $"<strong>An Error Occurred</strong> {safeDetail}"
             };
         }
 
@@ -396,7 +397,7 @@ namespace Rock.Blocks.Store
             catch ( Exception ex )
             {
                 CleanUpPackage( destinationFile );
-                throw new PackageInstallException( $"An error occurred while downloading package from the store. Please try again later. <br><em>Error: {ex.Message}</em>" );
+                throw new PackageInstallException( $"An error occurred while downloading package from the store. Please try again later. <br><em>Error: {ex.Message.EncodeHtml()}</em>" );
             }
 
             // Extract content files and apply SQL and file deletions.
@@ -420,12 +421,12 @@ namespace Rock.Blocks.Store
             }
             catch ( Exception ex )
             {
-                throw new PackageInstallException( $"An error occurred while extracting the contents of the package. <br><em>Error: {ex.Message}</em>" );
+                throw new PackageInstallException( $"An error occurred while extracting the contents of the package. <br><em>Error: {ex.Message.EncodeHtml()}</em>" );
             }
 
             if ( !wasActionTaken )
             {
-                throw new PackageInstallException( $"Package version {installStep.VersionLabel} failed to install because no actions were completed. This may be due to an improperly packaged plugin file. Please contact the package administrator for support." );
+                throw new PackageInstallException( $"Package version {installStep.VersionLabel.EncodeHtml()} failed to install because no actions were completed. This may be due to an improperly packaged plugin file. Please contact the package administrator for support." );
             }
 
             // Record the install and clear caches so the new content is picked up.
@@ -435,7 +436,7 @@ namespace Rock.Blocks.Store
 
             return new InstallPackageResponseBag
             {
-                PostInstallInstructions = installStep.PostInstallInstructions
+                PostInstallInstructions = installStep.PostInstallInstructions.SanitizeHtml( strict: false )
             };
         }
 
@@ -533,7 +534,7 @@ namespace Rock.Blocks.Store
             }
             catch ( Exception ex )
             {
-                throw new PackageInstallException( $"An error occurred while updating the database. <br><em>Error: {ex.Message}</em>" );
+                throw new PackageInstallException( $"An error occurred while updating the database. <br><em>Error: {ex.Message.EncodeHtml()}</em>" );
             }
 
             return true;
@@ -595,7 +596,7 @@ namespace Rock.Blocks.Store
             }
             catch ( Exception ex )
             {
-                throw new PackageInstallException( $"An error occurred while modifying files. <br><em>Error: {ex.Message}</em>" );
+                throw new PackageInstallException( $"An error occurred while modifying files. <br><em>Error: {ex.Message.EncodeHtml()}</em>" );
             }
 
             return wasActionTaken;
@@ -673,7 +674,7 @@ namespace Rock.Blocks.Store
             {
                 var detail = errorResponse.IsNotNullOrWhiteSpace() ? errorResponse : "Unknown";
 
-                return ActionBadRequest( $"<strong>Install Error</strong> An error occurred while attempting to authenticate your install of this package. The error was: {detail}." );
+                return ActionBadRequest( $"<strong>Install Error</strong> An error occurred while attempting to authenticate your install of this package. The error was: {detail.EncodeHtml()}." );
             }
 
             if ( installResponse.PurchaseResult != PurchaseResult.Success )
