@@ -32,6 +32,9 @@ name: Ship to Public
 #      that includes that commit, then deletes the branch if it passes or
 #      comments with an analysis if it fails. With `ship-only`, that build comes
 #      after someone merges the change up to develop by hand.
+#   8. Runs private-asana-sync.yml: moves the PR's Asana task to RIS/QA with
+#      the commit links, and adds "Fixed in" to the public issue. A failure
+#      there never affects the ship, which is already on public.
 # On any failure, including a merge-up conflict, nothing is pushed. It comments
 # the reason and removes the label.
 #
@@ -55,7 +58,7 @@ name: Ship to Public
 # Required in the private repo:
 #   vars.SHIP_APP_ID              App ID of the "Rock Ship Bot" GitHub App
 #   secrets.SHIP_APP_PRIVATE_KEY  Private key of that App
-# The App is installed on SparkDevNetwork/Rock with Contents and Workflows write,
+# The App is installed on SparkDevNetwork/Rock with Contents, Workflows and Issues write,
 # and is allowed to bypass any rules on the public shippable branches.
 #
 # Merge paths (required for `ship`):
@@ -402,6 +405,13 @@ jobs:
             echo "REACHED_DEVELOP=true" >> "$GITHUB_ENV"
           fi
 
+          # The merge commit that brought it into develop, for the Asana task's
+          # commit links (private-asana-sync.yml). None when the PR targets
+          # develop, since the shipped commit is already on develop.
+          if [ "$BASE" != "develop" ] && echo " $PUSH_BRANCHES " | grep -q " develop "; then
+            echo "DEVELOP_MERGE_MARKER=<!-- develop-merge-sha: $(git rev-parse develop) -->" >> "$GITHUB_ENV"
+          fi
+
       - name: Explain the automatic conflict resolutions
         # Posted before the PR closes, so it stays on the closed PR. The ship is
         # already on public at this point, so a failure here must not report
@@ -450,7 +460,8 @@ jobs:
 
           $next
 
-          <!-- shipped-sha: $SHIPPED_SHA -->"
+          <!-- shipped-sha: $SHIPPED_SHA -->
+          $DEVELOP_MERGE_MARKER"
 
       - name: Mark the PR as waiting for AppVeyor
         run: gh api -X POST "repos/$GITHUB_REPOSITORY/issues/$PR/labels" -f "labels[]=awaiting-build" > /dev/null
@@ -482,3 +493,14 @@ jobs:
 
           $log"
           gh api -X DELETE "repos/$GITHUB_REPOSITORY/issues/$PR/labels/$LABEL" || true
+
+  asana:
+    # A separate job, so an Asana or label problem shows as its own failure
+    # and can be re-run alone, without touching the ship.
+    needs: ship
+    if: needs.ship.result == 'success'
+    uses: ./.github/workflows/private-asana-sync.yml
+    with:
+      pr: ${{ github.event.pull_request.number }}
+      base: ${{ github.event.pull_request.base.ref }}
+    secrets: inherit
