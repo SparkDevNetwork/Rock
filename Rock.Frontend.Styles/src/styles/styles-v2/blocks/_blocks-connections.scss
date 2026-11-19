@@ -930,7 +930,7 @@
     padding: var(--spacing-medium);
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-xlarge);
+    gap: var(--spacing-large);
 
     .additional-request {
       display: flex;
@@ -973,7 +973,7 @@
       padding: var(--spacing-small);
       background-color: var(--color-interface-softer);
       border: 1px solid var(--color-info-soft);
-      border-radius: var(--rounded-small);
+      border-radius: var(--rounded-large);
 
       i {
         font-size: var(--font-size-h4);
@@ -1005,7 +1005,7 @@
 
     .additional-requests-card {
       border: 1px solid var(--color-interface-soft);
-      border-radius: var(--rounded-small);
+      border-radius: var(--rounded-large);
       padding: var(--spacing-small);
 
       &-header {

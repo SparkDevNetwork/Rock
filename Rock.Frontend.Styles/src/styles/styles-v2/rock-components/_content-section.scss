@@ -18,7 +18,7 @@
     height: auto;
     width: 100%;
     background-color: var(--color-interface-softer);
-    box-shadow: var(--box-shadow);
+    border: 1px var(--color-interface-soft) solid;
     padding-left: 0;
     padding-right: 0;
 }
@@ -299,8 +299,8 @@
 // ======================== CONTENT SECTION NAV ========================
 
 .contentsection-nav {
-    border: none;
-    border-radius: var(--rounded-medium);
+    border: 1px var(--color-interface-soft) solid;
+    border-radius: var(--rounded-large);
     padding: var(--spacing-xsmall);
     background-color: var(--color-interface-softer);
     position: sticky;
@@ -388,7 +388,7 @@
     display: flex;
     flex-direction: column;
     flex: 1 1 80%;
-    gap: var(--spacing-xlarge);
+    gap: var(--spacing-large);
     height: auto;
     scroll-behavior: smooth;
     width: 100%;
