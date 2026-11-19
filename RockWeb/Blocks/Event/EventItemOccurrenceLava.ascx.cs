@@ -25,6 +25,7 @@ using Rock.Attribute;
 using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -101,7 +102,7 @@ namespace RockWeb.Blocks.Event
             if ( eventCampusId != null )
             {
                 EventItemOccurrence eventItemOccurrence = new EventItemOccurrenceService( RockApp.Current.CreateRockContext() ).Get( eventCampusId.Value );
-                if ( eventItemOccurrence != null )
+                if ( eventItemOccurrence != null && CanViewEventItem( eventItemOccurrence.EventItem ) )
                 {
                     breadCrumbs.Add( new BreadCrumb( eventItemOccurrence.EventItem.Name, pageReference ) );
                 }
@@ -164,6 +165,11 @@ namespace RockWeb.Blocks.Event
                 }
 
                 eventItemOccurrence = qry.FirstOrDefault();
+
+                if ( eventItemOccurrence != null && !CanViewEventItem( eventItemOccurrence.EventItem ) )
+                {
+                    eventItemOccurrence = null;
+                }
 
                 registrationCounts = qry
                     .SelectMany( o => o.Linkages )
@@ -257,6 +263,48 @@ namespace RockWeb.Blocks.Event
                 }
             }
         }
+
+        /// <summary>
+        /// Determines whether the current person may see the event item.
+        /// </summary>
+        /// <param name="eventItem">The event item to check.</param>
+        /// <returns><c>true</c> if the event item can be shown to the current person; otherwise <c>false</c>.</returns>
+        private bool CanViewEventItem( EventItem eventItem )
+        {
+            if ( eventItem == null )
+            {
+                return false;
+            }
+
+            var isPublished = eventItem.IsActive && eventItem.IsApproved;
+
+            if ( !isPublished && !eventItem.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
+            {
+                return false;
+            }
+
+            /*
+                11/18/26 - JMH
+
+                The event's calendars are checked directly rather than through EventItem.IsAuthorized,
+                which falls back to the default security chain when no calendar allows the action.
+                An event that is not on any calendar uses its own security.
+
+                Reason: Calendar security decides who can see an event.
+            */
+            var calendarIds = eventItem.EventCalendarItems.Select( c => c.EventCalendarId ).ToList();
+
+            if ( !calendarIds.Any() )
+            {
+                return eventItem.IsAuthorized( Authorization.VIEW, CurrentPerson );
+            }
+
+            return calendarIds
+                .Select( id => EventCalendarCache.Get( id ) )
+                .Any( c => c != null
+                    && ( c.IsAuthorized( Authorization.VIEW, CurrentPerson ) || c.IsAuthorized( Authorization.EDIT, CurrentPerson ) ) );
+        }
+
         #endregion
 
     }
