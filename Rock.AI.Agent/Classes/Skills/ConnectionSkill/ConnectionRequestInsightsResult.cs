@@ -26,7 +26,7 @@ namespace Rock.AI.Agent.Classes.Skills.ConnectionSkill;
 internal class ConnectionRequestInsightsResult
 {
     /// <summary>
-    /// The number of active requests.
+    /// The number of requests that are not in the Connected state.
     /// </summary>
     public int ActiveCount { get; set; }
 

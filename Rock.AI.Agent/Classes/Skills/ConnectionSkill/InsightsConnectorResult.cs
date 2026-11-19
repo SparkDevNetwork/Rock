@@ -29,7 +29,8 @@ internal class InsightsConnectorResult
     public PersonResult Connector { get; set; }
 
     /// <summary>
-    /// The number of active connection requests assigned to this connector.
+    /// The number of connection requests assigned to this connector that are
+    /// not in the Connected state.
     /// </summary>
     public int ActiveCount { get; set; }
 }
