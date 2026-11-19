@@ -159,7 +159,7 @@ namespace Rock.Blocks.Store
             {
                 IdKey = entity.Id.AsIdKey(),
                 Name = entity.Name,
-                Description = entity.Description,
+                Description = entity.Description.SanitizeHtml( strict: false ),
                 SupportUrl = entity.SupportUrl,
                 IsFree = entity.IsFree,
                 Price = entity.Price,
@@ -228,7 +228,8 @@ namespace Rock.Blocks.Store
                 VersionLabel = latestVersion.VersionLabel,
                 DisplayDate = latestVersion.AddedDate.ToString( "MMMM d, yyyy" ),
                 Date = latestVersion.AddedDate.ToShortDateString(),
-                Description = latestVersion.Description,
+                // Sanitize store-supplied HTML before it is rendered with v-html.
+                Description = latestVersion.Description.SanitizeHtml( strict: false ),
                 DocumentationUrl = latestVersion.DocumentationUrl,
                 RequiredRockVersionDisplay = requiredRockVersion,
                 ScreenshotURLs = latestVersion.Screenshots.Select( s => s.ImageUrl ).ToList()
@@ -260,7 +261,8 @@ namespace Rock.Blocks.Store
                     Id = v.Id,
                     VersionLabel = v.VersionLabel,
                     DisplayDate = v.AddedDate.ToString( "MMMM d, yyyy" ),
-                    Description = v.Description,
+                    // Sanitize store-supplied HTML before it is rendered with v-html.
+                    Description = v.Description.SanitizeHtml( strict: false ),
                     Rating = ratingAverage
                 } );
             }
