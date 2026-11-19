@@ -136,7 +136,7 @@ namespace RockWeb.Blocks.Store
             string categoryName = PageParameter( "CategoryName" );
             if ( GetAttributeValue( "SetPageTitle" ).AsBoolean() && !string.IsNullOrWhiteSpace(categoryName) )
             {
-                string pageTitle = "Items for " + categoryName;
+                string pageTitle = "Items for " + categoryName.EncodeHtml();
                 RockPage.PageTitle = pageTitle;
                 RockPage.BrowserTitle = String.Format( "{0} | {1}", pageTitle, RockPage.Site.Name );
                 RockPage.Header.Title = String.Format( "{0} | {1}", pageTitle, RockPage.Site.Name );
