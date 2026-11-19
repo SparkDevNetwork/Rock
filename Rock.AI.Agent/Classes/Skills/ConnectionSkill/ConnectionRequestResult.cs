@@ -54,6 +54,16 @@ internal class ConnectionRequestResult : EntityResultBase
     public DateTime? FollowupDate { get; set; }
 
     /// <summary>
+    /// Gets or sets the date and time that the connection request was last
+    /// changed to the Connected state. This can be empty for a request that
+    /// is Connected, such as an older or imported request, so use
+    /// <see cref="ConnectionState"/> to tell if a request is connected. A
+    /// request that was reopened can still have this value from when it was
+    /// connected before.
+    /// </summary>
+    public DateTime? ConnectedDateTime { get; set; }
+
+    /// <summary>
     /// Gets or sets the campus that the connection request is associated with.
     /// </summary>
     public CampusResult Campus { get; set; }

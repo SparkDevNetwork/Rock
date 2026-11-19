@@ -92,6 +92,7 @@ internal sealed partial class ConnectionSkill : AgentSkillComponent
             CreatedDateTime = connectionRequest.CreatedDateTime,
             ModifiedDateTime = connectionRequest.ModifiedDateTime,
             FollowupDate = connectionRequest.FollowupDate,
+            ConnectedDateTime = connectionRequest.ConnectedDateTime,
             Campus = connectionRequest.Campus != null ? new CampusResult { Id = connectionRequest.Campus.Id, Name = connectionRequest.Campus.Name } : null,
             AssignedGroup = connectionRequest.AssignedGroup != null ? new GroupResult { Id = connectionRequest.AssignedGroup.Id, Name = connectionRequest.AssignedGroup.Name } : null,
             Connector = PersonResult.Basic( connectionRequest.ConnectorPersonAlias ),

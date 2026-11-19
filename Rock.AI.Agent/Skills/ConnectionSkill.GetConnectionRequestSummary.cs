@@ -51,9 +51,12 @@ internal sealed partial class ConnectionSkill
         var helper = new AgentToolHelper( AgentRequestContext, _logger );
         var dimensions = new List<string> { "ConnectionType", "ConnectionOpportunity", "Campus", "ConnectionStatus" };
 
+        // Leave out connected requests by state so these counts match the
+        // ListConnectionRequests tool. See the note in that tool for why
+        // ConnectedDateTime is not used.
         var query = new ConnectionRequestService( AgentRequestContext.RockContext )
             .Queryable()
-            .Where( cr => !cr.ConnectedDateTime.HasValue );
+            .Where( cr => cr.ConnectionState != ConnectionState.Connected );
 
         query = helper.WhereOptionalIdKey( query, cr => cr.ConnectionTypeId, connectionTypeIdKey );
         query = helper.WhereOptionalIdKey( query, cr => cr.ConnectionOpportunityId, connectionOpportunityIdKey );
