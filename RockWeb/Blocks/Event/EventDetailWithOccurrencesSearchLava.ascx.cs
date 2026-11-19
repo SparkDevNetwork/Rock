@@ -94,6 +94,21 @@ namespace RockWeb.Blocks.Event
     [Rock.SystemGuid.BlockTypeGuid( "B7788DFF-783D-40A3-BFD4-EA9561F950A8" )]
     public partial class EventDetailWithOccurrencesSearchLava : RockBlock
     {
+        /// <summary>
+        /// The most days a date range search can span.
+        /// </summary>
+        private const int MaxDateRangeDays = 730;
+
+        /// <summary>
+        /// The earliest start date a date range search can use.
+        /// </summary>
+        private static readonly DateTime MinStartDate = DateTime.MinValue.Date.AddYears( 20 );
+
+        /// <summary>
+        /// The latest start date a date range search can use.
+        /// </summary>
+        private static readonly DateTime MaxStartDate = DateTime.MaxValue.Date.AddYears( -20 );
+
         #region Base Control Methods
 
         /// <summary>
@@ -288,7 +303,31 @@ namespace RockWeb.Blocks.Event
             var dateRange = new DateRange( pDateRange.LowerValue, pDateRange.UpperValue );
             if ( dateRange.Start != null && dateRange.End != null )
             {
-                itemOccurrences.RemoveAll( o => o.GetStartTimes( dateRange.Start.Value, dateRange.End.Value ).Count() == 0 );
+                /*
+                    11/18/26 - JMH
+
+                    Every schedule is expanded across the whole date range, so the span is held to 730 days.
+                    The start is held well inside DateTime's limits because schedule evaluation steps past the ends of the range.
+
+                    Reason: Keep the date range search to a span the schedules can expand.
+                */
+                var startDate = dateRange.Start.Value;
+                if ( startDate < MinStartDate )
+                {
+                    startDate = MinStartDate;
+                }
+                else if ( startDate > MaxStartDate )
+                {
+                    startDate = MaxStartDate;
+                }
+
+                var endDate = dateRange.End.Value;
+                if ( ( endDate - startDate ).TotalDays > MaxDateRangeDays )
+                {
+                    endDate = startDate.AddDays( MaxDateRangeDays );
+                }
+
+                itemOccurrences.RemoveAll( o => o.GetStartTimes( startDate, endDate ).Count() == 0 );
             }
             else
             {

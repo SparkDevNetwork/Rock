@@ -191,6 +191,21 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         private DayOfWeek _firstDayOfWeek = DayOfWeek.Sunday;
 
+        /// <summary>
+        /// The most days a date range filter can span, matching the All view.
+        /// </summary>
+        private const int MaxDateRangeDays = 730;
+
+        /// <summary>
+        /// The earliest start date a date range filter can use.
+        /// </summary>
+        private static readonly DateTime MinStartDate = DateTime.MinValue.Date.AddYears( 20 );
+
+        /// <summary>
+        /// The latest start date a date range filter can use.
+        /// </summary>
+        private static readonly DateTime MaxStartDate = DateTime.MaxValue.Date.AddYears( -20 );
+
         protected bool CampusPanelOpen { get; set; }
 
         protected bool CampusPanelClosed { get; set; }
@@ -509,11 +524,35 @@ namespace RockWeb.Blocks.Event
             // Get the beginning and end dates
             var today = RockDateTime.Today;
             var filterStart = FilterStartDate.HasValue ? FilterStartDate.Value : today;
+
+            /*
+                11/18/26 - JMH
+
+                Every schedule is expanded across the whole date range, so the span is held to the All view's 730 days.
+                The start is held well inside DateTime's limits because the month math below
+                and schedule evaluation both step past the ends of the range.
+
+                Reason: Keep the date range filter to a span the calendar can expand.
+            */
+            if ( filterStart < MinStartDate )
+            {
+                filterStart = MinStartDate;
+            }
+            else if ( filterStart > MaxStartDate )
+            {
+                filterStart = MaxStartDate;
+            }
+
             var monthStart = new DateTime( filterStart.Year, filterStart.Month, 1 );
             var rangeStart = monthStart.AddMonths( -1 );
             var rangeEnd = monthStart.AddMonths( 2 );
-            var beginDate = FilterStartDate.HasValue ? FilterStartDate.Value : rangeStart;
+            var beginDate = FilterStartDate.HasValue ? filterStart : rangeStart;
             var endDate = FilterEndDate.HasValue ? FilterEndDate.Value : rangeEnd;
+
+            if ( ( endDate - beginDate ).TotalDays > MaxDateRangeDays )
+            {
+                endDate = beginDate.AddDays( MaxDateRangeDays );
+            }
 
             endDate = endDate.AddDays( 1 ).AddMilliseconds( -1 );
 
