@@ -246,6 +246,22 @@ namespace Rock.Model
                                 else
                                 {
                                     PersonHistoryChangeList.AddChange( History.HistoryVerb.ConnectionRequestStateModify, History.HistoryChangeType.Record, connectionOpportunity.Name );
+
+                                    /*
+                                        11/19/26 - KH
+
+                                        ConnectedDateTime is only meaningful while the request is Connected.
+                                        Reports, the AI Agent skills and the Connections Hub treat a value here
+                                        as "this request is connected", so a re-opened request (for example
+                                        Connected to Active) must not keep its old date. A fresh date is
+                                        stamped above if the request is connected again.
+
+                                        Reason: Clear ConnectedDateTime when a request leaves the Connected state.
+                                    */
+                                    if ( originalConnectionState == ConnectionState.Connected )
+                                    {
+                                        this.Entity.ConnectedDateTime = null;
+                                    }
                                 }
                             }
 
