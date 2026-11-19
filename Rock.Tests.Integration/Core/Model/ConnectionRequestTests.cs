@@ -104,6 +104,116 @@ namespace Rock.Tests.Integration.Core.Model
             }
         }
 
+        [TestMethod]
+        [DataRow( ConnectionState.Active )]
+        [DataRow( ConnectionState.Inactive )]
+        [DataRow( ConnectionState.FutureFollowUp )]
+        public void ConnectedDateTimeIsClearedWhenRequestLeavesConnectedState( ConnectionState newState )
+        {
+            var connectionRequestId = CreateConnectedConnectionRequest();
+
+            using ( var rockContext = new RockContext() )
+            {
+                var connectionRequest = new ConnectionRequestService( rockContext ).Get( connectionRequestId );
+
+                connectionRequest.ConnectionState = newState;
+
+                if ( newState == ConnectionState.FutureFollowUp )
+                {
+                    connectionRequest.FollowupDate = RockDateTime.Today.AddDays( 7 );
+                }
+
+                rockContext.SaveChanges();
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var connectionRequest = new ConnectionRequestService( rockContext ).Get( connectionRequestId );
+
+                Assert.AreEqual( newState, connectionRequest.ConnectionState );
+                Assert.IsNull( connectionRequest.ConnectedDateTime );
+            }
+        }
+
+        [TestMethod]
+        public void ConnectedDateTimeIsStampedAgainWhenReopenedRequestIsConnected()
+        {
+            var connectionRequestId = CreateConnectedConnectionRequest();
+
+            using ( var rockContext = new RockContext() )
+            {
+                var connectionRequest = new ConnectionRequestService( rockContext ).Get( connectionRequestId );
+
+                connectionRequest.ConnectionState = ConnectionState.Active;
+                rockContext.SaveChanges();
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var connectionRequest = new ConnectionRequestService( rockContext ).Get( connectionRequestId );
+
+                connectionRequest.ConnectionState = ConnectionState.Connected;
+                rockContext.SaveChanges();
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var connectionRequest = new ConnectionRequestService( rockContext ).Get( connectionRequestId );
+
+                Assert.AreEqual( ConnectionState.Connected, connectionRequest.ConnectionState );
+                Assert.IsNotNull( connectionRequest.ConnectedDateTime );
+            }
+        }
+
+        [TestMethod]
+        public void ConnectedDateTimeIsKeptWhenConnectedRequestIsEdited()
+        {
+            var connectionRequestId = CreateConnectedConnectionRequest();
+            DateTime? originalConnectedDateTime;
+
+            using ( var rockContext = new RockContext() )
+            {
+                var connectionRequest = new ConnectionRequestService( rockContext ).Get( connectionRequestId );
+
+                originalConnectedDateTime = connectionRequest.ConnectedDateTime;
+                connectionRequest.Comments = "Edited while connected.";
+                rockContext.SaveChanges();
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var connectionRequest = new ConnectionRequestService( rockContext ).Get( connectionRequestId );
+
+                Assert.AreEqual( ConnectionState.Connected, connectionRequest.ConnectionState );
+                Assert.IsNotNull( originalConnectedDateTime );
+                Assert.AreEqual( originalConnectedDateTime, connectionRequest.ConnectedDateTime );
+            }
+        }
+
+        /// <summary>
+        /// Creates an active connection request and then connects it, so the
+        /// save hook stamps its ConnectedDateTime.
+        /// </summary>
+        /// <returns>The identifier of the connected request.</returns>
+        private int CreateConnectedConnectionRequest()
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var connectionRequest = BuildConnectionRequest( rockContext, null );
+                connectionRequest.ConnectionState = ConnectionState.Active;
+
+                new ConnectionRequestService( rockContext ).Add( connectionRequest );
+                rockContext.SaveChanges();
+
+                connectionRequest.ConnectionState = ConnectionState.Connected;
+                rockContext.SaveChanges();
+
+                Assert.IsNotNull( connectionRequest.ConnectedDateTime );
+
+                return connectionRequest.Id;
+            }
+        }
+
         private ConnectionRequest BuildConnectionRequest( RockContext rockContext, DateTime? createdDate )
         {
             var connectionOpportunity = new ConnectionOpportunityService( rockContext ).Queryable().First();
