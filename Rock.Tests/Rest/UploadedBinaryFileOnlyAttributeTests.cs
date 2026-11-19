@@ -50,6 +50,16 @@ namespace Rock.Tests.Rest
         }
 
         [TestMethod]
+        public void GetPropertyNames_CommunicationTemplateAttachment_ReturnsTheFileProperty()
+        {
+            var names = UploadedBinaryFileOnlyAttribute.GetPropertyNames( typeof( CommunicationTemplateAttachment ) );
+
+            CollectionAssert.AreEquivalent(
+                new[] { nameof( CommunicationTemplateAttachment.BinaryFileId ) },
+                names.ToArray() );
+        }
+
+        [TestMethod]
         public void GetPropertyNames_ModelWithoutAttribute_ReturnsEmpty()
         {
             Assert.AreEqual( 0, UploadedBinaryFileOnlyAttribute.GetPropertyNames( typeof( DefinedValue ) ).Count );
@@ -77,10 +87,10 @@ namespace Rock.Tests.Rest
         }
 
         [TestMethod]
-        public void MarkedProperties_AreAllNullableIntegers()
+        public void MarkedProperties_AreAllIntegers()
         {
             // The check reads each marked value as a nullable binary file
-            // identifier, so a marked property must be an int?.
+            // identifier, so a marked property must be an int or an int?.
             Type[] types;
             try
             {
@@ -100,7 +110,7 @@ namespace Rock.Tests.Rest
 
             foreach ( var property in markedProperties )
             {
-                Assert.AreEqual( typeof( int? ), property.PropertyType, $"{property.DeclaringType.FullName}.{property.Name} must be an int? to carry UploadedBinaryFileOnly." );
+                Assert.IsTrue( property.PropertyType == typeof( int ) || property.PropertyType == typeof( int? ), $"{property.DeclaringType.FullName}.{property.Name} must be an int or an int? to carry UploadedBinaryFileOnly." );
             }
         }
     }
