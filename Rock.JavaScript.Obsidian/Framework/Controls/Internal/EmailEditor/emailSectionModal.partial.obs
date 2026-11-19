@@ -54,7 +54,7 @@
     import { EmailEditorEmailSectionBag } from "@Obsidian/ViewModels/Rest/Controls/emailEditorEmailSectionBag";
     import { EmailEditorGetEmailSectionOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/emailEditorGetEmailSectionOptionsBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-    import { removeTemporaryAttributes, removeTemporaryElements, removeTemporaryWrappers } from "./utils.partial";
+    import { importInertHtml, removeTemporaryAttributes, removeTemporaryElements, removeTemporaryWrappers } from "./utils.partial";
     import { useApi } from "./api";
 
     const props = defineProps({
@@ -147,7 +147,7 @@
                 if (props.emailDocument) {
                     // Generate the element from the email section source markup.
                     tempElement = props.emailDocument.createElement("div");
-                    tempElement.innerHTML = props.emailSection.sourceMarkup ?? "";
+                    tempElement.appendChild(importInertHtml(props.emailDocument, props.emailSection.sourceMarkup ?? ""));
 
                     // Add the clone temporarily to the get html2canvas to work.
 

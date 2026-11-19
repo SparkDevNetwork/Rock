@@ -38,7 +38,7 @@ namespace Rock.Blocks.Security.BackgroundCheck
     [Category( "Security > Background Check" )]
     [Description( "Block for updating the settings used by the Checkr integration." )]
     [IconCssClass( "ti ti-shield-half" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     [Rock.SystemGuid.EntityTypeGuid( "79fdd794-c93e-4674-ac70-6a3890e5574a" )]
     // was [Rock.SystemGuid.BlockTypeGuid( "675755e7-4342-4bf1-9245-0f5e6b569074" )]

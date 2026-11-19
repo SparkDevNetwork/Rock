@@ -47,7 +47,7 @@ namespace Rock.Blocks.Group
     [DisplayName( "Group Placement" )]
     [Category( "Group" )]
     [Description( "Block to manage group placements" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 
@@ -242,6 +242,20 @@ namespace Rock.Blocks.Group
             else
             {
                 box = GetBoxForRegistrationPlacement( box, out destinationGroupTypeId );
+            }
+
+            // Return a new box so nothing already loaded from the source (title, keys,
+            // attributes) is sent to a person who cannot view it.
+            if ( box.ErrorMessage.IsNullOrWhiteSpace() && !CanViewPlacementSource() )
+            {
+                return new GroupPlacementInitializationBox
+                {
+                    GroupPlacementKeys = new GroupPlacementKeysBag(),
+                    PlacementConfigurationSettingOptions = new PlacementConfigurationSettingOptionsBag(),
+                    NavigationUrls = box.NavigationUrls,
+                    BackPageUrl = box.BackPageUrl,
+                    ErrorMessage = "You are not authorized to view this placement."
+                };
             }
 
             if ( box.ErrorMessage.IsNotNullOrWhiteSpace() )
@@ -466,7 +480,7 @@ namespace Rock.Blocks.Group
         private string GetBackPageUrl()
         {
             var returnUrl = this.PageParameter( PageParameterKey.ReturnUrl );
-            if ( returnUrl.IsNotNullOrWhiteSpace() )
+            if ( returnUrl.IsNotNullOrWhiteSpace() && this.PageCache.Layout.Site.IsSafeRedirectUrl( returnUrl, this.RequestContext.RequestUri ) )
             {
                 return returnUrl;
             }
@@ -776,6 +790,62 @@ namespace Rock.Blocks.Group
         }
 
         /// <summary>
+        /// Removes the destination group placements the current person cannot view from the
+        /// placement people results. Rows for people who are only in those groups are dropped.
+        /// Rows that also carry a registrant keep the registrant and lose only the placement.
+        /// </summary>
+        /// <param name="placementPeopleResults">The results returned by spGetGroupPlacementPeople.</param>
+        /// <param name="sourceGroupId">The source group identifier in group mode, whose rows are never removed.</param>
+        /// <param name="hiddenPlacementPersonIds">On return, the identifiers of people who have a placement that was removed.</param>
+        /// <returns>The results with unviewable destination group placements removed.</returns>
+        private List<PlacementPeopleResult> RemoveUnviewableDestinationGroupRows( List<PlacementPeopleResult> placementPeopleResults, int? sourceGroupId, out HashSet<int> hiddenPlacementPersonIds )
+        {
+            var canViewGroupIds = new Dictionary<int, bool>();
+            var filteredResults = new List<PlacementPeopleResult>();
+            hiddenPlacementPersonIds = new HashSet<int>();
+
+            foreach ( var row in placementPeopleResults )
+            {
+                var isDestinationGroupRow = row.GroupId.HasValue && row.GroupId != sourceGroupId;
+
+                if ( !isDestinationGroupRow )
+                {
+                    filteredResults.Add( row );
+                    continue;
+                }
+
+                var groupId = row.GroupId.Value;
+                if ( !canViewGroupIds.TryGetValue( groupId, out var canViewGroup ) )
+                {
+                    canViewGroup = CanViewPlacementGroup( groupId );
+                    canViewGroupIds.Add( groupId, canViewGroup );
+                }
+
+                if ( canViewGroup )
+                {
+                    filteredResults.Add( row );
+                    continue;
+                }
+
+                // Remember the hidden placement so the person still counts as placed and is
+                // not offered in People to Place when multiple placements are not allowed.
+                hiddenPlacementPersonIds.Add( row.PersonId );
+
+                if ( row.RegistrantId.HasValue )
+                {
+                    row.GroupId = null;
+                    row.GroupTypeId = null;
+                    row.GroupMemberId = null;
+                    row.GroupRoleId = null;
+                    row.DateTimeAdded = null;
+                    filteredResults.Add( row );
+                }
+            }
+
+            return filteredResults;
+        }
+
+        /// <summary>
         /// Generates a list of entities (either <see cref="RegistrationRegistrant"/> or <see cref="GroupMember"/>) from placement results,
         /// with only the specified attributes loaded for each entity. The result depends on the generic type <typeparamref name="T"/> and other filter conditions.
         /// </summary>
@@ -879,6 +949,120 @@ namespace Rock.Blocks.Group
         }
 
         /// <summary>
+        /// Determines whether the current person can view the placement source (source group,
+        /// entity set, registration instance or registration template) given by the page parameters
+        /// and block settings. The source is resolved in the same order as <see cref="GetInitializationBox"/>.
+        /// A source group uses <see cref="CanViewPlacementGroup(int)"/> and a registration instance
+        /// or template allows VIEW or EDIT, so people who manage them can open their placement.
+        /// </summary>
+        /// <returns><c>true</c> if the source exists and the current person can view it; otherwise <c>false</c>.</returns>
+        private bool CanViewPlacementSource()
+        {
+            var currentPerson = GetCurrentPerson();
+            var sourceGroupId = GetIdFromPageParameter( PageParameterKey.SourceGroup );
+            var entitySetId = GetIdFromPageParameter( PageParameterKey.EntitySet );
+
+            if ( sourceGroupId.HasValue )
+            {
+                return CanViewPlacementGroup( sourceGroupId.Value );
+            }
+
+            if ( entitySetId.HasValue )
+            {
+                /*
+                    10/22/26 - CLAUDE
+
+                    Entity sets have no seeded security rules and VIEW is allowed by default,
+                    so on a stock install this check allows everyone and entity set placements
+                    can still be opened by integer Id. The check is kept so any rules an admin
+                    adds to an entity set are honored. Securing entity set placements further
+                    (for example, limiting them to the set's creator) is a separate change.
+
+                    Reason: Entity set placements are not secured by this check on a stock install.
+                */
+                var entitySet = new EntitySetService( RockContext ).Get( entitySetId.Value );
+                return entitySet != null && entitySet.IsAuthorized( Authorization.VIEW, currentPerson );
+            }
+
+            // A registration instance inherits VIEW and EDIT from its template.
+            var registrationInstanceId = GetIdFromPageParameter( PageParameterKey.RegistrationInstanceId );
+            if ( registrationInstanceId.HasValue )
+            {
+                var registrationInstance = new RegistrationInstanceService( RockContext ).Get( registrationInstanceId.Value );
+                return CanViewRegistrationSource( registrationInstance );
+            }
+
+            var registrationTemplateService = new RegistrationTemplateService( RockContext );
+            var registrationTemplateGuid = GetAttributeValue( AttributeKey.RegistrationTemplate ).AsGuidOrNull();
+            RegistrationTemplate registrationTemplate = null;
+
+            if ( registrationTemplateGuid.HasValue )
+            {
+                registrationTemplate = registrationTemplateService.Get( registrationTemplateGuid.Value );
+            }
+            else
+            {
+                var registrationTemplateId = GetIdFromPageParameter( PageParameterKey.RegistrationTemplateId );
+                if ( registrationTemplateId.HasValue )
+                {
+                    registrationTemplate = registrationTemplateService.Get( registrationTemplateId.Value );
+                }
+            }
+
+            return CanViewRegistrationSource( registrationTemplate );
+        }
+
+        /// <summary>
+        /// Determines whether the current person can view the registration instance or
+        /// template. VIEW or EDIT is allowed, so people who manage it can open its placement.
+        /// </summary>
+        /// <param name="registrationSource">The registration instance or template.</param>
+        /// <returns><c>true</c> if the source exists and the current person can view or edit it; otherwise <c>false</c>.</returns>
+        private bool CanViewRegistrationSource( ISecured registrationSource )
+        {
+            var currentPerson = GetCurrentPerson();
+
+            return registrationSource != null
+                && ( registrationSource.IsAuthorized( Authorization.VIEW, currentPerson )
+                    || registrationSource.IsAuthorized( Authorization.EDIT, currentPerson ) );
+        }
+
+        /// <summary>
+        /// Determines whether the current person may attach an existing group to the placement.
+        /// Attaching a group shows its members on the page, so the person must be able to view
+        /// the group or already manage its members.
+        /// </summary>
+        /// <param name="group">The existing group to attach.</param>
+        /// <returns><c>true</c> if the person has VIEW, EDIT or MANAGE_MEMBERS on the group; otherwise <c>false</c>.</returns>
+        private bool CanAttachPlacementGroup( Rock.Model.Group group )
+        {
+            return CanViewPlacementGroup( group.Id );
+        }
+
+        /// <summary>
+        /// Determines whether the current person can see a placement group (source or destination)
+        /// and its members. People who can edit a group or manage its members can see who is in it,
+        /// the same as the Group Member Detail block. Destination groups can come from saved placement
+        /// links that someone else created, so each one is checked before its name or members are returned.
+        /// </summary>
+        /// <param name="groupId">The identifier of the group.</param>
+        /// <returns><c>true</c> if the group exists and the person has VIEW, EDIT or MANAGE_MEMBERS on it; otherwise <c>false</c>.</returns>
+        private bool CanViewPlacementGroup( int groupId )
+        {
+            var group = GroupCache.Get( groupId );
+            var currentPerson = GetCurrentPerson();
+
+            if ( group == null )
+            {
+                return false;
+            }
+
+            return group.IsAuthorized( Authorization.VIEW, currentPerson )
+                || group.IsAuthorized( Authorization.EDIT, currentPerson )
+                || group.IsAuthorized( Authorization.MANAGE_MEMBERS, currentPerson );
+        }
+
+        /// <summary>
         /// Determines whether the placement keys (and placement mode) sent by the client
         /// match what <see cref="GetInitializationBox"/> builds from the page parameters
         /// and block settings. The keys come from the client, so every action that uses
@@ -892,6 +1076,13 @@ namespace Rock.Blocks.Group
         private bool ArePlacementKeysValid( GroupPlacementKeysBag groupPlacementKeys, PlacementMode? placementMode )
         {
             if ( groupPlacementKeys == null )
+            {
+                return false;
+            }
+
+            // The keys below are bound to the page parameter source, so checking VIEW on that
+            // source covers every block action that calls this method.
+            if ( !CanViewPlacementSource() )
             {
                 return false;
             }
@@ -999,9 +1190,11 @@ namespace Rock.Blocks.Group
         private string GetIdsFromDestinationGroupParam()
         {
             var destinationGroupIdParams = PageParameter( PageParameterKey.DestinationGroup ).Split( ',' );
+
+            // Only pass groups the person can view, otherwise their members would be returned.
             var destinationGroupIds = destinationGroupIdParams
                 .Select( param => Rock.Utility.IdHasher.Instance.GetId( param ) ?? param.AsIntegerOrNull() )
-                .Where( id => id.HasValue )
+                .Where( id => id.HasValue && CanViewPlacementGroup( id.Value ) )
                 .Select( id => id.Value.ToString() )
                 .ToList();
 
@@ -1062,23 +1255,36 @@ namespace Rock.Blocks.Group
                 }
 
                 // Authorize the current user.
-                if ( !group.IsAuthorized( Authorization.VIEW, GetCurrentPerson() ) )
+                if ( !CanViewPlacementGroup( group.Id ) )
                 {
                     return ActionStatusCode( System.Net.HttpStatusCode.Forbidden );
                 }
                 await topicChannels.AddToChannelAsync( realTimeConnectionKeysBag.ConnectionId, GroupPlacementTopic.GetGroupMemberChannelForGroup( group.Guid ) );
-                await topicChannels.AddToChannelAsync( realTimeConnectionKeysBag.ConnectionId, GroupPlacementTopic.GetGroupMemberDeletedChannel() );
             }
 
             if ( realTimeConnectionKeysBag.RegistrationInstanceGuid.HasValue )
             {
-                await topicChannels.AddToChannelAsync( realTimeConnectionKeysBag.ConnectionId, GroupPlacementTopic.GetRegistrantChannelForRegistrationInstance( realTimeConnectionKeysBag.RegistrationInstanceGuid.Value ) );
-                await topicChannels.AddToChannelAsync( realTimeConnectionKeysBag.ConnectionId, GroupPlacementTopic.GetRegistrantDeletedChannel() );
+                var registrationInstance = new RegistrationInstanceService( RockContext ).Get( realTimeConnectionKeysBag.RegistrationInstanceGuid.Value );
+
+                // Authorize the current user.
+                if ( !CanViewRegistrationSource( registrationInstance ) )
+                {
+                    return ActionStatusCode( System.Net.HttpStatusCode.Forbidden );
+                }
+
+                await topicChannels.AddToChannelAsync( realTimeConnectionKeysBag.ConnectionId, GroupPlacementTopic.GetRegistrantChannelForRegistrationInstance( registrationInstance.Guid ) );
             }
             else if ( realTimeConnectionKeysBag.RegistrationTemplateGuid.HasValue )
             {
-                await topicChannels.AddToChannelAsync( realTimeConnectionKeysBag.ConnectionId, GroupPlacementTopic.GetRegistrantChannelForRegistrationTemplate( realTimeConnectionKeysBag.RegistrationTemplateGuid.Value ) );
-                await topicChannels.AddToChannelAsync( realTimeConnectionKeysBag.ConnectionId, GroupPlacementTopic.GetRegistrantDeletedChannel() );
+                var registrationTemplate = new RegistrationTemplateService( RockContext ).Get( realTimeConnectionKeysBag.RegistrationTemplateGuid.Value );
+
+                // Authorize the current user.
+                if ( !CanViewRegistrationSource( registrationTemplate ) )
+                {
+                    return ActionStatusCode( System.Net.HttpStatusCode.Forbidden );
+                }
+
+                await topicChannels.AddToChannelAsync( realTimeConnectionKeysBag.ConnectionId, GroupPlacementTopic.GetRegistrantChannelForRegistrationTemplate( registrationTemplate.Guid ) );
             }
 
             return ActionOk();
@@ -1154,10 +1360,20 @@ namespace Rock.Blocks.Group
                 placementConfiguration.PersonFilters?.Campuses?.Select( c => c.Value ).Where( v => v.IsNotNullOrWhiteSpace() ) ?? new List<string>()
             );
 
-            // Preparing params for Person Filter (Persisted Data Views)
+            // Preparing params for Person Filter (Persisted Data Views). Only person data views
+            // the current person can view are used, since the guids come from saved preferences.
+            var currentPerson = GetCurrentPerson();
             var persistedDataViewGuids = string.Join(
                 ",",
-                placementConfiguration.PersonFilters?.PersistedDataViews?.Select( c => c.Value ).Where( v => v.IsNotNullOrWhiteSpace() ) ?? new List<string>()
+                ( placementConfiguration.PersonFilters?.PersistedDataViews ?? new List<ListItemBag>() )
+                    .Select( c => c?.Value.AsGuidOrNull() )
+                    .Where( g => g.HasValue )
+                    .Select( g => DataViewCache.Get( g.Value ) )
+                    .Where( dv => dv != null
+                        && dv.EntityTypeId == personEntityTypeId
+                        && dv.IsAuthorized( Authorization.VIEW, currentPerson ) )
+                    .Select( dv => dv.Guid.ToString() )
+                    .Distinct()
             );
 
             // Preparing params for Person Filter (Age)
@@ -1296,6 +1512,8 @@ namespace Rock.Blocks.Group
                 new SqlParameter( nameof( nextGradeOffset ), ( object ) nextGradeOffset ?? DBNull.Value ),
                 new SqlParameter( nameof( persistedDataViewGuids ), persistedDataViewGuids )
             ).ToList();
+
+            placementPeopleResults = RemoveUnviewableDestinationGroupRows( placementPeopleResults, sourceGroupId, out var hiddenPlacementPersonIds );
 
             List<int> displayedSourceAttributeIds = null;
             List<int> displayedDestinationGroupMemberAttributeIds = null;
@@ -1477,7 +1695,9 @@ namespace Rock.Blocks.Group
                     } );
                 }
 
-                var hasPlacements = personGroup.Any( r => r.GroupId.HasValue && r.GroupMemberId.HasValue && r.GroupId != sourceGroupId );
+                // A placement in a group the person cannot view still counts, even though it is not returned.
+                var hasPlacements = personGroup.Any( r => r.GroupId.HasValue && r.GroupMemberId.HasValue && r.GroupId != sourceGroupId )
+                    || hiddenPlacementPersonIds.Contains( personGroup.Key );
 
                 // If the person has no placements or we are allowing multiple placements than add the person to PeopleToPlace.
                 if ( !hasPlacements || isPlacementAllowingMultiple )
@@ -1615,6 +1835,12 @@ namespace Rock.Blocks.Group
                 new SqlParameter( nameof( registrationTemplatePurposeKey ), registrationTemplatePurposeKey ),
                 new SqlParameter( nameof( registrationInstancePurposeKey ), registrationInstancePurposeKey )
             ).ToList();
+
+            // Groups linked to the placement are not filtered by the stored procedure, so drop
+            // any the person cannot view before their names or members are returned.
+            destinationGroupResults = destinationGroupResults
+                .Where( g => CanViewPlacementGroup( g.GroupId ) )
+                .ToList();
 
             return true;
         }
@@ -1951,6 +2177,11 @@ namespace Rock.Blocks.Group
                         return ActionBadRequest( errorMessage );
                     }
 
+                    if ( !CanAttachPlacementGroup( existingPlacementGroup ) )
+                    {
+                        return ActionBadRequest( "You are not authorized to add one or more of the selected groups to this placement." );
+                    }
+
                     placementGroups.Add( existingPlacementGroup );
                 }
             }
@@ -1969,7 +2200,12 @@ namespace Rock.Blocks.Group
                     return ActionBadRequest( errorMessage );
                 }
 
-                placementGroups = groupService.Queryable().Where( a => a.ParentGroupId == parentGroup.Id && a.IsActive == true ).ToList();
+                // Only attach the child groups the person is allowed to work with.
+                placementGroups = groupService.Queryable()
+                    .Where( a => a.ParentGroupId == parentGroup.Id && a.IsActive == true )
+                    .ToList()
+                    .Where( CanAttachPlacementGroup )
+                    .ToList();
             }
 
             var registrationInstanceService = new RegistrationInstanceService( RockContext );
@@ -2521,7 +2757,7 @@ namespace Rock.Blocks.Group
             public int? GroupRoleId { get; set; }
 
             /// <summary>
-            /// Gets or sets the group member status as the integer value of <see cref="Rock.Model.GroupMemberStatus"/>.
+            /// Gets or sets the group member status as the integer value of <see cref="GroupMemberStatus"/>.
             /// This is null for people who are not in a destination group.
             /// </summary>
             public int? GroupMemberStatus { get; set; }

@@ -40,7 +40,7 @@ namespace Rock.Blocks.Group
     [Category( "Group" )]
     [Description( "Displays the details of the given group requirement type for editing." )]
     [IconCssClass( "ti ti-question-mark" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 

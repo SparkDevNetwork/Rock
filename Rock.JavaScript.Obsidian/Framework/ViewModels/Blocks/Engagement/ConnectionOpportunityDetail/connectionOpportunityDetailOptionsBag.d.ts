@@ -36,6 +36,9 @@ export type ConnectionOpportunityDetailOptionsBag = {
     /** Gets or sets the Due Date Calculation Mode that is set on the associated Connection Type. */
     dueDateCalculationMode?: DueDateCalculationMode | null;
 
+    /** Gets or sets a value indicating whether the Delete button should be shown. */
+    isDeleteVisible: boolean;
+
     /** Gets or sets a value indicating whether Future Follow-Up is enabled on the associated Connection Type. */
     isFutureFollowupEnabled: boolean;
 

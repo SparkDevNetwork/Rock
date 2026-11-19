@@ -17,9 +17,10 @@
 using System.ComponentModel;
 using System.Linq;
 
+using Microsoft.EntityFrameworkCore;
+
 using Rock.Attribute;
 using Rock.Configuration;
-using Rock.Data;
 using Rock.Model;
 
 namespace Rock.Jobs
@@ -50,7 +51,7 @@ namespace Rock.Jobs
 
             using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
-                rockContext.Database.CommandTimeout = commandTimeout;
+                rockContext.Database.SetCommandTimeout( commandTimeout );
 
                 var scheduleService = new ScheduleService( rockContext );
                 var namelessSchedules = scheduleService.Queryable()

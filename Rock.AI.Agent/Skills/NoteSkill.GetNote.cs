@@ -16,7 +16,9 @@
 
 using System.ComponentModel;
 
+using Rock.Model;
 using Rock.SystemGuid;
+using Rock.Web.Cache;
 
 namespace Rock.AI.Agent.Skills;
 
@@ -37,12 +39,28 @@ internal sealed partial class NoteSkill
         }
 
         var currentPerson = AgentRequestContext.CurrentPerson;
-        if ( !note.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson ) )
+
+        /*
+            10/16/2026 - MSE
+
+            Also apply the approval and private note rules the note timeline
+            uses (same rule as NoteExtensionMethods.AreViewableBy), since
+            Note.IsAuthorized does not look at the approval status.
+
+            Reason: Do not return pending or denied notes of other people.
+        */
+        var isAuthor = currentPerson != null
+            && note.CreatedByPersonAlias?.PersonId == currentPerson.Id;
+        var requiresApproval = NoteTypeCache.Get( note.NoteTypeId )?.RequiresApprovals ?? false;
+        var isViewable = ( isAuthor && note.ApprovalStatus != NoteApprovalStatus.Denied )
+            || ( !note.IsPrivateNote && ( !requiresApproval || note.ApprovalStatus == NoteApprovalStatus.Approved ) );
+
+        if ( !isViewable || !note.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson ) )
         {
             return Error( "You are not authorized to view this note." );
         }
 
-        return Success( GetNoteResult( note, AgentRequestContext.RockContext ) )
+        return Success( GetNoteResult( note, AgentRequestContext.RockContext, currentPerson ) )
             .WithHistoryContent( new
             {
                 note.IdKey,

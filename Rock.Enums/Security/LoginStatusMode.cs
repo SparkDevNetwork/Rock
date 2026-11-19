@@ -15,12 +15,18 @@
 // </copyright>
 //
 
+#if NET
+namespace Rock.Enums.Security
+#else
 namespace Rock.Model
+#endif
 {
     /// <summary>
     /// The display mode for the Login Status block.
     /// </summary>
+#if !NET
     [Enums.EnumDomain( "Security" )]
+#endif
     public enum LoginStatusMode
     {
         /// <summary>

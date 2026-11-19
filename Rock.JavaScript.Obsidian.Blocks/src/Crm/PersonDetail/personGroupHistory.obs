@@ -251,6 +251,7 @@
     import { computed, nextTick, onBeforeUnmount, onMounted, ref } from "vue";
     import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { loadJavaScriptAsync } from "@Obsidian/Utility/page";
+    import { escapeHtml } from "@Obsidian/Utility/stringUtils";
     import { Guid } from "@Obsidian/Types";
     import { CustomBlockBox } from "@Obsidian/ViewModels/Blocks/customBlockBox";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
@@ -357,17 +358,25 @@
      * Maps the camelCase data bags into the PascalCase shape the swimlanes library reads.
      */
     function toSwimlanesLanes(lanes: GroupHistoryLaneBag[]): SwimlanesGroup[] {
+        /*
+            10/18/2026 - MSE
+
+            The swimlanes library renders group, group type and role names as HTML, and those
+            names are stored values. They are HTML encoded before being handed to it.
+
+            Reason: Prevent stored XSS through group and role names in the group history timeline.
+        */
         return lanes.map(lane => ({
             GroupId: lane.groupIdKey ?? "",
             GroupTypeId: lane.groupTypeId,
             GroupTypeColor: lane.groupTypeColor,
-            GroupTypeName: lane.groupTypeName,
+            GroupTypeName: escapeHtml(lane.groupTypeName ?? ""),
             StartStopHistory: (lane.startStopHistory ?? []).map(history => ({
-                GroupName: history.groupName,
+                GroupName: escapeHtml(history.groupName ?? ""),
                 StartDateTime: history.startDateTime,
                 StopDateTime: history.stopDateTime,
                 IsLeader: history.isLeader,
-                GroupRoleName: history.groupRoleName
+                GroupRoleName: escapeHtml(history.groupRoleName ?? "")
             }))
         }));
     }

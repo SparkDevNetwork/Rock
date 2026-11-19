@@ -15,12 +15,18 @@
 // </copyright>
 //
 
+#if NET
+namespace Rock.Enums.Group
+#else
 namespace Rock.Model
+#endif
 {
     /// <summary>
     /// Type of workflow trigger
     /// </summary>
+#if !NET
     [Enums.EnumDomain( "Group" )]
+#endif
     public enum GroupMemberWorkflowTriggerType
     {
         /// <summary>

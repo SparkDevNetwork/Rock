@@ -24,6 +24,7 @@ using Microsoft.Extensions.Logging;
 
 using Rock.AI.Agent.Annotations;
 using Rock.AI.Agent.Classes.Skills.PersonSkill;
+using Rock.Enums.AI.Agent;
 using Rock.SystemGuid;
 using Rock.Utility;
 using Rock.Web.Cache;
@@ -41,16 +42,29 @@ internal sealed partial class PersonSkill
     public AgentToolResult ListMediaViewsForPerson( string personIdKey, int pageNumber = 1, DateTime? startDate = null, DateTime? endDate = null )
     {
         // Validate person
-        var personId = IdHasher.Instance.GetId( personIdKey );
-        if ( !personId.HasValue || personId <= 0 )
+        var helper = new AgentToolHelper( AgentRequestContext, _logger );
+        var person = helper.GetRequiredEntity<Model.Person>( personIdKey );
+
+        var isOtherPersonOnPublicAgent = person != null
+            && AgentRequestContext.AudienceType != AudienceType.Internal
+            && person.Id != AgentRequestContext.CurrentPerson?.Id;
+
+        if ( isOtherPersonOnPublicAgent )
         {
-            Error( "The personIdKey is not valid. Please provide a valid value." );
+            helper.AddError( "You can only view your own media views." );
         }
+
+        if ( helper.HasErrors )
+        {
+            return helper.ErrorResult;
+        }
+
+        int? personId = person.Id;
 
         // Validate date range
         if ( startDate.HasValue && endDate.HasValue && startDate > endDate )
         {
-            Error( "Invalid date range. Start date cannot be after end date." );
+            return Error( "Invalid date range. Start date cannot be after end date." );
         }
 
         // Defaults: past year → now
@@ -171,7 +185,7 @@ internal sealed partial class PersonSkill
     #region SQL
 
     private const string _mediaViewsDataSql = @"
-            SELECT 
+            SELECT
                 me.[Id] AS [MediaElementId]
                 , i.[InteractionDateTime] AS [ViewDateTime]
                 , i.[ChannelCustomIndexed1] AS [Medium]
@@ -190,12 +204,12 @@ internal sealed partial class PersonSkill
                 INNER JOIN [MediaElement] me ON me.[Id] = ic.[EntityId]
                 INNER JOIN [MediaFolder] mf ON mf.[Id] = me.[MediaFolderId]
                 INNER JOIN [MediaAccount] ma ON ma.[Id] = mf.[MediaAccountId]
-            WHERE   
+            WHERE
                 ich.[Guid] = 'd5b9bdaf-6e52-40d5-8e74-4e23973df159'
                 AND p.[Id] = @PersonId
                 AND i.[InteractionDateTime] >= @StartDate
                 AND i.[InteractionDateTime] <= @EndDate
-            ORDER BY 
+            ORDER BY
                 i.[InteractionDateTime] DESC
                 , i.[Id] DESC
             OFFSET @OffsetRows ROWS

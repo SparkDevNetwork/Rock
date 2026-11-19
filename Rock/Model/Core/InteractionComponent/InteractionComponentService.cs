@@ -46,11 +46,24 @@ namespace Rock.Model
         /// </summary>
         /// <param name="channelId">The channel identifier.</param>
         /// <param name="entityId">The entity identifier.</param>
-        /// <param name="name">The name. This value will only be used if a new record is created.</param>
+        /// <param name="name">The name. This is used when a new record is created and is also written to an existing record.</param>
         /// <returns></returns>
         public InteractionComponent GetComponentByChannelIdAndEntityId( int channelId, int? entityId, string name )
         {
-            return GetComponentByPredicate( channelId, entityId, name, c =>
+            return GetComponentByChannelIdAndEntityId( channelId, entityId, name, true );
+        }
+
+        /// <summary>
+        /// Gets the component by channel identifier and entity identifier, and creates it if it doesn't exist.
+        /// </summary>
+        /// <param name="channelId">The channel identifier.</param>
+        /// <param name="entityId">The entity identifier.</param>
+        /// <param name="name">The name to use when a new record is created.</param>
+        /// <param name="updateExistingName">If <c>true</c>, an existing component is renamed to <paramref name="name"/>. If <c>false</c>, an existing component keeps its name. Callers passing a client supplied name must pass <c>false</c>.</param>
+        /// <returns></returns>
+        internal InteractionComponent GetComponentByChannelIdAndEntityId( int channelId, int? entityId, string name, bool updateExistingName )
+        {
+            return GetComponentByPredicate( channelId, entityId, name, updateExistingName, c =>
                 c.InteractionChannelId == channelId &&
                 c.EntityId == entityId );
         }
@@ -63,7 +76,7 @@ namespace Rock.Model
         /// <returns></returns>
         public InteractionComponent GetComponentByComponentName( int channelId, string name )
         {
-            return GetComponentByPredicate( channelId, null, name, c =>
+            return GetComponentByPredicate( channelId, null, name, true, c =>
                     c.InteractionChannelId == channelId &&
                     c.Name == name );
         }
@@ -146,16 +159,31 @@ namespace Rock.Model
         /// <param name="channelId">The channel identifier.</param>
         /// <param name="entityId">The entity identifier.</param>
         /// <param name="name">The name.</param>
+        /// <param name="updateExistingName">If <c>true</c>, an existing component is renamed to <paramref name="name"/>.</param>
         /// <param name="predicate">The predicate.</param>
         /// <returns></returns>
-        private InteractionComponent GetComponentByPredicate( int channelId, int? entityId, string name, System.Linq.Expressions.Expression<Func<InteractionComponent, bool>> predicate )
+        private InteractionComponent GetComponentByPredicate( int channelId, int? entityId, string name, bool updateExistingName, System.Linq.Expressions.Expression<Func<InteractionComponent, bool>> predicate )
         {
             var component = this.Queryable()
                 .FirstOrDefault( predicate );
 
             if ( component != null )
             {
-                component.Name = name;
+                /*
+                    10/18/2026 - MSE
+
+                    Server callers pass a trusted name (page name, communication subject)
+                    and rely on this to keep the component name current. Callers that pass
+                    a name supplied by a client (mobile and TV interaction endpoints) set
+                    updateExistingName to false so a client can name a new component but
+                    cannot rename an existing one in any channel.
+
+                    Reason: Prevent clients from renaming existing interaction components.
+                */
+                if ( updateExistingName )
+                {
+                    component.Name = name;
+                }
             }
             else
             {

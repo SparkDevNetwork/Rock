@@ -39,7 +39,7 @@ namespace Rock.Blocks.Cms
     [Description( "Lists Lava Shortcode in the system." )]
     [IconCssClass( "ti ti-list" )]
     [LinkedPage( "Detail Page", Key = AttributeKey.DetailPage )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     [Rock.SystemGuid.EntityTypeGuid( "B02078CC-FA42-4249-ABE0-7E166C63D2B6" )]
     [Rock.SystemGuid.BlockTypeGuid( "09FD3746-48D1-4B94-AAA9-6896443AA43E" )]

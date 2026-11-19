@@ -41,7 +41,7 @@ namespace Rock.Blocks.Engagement
     [DisplayName( "Step Entry" )]
     [Category( "Steps" )]
     [Description( "Displays a form to add or edit a step." )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 

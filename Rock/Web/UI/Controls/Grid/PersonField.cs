@@ -77,7 +77,17 @@ namespace Rock.Web.UI.Controls
             if ( person != null )
             {
                 string url = string.Format( ResolvedUrlFormatString, person.Id );
-                return string.Format( "<a href='{0}'>{1}</a>", url, person.FullName );
+
+                /*
+                    10/14/2026 - MSE
+
+                    The cell is returned as HTML (the encode flag is not used here), and a
+                    person can choose their own name (for example when signing up), so the
+                    name is HTML encoded before it is placed in the link.
+
+                    Reason: Prevent stored XSS through a person's name.
+                */
+                return string.Format( "<a href='{0}'>{1}</a>", url, person.FullName.EncodeHtml() );
             }
 
             return base.FormatDataValue( dataValue, encode );

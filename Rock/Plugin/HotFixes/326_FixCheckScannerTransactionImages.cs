@@ -15,6 +15,8 @@
 // </copyright>
 //
 
+using Rock.Model;
+
 namespace Rock.Plugin.HotFixes
 {
     /// <summary>
@@ -67,7 +69,7 @@ namespace Rock.Plugin.HotFixes
                 Security.Authorization.EDIT,
                 true,
                 SystemGuid.Group.GROUP_FINANCE_ADMINISTRATORS,
-                ( int ) Model.SpecialRole.None,
+                ( int ) SpecialRole.None,
                 "003703EF-7BF7-4F3A-BCB6-8C79B14ECB01" );
 
             RockMigrationHelper.AddSecurityAuthForEntityType( "Rock.Model.FinancialTransactionImage",
@@ -75,7 +77,7 @@ namespace Rock.Plugin.HotFixes
                 Security.Authorization.EDIT,
                 true,
                 SystemGuid.Group.GROUP_FINANCE_USERS,
-                ( int ) Model.SpecialRole.None,
+                ( int ) SpecialRole.None,
                 "8733BF9D-8F5C-46B0-A78A-0F8A0E72C3C5" );
         }
 

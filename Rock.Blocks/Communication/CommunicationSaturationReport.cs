@@ -32,6 +32,8 @@ using Rock.ViewModels.Blocks.Communication.CommunicationSaturationReport;
 using Rock.ViewModels.Core.Grid;
 using Rock.Web.Cache;
 
+using CommunicationType = Rock.Model.CommunicationType;
+
 namespace Rock.Blocks.Communication
 {
     /// <summary>
@@ -42,7 +44,7 @@ namespace Rock.Blocks.Communication
     [Category( "Communication" )]
     [Description( "Shows analytics for communications." )]
     [IconCssClass( "ti ti-list" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 
@@ -158,7 +160,14 @@ namespace Rock.Blocks.Communication
             var bulkOnlyPref = personPreferences.GetValue( PreferenceKey.FilterBulkOnly );
 
             options.DateRangeDelimitedString = dateRangePref.IsNotNullOrWhiteSpace() ? dateRangePref : options.DateRangeDelimitedString;
-            options.DataView = DataViewCache.Get( dataViewPref.AsGuid() )?.ToListItemBag();
+            var dataView = DataViewCache.Get( dataViewPref.AsGuid() );
+
+            // The report compares data view results to person ids, so only a person data view the viewer may see can filter it.
+            var isDataViewAllowed = dataView != null
+                && dataView.EntityTypeId == EntityTypeCache.GetId<Person>()
+                && new DataViewService( RockContext ).Get( dataView.Id )?.IsAuthorized( Rock.Security.Authorization.VIEW, GetCurrentPerson() ) == true;
+
+            options.DataView = isDataViewAllowed ? dataView.ToListItemBag() : null;
             options.ConnectionStatus = DefinedValueCache.Get( connectionStatusPref.AsGuid() )?.ToListItemBag();
             options.Medium = mediumPref?.Any() == true ? mediumPref : options.Medium;
             options.BulkOnly = bulkOnlyPref.AsBooleanOrNull() ?? options.BulkOnly;

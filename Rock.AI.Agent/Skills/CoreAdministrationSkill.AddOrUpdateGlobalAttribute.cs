@@ -24,6 +24,7 @@ using Rock.AI.Agent.Classes.Common;
 using Rock.AI.Agent.Classes.Skills.CoreAdministrationSkill;
 using Rock.Configuration;
 using Rock.Model;
+using Rock.Security;
 using Rock.SystemGuid;
 using Rock.Web.Cache;
 
@@ -96,6 +97,11 @@ internal sealed partial class CoreAdministrationSkill
                     .WithInstructions( $"Call the {nameof( ListGlobalAttributes )} function to determine the available global attributes." );
             }
 
+            if ( !existing.IsAuthorized( Authorization.EDIT, AgentRequestContext.CurrentPerson ) )
+            {
+                return Error( "You are not authorized to edit that global attribute." );
+            }
+
             if ( key.IsNotNullOrWhiteSpace() && !key.Equals( existing.Key, System.StringComparison.OrdinalIgnoreCase ) )
             {
                 return Error( "The key of a global attribute cannot be changed after it is created." );
@@ -125,6 +131,24 @@ internal sealed partial class CoreAdministrationSkill
         }
         else
         {
+            /*
+                11/16/2026 - MSE
+
+                Updating a global attribute requires EDIT on it, but creating one
+                had no check, so anyone who could use the skill could add a global
+                attribute and set its organization-wide value, which Lava renders
+                site-wide. A new global attribute has no rules of its own, so this
+                resolves through the default security for attributes, the same
+                chain the update check above uses, and the same way the category
+                and defined type tools authorize a new record.
+
+                Reason: Prevent people without EDIT on attributes from creating global attributes.
+            */
+            if ( !editableAttribute.IsAuthorized( Authorization.EDIT, AgentRequestContext.CurrentPerson ) )
+            {
+                return Error( "You are not authorized to add a global attribute." );
+            }
+
             if ( key.IsNullOrWhiteSpace() )
             {
                 return Error( $"{nameof( key )} is required when adding a global attribute." );

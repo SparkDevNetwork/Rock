@@ -33,7 +33,7 @@ namespace Rock.Blocks.Example
     [Category( "Obsidian > Example" )]
     [Description( "Allows the user to try out various controls." )]
     [IconCssClass( "ti ti-flask" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     [BooleanField( "Show Reflection",
         Description = "When enabled, a Show Reflection option will be enabled that will add a second control to demonstrate two-way databinding.  This is typically only useful to developers when they are developing a new control.",

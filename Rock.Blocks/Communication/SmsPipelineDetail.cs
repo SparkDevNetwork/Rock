@@ -43,7 +43,7 @@ namespace Rock.Blocks.Communication
     [Category( "Communication" )]
     [Description( "Configures the pipeline that processes an incoming SMS message." )]
     [IconCssClass( "ti ti-device-mobile-message" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     [Rock.SystemGuid.EntityTypeGuid( "B4ECD5B6-6F61-4B49-8FF2-C4F03C5A9F4F" )]
     [Rock.SystemGuid.BlockTypeGuid( "44C32EB7-4DA3-4577-AC41-E3517442E269" )]

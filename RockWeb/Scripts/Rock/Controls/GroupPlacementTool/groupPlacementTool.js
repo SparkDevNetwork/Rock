@@ -444,13 +444,21 @@
                     self.setRegistrantVisibility(groupMember.PersonId, placementGroupRegistrationInstanceId, false);
                 }
 
+                /*
+                    10/18/2026 - MSE
+
+                    Attribute names and values (registrant values can be entered by anonymous
+                    visitors) are added with .text() so they always render as text, never as HTML.
+
+                    Reason: Prevent stored XSS on the group member placement card.
+                */
                 // NOTE: AttributeValues are already filtered to the configured displayed attributes when doing the REST call
                 if (groupMember.GroupMemberAttributeValues && Object.keys(groupMember.GroupMemberAttributeValues).length > 0) {
                     var $attributesDiv = $('.js-groupmember-attributes-container', $groupMemberDiv);
                     var $attributesDl = $('<dl></dl>');
                     for (var displayedAttribute in groupMember.GroupMemberAttributes) {
                         if (groupMember.GroupMemberAttributeValues[displayedAttribute].ValueFormatted) {
-                            $attributesDl.append('<dt>' + groupMember.GroupMemberAttributes[displayedAttribute].Name + ' </dt><dd>' + groupMember.GroupMemberAttributeValues[displayedAttribute].ValueFormatted + '</dd>');
+                            $attributesDl.append($('<dt/>').text(groupMember.GroupMemberAttributes[displayedAttribute].Name + ' '), $('<dd/>').text(groupMember.GroupMemberAttributeValues[displayedAttribute].ValueFormatted));
                         }
                     }
 
@@ -463,7 +471,7 @@
                     var $registrantAttributesDl = $('<dl></dl>');
                     for (var displayedRegistrantAttribute in groupMember.RegistrantAttributes) {
                         if (groupMember.RegistrantAttributeValues[displayedRegistrantAttribute].ValueFormatted) {
-                            $registrantAttributesDl.append('<dt>' + groupMember.RegistrantAttributes[displayedRegistrantAttribute].Name + ' </dt><dd>' + groupMember.RegistrantAttributeValues[displayedRegistrantAttribute].ValueFormatted + '</dd>');
+                            $registrantAttributesDl.append($('<dt/>').text(groupMember.RegistrantAttributes[displayedRegistrantAttribute].Name + ' '), $('<dd/>').text(groupMember.RegistrantAttributeValues[displayedRegistrantAttribute].ValueFormatted));
                         }
                     }
 
@@ -575,13 +583,21 @@
                     $registrantDiv.hide();
                 }
 
+                /*
+                    10/18/2026 - MSE
+
+                    Fee names, attribute names and attribute values (registrant values can be entered
+                    by anonymous visitors) are added with .text() so they always render as text, never as HTML.
+
+                    Reason: Prevent stored XSS on the registrant placement card.
+                */
                 var $feesDiv = $registrantDiv.find('.js-registrant-fees-container');
 
                 if (registrant.Fees && Object.keys(registrant.Fees).length > 0) {
 
                     var $feesDl = $('<dl></dl>');
                     for (var fee in registrant.Fees) {
-                        $feesDl.append('<dt>' + fee + ' </dt><dd>' + registrant.Fees[fee] + '</dd>');
+                        $feesDl.append($('<dt/>').text(fee + ' '), $('<dd/>').text(registrant.Fees[fee]));
                     }
                     $feesDiv.append($feesDl);
                 }
@@ -596,7 +612,7 @@
                     var $attributesDl = $('<dl></dl>');
                     for (var displayedAttribute in registrant.Attributes) {
                         if (registrant.AttributeValues[displayedAttribute].ValueFormatted) {
-                            $attributesDl.append('<dt>' + registrant.Attributes[displayedAttribute].Name + ' </dt><dd>' + registrant.AttributeValues[displayedAttribute].ValueFormatted + '</dd>');
+                            $attributesDl.append($('<dt/>').text(registrant.Attributes[displayedAttribute].Name + ' '), $('<dd/>').text(registrant.AttributeValues[displayedAttribute].ValueFormatted));
                         }
                     }
                     $attributesDiv.append($attributesDl);

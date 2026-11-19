@@ -15,12 +15,18 @@
 // </copyright>
 //
 
+#if NET
+namespace Rock.Enums.Group
+#else
 namespace Rock.Model
+#endif
 {
     /// <summary>
     /// The type of due date. Immediate, ConfiguredDate, GroupAttribute, or DaysAfterJoining.
     /// </summary>
+#if !NET
     [Enums.EnumDomain( "Group" )]
+#endif
     public enum DueDateType
     {
         /// <summary>

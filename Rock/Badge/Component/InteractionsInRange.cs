@@ -20,6 +20,7 @@ using System.IO;
 using System.Web;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -102,7 +103,7 @@ namespace Rock.Badge.Component
 
             var pageId = PageCache.Get( GetAttributeValue( badge, "DetailPage" ).AsGuid() )?.Id;
             var interactionChannel = InteractionChannelCache.Get( interactionChannelGuid.Value );
-            var detailPageUrl = VirtualPathUtility.ToAbsolute( $"~/page/{pageId}?ChannelId={interactionChannel?.Id}" );
+            var detailPageUrl = RockApp.Current.ResolveRockUrl( $"~/page/{pageId}?ChannelId={interactionChannel?.Id}" );
 
             return $@"
                 $.ajax({{

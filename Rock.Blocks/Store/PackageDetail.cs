@@ -43,7 +43,7 @@ namespace Rock.Blocks.Store
     [Category( "Store" )]
     [Description( "Displays the details of a particular package." )]
     [IconCssClass( "fa fa-question" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
     [LinkedPage( "Install Page",

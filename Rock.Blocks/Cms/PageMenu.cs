@@ -68,7 +68,7 @@ namespace Rock.Blocks.Cms
 
     [TextField(
         "CSS File",
-        Description = "Optional CSS file to add to the page for styling. Example 'Styles/nav.css' would point the style sheet in the current theme's styles folder.",
+        Description = "Optional CSS file to add to the page for styling. Example '~~/Styles/nav.css' would point the style sheet in the current theme's styles folder.",
         IsRequired = false,
         Key = AttributeKey.CSSFile )]
 

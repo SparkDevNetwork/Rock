@@ -514,7 +514,7 @@ namespace RockWeb.Blocks.Groups
                         regLinks.Add(
                             string.Format(
                                 "<a href='{0}'>{1}</a>",
-                                LinkedPageUrl( "RegistrationPage", new Dictionary<string, string> { { "RegistrationId", reg.RegistrationId.ToString() } } ),
+                                LinkedPageUrl( "RegistrationPage", new Dictionary<string, string> { { "RegistrationId", IdHasher.Instance.GetHash( reg.RegistrationId ) } } ),
                                 reg.RegistrationName ) );
                     }
 
@@ -2141,6 +2141,7 @@ namespace RockWeb.Blocks.Groups
                 foreach ( var attendance in new AttendanceService( rockContext )
                     .Queryable().AsNoTracking()
                     .Where( a =>
+                        a.PersonAliasId.HasValue &&
                         a.Occurrence.GroupId.HasValue && a.Occurrence.GroupId.Value == _group.Id &&
                         a.DidAttend.HasValue && a.DidAttend.Value )
                     .GroupBy( a => a.PersonAlias.PersonId )

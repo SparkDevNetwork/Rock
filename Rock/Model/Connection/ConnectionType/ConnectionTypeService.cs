@@ -134,7 +134,7 @@ namespace Rock.Model
             var opportunityAttributes = attributeService
                 .GetByEntityTypeId( new ConnectionOpportunity().TypeId, true ).AsQueryable()
                 .Where( a =>
-                    a.EntityTypeQualifierColumn.Equals( "ConnectionTypeId", StringComparison.OrdinalIgnoreCase ) &&
+                    a.EntityTypeQualifierColumn == "ConnectionTypeId" &&
                     a.EntityTypeQualifierValue.Equals( connectionType.Id.ToString() ) )
                 .OrderBy( a => a.Order )
                 .ThenBy( a => a.Name )

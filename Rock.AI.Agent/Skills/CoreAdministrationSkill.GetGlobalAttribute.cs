@@ -44,7 +44,7 @@ internal sealed partial class CoreAdministrationSkill
     {
         var helper = new AgentToolHelper( AgentRequestContext, _logger );
 
-        var attribute = helper.GetRequiredEntity<Rock.Model.Attribute>( globalAttributeIdKey, checkSecurity: false );
+        var attribute = helper.GetRequiredEntity<Rock.Model.Attribute>( globalAttributeIdKey, checkSecurity: true );
 
         if ( attribute == null )
         {
@@ -60,8 +60,7 @@ internal sealed partial class CoreAdministrationSkill
                 .WithInstructions( $"Call the {nameof( ListGlobalAttributes )} function to determine the available global attributes." );
         }
 
-        // Global attributes are not secured per attribute, so no view authorization
-        // check is applied here.
+        // Global attributes follow the attribute's own VIEW rules, checked when it was loaded above.
         var attributeCache = AttributeCache.Get( attribute.Id, AgentRequestContext.RockContext );
 
         if ( attributeCache == null )

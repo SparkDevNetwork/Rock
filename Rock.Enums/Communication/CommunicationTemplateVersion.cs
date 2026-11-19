@@ -17,12 +17,18 @@
 
 using System.ComponentModel;
 
+#if NET
+namespace Rock.Enums.Communication
+#else
 namespace Rock.Model
+#endif
 {
     /// <summary>
     /// Represents the version of a communication template.
     /// </summary>
+#if !NET
     [Enums.EnumDomain( "Communication" )]
+#endif
     public enum CommunicationTemplateVersion
     {
         /// <summary>

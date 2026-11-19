@@ -41,7 +41,7 @@ namespace Rock.Blocks.Core
     [Category( "Core" )]
     [Description( "Block to configure Rock's universal search features." )]
     [IconCssClass( "ti ti-zoom-in" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     [Rock.SystemGuid.EntityTypeGuid( "1A99978C-B16F-4ED5-A51B-2D81C06C526E" )]
     // was [Rock.SystemGuid.BlockTypeGuid( "E84ACB6E-36CB-40DB-8BEB-A2AA42644E87" )]

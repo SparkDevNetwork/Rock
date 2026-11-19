@@ -18,6 +18,7 @@ using System;
 using System.IO;
 using System.Web;
 
+using Rock.Configuration;
 using Rock.Extension;
 using Rock.Model;
 using Rock.Utility;
@@ -91,7 +92,7 @@ namespace Rock.Storage
                 string url = string.Empty;
                 try
                 {
-                    url = file.Path.StartsWith( "~" ) ? System.Web.VirtualPathUtility.ToAbsolute( file.Path ) : file.Path;
+                    url = file.Path.StartsWith( "~" ) ? RockApp.Current.ResolveRockUrl( file.Path ) : file.Path;
                     if ( url.StartsWith( "http", StringComparison.OrdinalIgnoreCase ) )
                     {
                         return url;

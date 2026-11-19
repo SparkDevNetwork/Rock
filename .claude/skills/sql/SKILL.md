@@ -224,9 +224,9 @@ Write the SQL script to a `.sql` file in the `Dev Tools/Sql/` directory. Follow 
 |---|---|
 | `Populate_` | Seeding/generating test data (e.g., `Populate_FinancialTransactions_Contributions.sql`) |
 | `CodeGen_` | Generating migration code or system data (e.g., `CodeGen_SystemGuid_DefinedValue.sql`) |
-| `Tool_` | Utility/maintenance scripts (e.g., `Tool_DeletePeople.sql`) |
-| `View_` | Creating or querying views (e.g., `View_PersonAttributeValues.sql`) |
-| `Report_` | Reporting queries (e.g., `Report_OrphanedAttributes.sql`) |
+| `Tool_` | Utility/maintenance scripts (e.g., `Tool_DeleteDuplicateAttributeQualifiers.sql`) |
+| `View_` | Creating or querying views (e.g., `View_AttributeValues.sql`) |
+| `Report_` | Reporting queries (e.g., `Report_OrphanedAttributeValues.sql`) |
 | `Enable_` | Enabling features or settings (e.g., `Enable_FacebookLogin.sql`) |
 
 Use PascalCase with underscores between words in the filename.

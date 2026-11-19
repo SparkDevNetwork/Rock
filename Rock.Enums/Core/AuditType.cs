@@ -14,12 +14,18 @@
 // limitations under the License.
 // </copyright>
 
+#if NET
+namespace Rock.Enums.Core
+#else
 namespace Rock.Model
+#endif
 {
     /// <summary>
     /// Type of audit done to an entity
     /// </summary>
+#if !NET
     [Enums.EnumDomain( "Core" )]
+#endif
     public enum AuditType
     {
         /// <summary>

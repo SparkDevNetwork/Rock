@@ -75,15 +75,7 @@ internal sealed partial class PersonSkill
 
         if ( knownRelationshipGroup != null )
         {
-            // Get the members of the known relationship group
-            profileResult.KnownRelationships = knownRelationshipGroup.Members
-                .Where( m => m.PersonId != person.Id )
-                .Select( m => new GroupMemberResult
-                {
-                    Role = new KeyNameResult { Id = m.GroupRoleId, Guid = m.GroupRole.Guid, Name = m.GroupRole.Name },
-                    Person = new PersonResult { Id = person.Id, FirstName = m.Person.FirstName, LastName = m.Person.LastName, NickName = m.Person.NickName, Suffix = m.Person.SuffixValue != null ? m.Person.SuffixValue.Value : null }
-                } )
-                .ToList();
+            profileResult.KnownRelationships = GetKnownRelationshipResults( knownRelationshipGroup, person.Id );
         }
 
         // Add latest notes

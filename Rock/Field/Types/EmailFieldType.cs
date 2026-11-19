@@ -24,6 +24,7 @@ using System.Web.UI;
 
 using Rock.Attribute;
 using Rock.Communication;
+using Rock.Model;
 using Rock.Reporting;
 using Rock.Web.UI.Controls;
 
@@ -71,7 +72,25 @@ namespace Rock.Field.Types
             }
             else
             {
-                return string.Format( "<a href='mailto:{0}'>{0}</a>", formattedValue );
+                /*
+                    10/16/2026 - MSE
+
+                    The stored value can come from public forms (such as
+                    Registration Entry and Workflow Entry) that do not check
+                    its format. It is always encoded, and only a single valid
+                    address becomes a mailto link. A valid address can still
+                    contain a single quote, so the encode is still needed.
+
+                    Reason: Stored values were rendered as raw HTML.
+                */
+                var encodedValue = formattedValue.EncodeHtml();
+
+                if ( EmailAddressFieldValidator.IsValid( formattedValue ) )
+                {
+                    return string.Format( "<a href='mailto:{0}'>{0}</a>", encodedValue );
+                }
+
+                return encodedValue;
             }
         }
 
@@ -112,7 +131,7 @@ namespace Rock.Field.Types
         /// <value>
         /// The type of the filter comparison.
         /// </value>
-        public override Model.ComparisonType FilterComparisonType
+        public override ComparisonType FilterComparisonType
         {
             get
             {
@@ -130,7 +149,7 @@ namespace Rock.Field.Types
             return new FieldTypeHints
             {
                 IsCompleteList = false,
-                ValueFormat = "A single email address on its own, with no display name and no mailto prefix, as in person@example.com. Several addresses are not valid here."
+                ValueFormat = "A single email address on its own, with no display name and no mailto prefix, as in person@example.com. Several addresses are not valid here. It is shown as a mailto link only when it is a single valid address; anything else is displayed as plain text."
             };
         }
 

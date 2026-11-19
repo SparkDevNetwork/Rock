@@ -46,7 +46,7 @@ namespace Rock.Blocks.Rsvp
     [Category( "RSVP" )]
     [Description( "Displays a list of RSVPs." )]
     [IconCssClass( "fa fa-list" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     [LinkedPage( "RSVP Detail Page",
         Description = "The page that will show the rsvp details.",

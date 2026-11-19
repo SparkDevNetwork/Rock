@@ -33,7 +33,7 @@ namespace Rock.Blocks.Mobile.CheckIn
     [Category( "Mobile > Check-in" )]
     [Description( "Check yourself or family members in/out." )]
     [IconCssClass( "ti ti-clipboard-check" )]
-    [SupportedSiteTypes( Model.SiteType.Mobile )]
+    [SupportedSiteTypes( SiteType.Mobile )]
 
     #region Block Attributes
 

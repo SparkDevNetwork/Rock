@@ -4,6 +4,26 @@ using Newtonsoft.Json;
 
 using Rock.Model;
 
+/*
+    10/29/26 - CLAUDE
+
+    NcoaReturnRecord has string properties named AddressStatus, MatchFlag and MoveType,
+    so inside this class those bare names mean the properties, not the enums. The
+    enums live in Rock.Model on .NET Framework and in Rock.Enums.Core on .NET, so no
+    single qualified name works for both.
+
+    Reason: Reference the shadowed enums on both target frameworks.
+*/
+#if NET
+using AddressStatusEnum = Rock.Enums.Core.AddressStatus;
+using MatchFlagEnum = Rock.Enums.Core.MatchFlag;
+using MoveTypeEnum = Rock.Enums.Core.MoveType;
+#else
+using AddressStatusEnum = Rock.Model.AddressStatus;
+using MatchFlagEnum = Rock.Model.MatchFlag;
+using MoveTypeEnum = Rock.Model.MoveType;
+#endif
+
 namespace Rock.NCOA
 {
     /// <summary>
@@ -862,7 +882,7 @@ namespace Rock.NCOA
                 PersonAliasId = InputPersonAliasId.ToIntSafe(),
                 FamilyId = InputFamilyId.ToIntSafe(),
                 LocationId = InputLocationId.ToIntSafe(),
-                AddressStatus = AddressStatus == "V" ? Model.AddressStatus.Valid : Model.AddressStatus.Invalid,
+                AddressStatus = AddressStatus == "V" ? AddressStatusEnum.Valid : AddressStatusEnum.Invalid,
                 MoveDate = NcoaDateToDateTime( MoveDate ),
                 MoveDistance = ( decimal? ) adjustedMoveDistance,
                 NcoaNote = DeliveryPointVerificationNotes,
@@ -916,7 +936,7 @@ namespace Rock.NCOA
             if ( AddressStatus != "V" )
             {
                 ncoaHistory.AddressInvalidReason = AddressInvalidReason.NotFound;
-                ncoaHistory.AddressStatus = Model.AddressStatus.Invalid;
+                ncoaHistory.AddressStatus = AddressStatusEnum.Invalid;
             }
             else if ( Vacant == "Y" )
             {
@@ -930,35 +950,35 @@ namespace Rock.NCOA
             switch ( MatchFlag )
             {
                 case "M":
-                    ncoaHistory.MatchFlag = Model.MatchFlag.Moved;
+                    ncoaHistory.MatchFlag = MatchFlagEnum.Moved;
                     break;
                 case "G":
-                    ncoaHistory.MatchFlag = Model.MatchFlag.POBoxClosed;
+                    ncoaHistory.MatchFlag = MatchFlagEnum.POBoxClosed;
                     break;
                 case "K":
-                    ncoaHistory.MatchFlag = Model.MatchFlag.MovedNoForwarding;
+                    ncoaHistory.MatchFlag = MatchFlagEnum.MovedNoForwarding;
                     break;
                 case "F":
-                    ncoaHistory.MatchFlag = Model.MatchFlag.MovedToForeignCountry;
+                    ncoaHistory.MatchFlag = MatchFlagEnum.MovedToForeignCountry;
                     break;
                 default:
-                    ncoaHistory.MatchFlag = Model.MatchFlag.None;
+                    ncoaHistory.MatchFlag = MatchFlagEnum.None;
                     break;
             }
 
             switch ( MoveType )
             {
                 case "I":
-                    ncoaHistory.MoveType = Model.MoveType.Individual;
+                    ncoaHistory.MoveType = MoveTypeEnum.Individual;
                     break;
                 case "F":
-                    ncoaHistory.MoveType = Model.MoveType.Family;
+                    ncoaHistory.MoveType = MoveTypeEnum.Family;
                     break;
                 case "B":
-                    ncoaHistory.MoveType = Model.MoveType.Business;
+                    ncoaHistory.MoveType = MoveTypeEnum.Business;
                     break;
                 default:
-                    ncoaHistory.MoveType = Model.MoveType.None;
+                    ncoaHistory.MoveType = MoveTypeEnum.None;
                     break;
             }
 

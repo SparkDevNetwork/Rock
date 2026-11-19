@@ -319,9 +319,9 @@ Consult these blocks when you're unsure about a specific pattern. They are the s
 
 | Block Type | C# | Frontend | Key patterns |
 |---|---|---|---|
-| Simple entity list | `Rock.Blocks/AI/AIAgentList.cs` | `Rock.JavaScript.Obsidian.Blocks/src/AI/aiAgentList.obs` | `RockEntityListBlockType<T>`, `GetGridBuilder()`, authorization checks, 178 lines |
+| Simple entity list | `Rock.Blocks/AI/AIAgentList.cs` | `Rock.JavaScript.Obsidian.Blocks/src/AI/aiAgentList.obs` | `RockEntityListBlockType<T>`, `GetGridBuilder()`, authorization checks |
 | Entity list with POCO | `Rock.Blocks/Engagement/StepTypeList.cs` | `Rock.JavaScript.Obsidian.Blocks/src/Engagement/stepTypeList.obs` | `RockListBlockType<POCO>`, `GridBuilderGridOptions.LavaObject`, computed counts, preferences |
-| Entity detail | `Rock.Blocks/Engagement/AchievementAttemptDetail.cs` | `Rock.JavaScript.Obsidian.Blocks/src/Engagement/AchievementAttemptDetail/` | `RockEntityDetailBlockType`, `IBreadCrumbBlock`, `SecurityGrantToken`, entity attrs, 694 lines |
+| Entity detail | `Rock.Blocks/Engagement/AchievementAttemptDetail.cs` | `Rock.JavaScript.Obsidian.Blocks/src/Engagement/AchievementAttemptDetail/` | `RockEntityDetailBlockType`, `IBreadCrumbBlock`, `SecurityGrantToken`, entity attrs |
 | Non-entity detail | `Rock.Blocks/Bus/QueueDetail.cs` | `Rock.JavaScript.Obsidian.Blocks/src/Bus/queueDetail.obs` | `RockDetailBlockType`, no entity CRUD |
 | Custom / standalone | `Rock.Blocks/Crm/PersonalDevices.cs` | `Rock.JavaScript.Obsidian.Blocks/src/Crm/personalDevices.obs` | `RockBlockType`, custom block actions |
 | Server-side filters | `Rock.Blocks/Communication/CommunicationList.cs` | `Rock.JavaScript.Obsidian.Blocks/src/Communication/CommunicationList/` | `PreferenceKey`, `gridSettingsModal`, filter serialization (note: uses `RockBlockType` not a list base class — reference for filter patterns only) |
@@ -371,7 +371,7 @@ var items = service.Queryable()
 
 ## PersonPicker — Emits a PersonAlias Guid, NOT a Person Guid
 
-**This has bitten us multiple times.** The `<PersonPicker>` control emits a `ListItemBag` whose `.value` is the selected person's **`PrimaryAliasGuid`** (i.e. a `PersonAlias.Guid`) — *not* the `Person.Guid`.
+The `<PersonPicker>` control emits a `ListItemBag` whose `.value` is the selected person's **`PrimaryAliasGuid`** (a `PersonAlias.Guid`), *not* the `Person.Guid`.
 
 Comparing the emitted value to `Person.Guid` on the server silently matches zero rows (no exception — it just filters everything out).
 

@@ -137,6 +137,13 @@ namespace Rock.ViewModels.Blocks.Group.Scheduling.GroupScheduleToolbox
         /// </summary>
         public List<ListItemBag> SchedulableFamilyMembers { get; set; }
 
+        /// <summary>
+        /// Gets or sets the message to display when the current person is not authorized to view
+        /// all of the selected person's schedule. A non-empty value indicates that some
+        /// upcoming schedules are hidden.
+        /// </summary>
+        public string LimitedAuthorizationMessage { get; set; }
+
         #endregion Shared Settings (Applies to Multiple Panels)
     }
 }

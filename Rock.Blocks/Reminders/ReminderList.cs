@@ -41,7 +41,7 @@ namespace Rock.Blocks.Reminders
     [DisplayName( "Reminder List" )]
     [Category( "Reminders" )]
     [Description( "Block to show a list of reminders." )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 

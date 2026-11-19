@@ -265,6 +265,7 @@ of how it works.</p>
                 }
 
                 var mergeFields = context.GetMergeFields();
+                mergeFields.AddInternalFieldsFrom( context );
 
                 mergeFields.Add( "NextOccurrenceDateTime", nextStartDateTime );
                 mergeFields.Add( "OccurrenceEndDateTime", occurrenceEndDateTime );

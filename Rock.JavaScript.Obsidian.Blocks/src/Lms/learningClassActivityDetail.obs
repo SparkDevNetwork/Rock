@@ -157,7 +157,7 @@
     });
 
     const options = computed((): LearningClassActivityDetailOptionsBag => {
-        return config.options ?? { hasCompletions: false, availabilityCriteriaOptions: [], dueDateCriteriaOptions: [] };
+        return config.options ?? { canViewGrades: false, hasCompletions: false, availabilityCriteriaOptions: [], dueDateCriteriaOptions: [] };
     });
 
     /**

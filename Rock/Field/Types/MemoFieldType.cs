@@ -22,6 +22,7 @@ using System.Web.UI.WebControls;
 #endif
 using Rock.Attribute;
 using Rock.Enums.Security;
+using Rock.Model;
 using Rock.Reporting;
 using Rock.Security;
 using Rock.Web.UI.Controls;
@@ -85,7 +86,7 @@ namespace Rock.Field.Types
         /// <value>
         /// The type of the filter comparison.
         /// </value>
-        public override Model.ComparisonType FilterComparisonType
+        public override ComparisonType FilterComparisonType
         {
             get
             {
@@ -118,7 +119,7 @@ namespace Rock.Field.Types
 
             if ( allowsHtml )
             {
-                notes.Add( "HTML is kept rather than stripped" );
+                notes.Add( "basic HTML is accepted, though script tags, javascript: URLs and event handler attributes are rejected on save" );
             }
 
             if ( maximumCharacters.HasValue )

@@ -40,7 +40,7 @@ namespace Rock.Blocks.Types.Mobile.Events
     [Category( "Mobile > Events" )]
     [Description( "Displays a list of events from a calendar." )]
     [IconCssClass( "ti ti-list-details" )]
-    [SupportedSiteTypes( Model.SiteType.Mobile )]
+    [SupportedSiteTypes( SiteType.Mobile )]
 
     #region Block Attributes
 

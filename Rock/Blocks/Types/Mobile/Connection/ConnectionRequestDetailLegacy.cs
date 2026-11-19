@@ -36,10 +36,16 @@ using Rock.Security;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
-using ConnectionState = Rock.Model.ConnectionState;
 using DueStatus = Rock.Common.Mobile.Enums.DueStatus;
+#if NET
+using ConnectionState = Rock.Enums.Connection.ConnectionState;
+using GroupMemberStatus = Rock.Enums.Group.GroupMemberStatus;
+using MeetsGroupRequirement = Rock.Enums.Group.MeetsGroupRequirement;
+#else
+using ConnectionState = Rock.Model.ConnectionState;
 using GroupMemberStatus = Rock.Model.GroupMemberStatus;
 using MeetsGroupRequirement = Rock.Model.MeetsGroupRequirement;
+#endif
 
 namespace Rock.Blocks.Types.Mobile.Connection
 {
@@ -52,7 +58,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
     [Category( "Mobile > Connection" )]
     [Description( "Displays the details of the given connection request for editing state, status, etc." )]
     [IconCssClass( "ti ti-id" )]
-    [SupportedSiteTypes( Model.SiteType.Mobile )]
+    [SupportedSiteTypes( SiteType.Mobile )]
 
     #region Block Attributes
 
@@ -1335,7 +1341,8 @@ namespace Rock.Blocks.Types.Mobile.Connection
             ConnectionRequestActivity activity = null;
             if ( activityGuid != null )
             {
-                activity = new ConnectionRequestActivityService( rockContext ).Get( activityGuid.Value );
+                // Only return an activity that this request's detail view lists.
+                activity = GetConnectionRequestActivities( request, rockContext ).FirstOrDefault( a => a.Guid == activityGuid.Value );
             }
 
             return (activity, connectors, activityTypes, null);
@@ -1734,6 +1741,8 @@ namespace Rock.Blocks.Types.Mobile.Connection
                     request.AssignedGroupMemberStatus = requestDetails.PlacementGroupMemberStatus.Value;
 
                     var memberAttributeValues = new Dictionary<string, string>();
+                    var previousMemberAttributeValues = request.AssignedGroupMemberAttributeValues?.FromJsonOrNull<Dictionary<string, string>>() ?? new Dictionary<string, string>();
+
                     if ( requestDetails.PlacementGroupMemberAttributeValues != null )
                     {
                         // Load the attribute data for an empty group member so we can
@@ -1759,6 +1768,29 @@ namespace Rock.Blocks.Types.Mobile.Connection
                             }
 
                             var value = PublicAttributeHelper.GetPrivateValue( attribute, memberValue.Value );
+
+                            /*
+                                11/09/2026 - MSE
+
+                                A posted binary file attribute value may only reference the file already stored
+                                or a newly uploaded temporary file, so skip values that fail that check.
+
+                                Reason: Restrict which binary files a posted attribute value may reference.
+                            */
+
+                            // The group member does not exist yet, so compare against the
+                            // value previously saved on the request.
+                            previousMemberAttributeValues.TryGetValue( memberValue.Key, out var previousValue );
+
+                            if ( !PublicAttributeHelper.IsPostedBinaryFileAllowed( attribute, value, previousValue ) )
+                            {
+                                if ( previousValue == null )
+                                {
+                                    continue;
+                                }
+
+                                value = previousValue;
+                            }
 
                             memberAttributeValues.Add( memberValue.Key, value );
                         }
@@ -1858,21 +1890,18 @@ namespace Rock.Blocks.Types.Mobile.Connection
                 Guid? activityTypeGuid = null;
                 string activityType = "";
 
-                if ( activityGuid != null )
+                var activity = requestActivityBag.Activity;
+
+                if ( activity != null )
                 {
-                    var activity = new ConnectionRequestActivityService( rockContext ).Get( activityGuid );
-
-                    if ( activity != null )
+                    if ( activity.ConnectorPersonAliasId.HasValue )
                     {
-                        if ( activity.ConnectorPersonAliasId.HasValue )
-                        {
-                            connectorGuid = new PersonAliasService( rockContext ).Get( activity.ConnectorPersonAliasId.Value ).Guid;
-                        }
-
-                        activityType = activity.ConnectionActivityType.ToString();
-                        activityNote = activity.Note;
-                        activityTypeGuid = activity.ConnectionActivityType.Guid;
+                        connectorGuid = new PersonAliasService( rockContext ).Get( activity.ConnectorPersonAliasId.Value ).Guid;
                     }
+
+                    activityType = activity.ConnectionActivityType.ToString();
+                    activityNote = activity.Note;
+                    activityTypeGuid = activity.ConnectionActivityType.Guid;
                 }
 
                 return ActionOk( new Common.Mobile.Blocks.Connection.ConnectionRequestDetailLegacy.ConnectionRequestActivityDetailBag
@@ -2038,8 +2067,33 @@ namespace Rock.Blocks.Types.Mobile.Connection
                     return ActionUnauthorized();
                 }
 
+                // Only accept an activity that this request's detail view lists.
+                if ( !GetConnectionRequestActivities( request, rockContext ).Any( a => a.Id == activityToUpdate.Id ) )
+                {
+                    return ActionNotFound( "Unable to find that specific activity." );
+                }
+
+                // The activity may belong to a sibling request when the full
+                // activity list is enabled, so check EDIT on that request too.
+                if ( activityToUpdate.ConnectionRequestId != request.Id )
+                {
+                    var activityRequest = connectionRequestService.Queryable()
+                        .Include( r => r.ConnectionOpportunity.ConnectionType )
+                        .FirstOrDefault( r => r.Id == activityToUpdate.ConnectionRequestId );
+
+                    if ( activityRequest == null || !activityRequest.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+                    {
+                        return ActionUnauthorized();
+                    }
+                }
+
+                if ( !IsActivityModifiable( activityToUpdate ) )
+                {
+                    return ActionForbidden( "You don't have permission to edit that activity." );
+                }
+
                 var connectionActivityType = connectionActivityTypeService.Get( activity.ActivityTypeGuid );
-                if ( connectionActivityType == null )
+                if ( connectionActivityType == null || connectionActivityType.ConnectionTypeId != request.ConnectionOpportunity.ConnectionTypeId )
                 {
                     return ActionBadRequest( "Unable to find that connection activity type." );
                 }

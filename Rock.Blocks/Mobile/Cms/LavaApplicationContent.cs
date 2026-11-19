@@ -20,6 +20,7 @@ using System.ComponentModel;
 
 using Rock.Attribute;
 using Rock.Common.Mobile.Blocks.Content;
+using Rock.Model;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.Mobile.Cms
@@ -34,7 +35,7 @@ namespace Rock.Blocks.Mobile.Cms
     [Category( "Mobile > Cms" )]
     [Description( "Displays content from a Lava Application and hosts its Helix interactions." )]
     [IconCssClass( "ti ti-bolt" )]
-    [SupportedSiteTypes( Model.SiteType.Mobile )]
+    [SupportedSiteTypes( SiteType.Mobile )]
 
     #region Block Attributes
 

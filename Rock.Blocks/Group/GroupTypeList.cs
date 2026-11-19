@@ -42,7 +42,7 @@ namespace Rock.Blocks.Group
     [Category( "Group" )]
     [Description( "Displays a list of group types." )]
     [IconCssClass( "ti ti-list" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     [LinkedPage( "Detail Page",
         Description = "The page that will show the group type details.",
@@ -163,6 +163,15 @@ namespace Rock.Blocks.Group
             GridAttributeLoader.LoadFor( items, g => g.GroupType, _gridAttributes.Value, rockContext );
 
             return items;
+        }
+
+        /// <inheritdoc/>
+        protected override GridEntityKeyOptions GetGridEntityKeyOptions()
+        {
+            return new GridEntityKeyOptions
+            {
+                EntityTypeId = EntityTypeCache.GetId<Rock.Model.GroupType>()
+            };
         }
 
         /// <inheritdoc/>

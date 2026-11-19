@@ -418,8 +418,8 @@ namespace Rock.Utility
                 else
                 {
                     // Print to label's printer
-                    printFromClient.AddRange( checkinLabels.Where( l => l.PrintFrom == Rock.Model.PrintFrom.Client ) );
-                    printFromServer.AddRange( checkinLabels.Where( l => l.PrintFrom == Rock.Model.PrintFrom.Server ) );
+                    printFromClient.AddRange( checkinLabels.Where( l => l.PrintFrom == PrintFrom.Client ) );
+                    printFromServer.AddRange( checkinLabels.Where( l => l.PrintFrom == PrintFrom.Server ) );
                 }
             }
 

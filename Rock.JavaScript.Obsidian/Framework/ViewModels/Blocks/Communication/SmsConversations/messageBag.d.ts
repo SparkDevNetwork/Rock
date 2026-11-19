@@ -37,11 +37,24 @@ export type MessageBag = {
     /** Gets or sets a value indicating whether the message was sent from Rock, vs a mobile device */
     isOutbound: boolean;
 
+    /**
+     * Gets or sets a value indicating whether this is an outbound message
+     * that has not been sent yet.
+     */
+    isPending: boolean;
+
     /** Gets or sets the message key. */
     messageKey?: string | null;
 
     /** Gets or sets the full name of the person that sent the message from Rock. */
     outboundSenderFullName?: string | null;
+
+    /**
+     * Gets or sets the date and time an outbound message was sent. This
+     * is null for a message that has not been sent yet and for an
+     * inbound message.
+     */
+    sendDateTime?: string | null;
 
     /** Gets or sets the SMS message. */
     smsMessage?: string | null;

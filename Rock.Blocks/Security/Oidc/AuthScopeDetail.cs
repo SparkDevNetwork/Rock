@@ -40,7 +40,7 @@ namespace Rock.Blocks.Security.Oidc
     [Category( "Security > OIDC" )]
     [Description( "Displays the details of the given OpenID Connect Scope." )]
     [IconCssClass( "fa fa-question" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 

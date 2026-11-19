@@ -43,7 +43,7 @@ namespace Rock.Blocks.Cms
     [Category( "CMS" )]
     [Description( "Displays the details of a particular adaptive message." )]
     [IconCssClass( "ti ti-question-mark" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 
@@ -324,7 +324,7 @@ namespace Rock.Blocks.Cms
             else
             {
                 qry = qry.Where( a =>
-                    a.EntityTypeQualifierColumn.Equals( qualifierColumn, StringComparison.OrdinalIgnoreCase ) &&
+                    a.EntityTypeQualifierColumn == qualifierColumn &&
                     a.EntityTypeQualifierValue.Equals( qualifierValue ) );
             }
 

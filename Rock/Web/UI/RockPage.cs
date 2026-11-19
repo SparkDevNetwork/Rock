@@ -91,6 +91,20 @@ namespace Rock.Web.UI
         private const string ImpersonatedByUserTokenSessionKey = "ImpersonatedByUserToken";
 
         /// <summary>
+        /// The query string parameter added to the one time reload that follows signing in
+        /// with an impersonation token. Its value is the Unix time in seconds when the
+        /// reload was issued.
+        /// </summary>
+        internal const string ImpersonationRedirectParameterName = "ImpersonationRedirect";
+
+        /// <summary>
+        /// How far an impersonation redirect marker may be from the current time, in either
+        /// direction, and still be treated as part of the reload that just happened. The
+        /// allowance in the future direction covers clock differences between web farm nodes.
+        /// </summary>
+        private static readonly TimeSpan ImpersonationRedirectFreshWindow = TimeSpan.FromSeconds( 60 );
+
+        /// <summary>
         /// Will be <c>true</c> if the page has anything on it that requires
         /// Obsidian libraries to be loaded.
         /// </summary>
@@ -791,6 +805,19 @@ namespace Rock.Web.UI
                 {
                     /* Ignore any exceptions here and keep loading the page.  Earlier problems should have been logged by now. */
                 }
+
+                /*
+                    11/05/26 - JMH
+
+                    The master page doesn't exist yet when RockRouteHandler calls SetPage, so it gets the page here.
+                    This must run before the logout and impersonation checks, which can return early while the master still resolves its theme links in OnLoad.
+
+                    Reason: Keep early-returning requests from resolving theme assets against the wrong theme.
+                */
+                if ( this.Master is RockMasterPage rockMasterPage )
+                {
+                    rockMasterPage.SetPage( _pageCache );
+                }
             }
 
             bool canAdministratePage = false;
@@ -977,12 +1004,6 @@ namespace Rock.Web.UI
                 PageTitle = _pageCache.PageTitle;
                 PageIcon = _pageCache.IconCssClass;
                 BodyCssClass = _pageCache.BodyCssClass;
-
-                // If there's a master page, update its reference to Current Page
-                if ( this.Master is RockMasterPage )
-                {
-                    ( ( RockMasterPage ) this.Master ).SetPage( _pageCache );
-                }
 
                 // Add CSS class to body
                 if ( !string.IsNullOrWhiteSpace( this.BodyCssClass ) )
@@ -1815,7 +1836,10 @@ namespace Rock.Web.UI
                 }
                 else
                 {
-                    currentVisitorCookiePersonAlias = new PersonAliasService( rockContext ).Get( visitorKeyPersonAliasIdKey );
+                    var visitorKeyPersonAliasId = IdHasher.Instance.GetId( visitorKeyPersonAliasIdKey );
+                    currentVisitorCookiePersonAlias = visitorKeyPersonAliasId.HasValue
+                        ? new PersonAliasService( rockContext ).Get( visitorKeyPersonAliasId.Value )
+                        : null;
                     if ( currentVisitorCookiePersonAlias == null )
                     {
                         // There is a ROCK_VISITOR_KEY key with an IdKey, but that PersonAlias record
@@ -1960,7 +1984,7 @@ namespace Rock.Web.UI
             Personalization.SegmentFilterCookieData segmentFilterCookieData = null;
             if ( cookieValueJson != null )
             {
-                segmentFilterCookieData = cookieValueJson.FromJsonOrNull<Personalization.SegmentFilterCookieData>();
+                segmentFilterCookieData = Personalization.SegmentFilterCookieData.FromCookieValue( cookieValueJson, false );
                 bool isCookieDataValid = false;
                 if ( segmentFilterCookieData != null )
                 {
@@ -1990,7 +2014,7 @@ namespace Rock.Web.UI
                 segmentFilterCookieData.SegmentIdKeys = segmentIdKeys;
             }
 
-            AddOrUpdateCookie( new HttpCookie( Rock.Personalization.RequestCookieKey.ROCK_SEGMENT_FILTERS, segmentFilterCookieData.ToJson() ) );
+            AddOrUpdateCookie( new HttpCookie( Rock.Personalization.RequestCookieKey.ROCK_SEGMENT_FILTERS, segmentFilterCookieData.ToCookieValue() ) );
 
             this.PersonalizationSegmentIds = segmentFilterCookieData.GetSegmentIds();
         }
@@ -2156,6 +2180,90 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
+        /// Adds an impersonation redirect marker stamped with the specified time to the URL.
+        /// Any marker already in the URL is replaced. The rest of the URL, including the
+        /// encoding of other values, is kept as is.
+        /// </summary>
+        /// <param name="url">The URL, usually the raw URL of the current request.</param>
+        /// <param name="now">The current time.</param>
+        /// <returns>The URL with a fresh marker.</returns>
+        internal static string AddImpersonationRedirectMarker( string url, DateTimeOffset now )
+        {
+            var urlWithoutMarker = RemoveImpersonationRedirectMarker( url ?? string.Empty );
+            var separator = urlWithoutMarker.Contains( "?" ) ? "&" : "?";
+
+            return $"{urlWithoutMarker}{separator}{ImpersonationRedirectParameterName}={now.ToUnixTimeSeconds()}";
+        }
+
+        /// <summary>
+        /// Determines whether an impersonation redirect marker value was issued close enough
+        /// to the specified time to belong to the reload that just happened. Missing, malformed,
+        /// stale and far future values are not fresh.
+        /// </summary>
+        /// <param name="markerValue">The marker value from the page parameters.</param>
+        /// <param name="now">The current time.</param>
+        /// <returns><c>true</c> if the marker is fresh; otherwise <c>false</c>.</returns>
+        internal static bool IsImpersonationRedirectMarkerFresh( string markerValue, DateTimeOffset now )
+        {
+            if ( !long.TryParse( markerValue?.Trim(), System.Globalization.NumberStyles.None, System.Globalization.CultureInfo.InvariantCulture, out var markerSeconds ) )
+            {
+                return false;
+            }
+
+            var ageInSeconds = now.ToUnixTimeSeconds() - markerSeconds;
+            var windowInSeconds = ( long ) ImpersonationRedirectFreshWindow.TotalSeconds;
+
+            return ageInSeconds >= -windowInSeconds && ageInSeconds <= windowInSeconds;
+        }
+
+        /// <summary>
+        /// Removes every impersonation redirect marker from the query string of the URL.
+        /// Other parameters keep their order and original encoding. The URL is expected to be
+        /// a request raw URL, which never contains a fragment.
+        /// </summary>
+        /// <param name="url">The URL.</param>
+        /// <returns>The URL without the marker.</returns>
+        internal static string RemoveImpersonationRedirectMarker( string url )
+        {
+            if ( string.IsNullOrEmpty( url ) )
+            {
+                return url;
+            }
+
+            var queryStart = url.IndexOf( '?' );
+            if ( queryStart < 0 )
+            {
+                return url;
+            }
+
+            var path = url.Substring( 0, queryStart );
+            var keptParts = url.Substring( queryStart + 1 )
+                .Split( '&' )
+                .Where( part => !IsImpersonationRedirectMarkerPart( part ) )
+                .ToList();
+
+            var query = string.Join( "&", keptParts );
+
+            return query.Length > 0 ? $"{path}?{query}" : path;
+        }
+
+        /// <summary>
+        /// Determines whether a single "key=value" part of a query string is an
+        /// impersonation redirect marker. The key is compared without regard to case,
+        /// in both raw and URL decoded form.
+        /// </summary>
+        /// <param name="queryPart">The query string part.</param>
+        /// <returns><c>true</c> if the part is a marker; otherwise <c>false</c>.</returns>
+        private static bool IsImpersonationRedirectMarkerPart( string queryPart )
+        {
+            var equalsIndex = queryPart.IndexOf( '=' );
+            var key = equalsIndex >= 0 ? queryPart.Substring( 0, equalsIndex ) : queryPart;
+
+            return string.Equals( key, ImpersonationRedirectParameterName, StringComparison.OrdinalIgnoreCase )
+                || string.Equals( HttpUtility.UrlDecode( key ), ImpersonationRedirectParameterName, StringComparison.OrdinalIgnoreCase );
+        }
+
+        /// <summary>
         /// Checks for and processes any impersonation parameters
         /// Returns False if an invalid token was specified
         /// </summary>
@@ -2188,6 +2296,57 @@ namespace Rock.Web.UI
             if ( Session[ImpersonatedByUserSessionKey] != null && isImpersonatedByUserStale )
             {
                 ClearImpersonatedByUser();
+            }
+
+            /*
+                10/29/2026 - MSE
+
+                After signing in with an rckipid token we reload the page so the whole page
+                lifecycle runs as the person. A client that does not return the auth cookie
+                (SMS link scanners, cookies disabled) came back with the token and no matching
+                identity, was signed in again and redirected again, forever. Each pass also
+                counted a token use and wrote a login history row, so one scanner visit could
+                use up a limited token before the person ever opened the link.
+
+                The reload now carries a short lived ImpersonationRedirect marker. When the
+                marker is fresh and the cookie came back, the marker is removed with one more
+                redirect so the address bar matches the original link. When the marker is fresh
+                and the request has no authenticated identity at all (the cookie did not come
+                back), the token is not processed again (no usage, no sign in, no redirect) and
+                the page renders without the token person signed in. A stale or missing marker
+                keeps the old behavior, so bookmarked or forwarded links still work. The marker
+                can only skip token processing; it never signs anyone in.
+
+                Anyone can forge a fresh marker, so the skip is limited to requests with no
+                authenticated identity. A request signed in as someone else (a normal login or a
+                different rckipid ticket) goes through the normal path: a valid token switches
+                to the token person, so the URL token and the current person never disagree, and
+                an invalid token still signs out and sets InvalidPersonToken.
+
+                The token itself stays in the URL because blocks, Lava and routes may read
+                rckipid from the page parameters.
+
+                Reason: Prevent endless impersonation redirects for clients without cookies (#7068).
+            */
+            var isImpersonationRedirectMarkerFresh = IsImpersonationRedirectMarkerFresh( PageParameter( ImpersonationRedirectParameterName ), DateTimeOffset.UtcNow );
+
+            if ( isImpersonationRedirectMarkerFresh && !string.IsNullOrEmpty( impersonatedPersonKeyParam ) )
+            {
+                var isTokenSignedIn = impersonatedPersonKeyParam == impersonatedPersonKeyIdentity;
+                var isAnonymousRequest = HttpContext.Current?.User?.Identity?.IsAuthenticated != true;
+
+                if ( isTokenSignedIn && !this.IsPostBack )
+                {
+                    Response.Redirect( RemoveImpersonationRedirectMarker( Request.RawUrl ), false );
+                    Context.ApplicationInstance.CompleteRequest();
+                    return false;
+                }
+
+                if ( !isTokenSignedIn && isAnonymousRequest )
+                {
+                    // The client did not keep the auth cookie, so do not process the token again.
+                    impersonatedPersonKeyParam = string.Empty;
+                }
             }
 
             // if there is a impersonatedPersonKeyParam specified, and it isn't already associated with the current HttpContext.Current.User.Identity,
@@ -2262,8 +2421,10 @@ namespace Rock.Web.UI
                     UserLoginService.UpdateLastLogin( new UpdateLastLoginArgs { UserName = "rckipid=" + impersonatedPersonKeyParam } );
 
 
-                    // reload page as the impersonated user (we probably could remove the token from the URL, but some blocks might be looking for rckipid in the PageParameters, so just leave it)
-                    Response.Redirect( Request.RawUrl, false );
+                    // Reload the page once as the impersonated user. The token stays in the URL because blocks
+                    // might be looking for rckipid in the PageParameters. The marker stops the reload from
+                    // repeating for clients that do not keep the auth cookie.
+                    Response.Redirect( AddImpersonationRedirectMarker( Request.RawUrl, DateTimeOffset.UtcNow ), false );
                     Context.ApplicationInstance.CompleteRequest();
                 }
                 else
@@ -3207,6 +3368,11 @@ Sys.Application.add_load(function () {
                 // allowed to view.
                 if ( keyModel.Entity is ISecured securedEntity && !securedEntity.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                 {
+                    if ( keyModel.Entity is Person contextPerson && IsFamilyMemberOrBusinessOfCurrentPerson( contextPerson ) )
+                    {
+                        return keyModel.Entity;
+                    }
+
                     return null;
                 }
 
@@ -3214,6 +3380,25 @@ Sys.Application.add_load(function () {
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Determines whether the specified person is a member of the current
+        /// person's family or a business the current person is a Business Contact for.
+        /// </summary>
+        /// <param name="contextPerson">The person record from the context cookie.</param>
+        /// <returns><c>true</c> if the person is in the current person's family or is one of their businesses; otherwise <c>false</c>.</returns>
+        private bool IsFamilyMemberOrBusinessOfCurrentPerson( Person contextPerson )
+        {
+            if ( CurrentPerson == null || contextPerson == null )
+            {
+                return false;
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                return new PersonService( rockContext ).IsFamilyMemberOrBusinessOf( CurrentPerson.Id, contextPerson.Id );
+            }
         }
 
         /// <summary>
@@ -4774,7 +4959,21 @@ Sys.Application.add_load(function () {
                 context.Response.SuppressContent = true;
                 context.ApplicationInstance.CompleteRequest();
 
-                return null;
+                /*
+                    11/16/2026 - KH
+
+                    ASP.NET requires a non-null IAsyncResult from BeginProcessRequest
+                    and throws a NullReferenceException when it gets null. Returning
+                    a result that has already completed synchronously makes ASP.NET
+                    call EndProcessRequest right away, the same way it does when the
+                    page itself finishes without any async work.
+
+                    Reason: Avoid an exception for every country-restricted request.
+                */
+                var forbiddenResult = new CompletedAsyncResult( extraData );
+                cb?.Invoke( forbiddenResult );
+
+                return forbiddenResult;
             }
 
             return AsyncPageBeginProcessRequest( context, cb, extraData );
@@ -4783,7 +4982,11 @@ Sys.Application.add_load(function () {
         /// <inheritdoc/>
         public void EndProcessRequest( IAsyncResult result )
         {
-            AsyncPageEndProcessRequest( result );
+            // The page was never processed when the request was forbidden.
+            if ( !( result is CompletedAsyncResult ) )
+            {
+                AsyncPageEndProcessRequest( result );
+            }
 
             if ( RockApp.Current.GetRequiredService<IRockRequestContextAccessor>() is RockRequestContextAccessor internalAccessor )
             {
@@ -4792,6 +4995,36 @@ Sys.Application.add_load(function () {
                     internalAccessor.RockRequestContext = null;
                 }
             }
+        }
+
+        /// <summary>
+        /// An <see cref="IAsyncResult"/> for a request that was fully handled
+        /// before the page started processing.
+        /// </summary>
+        private sealed class CompletedAsyncResult : IAsyncResult
+        {
+            private System.Threading.WaitHandle _asyncWaitHandle;
+
+            /// <summary>
+            /// Initializes a new instance of the <see cref="CompletedAsyncResult"/> class.
+            /// </summary>
+            /// <param name="asyncState">The state object passed to <see cref="BeginProcessRequest"/>.</param>
+            public CompletedAsyncResult( object asyncState )
+            {
+                AsyncState = asyncState;
+            }
+
+            /// <inheritdoc/>
+            public object AsyncState { get; }
+
+            /// <inheritdoc/>
+            public System.Threading.WaitHandle AsyncWaitHandle => _asyncWaitHandle ?? ( _asyncWaitHandle = new System.Threading.ManualResetEvent( true ) );
+
+            /// <inheritdoc/>
+            public bool CompletedSynchronously => true;
+
+            /// <inheritdoc/>
+            public bool IsCompleted => true;
         }
 
         #endregion

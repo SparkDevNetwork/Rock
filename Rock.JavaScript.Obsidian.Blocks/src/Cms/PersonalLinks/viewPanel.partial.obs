@@ -25,7 +25,7 @@
                 <li><strong>{{ section.name }}</strong></li>
                 <li v-for="(link, linkIndex) in section.personalLinks ?? []"
                     :key="link.idKey ?? linkIndex">
-                    <a :href="link.url ?? '#'">{{ link.name }}</a>
+                    <a :href="getSafeHref(link.url)">{{ link.name }}</a>
                 </li>
             </ul>
         </div>
@@ -74,6 +74,43 @@
     const nonEmptySections = computed((): PersonalLinksSectionBag[] => {
         return props.personalLinksSections.filter(s => (s.personalLinks ?? []).length > 0);
     });
+
+    const scriptSchemes = ["javascript", "vbscript", "data"];
+
+    /**
+     * Gets the href to render for a personal link, replacing script schemes
+     * with "#" so a stored script link cannot run when clicked.
+     *
+     * @param url The stored link URL.
+     *
+     * @returns The URL to use in the href attribute.
+     */
+    function getSafeHref(url: string | null | undefined): string {
+        /*
+            10/16/2026 - MSE
+
+            Vue does not sanitize :href, and links stored before the upgrade or
+            through the REST endpoints never went through the save check. Browsers
+            remove tab, CR and LF anywhere in a URL and trim leading control characters
+            and spaces before reading the scheme, so normalize the same way. Other
+            schemes are kept so existing links keep working.
+
+            Reason: Prevent stored script links from running in the personal links popover.
+        */
+        if (!url) {
+            return "#";
+        }
+
+        // eslint-disable-next-line no-control-regex
+        const normalized = url.replace(/[\t\n\r]/g, "").replace(/^[\u0000- ]+/, "");
+        const match = /^([a-z][a-z0-9+.-]*):/i.exec(normalized);
+
+        if (match && scriptSchemes.includes(match[1].toLowerCase())) {
+            return "#";
+        }
+
+        return url;
+    }
 
     /**
      * Tells the parent to swap to the Add Link form.

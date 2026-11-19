@@ -32,7 +32,7 @@ namespace Rock.Blocks.Finance
     [Category( "Finance" )]
     [Description( "Allows you to convert a Person record into a Business and vice-versa." )]
     [IconCssClass( "ti ti-building" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     [DefinedValueField(
         "Default Connection Status",
@@ -228,6 +228,11 @@ namespace Rock.Blocks.Finance
                 return ActionBadRequest( "Unable to find the selected business." );
             }
 
+            if ( person.RecordTypeValueId != DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS ).Id )
+            {
+                return ActionBadRequest( "The selected record is not a business." );
+            }
+
             var formerFullName = person.FullName;
 
             person.RecordTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON ).Id;
@@ -279,6 +284,11 @@ namespace Rock.Blocks.Finance
             if ( person == null )
             {
                 return ActionBadRequest( "Unable to find the selected person." );
+            }
+
+            if ( person.RecordTypeValueId != DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON ).Id )
+            {
+                return ActionBadRequest( "The selected record is not a person." );
             }
 
             var validationResult = ValidateCanConvertToBusiness( person );

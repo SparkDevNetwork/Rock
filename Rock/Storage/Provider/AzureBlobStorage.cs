@@ -111,7 +111,26 @@ namespace Rock.Storage.Provider
                 Reason: Wide SMS image attachments stored in Azure cause exceptions in Communication Wizard.
                 https://github.com/SparkDevNetwork/Rock/issues/5719
              */
-            blobClient.Upload( binaryFile.ContentStream, overwrite: true );
+
+            /*
+                10/29/2026 - MSE
+
+                Azure stores a blob uploaded without a content type as application/octet-stream, which makes
+                browsers download images and PDFs instead of displaying them when the blob is served directly.
+                The BlobUploadOptions overload sets the type and, with no Conditions, still overwrites existing
+                blobs, so the #5719 behavior above is preserved.
+
+                Reason: Files uploaded to Azure Blob Storage must be served with the correct Content-Type.
+                https://github.com/SparkDevNetwork/Rock/issues/7112
+             */
+            var contentType = binaryFile.MimeType.IsNotNullOrWhiteSpace()
+                ? binaryFile.MimeType
+                : System.Web.MimeMapping.GetMimeMapping( binaryFile.FileName );
+
+            blobClient.Upload( binaryFile.ContentStream, new Azure.Storage.Blobs.Models.BlobUploadOptions
+            {
+                HttpHeaders = new Azure.Storage.Blobs.Models.BlobHttpHeaders { ContentType = contentType }
+            } );
 
             fileSize = binaryFile.ContentStream.Length;
         }

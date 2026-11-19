@@ -23,6 +23,7 @@ using Rock.Common.Mobile;
 using Rock.Common.Mobile.Blocks.Content;
 using Rock.Common.Mobile.Enums;
 using Rock.Mobile;
+using Rock.Model;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.Types.Mobile.Cms
@@ -36,7 +37,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
     [Category( "Mobile > Cms" )]
     [Description( "Displays an image with text overlay on the page." )]
     [IconCssClass( "ti ti-heading" )]
-    [SupportedSiteTypes( Model.SiteType.Mobile )]
+    [SupportedSiteTypes( SiteType.Mobile )]
 
     #region Block Attributes
 

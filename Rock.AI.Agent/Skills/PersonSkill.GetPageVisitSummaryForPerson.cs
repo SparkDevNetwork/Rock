@@ -24,6 +24,7 @@ using Microsoft.Extensions.Logging;
 
 using Rock.AI.Agent.Annotations;
 using Rock.AI.Agent.Classes.Skills.PersonSkill;
+using Rock.Enums.AI.Agent;
 using Rock.SystemGuid;
 using Rock.Utility;
 using Rock.Web.Cache;
@@ -51,14 +52,25 @@ internal sealed partial class PersonSkill
         string siteIdKey = "",
         int pageNumber = 1 )
     {
-        var errors = new List<string>();
+        var helper = new AgentToolHelper( AgentRequestContext, _logger );
+        var person = helper.GetRequiredEntity<Model.Person>( personIdKey );
 
+        var isOtherPersonOnPublicAgent = person != null
+            && AgentRequestContext.AudienceType != AudienceType.Internal
+            && person.Id != AgentRequestContext.CurrentPerson?.Id;
 
-        var personId = IdHasher.Instance.GetId( personIdKey );
-        if ( !personId.HasValue || personId <= 0 )
+        if ( isOtherPersonOnPublicAgent )
         {
-            errors.Add( "There was an invalid key provided for the person." );
+            helper.AddError( "You can only view your own page visits." );
         }
+
+        if ( helper.HasErrors )
+        {
+            return helper.ErrorResult;
+        }
+
+        int? personId = person.Id;
+        var errors = new List<string>();
 
         var siteId = IdHasher.Instance.GetId( siteIdKey );
         if ( siteId.HasValue && siteId.Value <= 0 )

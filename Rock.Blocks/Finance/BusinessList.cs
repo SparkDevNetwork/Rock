@@ -36,7 +36,7 @@ namespace Rock.Blocks.Finance
     [Category( "Finance" )]
     [Description( "Displays a list of businesses." )]
     [IconCssClass( "ti ti-building" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 
@@ -195,6 +195,15 @@ namespace Rock.Blocks.Finance
             }
             
             return items;
+        }
+
+        /// <inheritdoc/>
+        protected override GridEntityKeyOptions GetGridEntityKeyOptions()
+        {
+            return new GridEntityKeyOptions
+            {
+                EntityTypeId = EntityTypeCache.GetId<Rock.Model.Person>()
+            };
         }
 
         protected override GridBuilder<BusinessListBag> GetGridBuilder()

@@ -38,7 +38,7 @@ namespace Rock.Blocks.Types.Mobile.Events
     [Category( "Mobile > Events" )]
     [Description( "Displays a particular calendar event item occurrence." )]
     [IconCssClass( "ti ti-calendar-event" )]
-    [SupportedSiteTypes( Model.SiteType.Mobile )]
+    [SupportedSiteTypes( SiteType.Mobile )]
 
     #region Block Attributes
 
@@ -164,6 +164,7 @@ namespace Rock.Blocks.Types.Mobile.Events
                 { "Event", eventItemOccurrence?.EventItem },
                 { "CurrentPerson", RequestContext.CurrentPerson }
             };
+            mergeFields.AddRockRequestContext( RequestContext );
 
             //var campusEntityType = EntityTypeCache.Get( "Rock.Model.Campus" );
             var contextCampus = RequestContext.GetContextEntity<Campus>();

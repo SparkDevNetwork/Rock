@@ -866,10 +866,34 @@ $@"Rock.controls.noteEditor.initialize({{
             bool isNew = false;
             if ( note == null )
             {
+                var parentNoteId = _hfParentNoteId.Value.AsIntegerOrNull();
+
+                if ( parentNoteId.HasValue )
+                {
+                    var configuredNoteTypeIds = NoteOptions.NoteTypes.Select( t => t.Id ).ToList();
+                    var parentNote = service.Queryable()
+                        .AreViewableBy( currentPerson?.Id )
+                        .FirstOrDefault( n => n.Id == parentNoteId.Value
+                            && n.EntityId == EntityId
+                            && configuredNoteTypeIds.Contains( n.NoteTypeId ) );
+
+                    if ( parentNote == null || !parentNote.IsAuthorized( Authorization.VIEW, currentPerson ) )
+                    {
+                        _mdEditWarning.Show( "Parent note is invalid.", ModalAlertType.Warning );
+                        return;
+                    }
+
+                    if ( !service.CanReplyToNote( parentNote, out var replyErrorMessage ) )
+                    {
+                        _mdEditWarning.Show( replyErrorMessage, ModalAlertType.Warning );
+                        return;
+                    }
+                }
+
                 note = new Note();
                 note.IsSystem = false;
                 note.EntityId = EntityId;
-                note.ParentNoteId = _hfParentNoteId.Value.AsIntegerOrNull();
+                note.ParentNoteId = parentNoteId;
                 service.Add( note );
                 isNew = true;
             }

@@ -108,6 +108,7 @@ namespace Rock.Reporting.DataFilter
                 .OrderBy( a => !a.IsPreviewable )
                 .ThenBy( a => a.FieldKind != FieldKind.Property )
                 .ThenBy( a => a.Title );
+            var selectedAttributeGuid = GetSelectedAttributeGuid( entityType, selection );
 
             foreach ( var entityField in entityFields )
             {
@@ -125,8 +126,10 @@ namespace Rock.Reporting.DataFilter
 
                     attribute = AttributeCache.Get( entityField.AttributeGuid.Value );
 
-                    // Don't include the attribute if it isn't active
-                    if ( attribute.IsActive == false )
+                    // Don't include the attribute if it isn't active, unless the
+                    // existing filter already uses it. Otherwise the editor can't
+                    // show the filter and saving it would clear the selection.
+                    if ( attribute.IsActive == false && attribute.Guid != selectedAttributeGuid )
                     {
                         includeField = false;
                     }
@@ -264,6 +267,12 @@ namespace Rock.Reporting.DataFilter
             if ( filterRule.SourceType == FieldFilterSourceType.Attribute )
             {
                 var attribute = AttributeCache.Get( filterRule.AttributeGuid.Value );
+
+                if ( !IsAttributeOnEntityType( entityType, attribute ) )
+                {
+                    return selectionValues.ToJson();
+                }
+
                 entityField = EntityHelper.GetEntityFieldForAttribute( attribute );
                 var comparisonValue = new ComparisonValue
                 {
@@ -295,6 +304,67 @@ namespace Rock.Reporting.DataFilter
             selectionValues = selectionValues.Concat( filterValue ).ToList();
 
             return selectionValues.ToJson();
+        }
+
+        /// <inheritdoc/>
+        public override bool IsSelectionAuthorizedForEdit( Type entityType, string selection, Rock.Model.Person person )
+        {
+            var attributeGuid = GetSelectedAttributeGuid( entityType, selection );
+
+            if ( !attributeGuid.HasValue )
+            {
+                return true;
+            }
+
+            var attribute = AttributeCache.Get( attributeGuid.Value );
+
+            return attribute == null || attribute.IsAuthorized( Rock.Security.Authorization.VIEW, person );
+        }
+
+        /// <summary>
+        /// Gets the unique identifier of the attribute the selection filters on.
+        /// </summary>
+        /// <param name="entityType">The type of entity being filtered.</param>
+        /// <param name="selection">The selection string from the database.</param>
+        /// <returns>The attribute unique identifier or <c>null</c> if the selection does not filter on an attribute.</returns>
+        private static Guid? GetSelectedAttributeGuid( Type entityType, string selection )
+        {
+            var values = selection.FromJsonOrNull<List<string>>();
+
+            if ( values == null || values.Count == 0 )
+            {
+                return null;
+            }
+
+            var entityField = EntityHelper.GetEntityFields( entityType ).FindFromFilterSelection( values[0] );
+
+            if ( entityField == null || entityField.FieldKind != FieldKind.Attribute )
+            {
+                return null;
+            }
+
+            return entityField.AttributeGuid;
+        }
+
+        /// <summary>
+        /// Determines whether the attribute is one of the filterable attributes
+        /// of the entity type.
+        /// </summary>
+        /// <param name="entityType">The type of entity being filtered.</param>
+        /// <param name="attribute">The attribute to check.</param>
+        /// <returns><c>true</c> if the attribute can be used to filter the entity type; otherwise <c>false</c>.</returns>
+        private static bool IsAttributeOnEntityType( Type entityType, AttributeCache attribute )
+        {
+            if ( attribute == null )
+            {
+                return false;
+            }
+
+            // Use the entity fields rather than comparing EntityTypeId so the
+            // same qualifier and filterable field type rules that decide which
+            // attributes can be filtered on are applied here too.
+            return EntityHelper.GetEntityFields( entityType )
+                .Any( f => f.FieldKind == FieldKind.Attribute && f.AttributeGuid == attribute.Guid );
         }
 
         #endregion
@@ -347,7 +417,7 @@ namespace Rock.Reporting.DataFilter
                 return "Error";
             }
 
-            if ( values.Count >= 1 )
+            if ( values != null && values.Count >= 1 )
             {
                 // First value in array is always the name of the entity field being filtered
                 string fieldSelection = values[0];
@@ -388,7 +458,7 @@ namespace Rock.Reporting.DataFilter
                 return "Error";
             }
 
-            if ( values.Count >= 1 )
+            if ( values != null && values.Count >= 1 )
             {
                 // First value in array is always the name of the entity field being filtered
                 string fieldSelection = values[0];

@@ -37,7 +37,7 @@ namespace Rock.Blocks.Utility
     [Category( "Utility" )]
     [Description( "Allows interaction with the SMS Test transport." )]
     [IconCssClass( "ti ti-bubble-text" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 

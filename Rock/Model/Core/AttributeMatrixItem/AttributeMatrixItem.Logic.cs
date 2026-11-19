@@ -96,7 +96,7 @@ namespace Rock.Model
             var matrixAttributeValue = attributeValueService.Queryable()
                 .AsNoTracking()
                 .FirstOrDefault( av => av.ValueChecksum == SqlFunctions.Checksum( matrixGuidString )
-                    && av.Value.Equals( matrixGuidString, System.StringComparison.OrdinalIgnoreCase )
+                    && av.Value == matrixGuidString
                     && av.Attribute.EntityTypeId == personEntityTypeId );
 
             if ( matrixAttributeValue?.EntityId == null )

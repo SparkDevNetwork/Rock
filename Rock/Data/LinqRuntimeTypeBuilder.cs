@@ -15,10 +15,12 @@
 // </copyright>
 //
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
+using System.Text;
 using System.Threading;
 
 namespace Rock.Data
@@ -41,38 +43,58 @@ namespace Rock.Data
         /// </summary>
         private static ModuleBuilder moduleBuilder = null;
 
+        /*
+            11/13/26 - CLAUDE
+
+            The cache used to be a plain Dictionary keyed by a hash of the
+            field list. When several requests asked for the same uncached
+            type at once, they all tried to define a type with the same name,
+            all but one threw, and those callers got null. The Lazy makes
+            sure each field list is built exactly once without a lock().
+            The key is the full field list so two different field lists can
+            never share a type, and type names come from a counter so they
+            can't collide either.
+
+            Reason: Reports failed to load when several people ran them at once.
+        */
+
         /// <summary>
-        /// A place to store the types have already created so we don't have to recreate a type that has already been created
+        /// The types already built, keyed by their full field list.
         /// </summary>
-        private static Dictionary<string, Type> builtTypes = new Dictionary<string, Type>();
+        private static readonly ConcurrentDictionary<string, Lazy<Type>> builtTypes = new ConcurrentDictionary<string, Lazy<Type>>();
+
+        /// <summary>
+        /// The number of types built so far, used to give each one a unique name.
+        /// </summary>
+        private static int typeCounter = 0;
 
         /// <summary>
         /// Initializes the <see cref="LinqRuntimeTypeBuilder"/> class.
         /// </summary>
         static LinqRuntimeTypeBuilder()
         {
-            moduleBuilder = Thread.GetDomain().DefineDynamicAssembly( assemblyName, AssemblyBuilderAccess.Run ).DefineDynamicModule( assemblyName.Name );
+            var assemblyBuilder = AssemblyBuilder.DefineDynamicAssembly( assemblyName, AssemblyBuilderAccess.Run );
+            moduleBuilder = assemblyBuilder.DefineDynamicModule( assemblyName.Name );
         }
 
         /// <summary>
-        /// Gets the type key which can be used to look in our cache of builtTypes
+        /// Gets the key for the field list, used to look in our cache of builtTypes.
         /// </summary>
         /// <param name="fields">The fields.</param>
-        /// <returns></returns>
+        /// <returns>A string that is unique to the field names and types.</returns>
         private static string GetTypeKey( Dictionary<string, Type> fields )
         {
-            // class name must be unique, but can't be more than 1024 chars long.  Show generate a hash using the Fields
-            string key = string.Empty;
+            var key = new StringBuilder();
             foreach ( var field in fields )
             {
-                key += field.Key + ";" + field.Value.Name + ";";
+                key.Append( field.Key ).Append( ';' ).Append( field.Value.FullName ).Append( ';' );
             }
-            
-            return "LinqRuntimeType" + key.GetHashCode();
+
+            return key.ToString();
         }
 
         /// <summary>
-        /// Creates a Type from a list of fields and their type then returns that Type 
+        /// Creates a Type from a list of fields and their type then returns that Type
         /// </summary>
         /// <param name="fields">The fields.</param>
         /// <returns></returns>
@@ -90,64 +112,76 @@ namespace Rock.Data
                 throw new ArgumentOutOfRangeException( "fields", "fields must have at least 1 field definition" );
             }
 
+            string key = null;
+            Lazy<Type> lazyType = null;
+
             try
             {
-                string className = GetTypeKey( fields );
+                key = GetTypeKey( fields );
+                lazyType = builtTypes.GetOrAdd( key, k => new Lazy<Type>( () => BuildType( fields ), LazyThreadSafetyMode.ExecutionAndPublication ) );
 
-                if ( builtTypes.ContainsKey( className ) )
-                {
-                    return builtTypes[className];
-                }
-
-                TypeBuilder typeBuilder = moduleBuilder.DefineType( className, TypeAttributes.Public | TypeAttributes.Class | TypeAttributes.Serializable );
-
-                foreach ( var field in fields )
-                {
-                    // make firstchar of fieldName lowercase
-                    string fieldName = field.Key.ToLower()[0] + field.Key.Substring( 1 );
-                    if ( fieldName == field.Key )
-                    {
-                        throw new Exception( "Field names must start with an uppercase character" );
-                    }
-
-                    var fieldBuilder = typeBuilder.DefineField( fieldName, field.Value, FieldAttributes.Public );
-
-                    // create a Property for each Field so that DataGrids can bind to the object
-                    var propertyBuilder = typeBuilder.DefineProperty( field.Key, PropertyAttributes.HasDefault, field.Value, null );
-
-                    // The property set and property get methods require a special set of attributes.
-                    MethodAttributes getSetAttr = MethodAttributes.Public | MethodAttributes.SpecialName | MethodAttributes.HideBySig;
-
-                    // Define the "get" accessor method for the property and gen IL code so its value comes from the field
-                    MethodBuilder getPropMthdBldr = typeBuilder.DefineMethod( "get_" + field.Key, getSetAttr, field.Value, Type.EmptyTypes );
-
-                    ILGenerator fieldGetIL = getPropMthdBldr.GetILGenerator();
-
-                    fieldGetIL.Emit( OpCodes.Ldarg_0 );
-                    fieldGetIL.Emit( OpCodes.Ldfld, fieldBuilder );
-                    fieldGetIL.Emit( OpCodes.Ret );
-
-                    propertyBuilder.SetGetMethod( getPropMthdBldr );
-                }
-
-                builtTypes[className] = typeBuilder.CreateType();
-
-                return builtTypes[className];
+                return lazyType.Value;
             }
             catch
             {
+                if ( lazyType == null )
+                {
+                    return null;
+                }
+
+                // Lazy caches the exception, so remove this entry and let the
+                // next call try again. The failure may not depend on the field
+                // list, for example a ThreadAbortException from a request
+                // timeout. Removing by key and value leaves alone any newer
+                // entry another thread may have added for the same key.
+                ( ( ICollection<KeyValuePair<string, Lazy<Type>>> ) builtTypes ).Remove( new KeyValuePair<string, Lazy<Type>>( key, lazyType ) );
+
                 return null;
             }
         }
 
         /// <summary>
-        /// Gets the type key which can be used to look in our cache of builtTypes
+        /// Builds a new Type with a public field and a matching read-only
+        /// property for each entry in <paramref name="fields"/>.
         /// </summary>
         /// <param name="fields">The fields.</param>
-        /// <returns></returns>
-        private static string GetTypeKey( IEnumerable<PropertyInfo> fields )
+        /// <returns>The new Type.</returns>
+        private static Type BuildType( Dictionary<string, Type> fields )
         {
-            return GetTypeKey( fields.ToDictionary( f => f.Name, f => f.PropertyType ) );
+            var className = "LinqRuntimeType" + Interlocked.Increment( ref typeCounter );
+
+            TypeBuilder typeBuilder = moduleBuilder.DefineType( className, TypeAttributes.Public | TypeAttributes.Class | TypeAttributes.Serializable );
+
+            foreach ( var field in fields )
+            {
+                // make firstchar of fieldName lowercase
+                string fieldName = field.Key.ToLower()[0] + field.Key.Substring( 1 );
+                if ( fieldName == field.Key )
+                {
+                    throw new Exception( "Field names must start with an uppercase character" );
+                }
+
+                var fieldBuilder = typeBuilder.DefineField( fieldName, field.Value, FieldAttributes.Public );
+
+                // create a Property for each Field so that DataGrids can bind to the object
+                var propertyBuilder = typeBuilder.DefineProperty( field.Key, PropertyAttributes.HasDefault, field.Value, null );
+
+                // The property set and property get methods require a special set of attributes.
+                MethodAttributes getSetAttr = MethodAttributes.Public | MethodAttributes.SpecialName | MethodAttributes.HideBySig;
+
+                // Define the "get" accessor method for the property and gen IL code so its value comes from the field
+                MethodBuilder getPropMthdBldr = typeBuilder.DefineMethod( "get_" + field.Key, getSetAttr, field.Value, Type.EmptyTypes );
+
+                ILGenerator fieldGetIL = getPropMthdBldr.GetILGenerator();
+
+                fieldGetIL.Emit( OpCodes.Ldarg_0 );
+                fieldGetIL.Emit( OpCodes.Ldfld, fieldBuilder );
+                fieldGetIL.Emit( OpCodes.Ret );
+
+                propertyBuilder.SetGetMethod( getPropMthdBldr );
+            }
+
+            return typeBuilder.CreateType();
         }
 
         /// <summary>

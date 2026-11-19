@@ -15,12 +15,18 @@
 // </copyright>
 //
 
+#if NET
+namespace Rock.Enums.Communication
+#else
 namespace Rock.Model
+#endif
 {
     /// <summary>
     /// The status of a communication
     /// </summary>
+#if !NET
     [Enums.EnumDomain( "Communication" )]
+#endif
     public enum CommunicationStatus
     {
         /// <summary>

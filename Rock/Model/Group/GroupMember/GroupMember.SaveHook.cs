@@ -27,6 +27,7 @@ using Rock.Data;
 using Rock.Enums.Lms;
 using Rock.Tasks;
 using Rock.Transactions;
+using Rock.Utility.Enums;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -396,16 +397,16 @@ namespace Rock.Model
                             
                              */
 
-                            if ( Entity.Group.ElevatedSecurityLevel >= Utility.Enums.ElevatedSecurityLevel.Extreme
-                                && Entity.Person.AccountProtectionProfile < Utility.Enums.AccountProtectionProfile.Extreme )
+                            if ( Entity.Group.ElevatedSecurityLevel >= ElevatedSecurityLevel.Extreme
+                                && Entity.Person.AccountProtectionProfile < AccountProtectionProfile.Extreme )
                             {
-                                Entity.Person.AccountProtectionProfile = Utility.Enums.AccountProtectionProfile.Extreme;
+                                Entity.Person.AccountProtectionProfile = AccountProtectionProfile.Extreme;
                                 rockContext.SaveChanges();
                             }
-                            else if ( Entity.Group.ElevatedSecurityLevel >= Utility.Enums.ElevatedSecurityLevel.High
-                                && Entity.Person.AccountProtectionProfile < Utility.Enums.AccountProtectionProfile.High )
+                            else if ( Entity.Group.ElevatedSecurityLevel >= ElevatedSecurityLevel.High
+                                && Entity.Person.AccountProtectionProfile < AccountProtectionProfile.High )
                             {
-                                Entity.Person.AccountProtectionProfile = Utility.Enums.AccountProtectionProfile.High;
+                                Entity.Person.AccountProtectionProfile = AccountProtectionProfile.High;
                                 rockContext.SaveChanges();
                             }
                         }

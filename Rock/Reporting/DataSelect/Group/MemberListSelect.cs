@@ -142,8 +142,8 @@ namespace Rock.Reporting.DataSelect.Group
         public override System.Web.UI.WebControls.DataControlField GetGridField( Type entityType, string selection )
         {
             var callbackField = new CallbackField();
-            string basePersonUrl = System.Web.VirtualPathUtility.ToAbsolute( "~/Person/" );
-            string baseGroupMemberUrl = System.Web.VirtualPathUtility.ToAbsolute( "~/GroupMember/" );
+            string basePersonUrl = RockApp.Current.ResolveRockUrl( "~/Person/" );
+            string baseGroupMemberUrl = RockApp.Current.ResolveRockUrl( "~/GroupMember/" );
             var selectionParts = selection.Split( '|' );
             ShowAsLinkType showAsLinkType = selectionParts.Length > 0 ? selectionParts[0].ConvertToEnum<ShowAsLinkType>( ShowAsLinkType.NameOnly ) : ShowAsLinkType.NameOnly;
             callbackField.OnFormatDataValue += ( sender, e ) =>
@@ -154,7 +154,7 @@ namespace Rock.Reporting.DataSelect.Group
                     var formattedList = new List<string>();
                     foreach ( var groupMember in groupMemberList )
                     {
-                        var formattedPersonFullName = Rock.Model.Person.FormatFullName( groupMember.NickName, groupMember.LastName, groupMember.SuffixValueId );
+                        var formattedPersonFullName = Rock.Model.Person.FormatFullName( groupMember.NickName, groupMember.LastName, groupMember.SuffixValueId ).EncodeHtml();
                         string formattedValue;
                         if ( showAsLinkType == ShowAsLinkType.PersonLink )
                         {
@@ -223,7 +223,7 @@ namespace Rock.Reporting.DataSelect.Group
                 var formattedList = new List<string>();
                 foreach ( var m in members )
                 {
-                    var name = Rock.Model.Person.FormatFullName( m.NickName, m.LastName, m.SuffixValueId );
+                    var name = Rock.Model.Person.FormatFullName( m.NickName, m.LastName, m.SuffixValueId ).EncodeHtml();
                     string html;
                     if ( ShowAs == ShowAsLinkType.PersonLink )
                     {

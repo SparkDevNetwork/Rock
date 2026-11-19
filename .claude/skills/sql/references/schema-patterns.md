@@ -45,10 +45,10 @@ Entities inheriting from `Entity<T>` (a smaller subset, mostly join tables like 
 | Entities that **have** `IsSystem` (partial list) | Entities that **lack** `IsSystem` (partial list) |
 |---|---|
 | `Person`, `Group`, `GroupMember`, `GroupType`, `GroupTypeRole` | `MetricValue`, `MetricPartition`, `MetricValuePartition` |
-| `Campus`, `Schedule`, `Location`, `Category` | `MetricCategory` (Entity<T> derivative) |
+| `Campus`, `Category`, `Note`, `History`, `Tag` | `MetricCategory` (Entity<T> derivative) |
 | `Metric`, `BlockType`, `Block`, `Page`, `PageRoute`, `Site`, `Layout` | `Attendance`, `AttendanceOccurrence` |
 | `Attribute`, `AttributeValue`, `DefinedType`, `DefinedValue`, `EntityType`, `FieldType` | `FinancialTransaction`, `FinancialTransactionDetail`, `FinancialBatch` |
-| `WorkflowType`, `WorkflowAction`, `WorkflowActionType`, `BinaryFileType` | `Note`, `History`, `AuditLog`, `Following`, `Tag` |
+| `WorkflowType`, `BinaryFileType` | `Schedule`, `Location`, `WorkflowAction`, `WorkflowActionType`, `Audit`, `Following` |
 
 The lists above are not exhaustive — verify per script with a grep on the actual model file you're targeting.
 
@@ -211,7 +211,7 @@ DECLARE @AttributeId INT = (
 
 **Family group pattern:**
 - GroupType "Family" Guid: `790E3215-3B10-442B-AF69-616C0DCB998E`
-- Adult Role Guid: `2639F9A5-2AAE-4E48-A8C3-4FFE86681670`
+- Adult Role Guid: `2639F9A5-2AAE-4E48-A8C3-4FFE86681E42`
 - Child Role Guid: `C8B1814F-6AA7-4055-B2D7-48FE20429CB9`
 
 ---
@@ -283,7 +283,7 @@ Common enum integer values used in SQL:
 - Pending: `283999EC-7346-42E3-B807-BCE9B2BABB49`
 
 **ConnectionStatus (DefinedValue Guids):**
-- Member: `41540783-D081-4C63-962A-FC2BEDD817C0`
+- Member: `41540783-D9EF-4C70-8F1D-C9E83D91ED5F`
 - Attendee: `39F491C5-D6AC-4A9B-8AC0-C431CB17D588`
 - Visitor: `B91BA046-BC1E-400C-B85D-638C1F4E0CE2`
 - Web Prospect: `368DD475-242C-49C4-A42C-7278BE690CC2`
@@ -327,7 +327,7 @@ DECLARE @FamilyGroupTypeId INT = (SELECT TOP 1 [Id] FROM [GroupType] WHERE [Guid
 
 ## SQL Formatting Rules
 
-From the project's CLAUDE.md:
+From `.claude/rules/code-conventions.md`:
 
 1. SQL keywords in **UPPERCASE**: `SELECT`, `FROM`, `WHERE`, `JOIN`, `INSERT INTO`, `VALUES`, `UPDATE`, `SET`, `DELETE`, `DECLARE`, `BEGIN`, `END`, `IF`, `ELSE`, `AND`, `OR`, `NOT`, `NULL`, `AS`, `ON`, `IN`, `EXISTS`, `TOP`, `ORDER BY`, `GROUP BY`, `HAVING`, `INNER`, `LEFT`, `RIGHT`, `OUTER`
 2. Wrap all table and column names in **brackets**: `[Person].[FirstName]`

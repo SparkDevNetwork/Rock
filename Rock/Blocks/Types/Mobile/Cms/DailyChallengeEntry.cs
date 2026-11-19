@@ -37,7 +37,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
     [Category( "Mobile > Cms" )]
     [Description( "Displays a set of challenges for the individual to complete today." )]
     [IconCssClass( "ti ti-list-check" )]
-    [SupportedSiteTypes( Model.SiteType.Mobile )]
+    [SupportedSiteTypes( SiteType.Mobile )]
 
     #region Block Attributes
 

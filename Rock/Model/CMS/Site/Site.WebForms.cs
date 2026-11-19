@@ -14,8 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-using System.Web;
-
 using Rock.Configuration;
 using Rock.Data;
 using Rock.Web.Cache;
@@ -42,7 +40,7 @@ namespace Rock.Model
                         if ( binaryFile.Path.Contains( "~" ) )
                         {
                             // Need to build out full path
-                            virtualPath = VirtualPathUtility.ToAbsolute( binaryFile.Path );
+                            virtualPath = RockApp.Current.ResolveRockUrl( binaryFile.Path );
                             var globalAttributes = GlobalAttributesCache.Get();
                             string publicAppRoot = globalAttributes.GetValue( "PublicApplicationRoot" );
                             virtualPath = $"{publicAppRoot}{virtualPath}";

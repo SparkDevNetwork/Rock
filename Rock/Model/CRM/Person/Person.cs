@@ -332,7 +332,7 @@ namespace Rock.Model
         /// Gets or sets the gender of the Person. This property is required.
         /// </summary>
         /// <value>
-        /// A <see cref="Rock.Model.Gender"/> enum value representing the Person's gender.  Valid values are <c>Gender.Unknown</c> if the Person's gender is unknown,
+        /// A <see cref="Gender"/> enum value representing the Person's gender.  Valid values are <c>Gender.Unknown</c> if the Person's gender is unknown,
         /// <c>Gender.Male</c> if the Person's gender is Male, <c>Gender.Female</c> if the Person's gender is Female.
         /// </value>
         [Required]
@@ -531,7 +531,7 @@ namespace Rock.Model
         /// Note: This is computed on save, so any manual changes to this will be ignored.
         /// </summary>
         /// <value>
-        /// A <see cref="Rock.Model.AgeClassification"/> enum value representing the Person's age classification.  Valid values are <c>AgeClassification.Unknown</c> if the Person's age is unknown,
+        /// A <see cref="AgeClassification"/> enum value representing the Person's age classification.  Valid values are <c>AgeClassification.Unknown</c> if the Person's age is unknown,
         /// <c>AgeClassification.Adult</c> if the Person's age falls under Adult Range, <c>AgeClassification.Child</c> if the Person is under the age of 18
         /// </value>
         [DataMember]

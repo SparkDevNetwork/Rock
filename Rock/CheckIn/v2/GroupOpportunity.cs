@@ -40,8 +40,8 @@ namespace Rock.CheckIn.v2
 
         /// <summary>
         /// Determines if this group is preferred. This may be set during the
-        /// filtering process. If any group is marked as preferred then all
-        /// non-preferred groups will be excluded.
+        /// filtering process. If a preferred group has an open location on a
+        /// schedule then non-preferred groups will be excluded for that schedule.
         /// </summary>
         public bool IsPreferredGroup { get; set; }
 

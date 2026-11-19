@@ -37,7 +37,7 @@ namespace Rock.Blocks.Crm
     [Category( "CRM" )]
     [Description( "Displays the details of a particular assessment." )]
     [IconCssClass( "ti ti-question-mark" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 

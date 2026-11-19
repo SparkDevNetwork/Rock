@@ -43,6 +43,13 @@ namespace Rock.Net
         #region Fields
 
         /// <summary>
+        /// The key of the Lava internal field that holds the request context.
+        /// Lava filters and commands read it with
+        /// <see cref="ExtensionMethods.GetRockRequestContext(ILavaRenderContext)"/>.
+        /// </summary>
+        internal const string LavaInternalFieldKey = "RockRequestContext";
+
+        /// <summary>
         /// The cache object for the site this request is related to. This
         /// may be <c>null</c> if no page is associated with this request.
         /// </summary>
@@ -590,7 +597,8 @@ namespace Rock.Net
         /// <param name="entityTypeName">The entity type name.</param>
         /// <param name="entityKey">The entity key. This may either be a Guid, integer Id or IdKey value.</param>
         /// <param name="contextEntities">The dictionary of context entities to add the new value to.</param>
-        private void AddOrReplaceContextEntity( string entityTypeName, string entityKey, IDictionary<Type, Lazy<IEntity>> contextEntities )
+        /// <param name="isIntegerIdentifierAllowed">If <c>false</c>, a plain integer Id will not be used to load the entity.</param>
+        private void AddOrReplaceContextEntity( string entityTypeName, string entityKey, IDictionary<Type, Lazy<IEntity>> contextEntities, bool isIntegerIdentifierAllowed = true )
         {
             // If entity type name or entity key are not defined then skip.
             if ( entityTypeName.IsNullOrWhiteSpace() || entityKey.IsNullOrWhiteSpace() )
@@ -613,7 +621,7 @@ namespace Rock.Net
                 return;
             }
 
-            AddOrReplaceContextEntity( type, entityKey, contextEntities );
+            AddOrReplaceContextEntity( type, entityKey, contextEntities, isIntegerIdentifierAllowed );
         }
 
         /// <summary>
@@ -622,7 +630,8 @@ namespace Rock.Net
         /// <param name="type">The entity type.</param>
         /// <param name="entityKey">The entity key. This may either be a Guid, integer Id or IdKey value.</param>
         /// <param name="contextEntities">The dictionary of context entities to add the new value to.</param>
-        private void AddOrReplaceContextEntity( Type type, string entityKey, IDictionary<Type, Lazy<IEntity>> contextEntities )
+        /// <param name="isIntegerIdentifierAllowed">If <c>false</c>, a plain integer Id will not be used to load the entity.</param>
+        private void AddOrReplaceContextEntity( Type type, string entityKey, IDictionary<Type, Lazy<IEntity>> contextEntities, bool isIntegerIdentifierAllowed = true )
         {
             // If entity type or entity key are not defined then skip.
             if ( type == null || entityKey.IsNullOrWhiteSpace() )
@@ -635,7 +644,8 @@ namespace Rock.Net
             {
                 IEntity entity = null;
                 var keyParts = entityKey.Split( '>' );
-                var allowIntegerIdentifier = _siteCache?.DisablePredictableIds != true;
+                // Treat a missing site as having predictable Ids disabled.
+                var allowIntegerIdentifier = isIntegerIdentifierAllowed && _siteCache?.DisablePredictableIds == false;
 
                 if ( keyParts.Length == 2 )
                 {
@@ -666,10 +676,15 @@ namespace Rock.Net
 
                     entity = personService.AmendQueryable( eagerQry, personQueryOptions ).FirstOrDefault();
                 }
-                else if ( allowIntegerIdentifier && int.TryParse( entityKey, out var entityId ) )
+                else if ( int.TryParse( entityKey, out var entityId ) )
                 {
-                    // Load from plain integer Id, but only if not disabled by site.
-                    entity = Reflection.GetIEntityForEntityType( type, entityId );
+                    // Load from plain integer Id, but only if allowed. An integer
+                    // key must not fall through to the IdKey lookup below, which
+                    // would also accept it as an integer Id.
+                    if ( allowIntegerIdentifier )
+                    {
+                        entity = Reflection.GetIEntityForEntityType( type, entityId );
+                    }
                 }
                 else if ( Guid.TryParse( entityKey, out Guid entityGuid ) )
                 {
@@ -684,7 +699,7 @@ namespace Rock.Net
 
                 // Don't provide a context entity the current person isn't
                 // allowed to view.
-                if ( entity is Rock.Security.ISecured securedEntity && !securedEntity.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ) )
+                if ( !IsContextEntityViewable( entity ) )
                 {
                     return null;
                 }
@@ -711,7 +726,7 @@ namespace Rock.Net
                     continue;
                 }
 
-                AddOrReplaceContextEntity( kvp.Key.Substring( 16 ), kvp.Value.FirstOrDefault(), TransientContextEntities );
+                AddOrReplaceContextEntity( kvp.Key.Substring( 16 ), kvp.Value.FirstOrDefault(), TransientContextEntities, false );
             }
         }
 
@@ -788,6 +803,12 @@ namespace Rock.Net
         /// <returns>The text string representation of the page parameter or an empty string if no matching parameter was found.</returns>
         public virtual string GetPageParameter( string name )
         {
+            // Match RockPage.PageParameter, which returns an empty string for a null name.
+            if ( name == null )
+            {
+                return string.Empty;
+            }
+
             if ( PageParameters.ContainsKey( name ) )
             {
                 return PageParameters[name];
@@ -822,6 +843,49 @@ namespace Rock.Net
         public virtual IDictionary<string, string> GetPageParameters()
         {
             return new Dictionary<string, string>( PageParameters, StringComparer.InvariantCultureIgnoreCase );
+        }
+
+        /// <summary>
+        /// Determines whether the current person is allowed to use the entity
+        /// as a context entity. This is shared by the code that reads context
+        /// entities and the API that sets them so the two cannot drift apart.
+        /// </summary>
+        /// <param name="entity">The entity to be used as a context entity.</param>
+        /// <returns><c>true</c> if the entity is not secured, the current person has View access, or the entity is a family member or business of the current person; otherwise <c>false</c>.</returns>
+        internal bool IsContextEntityViewable( IEntity entity )
+        {
+            if ( !( entity is Rock.Security.ISecured securedEntity ) )
+            {
+                return true;
+            }
+
+            if ( securedEntity.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ) )
+            {
+                return true;
+            }
+
+            // A person can always use their own family members and
+            // businesses as context, even without View on the Person entity.
+            return entity is Person contextPerson && IsFamilyMemberOrBusinessOfCurrentPerson( contextPerson );
+        }
+
+        /// <summary>
+        /// Determines whether the specified person is a member of the current
+        /// person's family or a business the current person is a Business Contact for.
+        /// </summary>
+        /// <param name="contextPerson">The person record from the context cookie.</param>
+        /// <returns><c>true</c> if the person is in the current person's family or is one of their businesses; otherwise <c>false</c>.</returns>
+        private bool IsFamilyMemberOrBusinessOfCurrentPerson( Person contextPerson )
+        {
+            if ( CurrentPerson == null || contextPerson == null )
+            {
+                return false;
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                return new PersonService( rockContext ).IsFamilyMemberOrBusinessOf( CurrentPerson.Id, contextPerson.Id );
+            }
         }
 
         /// <summary>
@@ -918,7 +982,7 @@ namespace Rock.Net
                 var cookieName = GetContextCookieName( page );
                 var contextItems = new Dictionary<string, string>();
 
-                AddOrReplaceContextEntity( entityType, entity.Id.ToString(), page != null ? PageContextEntities : SiteContextEntities );
+                AddOrReplaceContextEntity( entityType, entity.Guid.ToString(), page != null ? PageContextEntities : SiteContextEntities );
 
                 foreach ( var kvp in page != null ? PageContextEntities : SiteContextEntities )
                 {
@@ -1062,7 +1126,7 @@ namespace Rock.Net
 
             mergeFields.Add( "Geolocation", ClientInformation?.Geolocation );
             mergeFields.Add( "ExperienceMode", Rock.Web.SystemSettings.GetValue( SystemKey.SystemSetting.TRAILBLAZER_MODE ).AsBoolean() ? "Trailblazer" : "Essentials" );
-            mergeFields.Add( $"{LavaRenderContextBase.InternalMergeFieldPrefix}RockRequestContext", this );
+            mergeFields.AddRockRequestContext( this );
 
             return mergeFields;
         }
@@ -1115,7 +1179,7 @@ namespace Rock.Net
             Personalization.SegmentFilterCookieData segmentFilterCookieData = null;
             if ( cookieValueJson != null )
             {
-                segmentFilterCookieData = cookieValueJson.FromJsonOrNull<Personalization.SegmentFilterCookieData>();
+                segmentFilterCookieData = Personalization.SegmentFilterCookieData.FromCookieValue( cookieValueJson, _cookieValuesAreUrlDecoded );
                 bool isCookieDataValid = false;
                 if ( segmentFilterCookieData != null )
                 {
@@ -1213,10 +1277,14 @@ namespace Rock.Net
         ///     <para>An input starting with "~/" will return the site root like, {SiteRoot}/{input}" without the leading "~".</para>
         ///     <para>An input of "~~" will return a theme URL like "{SiteRoot}/Themes/{CurrentSiteTheme}" without a trailing slash.</para>
         ///     <para>An input of "~" will return the site root "{SiteRoot}/" with a trailing slash. </para>
-        ///     <para>The input will be returned as supplied for all other cases.</para>
+        ///     <para>The path of a "~/" or "~~/" input is normalized: backslashes become slashes, repeated slashes collapse, and "." and ".." segments are resolved. The query string and fragment are not changed.</para>
+        ///     <para>Leading and trailing whitespace is removed before the input is resolved. A <c>null</c> input returns <c>null</c>, and an empty or whitespace input returns an empty string.</para>
+        ///     <para>A full URL with a scheme (like "https://"), or an input starting with "/" is returned without other changes.</para>
+        ///     <para>Any other input (a relative path, a bare query string or fragment like "?a=1" or "#top", or a "~" or "~~" not followed by a separator) is not allowed.</para>
         /// </remarks>
         /// <param name="input">The input with prefix <c>"~~"</c> or <c>"~"</c>.</param>
         /// <returns>The resolved URL.</returns>
+        /// <exception cref="ArgumentException"><paramref name="input"/> is a relative path, or goes above the application root.</exception>
         public string ResolveRockUrl( string input )
         {
             return RockApp.Current.ResolveRockUrl( input, _pageCache?.Layout?.Site?.Theme ?? "Rock" );

@@ -22,6 +22,7 @@ using Rock.AI.Agent.Annotations;
 using Rock.AI.Agent.Classes.Common;
 using Rock.AI.Agent.Classes.Entity;
 using Rock.AI.Agent.Classes.Skills.PersonSkill;
+using Rock.Enums.AI.Agent;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -46,6 +47,17 @@ internal partial class PersonSkill
         var helper = new AgentToolHelper( AgentRequestContext, _logger );
         var qry = new CommunicationRecipientService( AgentRequestContext.RockContext )
             .Queryable();
+
+        var person = helper.GetRequiredEntity<Model.Person>( personIdKey );
+
+        var isOtherPersonOnPublicAgent = person != null
+            && AgentRequestContext.AudienceType != AudienceType.Internal
+            && person.Id != AgentRequestContext.CurrentPerson?.Id;
+
+        if ( isOtherPersonOnPublicAgent )
+        {
+            helper.AddError( "You can only view your own communications." );
+        }
 
         qry = helper.WhereRequiredIdKey( qry, cr => cr.PersonAlias.PersonId, personIdKey );
         qry = helper.WhereOptionalIdKey( qry, cr => cr.Communication.SenderPersonAlias.PersonId, senderPersonIdKey );

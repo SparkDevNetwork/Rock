@@ -17,8 +17,8 @@
 
 
 using System;
-using System.Web;
 
+using Rock.Configuration;
 using Rock.Utility;
 
 namespace Rock.Model
@@ -52,7 +52,7 @@ namespace Rock.Model
             }
             else
             {
-                return VirtualPathUtility.ToAbsolute( virtualPath );
+                return RockApp.Current.ResolveRockUrl( virtualPath );
             }
 
         }

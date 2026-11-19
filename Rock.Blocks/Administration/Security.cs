@@ -684,10 +684,18 @@ namespace Rock.Blocks.Administration
                     if ( !alreadyOnItem && !alreadyInherited )
                     {
                         var friendlyName = entityType?.FriendlyName ?? entityType?.Name;
+                        /*
+                            10/19/2026 - MSE
+
+                            The From column shows EntityTitle with v-html. Only the small wrapper is markup;
+                            the parent entity name (for example a group name) is stored data, so it is encoded.
+
+                            Reason: Prevent stored XSS through an entity name in the Security block.
+                        */
                         parentRules.Add( new ParentAuthRule
                         {
                             Rule = rule,
-                            EntityTitle = $"{parent} <small>({friendlyName})</small>".TrimStart()
+                            EntityTitle = $"{parent.ToString().EncodeHtml()} <small>({friendlyName.EncodeHtml()})</small>".TrimStart()
                         } );
                     }
                 }

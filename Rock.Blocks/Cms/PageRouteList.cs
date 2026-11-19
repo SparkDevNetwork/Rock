@@ -39,7 +39,7 @@ namespace Rock.Blocks.Cms
     [Category( "CMS" )]
     [Description( "Displays a list of page routes." )]
     [IconCssClass( "ti ti-list" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     [LinkedPage( "Detail Page",
         Description = "The page that will show the page route details.",
@@ -167,7 +167,7 @@ namespace Rock.Blocks.Cms
                     return ActionBadRequest( $"{PageRoute.FriendlyTypeName} not found." );
                 }
 
-                if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+                if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) || !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
                 {
                     return ActionBadRequest( $"Not authorized to delete {PageRoute.FriendlyTypeName}." );
                 }

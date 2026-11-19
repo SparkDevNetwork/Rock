@@ -22,6 +22,8 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
+using Microsoft.EntityFrameworkCore;
+
 using Rock.Communication.Chat;
 using Rock.Communication.Chat.Sync;
 using Rock.Configuration;
@@ -43,6 +45,8 @@ namespace Rock.Model
             private bool _FamilyCampusIsChanged = false;
             private List<int> _GroupMemberIdsToReactivate;
             private DateTime? _NewInactiveDateTimeForReactivation;
+            private bool _GroupTypeIsChanged = false;
+            private List<GroupLocation> _DeletedGroupLocations;
 
             /// <summary>
             /// Called before the save operation is executed.
@@ -55,6 +59,8 @@ namespace Rock.Model
                 _FamilyCampusIsChanged = false;
                 _GroupMemberIdsToReactivate = null;
                 _NewInactiveDateTimeForReactivation = null;
+                _GroupTypeIsChanged = false;
+                _DeletedGroupLocations = null;
 
                 switch ( State )
                 {
@@ -88,6 +94,9 @@ namespace Rock.Model
 
                     case EntityContextState.Modified:
                         {
+                            // GroupLocationCache carries a copy of the GroupTypeId.
+                            _GroupTypeIsChanged = OriginalValues[nameof( Group.GroupTypeId )].ToStringSafe().AsInteger() != Entity.GroupTypeId;
+
                             var originalIsActive = OriginalValues[nameof( Group.IsActive )].ToStringSafe().AsBoolean();
                             DateTime? originalInactiveDateTime = OriginalValues[nameof( Entity.InactiveDateTime )].ToStringSafe().AsDateTime();
 
@@ -157,6 +166,35 @@ namespace Rock.Model
                         {
                             HistoryChangeList.AddChange( History.HistoryVerb.Delete, History.HistoryChangeType.Record, null );
 
+                            /*
+                                11/2/2026 - MSE
+
+                                The database cascade deletes the group's GroupLocation rows, so the
+                                GroupLocation save hook never runs and GroupLocationCache keeps the
+                                stale items (and their location id lists). Check-in now reads the
+                                GroupTypeId from those items without loading GroupCache, so a deleted
+                                group could still add its area to a kiosk. Capture the group locations
+                                here and remove them from cache after the delete commits.
+
+                                Reason: Remove cached group locations of a deleted group (#7142).
+                            */
+                            _DeletedGroupLocations = new GroupLocationService( rockContext )
+                                .Queryable()
+                                .AsNoTracking()
+                                .Where( gl => gl.GroupId == Entity.Id )
+                                .Select( gl => new
+                                {
+                                    gl.Id,
+                                    gl.LocationId
+                                } )
+                                .ToList()
+                                .Select( gl => new GroupLocation
+                                {
+                                    Id = gl.Id,
+                                    LocationId = gl.LocationId
+                                } )
+                                .ToList();
+
                             // manually delete any grouprequirements of this group since it can't be cascade deleted
                             var groupRequirementService = new GroupRequirementService( rockContext );
                             var groupRequirements = groupRequirementService.Queryable().Where( a => a.GroupId.HasValue && a.GroupId == Entity.Id ).ToList();
@@ -214,6 +252,29 @@ namespace Rock.Model
                 if ( HistoryChangeList?.Any() == true )
                 {
                     HistoryService.SaveChanges( rockContext, typeof( Group ), Rock.SystemGuid.Category.HISTORY_GROUP_CHANGES.AsGuid(), Entity.Id, HistoryChangeList, Entity.Name, null, null, true, Entity.ModifiedByPersonAliasId, rockContext.SourceOfChange );
+                }
+
+                if ( _GroupTypeIsChanged )
+                {
+                    // The cached group locations hold a copy of the group type
+                    // identifier so they must be reloaded once the change is
+                    // committed.
+                    var groupId = Entity.Id;
+
+                    RockContext.ExecuteAfterCommit( () => GroupLocationCache.FlushByGroupId( groupId ) );
+                }
+
+                if ( _DeletedGroupLocations?.Any() == true )
+                {
+                    var deletedGroupLocations = _DeletedGroupLocations;
+
+                    RockContext.ExecuteAfterCommit( () =>
+                    {
+                        foreach ( var groupLocation in deletedGroupLocations )
+                        {
+                            GroupLocationCache.Remove( groupLocation );
+                        }
+                    } );
                 }
 
                 if ( _FamilyCampusIsChanged )
@@ -357,7 +418,7 @@ namespace Rock.Model
                         {
                             using ( var batchContext = RockApp.Current.CreateRockContext() )
                             {
-                                batchContext.Database.CommandTimeout = 180;
+                                batchContext.Database.SetCommandTimeout( 180 );
                                 var groupMemberService = new GroupMemberService( batchContext );
 
                                 var batchMembers = groupMemberService.Queryable()

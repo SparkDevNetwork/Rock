@@ -33,7 +33,7 @@ namespace Rock.Cms.StructuredContent.BlockTypes
             {
                 var language = data.Lang.IsNotNullOrWhiteSpace() ? $"language-{data.Lang}" : string.Empty;
 
-                writer.WriteLine( $"<pre class=\"{language}\"><code class=\"language\">{data.Code.EncodeHtml()}</code></pre>" );
+                writer.WriteLine( $"<pre class=\"{language.EncodeXml( true )}\"><code class=\"language\">{data.Code.EncodeHtml()}</code></pre>" );
             }
         }
 

@@ -41,7 +41,7 @@ namespace Rock.Blocks.Engagement.SignUp
     [Category( "Engagement > Sign-Up" )]
     [Description( "Lists the group members for a specific sign-up group/project occurrence date time and allows selecting if they attended or not." )]
     [IconCssClass( "ti ti-clipboard-check" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 

@@ -43,7 +43,7 @@ namespace Rock.Blocks.Event
     [Category( "Event" )]
     [Description( "Displays the details of a Registration Instance for viewing and editing." )]
     [IconCssClass( "ti ti-file" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 
@@ -466,6 +466,15 @@ namespace Rock.Blocks.Event
                 return false;
             }
 
+            // The gateway and payment plan flags are posted by the client, so they are taken from the template.
+            var template = GetRegistrationTemplateWithGateway( entity.RegistrationTemplateId );
+            box.Bag.IsFinancialGatewayConfigured = template?.FinancialGatewayId.HasValue == true;
+            box.Bag.IsPaymentPlanAllowed = template?.IsPaymentPlanAllowed == true;
+            box.Bag.IsRedirectionGateway = template?.FinancialGateway?.IsRedirectionGateway() == true;
+
+            // Posted ids that the server would not have offered make the whole save invalid.
+            var isValid = true;
+
             box.IfValidProperty( nameof( box.Bag.Name ),
                 () => entity.Name = box.Bag.Name );
 
@@ -492,7 +501,18 @@ namespace Rock.Blocks.Event
                 } );
 
             box.IfValidProperty( nameof( box.Bag.RegistrationWorkflowType ),
-                () => entity.RegistrationWorkflowTypeId = box.Bag.RegistrationWorkflowType.GetEntityId<WorkflowType>( RockContext ) );
+                () =>
+                {
+                    var workflowTypeId = box.Bag.RegistrationWorkflowType.GetEntityId<WorkflowType>( RockContext );
+                    if ( IsWorkflowTypeAllowed( workflowTypeId, entity.RegistrationWorkflowTypeId ) )
+                    {
+                        entity.RegistrationWorkflowTypeId = workflowTypeId;
+                    }
+                    else
+                    {
+                        isValid = false;
+                    }
+                } );
 
             box.IfValidProperty( nameof( box.Bag.RegistrantRecordSource ),
                 () => entity.RegistrantRecordSourceValueId = box.Bag.RegistrantRecordSource.GetEntityId<DefinedValue>( RockContext ) );
@@ -507,7 +527,18 @@ namespace Rock.Blocks.Event
                 () => entity.DefaultPayment = box.Bag.DefaultPayment );
 
             box.IfValidProperty( nameof( box.Bag.Account ),
-                () => entity.AccountId = box.Bag.Account.GetEntityId<FinancialAccount>( RockContext ) );
+                () =>
+                {
+                    var accountId = box.Bag.Account.GetEntityId<FinancialAccount>( RockContext );
+                    if ( IsAccountAllowed( accountId, entity, box.Bag.CopiedFromRegistrationInstanceIdKey ) )
+                    {
+                        entity.AccountId = accountId;
+                    }
+                    else
+                    {
+                        isValid = false;
+                    }
+                } );
 
             box.IfValidProperty( nameof( box.Bag.ContactPersonAlias ),
                 () => entity.ContactPersonAliasId = box.Bag.ContactPersonAlias.GetEntityId<PersonAlias>( RockContext ) );
@@ -544,11 +575,44 @@ namespace Rock.Blocks.Event
 
             if ( box.Bag.IsRedirectionGateway )
             {
-                box.IfValidProperty( nameof( box.Bag.ExternalGatewayMerchantId ),
-                    () => entity.ExternalGatewayMerchantId = box.Bag.ExternalGatewayMerchantId.AsIntegerOrNull() );
+                var gatewayComponent = template.FinancialGateway.GetGatewayComponent() as IRedirectionGatewayComponent;
+                var currentMerchantId = entity.ExternalGatewayMerchantId;
+                var currentFundId = entity.ExternalGatewayFundId;
 
+                box.IfValidProperty( nameof( box.Bag.ExternalGatewayMerchantId ),
+                    () =>
+                    {
+                        var postedMerchantId = box.Bag.ExternalGatewayMerchantId.AsIntegerOrNull();
+                        if ( IsGatewayValueAllowed( postedMerchantId, currentMerchantId, () => gatewayComponent.GetMerchants() ) )
+                        {
+                            entity.ExternalGatewayMerchantId = postedMerchantId;
+                        }
+                        else
+                        {
+                            isValid = false;
+                        }
+                    } );
+
+                var fundId = currentFundId;
                 box.IfValidProperty( nameof( box.Bag.ExternalGatewayFundId ),
-                    () => entity.ExternalGatewayFundId = box.Bag.ExternalGatewayFundId.AsIntegerOrNull() );
+                    () => fundId = box.Bag.ExternalGatewayFundId.AsIntegerOrNull() );
+
+                // A fund belongs to a merchant, so the current fund only carries over while the merchant stays the same.
+                var merchantId = entity.ExternalGatewayMerchantId;
+                var unchangedFundId = merchantId == currentMerchantId ? currentFundId : null;
+
+                if ( !merchantId.HasValue )
+                {
+                    entity.ExternalGatewayFundId = null;
+                }
+                else if ( IsGatewayValueAllowed( fundId, unchangedFundId, () => gatewayComponent.GetMerchantFunds( merchantId.Value.ToString() ) ) )
+                {
+                    entity.ExternalGatewayFundId = fundId;
+                }
+                else
+                {
+                    isValid = false;
+                }
             }
             else
             {
@@ -563,7 +627,7 @@ namespace Rock.Blocks.Event
                     entity.SetPublicAttributeValues( box.Bag.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: true );
                 } );
 
-            return true;
+            return isValid;
         }
 
         /// <inheritdoc/>
@@ -583,7 +647,9 @@ namespace Rock.Blocks.Event
                 var parentTemplateId = new RegistrationTemplateService( RockContext ).GetSelect( PageParameter( PageParameterKey.RegistrationTemplateId ), t => ( int? ) t.Id, !PageCache.Layout.Site.DisablePredictableIds );
                 if ( parentTemplateId.HasValue )
                 {
+                    // The edit check below inherits from the registration template, so it must be loaded.
                     entity.RegistrationTemplateId = parentTemplateId.Value;
+                    entity.RegistrationTemplate = new RegistrationTemplateService( RockContext ).Get( parentTemplateId.Value );
                 }
 
                 entityService.Add( entity );
@@ -622,6 +688,134 @@ namespace Rock.Blocks.Event
 
             return entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson )
                 || entity.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson );
+        }
+
+        /// <summary>
+        /// Gets the registration template, including its financial gateway.
+        /// </summary>
+        /// <param name="registrationTemplateId">The registration template identifier.</param>
+        /// <returns>The registration template, or <c>null</c> if it was not found.</returns>
+        private RegistrationTemplate GetRegistrationTemplateWithGateway( int registrationTemplateId )
+        {
+            if ( registrationTemplateId <= 0 )
+            {
+                return null;
+            }
+
+            return new RegistrationTemplateService( RockContext )
+                .Queryable()
+                .Include( t => t.FinancialGateway )
+                .AsNoTracking()
+                .FirstOrDefault( t => t.Id == registrationTemplateId );
+        }
+
+        /// <summary>
+        /// Determines whether the posted workflow type may be assigned to the registration instance.
+        /// </summary>
+        /// <param name="postedWorkflowTypeId">The workflow type identifier posted by the client.</param>
+        /// <param name="currentWorkflowTypeId">The workflow type identifier currently on the registration instance.</param>
+        /// <returns><c>true</c> if the posted value is empty, unchanged or an active workflow type the person can view; otherwise <c>false</c>.</returns>
+        private bool IsWorkflowTypeAllowed( int? postedWorkflowTypeId, int? currentWorkflowTypeId )
+        {
+            if ( !postedWorkflowTypeId.HasValue || postedWorkflowTypeId == currentWorkflowTypeId )
+            {
+                return true;
+            }
+
+            var workflowType = WorkflowTypeCache.Get( postedWorkflowTypeId.Value );
+
+            return workflowType != null
+                && workflowType.IsActive == true
+                && workflowType.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson );
+        }
+
+        /// <summary>
+        /// Determines whether the posted financial account may be assigned to the registration instance.
+        /// </summary>
+        /// <param name="postedAccountId">The account identifier posted by the client.</param>
+        /// <param name="entity">The registration instance being saved.</param>
+        /// <param name="copiedFromIdKey">The identifier key of the registration instance that a new registration instance was copied from, if any.</param>
+        /// <returns><c>true</c> if the posted value is empty, unchanged, an active account the person may choose, or an account the server filled in on a new registration instance; otherwise <c>false</c>.</returns>
+        private bool IsAccountAllowed( int? postedAccountId, RegistrationInstance entity, string copiedFromIdKey )
+        {
+            if ( !postedAccountId.HasValue || postedAccountId == entity.AccountId )
+            {
+                return true;
+            }
+
+            var account = FinancialAccountCache.Get( postedAccountId.Value );
+            if ( account == null || !account.IsActive )
+            {
+                return false;
+            }
+
+            // The account picker only offers public accounts to people who can't view accounts.
+            if ( account.IsPublic == true || new FinancialAccount().IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+            {
+                return true;
+            }
+
+            if ( entity.Id != 0 )
+            {
+                return false;
+            }
+
+            /*
+                11/18/26 - JMH
+
+                A new registration instance starts with an account the server chose: the block's default account
+                on Add, or the account of the registration instance being copied on Copy. Those accounts are often
+                not public, so they are accepted even when the person can't choose them in the account picker.
+
+                Reason: Add and Copy keep their pre-filled account for people who can't view accounts.
+            */
+            if ( account.Guid == GetAttributeValue( AttributeKey.DefaultAccount ).AsGuidOrNull() )
+            {
+                return true;
+            }
+
+            return IsCopiedAccount( account.Id, entity, copiedFromIdKey );
+        }
+
+        /// <summary>
+        /// Determines whether the account is the one on the registration instance that a new registration instance was copied from.
+        /// </summary>
+        /// <param name="accountId">The account identifier.</param>
+        /// <param name="entity">The new registration instance being saved.</param>
+        /// <param name="copiedFromIdKey">The identifier key of the registration instance it was copied from.</param>
+        /// <returns><c>true</c> if the person can edit that registration instance, it shares the registration template and it uses the account; otherwise <c>false</c>.</returns>
+        private bool IsCopiedAccount( int accountId, RegistrationInstance entity, string copiedFromIdKey )
+        {
+            if ( copiedFromIdKey.IsNullOrWhiteSpace() )
+            {
+                return false;
+            }
+
+            var copiedFrom = new RegistrationInstanceService( RockContext ).Get( copiedFromIdKey, !PageCache.Layout.Site.DisablePredictableIds );
+
+            return copiedFrom != null
+                && copiedFrom.AccountId == accountId
+                && copiedFrom.RegistrationTemplateId == entity.RegistrationTemplateId
+                && IsAuthorizedForEdit( copiedFrom );
+        }
+
+        /// <summary>
+        /// Determines whether a posted merchant or fund identifier may be stored for a redirection gateway.
+        /// </summary>
+        /// <param name="postedId">The identifier posted by the client.</param>
+        /// <param name="currentId">The identifier currently on the registration instance.</param>
+        /// <param name="getOfferedItems">Gets the items the gateway offers, or <c>null</c> when none can be offered.</param>
+        /// <returns><c>true</c> if the posted value is empty, unchanged or offered by the gateway; otherwise <c>false</c>.</returns>
+        private static bool IsGatewayValueAllowed( int? postedId, int? currentId, Func<IEnumerable<KeyValuePair<string, string>>> getOfferedItems )
+        {
+            if ( !postedId.HasValue || postedId == currentId )
+            {
+                return true;
+            }
+
+            var offeredItems = getOfferedItems();
+
+            return offeredItems != null && offeredItems.Any( kvp => kvp.Key == postedId.Value.ToString() );
         }
 
         /// <inheritdoc/>
@@ -903,6 +1097,13 @@ namespace Rock.Blocks.Event
                 if ( resolvedTemplateId.HasValue )
                 {
                     entity.RegistrationTemplateId = resolvedTemplateId.Value;
+
+                    // The registration template came from the client, so edit rights are checked again against it.
+                    entity.RegistrationTemplate = new RegistrationTemplateService( RockContext ).Get( resolvedTemplateId.Value );
+                    if ( !IsAuthorizedForEdit( entity ) )
+                    {
+                        return ActionForbidden( $"Not authorized to edit {RegistrationInstance.FriendlyTypeName}." );
+                    }
                 }
             }
 
@@ -912,8 +1113,8 @@ namespace Rock.Blocks.Event
             }
 
             // Server-side validation of required fields so a client that bypasses the frontend
-            // rules can't persist an invalid record. Uses the bag's Is* flags because the
-            // entity's RegistrationTemplate navigation may not be loaded at this point.
+            // rules can't persist an invalid record. UpdateEntityFromBox has already replaced
+            // the bag's Is* flags with the registration template's values.
             if ( entity.Name.IsNullOrWhiteSpace() )
             {
                 return ActionBadRequest( "Registration Instance Name is required." );
@@ -1004,16 +1205,25 @@ namespace Rock.Blocks.Event
                     out var error,
                     out var warning );
 
-                var registrationInfo = $"Registration Id {registration.Id} ({registration.FirstName} {registration.LastName})";
+                /*
+                    10/18/2026 - MSE
+
+                    These messages are joined with <br/> and shown as HTML by the block, so
+                    encode the registration name and the gateway error and warning text.
+
+                    Reason: Prevent HTML in a registration name from running in the staff
+                    person's browser.
+                */
+                var registrationInfo = $"Registration Id {registration.Id} ({registration.FirstName.EncodeHtml()} {registration.LastName.EncodeHtml()})";
 
                 if ( !success )
                 {
-                    errors.Add( $"{registrationInfo}: {error ?? "Unknown error"}" );
+                    errors.Add( $"{registrationInfo}: {( error ?? "Unknown error" ).EncodeHtml()}" );
                 }
 
                 if ( warning.IsNotNullOrWhiteSpace() )
                 {
-                    warnings.Add( $"{registrationInfo}: {warning}" );
+                    warnings.Add( $"{registrationInfo}: {warning.EncodeHtml()}" );
                 }
             }
 
@@ -1104,6 +1314,7 @@ namespace Rock.Blocks.Event
 
             var bag = GetEntityBagForEdit( hydrated );
             bag.IdKey = null;
+            bag.CopiedFromRegistrationInstanceIdKey = hydrated.IdKey;
             bag.Name = $"{hydrated.Name} - Copy";
             bag.IsActive = true;
             bag.ReminderSent = false;
@@ -1113,6 +1324,12 @@ namespace Rock.Blocks.Event
             if ( hydrated.Account != null && !hydrated.Account.IsActive )
             {
                 bag.Account = null;
+            }
+
+            // Don't carry forward a workflow type that Save would refuse on the new registration instance.
+            if ( !IsWorkflowTypeAllowed( hydrated.RegistrationWorkflowTypeId, null ) )
+            {
+                bag.RegistrationWorkflowType = null;
             }
 
             return ActionOk( new ValidPropertiesBox<RegistrationInstanceBag>

@@ -49,9 +49,9 @@ This is the hierarchy. Always prefer a higher-priority option before falling to 
 
 1. **Resolve file paths.** If given a block name like `Core/TagsByLetter`, find:
    - Main: `Rock.JavaScript.Obsidian.Blocks/src/[Category]/[camelCaseBlockName].obs`
-   - Partials: `Rock.JavaScript.Obsidian.Blocks/src/[Category]/[camelCaseBlockName]/*.partial.obs`
+   - Partials: `Rock.JavaScript.Obsidian.Blocks/src/[Category]/[BlockName]/*.partial.obs` (PascalCase folder, e.g. `Communication/CommunicationList/`)
 2. **Read every .obs file** for this block (main + all partials).
-3. **Check for block-level SCSS** at `RockWeb/Styles/styles-v2/blocks/_blocks-[category].scss`. If it exists, read it — these classes are already globally available and should not be duplicated in scoped styles.
+3. **Check for block-level SCSS** at `Rock.Frontend.Styles/src/styles/styles-v2/blocks/_blocks-[category].scss` (`RockWeb/Styles/styles-v2/` is build output). If it exists, read it; these classes are already globally available and should not be duplicated in scoped styles.
 
 ---
 

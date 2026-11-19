@@ -182,6 +182,18 @@ internal sealed partial class CoreAdministrationSkill
     /// </summary>
     private static readonly Dictionary<string, ConfigurationKeySupplement> _emptySupplements = new Dictionary<string, ConfigurationKeySupplement>();
 
+    /*
+        10/20/26 - CLAUDE
+
+        The text, memo, value list and key value list descriptions say what each
+        option lets a value contain. Those statements must match each field type's
+        GetValidationRules, because the agents read these descriptions from
+        GetFieldType when they choose a field type and write a value. A stale
+        description sends an agent to the wrong field type, or to a value that is
+        rejected on save.
+
+        Reason: These descriptions must track GetValidationRules.
+    */
     /// <summary>
     /// Hand-authored qualifier descriptions, keyed by field type class name and
     /// then by qualifier key. Field types absent from this map return their bare
@@ -194,17 +206,37 @@ internal sealed partial class CoreAdministrationSkill
             ["ispassword"] = new ConfigurationKeySupplement { Description = "Masks the value as it is typed and hides it when displayed.", ExampleValue = "False" },
             ["maxcharacters"] = new ConfigurationKeySupplement { Description = "The maximum number of characters accepted. Leave blank for no limit.", ExampleValue = "100" },
             ["showcountdown"] = new ConfigurationKeySupplement { Description = "Shows a remaining character count. Only meaningful with maxcharacters set.", ExampleValue = "False" },
-            ["isfirstname"] = new ConfigurationKeySupplement { Description = "Treats the value as a first name, which enables nickname aware matching.", ExampleValue = "False" },
-            ["allowhtml"] = new ConfigurationKeySupplement { Description = "Permits HTML in the value rather than encoding it on display.", ExampleValue = "False" },
-            ["allowlava"] = new ConfigurationKeySupplement { Description = "Resolves Lava in the value when it is displayed.", ExampleValue = "False" }
+            ["isfirstname"] = new ConfigurationKeySupplement { Description = "Treats the value as a first name, which enables nickname aware matching. Also applies the Name content rules, which reject HTML, Lava, control characters and bidirectional override characters. These rules take precedence over allowhtml and allowlava.", ExampleValue = "False" },
+            ["allowhtml"] = new ConfigurationKeySupplement { Description = "Permits basic HTML in the value. Without it, any HTML tag is rejected on save. With it, inline tags are accepted but script tags, javascript: URLs and event handler attributes are still rejected.", ExampleValue = "False" },
+            ["allowlava"] = new ConfigurationKeySupplement { Description = "Permits Lava in the value. Without it, any {{, {% or {[ sequence is rejected on save. Lava is resolved when the value is used, so the value is stored as written.", ExampleValue = "False" }
         },
 
         ["Rock.Field.Types.MemoFieldType"] = new Dictionary<string, ConfigurationKeySupplement>
         {
             ["numberofrows"] = new ConfigurationKeySupplement { Description = "The visible height of the editor, in rows.", ExampleValue = "3" },
-            ["allowhtml"] = new ConfigurationKeySupplement { Description = "Permits HTML in the value rather than encoding it on display.", ExampleValue = "False" },
+            ["allowhtml"] = new ConfigurationKeySupplement { Description = "Permits basic HTML in the value, and displays it as HTML rather than encoding it. Without it, any HTML tag is rejected on save. With it, inline tags are accepted but script tags, javascript: URLs and event handler attributes are still rejected. Lava is accepted either way.", ExampleValue = "False" },
             ["maxcharacters"] = new ConfigurationKeySupplement { Description = "The maximum number of characters accepted. Leave blank for no limit.", ExampleValue = "500" },
             ["showcountdown"] = new ConfigurationKeySupplement { Description = "Shows a remaining character count. Only meaningful with maxcharacters set.", ExampleValue = "False" }
+        },
+
+        ["Rock.Field.Types.ValueListFieldType"] = new Dictionary<string, ConfigurationKeySupplement>
+        {
+            ["valueprompt"] = new ConfigurationKeySupplement { Description = "The placeholder text shown in an empty entry box. It does not affect the stored value.", ExampleValue = "Enter a value" },
+            ["definedtype"] = new ConfigurationKeySupplement { Description = "The integer Id of a defined type, not its Guid. When set, each entry is the Id of a defined value from that type rather than free text.", ExampleValue = "27" },
+            ["customvalues"] = new ConfigurationKeySupplement { Description = "Optional choices that limit each entry, as a comma separated list of bare values or value^text pairs. Each stored entry is the value, not the text. Ignored when definedtype is set.", ExampleValue = "S^Small,M^Medium,L^Large" },
+            ["allowhtml"] = new ConfigurationKeySupplement { Description = "Permits basic HTML in the value. Without it, any HTML tag is rejected on save. With it, inline tags are accepted but script tags, javascript: URLs and event handler attributes are still rejected.", ExampleValue = "False" },
+            ["allowlava"] = new ConfigurationKeySupplement { Description = "Permits Lava in the value. Without it, any {{, {% or {[ sequence is rejected on save. Lava is resolved when the value is used, so the value is stored as written.", ExampleValue = "False" }
+        },
+
+        ["Rock.Field.Types.KeyValueListFieldType"] = new Dictionary<string, ConfigurationKeySupplement>
+        {
+            ["keyprompt"] = new ConfigurationKeySupplement { Description = "The placeholder text shown in an empty key box. It does not affect the stored value.", ExampleValue = "Key" },
+            ["valueprompt"] = new ConfigurationKeySupplement { Description = "The placeholder text shown in an empty value box. It does not affect the stored value.", ExampleValue = "Value" },
+            ["definedtype"] = new ConfigurationKeySupplement { Description = "The integer Id of a defined type, not its Guid. When set, the value half of each pair is the Id of a defined value from that type. Keys stay free text.", ExampleValue = "27" },
+            ["customvalues"] = new ConfigurationKeySupplement { Description = "Optional choices that limit the value half of each pair, as a comma separated list of bare values or value^text pairs. The stored value half is the value, not the text. Ignored when definedtype is set.", ExampleValue = "S^Small,M^Medium,L^Large" },
+            ["displayvaluefirst"] = new ConfigurationKeySupplement { Description = "Shows the value box before the key box in the editor. The stored order is always key^value.", ExampleValue = "False" },
+            ["allowhtml"] = new ConfigurationKeySupplement { Description = "Permits basic HTML in the keys and values. The content rules apply to the whole stored string, keys and values alike. Without it, any HTML tag is rejected on save. With it, inline tags are accepted but script tags, javascript: URLs and event handler attributes are still rejected.", ExampleValue = "False" },
+            ["allowlava"] = new ConfigurationKeySupplement { Description = "Permits Lava in the keys and values. The content rules apply to the whole stored string, keys and values alike. Without it, any {{, {% or {[ sequence is rejected on save. Lava is resolved when the value is used, so the value is stored as written.", ExampleValue = "False" }
         },
 
         ["Rock.Field.Types.SelectSingleFieldType"] = new Dictionary<string, ConfigurationKeySupplement>

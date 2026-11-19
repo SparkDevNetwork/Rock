@@ -21,6 +21,7 @@ using System.ComponentModel;
 using Rock.Attribute;
 using Rock.Common.Mobile.Blocks.Content;
 using Rock.Mobile;
+using Rock.Model;
 using Rock.Web.UI;
 
 namespace Rock.Blocks.Types.Mobile.Cms
@@ -34,7 +35,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
     [Category( "Mobile > Cms" )]
     [Description( "Displays custom XAML content on the page." )]
     [IconCssClass( "ti ti-align-center" )]
-    [SupportedSiteTypes( Model.SiteType.Mobile )]
+    [SupportedSiteTypes( SiteType.Mobile )]
 
     #region Block Attributes
 

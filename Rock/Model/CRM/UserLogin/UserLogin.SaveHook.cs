@@ -19,6 +19,7 @@ using System.Linq;
 
 using Rock.Configuration;
 using Rock.Data;
+using Rock.Utility.Enums;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -164,9 +165,9 @@ namespace Rock.Model
 
                     // If this is a new userLogin for this person, ensure that the AccountProtection profile is at least Medium.
                     // Note that if this UserLogin is deleted, we'll let the RockCleanup job re-calculate their AccountProtectionProfile.
-                    if ( userLoginPerson != null && userLoginPerson.AccountProtectionProfile < Utility.Enums.AccountProtectionProfile.Medium )
+                    if ( userLoginPerson != null && userLoginPerson.AccountProtectionProfile < AccountProtectionProfile.Medium )
                     {
-                        userLoginPerson.AccountProtectionProfile = Utility.Enums.AccountProtectionProfile.Medium;
+                        userLoginPerson.AccountProtectionProfile = AccountProtectionProfile.Medium;
                         RockContext.SaveChanges();
                     }
                 }

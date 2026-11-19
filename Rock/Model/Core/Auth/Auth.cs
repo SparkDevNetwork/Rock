@@ -97,7 +97,7 @@ namespace Rock.Model
         /// Gets or sets the special role that this Auth entity applies to.
         /// </summary>
         /// <value>
-        /// A <see cref="Rock.Model.SpecialRole"/> enum indicating the special role that this Auth entity applies to.
+        /// A <see cref="SpecialRole"/> enum indicating the special role that this Auth entity applies to.
         /// If this Auth entity does not apply to any special role then the value will be <c>SpecialRole.None</c> or (0); 
         /// If this Auth entity applies to All Users (authenticated and unauthenticated) then the value will be <c>SpecialRole.AllUsers</c> or 1;
         /// If this Auth entity applies to All Authenticated Users then the value will be <c>SpecialRole.AllAuthenticatedUsers</c> or 2;

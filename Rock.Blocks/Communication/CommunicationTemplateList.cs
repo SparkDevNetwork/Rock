@@ -38,7 +38,7 @@ namespace Rock.Blocks.Communication
     [Category( "Communication" )]
     [Description( "Lists the available communication templates that can be used when creating new communications." )]
     [IconCssClass( "ti ti-message" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 

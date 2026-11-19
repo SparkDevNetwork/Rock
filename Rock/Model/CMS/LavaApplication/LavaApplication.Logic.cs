@@ -57,8 +57,9 @@ namespace Rock.Model
             // action including the Execute* actions. This matches LavaApplicationCache.IsAuthorized.
             // The RoleCache.Get() calls can return null when a role is inactive or missing, so the results
             // must be null-checked before testing role membership.
-            var isInOverrideRole = RoleCache.Get( Rock.SystemGuid.Group.GROUP_ADMINISTRATORS.AsGuid() )?.IsPersonInRole( person.Guid ) == true
-                || RoleCache.Get( SystemGuid.Group.GROUP_LAVA_APPLICATION_DEVELOPERS.AsGuid() )?.IsPersonInRole( person.Guid ) == true;
+            var isInOverrideRole = person != null
+                && ( RoleCache.Get( Rock.SystemGuid.Group.GROUP_ADMINISTRATORS.AsGuid() )?.IsPersonInRole( person.Guid ) == true
+                    || RoleCache.Get( SystemGuid.Group.GROUP_LAVA_APPLICATION_DEVELOPERS.AsGuid() )?.IsPersonInRole( person.Guid ) == true );
 
             if ( isInOverrideRole )
             {

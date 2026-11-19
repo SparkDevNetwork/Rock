@@ -41,6 +41,10 @@
 
                     <CheckBox v-model="showFilters"
                               label="Show Model Filter" />
+
+                    <CheckBox v-model="allowSmartSearchRequests"
+                              label="Allow Smart Search Requests"
+                              help="When enabled, requests from the Smart Search (SmartSearch page parameter) use the global Smart Search settings instead of this block's models and filters. Only enable this on the internal Smart Search results page; on a public page it lets any visitor search every Smart Search entity type, including people." />
                 </div>
 
                 <div class="col-md-6">
@@ -126,6 +130,7 @@
     const customResultsCommands = ref<string[]>([]);
     const preHtml = ref("");
     const postHtml = ref("");
+    const allowSmartSearchRequests = ref(false);
 
     const searchTypeItems = ref<ListItemBag[]>([]);
     const enabledModelItems = ref<ListItemBag[]>([]);
@@ -154,6 +159,7 @@
             customResultsCommands.value = result.data.settings.customResultsCommands ?? [];
             preHtml.value = result.data.settings.preHtml ?? "";
             postHtml.value = result.data.settings.postHtml ?? "";
+            allowSmartSearchRequests.value = result.data.settings.allowSmartSearchRequests;
 
             securityGrant.updateToken(result.data.securityGrantToken);
             searchTypeItems.value = result.data.options.searchTypeItems ?? [];
@@ -185,6 +191,7 @@
         setCustomSettingsBoxValue(box, "customResultsCommands", customResultsCommands.value);
         setCustomSettingsBoxValue(box, "preHtml", preHtml.value);
         setCustomSettingsBoxValue(box, "postHtml", postHtml.value);
+        setCustomSettingsBoxValue(box, "allowSmartSearchRequests", allowSmartSearchRequests.value);
 
         const result = await invokeBlockAction("SaveCustomSettings", { box });
 

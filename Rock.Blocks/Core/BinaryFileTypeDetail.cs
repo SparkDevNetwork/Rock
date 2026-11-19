@@ -40,7 +40,7 @@ namespace Rock.Blocks.Core
     [Category( "Core" )]
     [Description( "Displays all details of a binary file type." )]
     [IconCssClass( "ti ti-question-mark" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 
@@ -406,7 +406,7 @@ namespace Rock.Blocks.Core
             string qualifierValue = entity.Id.ToString();
             var attributeService = new AttributeService( RockContext );
             var qryBinaryFileAttributes = attributeService.GetByEntityTypeId( new BinaryFile().TypeId, true ).AsQueryable()
-                .Where( a => a.EntityTypeQualifierColumn.Equals( "BinaryFileTypeId", StringComparison.OrdinalIgnoreCase )
+                .Where( a => a.EntityTypeQualifierColumn == "BinaryFileTypeId"
                 && a.EntityTypeQualifierValue.Equals( qualifierValue ) );
 
             return qryBinaryFileAttributes.ToList();

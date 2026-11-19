@@ -21,6 +21,7 @@ using System.IO;
 using System.Text.Encodings.Web;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -100,7 +101,7 @@ namespace Rock.Badge.Component
             var pageId = PageCache.Get( Guid.Parse( GetAttributeValue( badge, "PageViewDetails" ) ) ).Id;
 
             // NOTE: Since this block shows a history of sites a person visited in Rock, use Person.Guid instead of Person.Id to reduce the risk of somebody manually editing the URL to see somebody else pageview history
-            var detailPageUrl = System.Web.VirtualPathUtility.ToAbsolute( $"~/page/{pageId}?PersonGuid={person.Guid}&SiteId={siteId}" );
+            var detailPageUrl = RockApp.Current.ResolveRockUrl( $"~/page/{pageId}?PersonGuid={person.Guid}&SiteId={siteId}" );
 
             return $@"
                 $.ajax({{

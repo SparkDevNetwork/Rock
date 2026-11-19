@@ -48,7 +48,7 @@ namespace Rock.Blocks.Workflow.FormBuilder
     [Category( "WorkFlow > FormBuilder" )]
     [Description( "Edits the details of a workflow Form Builder action." )]
     [IconCssClass( "ti ti-hammer" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 

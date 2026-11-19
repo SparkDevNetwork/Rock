@@ -38,7 +38,7 @@ namespace Rock.Blocks.Types.Mobile.Communication
     [Category( "Mobile > Communication" )]
     [Description( "Displays a communication to the user." )]
     [IconCssClass( "ti ti-mail-opened" )]
-    [SupportedSiteTypes( Model.SiteType.Mobile )]
+    [SupportedSiteTypes( SiteType.Mobile )]
 
     #region Block Attributes
 

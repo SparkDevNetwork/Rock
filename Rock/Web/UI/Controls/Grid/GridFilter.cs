@@ -347,7 +347,7 @@ namespace Rock.Web.UI.Controls
                     foreach ( var filterNameValue in filterDisplay.OrderBy( f => f.Key ) )
                     {
                         writer.WriteLine( "<div class='col-md-{0}'>", columnSize );
-                        writer.WriteLine( string.Format( "<label>{0}:</label> {1}", filterNameValue.Key, filterNameValue.Value ) );
+                        writer.WriteLine( string.Format( "<label>{0}:</label> {1}", filterNameValue.Key.EncodeHtml(), filterNameValue.Value.EncodeHtml() ) );
                         writer.WriteLine( "</div>" );
                     }
                     writer.WriteLine( "</div>" );

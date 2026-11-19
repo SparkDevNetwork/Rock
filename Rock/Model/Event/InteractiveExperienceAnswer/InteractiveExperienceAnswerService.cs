@@ -52,10 +52,38 @@ namespace Rock.Model
                 var actionService = new InteractiveExperienceActionService( rockContext );
                 var answerService = new InteractiveExperienceAnswerService( rockContext );
 
-                var occurrence = occurrenceService.GetInclude( occurrenceId, o => o.InteractiveExperienceSchedule );
+                var occurrence = occurrenceService.GetInclude( occurrenceId, o => o.InteractiveExperienceSchedule.Schedule );
                 var action = actionService.Get( actionId );
 
                 if ( occurrence == null || action == null || occurrence.InteractiveExperienceSchedule.InteractiveExperienceId != action.InteractiveExperienceId )
+                {
+                    return RecordActionResponseStatus.InvalidParameters;
+                }
+
+                /*
+                    11/16/2026 - MSE
+
+                    The participant controls the action identifier and the response
+                    text, so they must be checked against what the server knows:
+                    the occurrence must still be active, the action must be the one
+                    the moderator is currently showing, and the response must be
+                    valid for the type of action (such as one of the answers offered
+                    by a poll). This is done before the duplicate check so a refused
+                    response is never counted.
+
+                    Reason: Prevent answers to hidden actions, ended occurrences and
+                    unoffered poll choices.
+                */
+                if ( response == null
+                    || !occurrence.IsOccurrenceActive
+                    || occurrence.CurrentlyShownActionId != action.Id )
+                {
+                    return RecordActionResponseStatus.InvalidParameters;
+                }
+
+                var actionType = ActionTypeContainer.GetComponentFromEntityType( action.ActionEntityTypeId );
+
+                if ( actionType == null || !actionType.IsResponseValid( action, response ) )
                 {
                     return RecordActionResponseStatus.InvalidParameters;
                 }

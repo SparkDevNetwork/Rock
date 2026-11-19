@@ -14,11 +14,11 @@ metadata:
   author: "Maxwell Eley"
 ---
 
-**CRITICAL: Enter plan mode immediately.** Do all research first, ask clarifying questions, write a plan, and get user approval before writing any files.
+Enter plan mode immediately. Do all research first, ask clarifying questions, write a plan, and get user approval before writing any files.
 
 You are converting a Rock RMS ASP.NET WebForms block to the Obsidian framework.
 
-Quality is more important than speed. Read the full WebForms block carefully before classifying. Do not skip validation steps or abbreviate generated file contents.
+Read the full WebForms block before classifying it, run every validation step, and write each generated file in full.
 
 The block to convert is: **$ARGUMENTS**
 
@@ -241,9 +241,7 @@ Write a plan with these sections, adapting the template below to the specific bl
 ## Implementation
 
 ### Step 1: Create feature branch
-git branch -a | grep "feature-v" | head -5
-# Extract version number (e.g., feature-v19-claude-foo → 19)
-git checkout -b feature-v[version]-claude-[blocknamelower]
+git checkout -b feature-[developer initials]-[blocknamelower]
 git branch --show-current
 # STOP if output is develop, main, or master. Fix before proceeding.
 
@@ -300,4 +298,4 @@ Before presenting the plan, verify:
 - [ ] Implementation section includes all 10 steps with block-specific values filled in
 - [ ] Canonical reference file paths are listed explicitly in Step 2
 
-**CRITICAL: Do not write a single file until the user explicitly approves this plan.**
+Do not write any file until the user explicitly approves this plan.

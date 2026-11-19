@@ -15,12 +15,18 @@
 // </copyright>
 //
 
+#if NET
+namespace Rock.Enums.Core
+#else
 namespace Rock.Model
+#endif
 {
     /// <summary>
     /// Represents the state of NCOA
     /// </summary>
+#if !NET
     [Enums.EnumDomain( "Core" )]
+#endif
     public enum Processed
     {
         /// <summary>

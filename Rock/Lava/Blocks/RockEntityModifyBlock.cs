@@ -493,6 +493,13 @@ namespace Rock.Lava.Blocks
                 return Enum.Parse( type, value.ToString() );
             }
 
+            // Special logic for Guids, Guid does not implement IConvertible so
+            // Convert.ChangeType(...) can't convert a string into one.
+            if ( type == typeof( Guid ) && !( value is Guid ) )
+            {
+                return Guid.Parse( value.ToString().Trim() );
+            }
+
             return Convert.ChangeType( value, type );
         }
 

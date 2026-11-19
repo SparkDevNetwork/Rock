@@ -21,11 +21,11 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Web;
 using System.Web.Http;
 
 using ImageResizer;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Rest.Filters;
 
@@ -94,11 +94,11 @@ namespace Rock.Rest.Controllers
                 // figure out the extension of the file
                 string fileExtension = Path.GetExtension( fullPath ).TrimStart( '.' );
                 string virtualThumbnailFilePath = string.Format( "~/Assets/Icons/FileTypes/{0}.png", fileExtension );
-                string thumbnailFilePath = HttpContext.Current.Request.MapPath( virtualThumbnailFilePath );
+                string thumbnailFilePath = RockApp.Current.MapPath( virtualThumbnailFilePath );
                 if ( !File.Exists( thumbnailFilePath ) )
                 {
                     virtualThumbnailFilePath = "~/Assets/Icons/FileTypes/other.png";
-                    thumbnailFilePath = HttpContext.Current.Request.MapPath( virtualThumbnailFilePath );
+                    thumbnailFilePath = RockApp.Current.MapPath( virtualThumbnailFilePath );
                 }
 
                 return ResizeAndSendImage( width, height, thumbnailFilePath );
@@ -132,9 +132,9 @@ namespace Rock.Rest.Controllers
                     rootFolder = "~/" + rootFolder.TrimStart( '/', '\\' );
                 }
 
-                var physicalRootFolder = Path.GetFullPath( HttpContext.Current.Request.MapPath( rootFolder ) )
+                var physicalRootFolder = Path.GetFullPath( RockApp.Current.MapPath( rootFolder ) )
                     .TrimEnd( Path.DirectorySeparatorChar ) + Path.DirectorySeparatorChar;
-                var physicalFilePath = Path.GetFullPath( HttpContext.Current.Request.MapPath( relativeFilePath ) );
+                var physicalFilePath = Path.GetFullPath( RockApp.Current.MapPath( relativeFilePath ) );
 
                 if ( !physicalFilePath.StartsWith( physicalRootFolder, StringComparison.OrdinalIgnoreCase ) )
                 {
@@ -214,7 +214,7 @@ namespace Rock.Rest.Controllers
                 {
 
                     // there was a problem with the image so send the default corrupt image warning back
-                    string imagePath = HttpContext.Current.Request.MapPath( "~/Assets/Images/corrupt-image.jpg" );
+                    string imagePath = RockApp.Current.MapPath( "~/Assets/Images/corrupt-image.jpg" );
 
                     // return a 404 if the file doesn't exist
                     if ( !File.Exists( imagePath ) )

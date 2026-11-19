@@ -14,7 +14,7 @@
                 <ContentSection title="Overview" icon="ti ti-list-details" :disableCollapse="true">
                     <img v-if="modelValue?.photoUrl"
                          class="img-fluid rounded mb-3"
-                         :src="`${modelValue.photoUrl}&maxwidth=300&maxheight=300`"
+                         :src="`${modelValue.photoUrl}&maxwidth=600&maxheight=600`"
                          :alt="modelValue.name ?? ''" />
 
                     <div>

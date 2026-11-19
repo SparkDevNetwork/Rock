@@ -44,7 +44,7 @@ namespace Rock.Blocks.Administration
     [Category( "Administration" )]
     [Description( "Displays the page properties." )]
     [IconCssClass( "ti ti-question-mark" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 
@@ -954,6 +954,33 @@ namespace Rock.Blocks.Administration
                 if ( parentPageCache == null || !parentPageCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
                 {
                     return ActionBadRequest( "Not authorized to edit the parent page." );
+                }
+            }
+
+            /*
+                10/28/2026 - MSE
+
+                The parent selection must not make the page its own ancestor.
+
+                Reason: Validate parent changes before saving the page hierarchy.
+            */
+            if ( entity.Id != 0 && parentPageId.HasValue && parentPageId != originalParentPageId )
+            {
+                var visitedPageIds = new HashSet<int>();
+                var parentPage = PageCache.Get( parentPageId.Value );
+                while ( parentPage != null && visitedPageIds.Add( parentPage.Id ) )
+                {
+                    if ( parentPage.Id == entity.Id )
+                    {
+                        return ActionBadRequest( new PagePropertiesValidationResponseBag
+                        {
+                            Title = "Invalid Parent Page",
+                            Message = "A page cannot be its own parent or be moved under one of its child pages.",
+                            CurrentTab = "Basic Settings"
+                        }.ToCamelCaseJson( true, false ) );
+                    }
+
+                    parentPage = parentPage.ParentPage;
                 }
             }
 

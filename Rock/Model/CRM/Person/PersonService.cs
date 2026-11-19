@@ -942,7 +942,7 @@ namespace Rock.Model
             var matchedPersons = new List<Person>();
             if ( email.IsNotNullOrWhiteSpace() )
             {
-                var emailMatchingQry = query.Where( a => a.Email.Equals( email, StringComparison.CurrentCultureIgnoreCase ) );
+                var emailMatchingQry = query.Where( a => a.Email == email );
                 var emailMatchedPerson = emailMatchingQry.FirstOrDefault();
                 if ( emailMatchedPerson != null )
                 {
@@ -1960,6 +1960,23 @@ namespace Rock.Model
                             o.GroupRole.Guid.Equals( ownerGuid ) ) )
                 .Select( m => m.Person )
                 .OrderBy( b => b.LastName );
+        }
+
+        /// <summary>
+        /// Determines whether the other person is a member of the person's
+        /// family or a business the person is a Business Contact for.
+        /// </summary>
+        /// <param name="personId">The identifier of the person.</param>
+        /// <param name="otherPersonId">The identifier of the family member or business to check.</param>
+        /// <returns><c>true</c> if the other person is in the person's family or is one of their businesses; otherwise <c>false</c>.</returns>
+        internal bool IsFamilyMemberOrBusinessOf( int personId, int otherPersonId )
+        {
+            if ( GetFamilyMembers( personId ).Any( gm => gm.PersonId == otherPersonId ) )
+            {
+                return true;
+            }
+
+            return GetBusinesses( personId ).Any( b => b.Id == otherPersonId );
         }
 
         /// <summary>

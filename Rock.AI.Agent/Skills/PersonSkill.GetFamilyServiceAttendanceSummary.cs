@@ -25,8 +25,8 @@ using Microsoft.Extensions.Logging;
 using Rock.AI.Agent.Annotations;
 using Rock.AI.Agent.Classes.Common;
 using Rock.AI.Agent.Classes.Skills.PersonSkill;
-using Rock.Configuration;
 using Rock.Data;
+using Rock.Enums.AI.Agent;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -42,14 +42,21 @@ internal sealed partial class PersonSkill
     [AgentToolReturnDescription( "Returns the family's last recorded Sunday date and the list of family check-ins from that service week. Also includes the family's: monthly completion, first-time check-in, and the number of weeks attended out of the last 16." )]
     public AgentToolResult GetFamilyServiceAttendanceSummary( string personIdKey )
     {
-        using var rockContext = RockApp.Current.CreateRockContext();
-        var personService = new PersonService( rockContext );
-        var person = personService.Get( personIdKey, false );
+        var helper = new AgentToolHelper( AgentRequestContext, _logger );
+        var person = helper.GetRequiredEntity<Model.Person>( personIdKey );
 
-        if ( person == null )
+        var isOtherPersonOnPublicAgent = person != null
+            && AgentRequestContext.AudienceType != AudienceType.Internal
+            && person.Id != AgentRequestContext.CurrentPerson?.Id;
+
+        if ( isOtherPersonOnPublicAgent )
         {
-            return Error( "No person could be found with the provided personIdKey." )
-                .WithInstructions( "You can call SearchPerson to find the corresponding key." );
+            helper.AddError( "You can only view your own family's attendance." );
+        }
+
+        if ( helper.HasErrors )
+        {
+            return helper.ErrorResult;
         }
 
         if ( !person.PrimaryAliasId.HasValue )

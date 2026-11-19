@@ -49,7 +49,7 @@ namespace Rock.Attribute
             get
             {
                 string entityTypeName = FieldConfigurationValues.GetValueOrNull( ENUM_SOURCE_TYPE_KEY ) ?? string.Empty;
-                return entityTypeName.IsNotNullOrWhiteSpace() ? Type.GetType( entityTypeName ) : null;
+                return entityTypeName.IsNotNullOrWhiteSpace() ? Reflection.GetEnumType( entityTypeName ) : null;
             }
 
             set

@@ -88,7 +88,7 @@ If the user answers "Everything" for a large range, warn once with the rough siz
 
 ## Groups
 
-Groups are the top-level sections of the plan (the role versions played in the pilot plan). Default grouping:
+Groups are the top-level sections of the plan. Default grouping:
 
 - **Small plans (under about 40 tests):** one group per domain that has changes, or a single group if everything is in one domain.
 - **Large plans:** one group per domain, and split a domain further by layer when it would exceed about 60 tests (`Finance: Blocks`, `Finance: Service layer`).

@@ -46,6 +46,8 @@ using Rock.Observability;
 using Rock.Pdf;
 using Rock.Web.Cache;
 
+using CommunicationType = Rock.Model.CommunicationType;
+
 namespace Rock.Jobs
 {
     /// <summary>
@@ -1260,6 +1262,15 @@ namespace Rock.Jobs
                 && RockDateTime.Now > DbFunctions.AddDays( w.ModifiedDateTime, w.WorkflowType.CompletedWorkflowRetentionPeriod ) )
                 .ToList();
 
+            /*
+                10/21/2026 - MSE
+
+                Bound the in-memory ID list independently of the configured delete batch size.
+                Large Contains lists cause EF to project the key with an alias that bulk delete cannot join.
+
+                Reason: Keep workflow cleanup queries within the supported SQL translation complexity.
+            */
+            var workflowIdBatchSize = Math.Min( batchAmount, 1000 );
             List<int> workflowIdsSafeToDelete = new List<int>();
 
             // Now, verify and build a list of workflow Ids that are OK to be deleted.
@@ -1274,7 +1285,7 @@ namespace Rock.Jobs
                 }
 
                 // to prevent a SQL complexity exception, do a bulk delete anytime the workflowIdsSafeToDelete gets too big
-                if ( workflowIdsSafeToDelete.Count >= batchAmount )
+                if ( workflowIdsSafeToDelete.Count >= workflowIdBatchSize )
                 {
                     BulkDeleteInChunks( connectionRequestWorkflowService.Queryable().Where( c => workflowIdsSafeToDelete.Contains( c.WorkflowId ) ), batchAmount, commandTimeout );
                     totalRowsDeleted += BulkDeleteInChunks( workflowService.Queryable().Where( a => workflowIdsSafeToDelete.Contains( a.Id ) ), batchAmount, commandTimeout );
@@ -1398,12 +1409,12 @@ namespace Rock.Jobs
             {
                 if ( !string.IsNullOrEmpty( cacheDirectoryPath ) )
                 {
-                    cacheDirectoryPath = System.Web.Hosting.HostingEnvironment.MapPath( cacheDirectoryPath );
+                    cacheDirectoryPath = RockApp.Current.MapPath( cacheDirectoryPath );
                 }
 
                 if ( !string.IsNullOrEmpty( avatarCachePath ) )
                 {
-                    avatarCachePath = System.Web.Hosting.HostingEnvironment.MapPath( avatarCachePath );
+                    avatarCachePath = RockApp.Current.MapPath( avatarCachePath );
                 }
             }
 
@@ -3064,6 +3075,7 @@ WHERE NOT EXISTS (
                 stalePersonAliasIds = personAliasService
                     .Queryable()
                     .Where( a => a.PersonId == anonymousVisitorId
+                        && ( !a.AliasPersonId.HasValue || a.AliasPersonId.Value != a.PersonId )
                         && a.LastVisitDateTime < staleAnonymousVisitorDate
                         && string.IsNullOrEmpty( a.InternalMessage ) )
                     .Select( a => a.Id )
@@ -3123,6 +3135,7 @@ WHERE [ModifiedByPersonAliasId] IS NOT NULL
                     var aliasesToUpdate = personAliasService
                         .Queryable()
                         .Where( a => a.PersonId == anonymousVisitorId
+                            && ( !a.AliasPersonId.HasValue || a.AliasPersonId.Value != a.PersonId )
                             && !a.LastVisitDateTime.HasValue )
                         .Take( 500 )
                         .ToList();
@@ -3237,7 +3250,7 @@ INNER JOIN [AverageAttendance] aa ON c.[Id] = aa.[CampusId]";
             var options = new PuppeteerSharp.BrowserFetcherOptions()
             {
                 Browser = PuppeteerSharp.SupportedBrowser.Chrome,
-                Path = System.Web.Hosting.HostingEnvironment.MapPath( "~/App_Data/ChromeEngine" )
+                Path = RockApp.Current.MapPath( "~/App_Data/ChromeEngine" )
             };
 
             var browserFetcher = new PuppeteerSharp.BrowserFetcher( options );
@@ -3527,29 +3540,59 @@ END
         {
             CalculateAgeAndAgeBracketOnAnalyticsSourceDate();
 
-            const string updateAgeAndAgeRangeSql = @"
+            /*
+                11/16/2026 - KH
+
+                For deceased people, the age must stop at the deceased date, matching
+                Person.GetAge( BirthDate, DeceasedDate ) in the Person save hook. The
+                birthday check previously added the years to the deceased date instead
+                of the birth date, so it always subtracted a year. The age bracket was
+                also taken from AnalyticsSourceDate, which is calculated from today's
+                date, so it kept advancing after death. Both values are now calculated
+                from the age at death.
+
+                The birthday check subtracts the years from the deceased date and compares
+                that to the birth date, the same way Person.GetAge() does, so a Feb 29
+                birthday gets the same answer in both places. A deceased date before the
+                birth date gives a negative age, and the bracket CASE then falls through to
+                SixtyFiveOrOlder, which is also what Person.GetAgeBracket() returns.
+
+                Reason: Deceased people had the wrong Age and AgeBracket after this job ran.
+            */
+            var updateAgeAndAgeRangeSql = $@"
 BEGIN
 	UPDATE Person
 	SET [BirthDateKey] = FORMAT([BirthDate],'yyyyMMdd')
 
 	UPDATE P
 	SET P.[Age] = CASE
-		WHEN P.[DeceasedDate] IS NOT NULL THEN
-		DATEDIFF(YEAR, A.[Date], P.[DeceasedDate]) - 
-			CASE 
-				WHEN DATEADD(YY, DATEDIFF(yy, A.[Date], P.[DeceasedDate]), P.[DeceasedDate]) > p.[DeceasedDate] THEN 1
-				ELSE 0
-				END
+		WHEN P.[DeceasedDate] IS NOT NULL THEN [D].[AgeAtDeath]
 		WHEN p.[BirthDate] IS NULL THEN NULL
-		ELSE A.[Age] 
+		ELSE A.[Age]
 		END,
 	P.[AgeBracket] = CASE
         WHEN A.[AgeBracket] IS NULL THEN 0
-        ELSE A.[AgeBracket]
-        END        
+        WHEN P.[DeceasedDate] IS NULL THEN A.[AgeBracket]
+        WHEN [D].[AgeAtDeath] BETWEEN 0 AND 5 THEN {Rock.Enums.Crm.AgeBracket.ZeroToFive.ConvertToInt()}
+        WHEN [D].[AgeAtDeath] BETWEEN 6 AND 12 THEN {Rock.Enums.Crm.AgeBracket.SixToTwelve.ConvertToInt()}
+        WHEN [D].[AgeAtDeath] BETWEEN 13 AND 17 THEN {Rock.Enums.Crm.AgeBracket.ThirteenToSeventeen.ConvertToInt()}
+        WHEN [D].[AgeAtDeath] BETWEEN 18 AND 24 THEN {Rock.Enums.Crm.AgeBracket.EighteenToTwentyFour.ConvertToInt()}
+        WHEN [D].[AgeAtDeath] BETWEEN 25 AND 34 THEN {Rock.Enums.Crm.AgeBracket.TwentyFiveToThirtyFour.ConvertToInt()}
+        WHEN [D].[AgeAtDeath] BETWEEN 35 AND 44 THEN {Rock.Enums.Crm.AgeBracket.ThirtyFiveToFortyFour.ConvertToInt()}
+        WHEN [D].[AgeAtDeath] BETWEEN 45 AND 54 THEN {Rock.Enums.Crm.AgeBracket.FortyFiveToFiftyFour.ConvertToInt()}
+        WHEN [D].[AgeAtDeath] BETWEEN 55 AND 64 THEN {Rock.Enums.Crm.AgeBracket.FiftyFiveToSixtyFour.ConvertToInt()}
+        ELSE {Rock.Enums.Crm.AgeBracket.SixtyFiveOrOlder.ConvertToInt()}
+        END
 	FROM Person P
 	LEFT JOIN AnalyticsSourceDate A
 	ON A.[DateKey] = P.[BirthDateKey]
+	OUTER APPLY (
+		SELECT DATEDIFF(YEAR, A.[Date], P.[DeceasedDate]) -
+			CASE
+				WHEN A.[Date] > DATEADD(YEAR, -DATEDIFF(YEAR, A.[Date], P.[DeceasedDate]), P.[DeceasedDate]) THEN 1
+				ELSE 0
+				END AS [AgeAtDeath]
+	) AS [D]
 END
 ";
             using ( var rockContext = CreateRockContext() )

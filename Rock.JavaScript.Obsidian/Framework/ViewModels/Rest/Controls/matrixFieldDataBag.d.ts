@@ -30,6 +30,12 @@ export type MatrixFieldDataBag = {
     /** Unique identifier of the currently saved AttributeMatrix */
     attributeMatrixGuid?: Guid | null;
 
+    /**
+     * Server-issued sealed key that proves AttributeMatrixGuid was given to this editor.
+     * Clients must send it back unchanged.
+     */
+    attributeMatrixKey?: string | null;
+
     /** Public configuration data for the attributes of the matrix items */
     attributes?: Record<string, PublicAttributeBag> | null;
 

@@ -55,7 +55,7 @@ namespace Rock.Blocks.Finance
     [Category( "Finance" )]
     [Description( "Creates a new financial transaction or scheduled transaction." )]
     [IconCssClass( "ti ti-cash" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
     [ContextAware( typeof( Campus ) )]
 
     #region Block Attributes

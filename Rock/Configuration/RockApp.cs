@@ -21,11 +21,10 @@ using Microsoft.Extensions.DependencyInjection;
 
 using Rock.Communication.Chat;
 using Rock.Data;
+using Rock.Utility.HtmlSanitization;
 
 namespace Rock.Configuration
 {
-    // Use System.Web.VirtualPathUtility.ToAbsolute("~/") to get virtual root path.
-
     /// <summary>
     /// The RockApp class provides access to all the configuration information
     /// about a running Rock instance.
@@ -119,6 +118,7 @@ namespace Rock.Configuration
             sc.AddSingleton<IDatabaseConfiguration, DatabaseConfiguration>();
             sc.AddSingleton<IHostingSettings, HostingSettings>();
             sc.AddSingleton<IChatProvider, StreamChatProvider>();
+            sc.AddSingleton<IHtmlAllowListSanitizer, HtmlAllowListSanitizer>();
             sc.AddSingleton<IRockContextFactory, RockContextFactory>();
 
             Current = new RockApp( sc.BuildServiceProvider() );

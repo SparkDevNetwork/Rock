@@ -17,10 +17,21 @@
 
 using System.Collections;
 
+using Rock.Security;
+
 namespace Rock.Model
 {
     public partial class CommunicationFlow
     {
+        #region ISecured
+
+        /// <summary>
+        /// When checking for security, if a flow does not have specific rules, first check the category it belongs to, but then check the default entity security for flows.
+        /// </summary>
+        public override ISecured ParentAuthorityPre => this.Category ?? base.ParentAuthority;
+
+        #endregion ISecured
+
         /// <summary>
         /// Gets the Conversion Goal Settings for this flow.
         /// </summary>

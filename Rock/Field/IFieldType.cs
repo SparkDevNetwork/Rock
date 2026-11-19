@@ -21,6 +21,7 @@ using System.Web.UI;
 
 using Rock.Attribute;
 using Rock.Enums.Security;
+using Rock.Model;
 using Rock.Reporting;
 
 namespace Rock.Field
@@ -366,7 +367,7 @@ namespace Rock.Field
         /// <value>
         /// The type of the filter comparison.
         /// </value>
-        Rock.Model.ComparisonType FilterComparisonType { get; }
+        ComparisonType FilterComparisonType { get; }
 
         /// <summary>
         /// Determines whether this filter type has a FilterControl
@@ -384,7 +385,7 @@ namespace Rock.Field
         List<string> GetFilterValues( Control filterControl, Dictionary<string, ConfigurationValue> configurationValues, FilterMode filterMode );
 
         /// <summary>
-        /// Gets the filter compare value (int or string version of <seealso cref="Rock.Model.ComparisonType"/> as a string)
+        /// Gets the filter compare value (int or string version of <seealso cref="ComparisonType"/> as a string)
         /// </summary>
         /// <param name="control">The control that has the comparison options (or null if this fieldtype doesn't have one).</param>
         /// <param name="filterMode">The filter mode.</param>
@@ -459,7 +460,7 @@ namespace Rock.Field
         /// <param name="serviceInstance">The service instance.</param>
         /// <param name="filterMode">The filter mode.</param>
         /// <returns></returns>
-        System.Linq.IQueryable<T> ApplyAttributeQueryFilter<T>( System.Linq.IQueryable<T> qry, Control filterControl, Rock.Web.Cache.AttributeCache attribute, Rock.Data.IService serviceInstance, Rock.Reporting.FilterMode filterMode ) where T : Rock.Data.Entity<T>, new();
+        System.Linq.IQueryable<T> ApplyAttributeQueryFilter<T>( System.Linq.IQueryable<T> qry, Control filterControl, Rock.Web.Cache.AttributeCache attribute, Rock.Data.IService serviceInstance, FilterMode filterMode ) where T : Rock.Data.Entity<T>, new();
 
         /// <summary>
         /// Determines whether the filter is an 'Equal To' comparison and the filtered value is equal to the specified value.

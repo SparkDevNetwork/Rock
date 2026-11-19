@@ -15,12 +15,18 @@
 // </copyright>
 //
 
+#if NET
+namespace Rock.Enums.Connection
+#else
 namespace Rock.Model
+#endif
 {
     /// <summary>
     /// The sort property
     /// </summary>
+#if !NET
     [Enums.EnumDomain( "Connection" )]
+#endif
     public enum ConnectionRequestViewModelSortProperty
     {
         /// <summary>

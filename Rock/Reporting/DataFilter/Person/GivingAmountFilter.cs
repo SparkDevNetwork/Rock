@@ -711,7 +711,7 @@ Date Range: {SlidingDateRangePicker.FormatDelimitedValues( selectionConfig.Slidi
                     return null;
                 }
 
-                selectionConfig.ComparisonType = selectionValues[0].ConvertToEnum<ComparisonType>( Rock.Model.ComparisonType.GreaterThanOrEqualTo );
+                selectionConfig.ComparisonType = selectionValues[0].ConvertToEnum<ComparisonType>( ComparisonType.GreaterThanOrEqualTo );
                 selectionConfig.Amount = selectionValues[1].AsDecimalOrNull() ?? 0.00M;
                 if ( selectionValues.Length >= 7 )
                 {

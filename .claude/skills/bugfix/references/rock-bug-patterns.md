@@ -29,7 +29,7 @@ Organized by symptom. When investigating a bug, scan this list for patterns that
 
 ## Security / Permission Bugs
 
-**Missing `IsAuthorized` check.** Rock blocks should verify `IsAuthorized( Authorization.VIEW )` or `Authorization.EDIT` before returning data. If a block action returns data without checking, it's a security bypass. The check typically goes in `BlockCustomActionBag` methods or early in `GetInitializationBox`.
+**Missing `IsAuthorized` check.** Rock blocks should verify `IsAuthorized( Authorization.VIEW )` or `Authorization.EDIT` before returning data. If a block action returns data without checking, it's a security bypass. The check typically goes at the top of each `[BlockAction]` method or early in the block's initialization (`GetObsidianBlockInitialization()` or the block's own `GetInitializationBox()` helper).
 
 **Wrong authorization entity.** The authorization check might be on the block type when it should be on the entity, or vice versa. Check what object `IsAuthorized` is called on.
 

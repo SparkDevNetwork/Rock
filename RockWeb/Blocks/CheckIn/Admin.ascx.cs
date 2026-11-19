@@ -206,7 +206,7 @@ namespace RockWeb.Blocks.CheckIn
 
             // Load the themes selector and set the active theme.
             ddlTheme.Items.Clear();
-            DirectoryInfo di = new DirectoryInfo( this.Page.Request.MapPath( ResolveRockUrl( "~~" ) ) );
+            DirectoryInfo di = new DirectoryInfo( RockApp.Current.MapPath( ResolveRockUrl( "~~" ) ) );
             foreach ( var themeDir in di.Parent.EnumerateDirectories().OrderBy( a => a.Name ) )
             {
                 ddlTheme.Items.Add( new ListItem( themeDir.Name, themeDir.Name.ToLower() ) );

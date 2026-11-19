@@ -46,7 +46,7 @@ namespace Rock.Model
                     OwnerPersonId = ( int? ) s.OwnerPersonAlias.PersonId
                 } )
                 .ToList()
-                .Where( s => s.OwnerPersonId == currentPersonId || s.Snippet.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson ) )
+                .Where( s => ( s.OwnerPersonId.HasValue && s.OwnerPersonId == currentPersonId ) || s.Snippet.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson ) )
                 .Select( s => s.Snippet )
                 .ToList();
         }

@@ -5,7 +5,7 @@
             <div class="mr-3" style="font-size: 18px"><span class="label label-default"><span class="label-value">0 Records</span></span></div>
         </template>
 
-        <NothingToShow />
+        <EmptyState type="noResults" />
     </Panel>
 
     <Grid v-else :definition="config ?? undefined"
@@ -54,7 +54,7 @@
     import { PropType, ref, watch } from "vue";
     import Grid, { ButtonColumn, DateColumn, NumberColumn, TextColumn, pickExistingValueFilter, textValueFilter } from "@Obsidian/Controls/grid";
     import Panel from "@Obsidian/Controls/panel.obs";
-    import NothingToShow from "./nothingToShow.partial.obs";
+    import EmptyState from "@Obsidian/Controls/emptyState.obs";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { NavigationUrlKey } from "./types.partial";
     import { GridDefinitionBag } from "@Obsidian/ViewModels/Core/Grid/gridDefinitionBag";

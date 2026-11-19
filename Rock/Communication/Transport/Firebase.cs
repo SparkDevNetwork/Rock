@@ -41,15 +41,17 @@ namespace Rock.Communication.Transport
     [Description( "Sends a communication through Firebase API" )]
     [Export( typeof( TransportComponent ) )]
     [ExportMetadata( "ComponentName", "Firebase" )]
-    [TextField( "Server Key (Legacy)",
+    [EncryptedTextField( "Server Key (Legacy)",
         Description = "The server key for your firebase account. This has been replaced by the Service Account JSON.",
         IsRequired = false,
+        IsPassword = true,
         Key = AttributeKeys.ServerKey,
         Order = 0 )]
 
-    [CodeEditorField( "Service Account JSON",
+    [EncryptedTextField( "Service Account JSON",
         Description = "Upload the service account JSON from your Google Console to authenticate your Rock server.",
         IsRequired = true,
+        IsPassword = true,
         Key = AttributeKeys.ServiceAccountJson,
         Order = 1 )]
 
@@ -155,8 +157,18 @@ namespace Rock.Communication.Transport
         /// <returns>FirebaseApp.</returns>
         private FirebaseAppWrapper GetFirebaseApp()
         {
-            // Get our service account json.
-            var json = GetAttributeValue( AttributeKeys.ServiceAccountJson );
+            /*
+                11/16/2026 - JPH
+
+                The service account JSON and server key are stored encrypted.
+                A value saved before they became encrypted fields stays plain
+                text until start-up encrypts it, so fall back to the stored
+                value.
+
+                Reason: Keep transport secrets encrypted at rest.
+            */
+            var storedJson = GetAttributeValue( AttributeKeys.ServiceAccountJson );
+            var json = Rock.Security.Encryption.DecryptString( storedJson ) ?? storedJson;
 
             if ( json.IsNullOrWhiteSpace() )
             {
@@ -217,14 +229,14 @@ namespace Rock.Communication.Transport
 
                 bool hasPendingRecipients;
                 if ( communication != null &&
-                    communication.Status == Model.CommunicationStatus.Approved &&
+                    communication.Status == CommunicationStatus.Approved &&
                     ( !communication.FutureSendDateTime.HasValue || communication.FutureSendDateTime.Value.CompareTo( RockDateTime.Now ) <= 0 ) )
                 {
                     var qryRecipients = new CommunicationRecipientService( communicationRockContext ).Queryable();
                     hasPendingRecipients = qryRecipients
                         .Where( r =>
                             r.CommunicationId == communication.Id &&
-                            r.Status == Model.CommunicationRecipientStatus.Pending &&
+                            r.Status == CommunicationRecipientStatus.Pending &&
                             r.MediumEntityTypeId.HasValue &&
                             r.MediumEntityTypeId.Value == mediumEntityTypeId )
                         .Any();
@@ -511,8 +523,8 @@ namespace Rock.Communication.Transport
 
             if ( pushMessage != null )
             {
-                // Get server key
-                string serverKey = GetAttributeValue( AttributeKeys.ServerKey );
+                var storedServerKey = GetAttributeValue( AttributeKeys.ServerKey );
+                var serverKey = Rock.Security.Encryption.DecryptString( storedServerKey ) ?? storedServerKey;
                 var sender = new Sender( serverKey );
 
                 // Common Merge Field
@@ -579,14 +591,14 @@ namespace Rock.Communication.Transport
 
                 bool hasPendingRecipients;
                 if ( communication != null &&
-                    communication.Status == Model.CommunicationStatus.Approved &&
+                    communication.Status == CommunicationStatus.Approved &&
                     ( !communication.FutureSendDateTime.HasValue || communication.FutureSendDateTime.Value.CompareTo( RockDateTime.Now ) <= 0 ) )
                 {
                     var qryRecipients = new CommunicationRecipientService( communicationRockContext ).Queryable();
                     hasPendingRecipients = qryRecipients
                         .Where( r =>
                             r.CommunicationId == communication.Id &&
-                            r.Status == Model.CommunicationRecipientStatus.Pending &&
+                            r.Status == CommunicationRecipientStatus.Pending &&
                             r.MediumEntityTypeId.HasValue &&
                             r.MediumEntityTypeId.Value == mediumEntityTypeId )
                         .Any();
@@ -603,7 +615,8 @@ namespace Rock.Communication.Transport
                     string publicAppRoot = globalAttributes.GetValue( "PublicApplicationRoot" );
                     var mergeFields = Lava.LavaHelper.GetCommonMergeFields( null, currentPerson );
 
-                    string serverKey = GetAttributeValue( AttributeKeys.ServerKey );
+                    var storedServerKey = GetAttributeValue( AttributeKeys.ServerKey );
+                    var serverKey = Rock.Security.Encryption.DecryptString( storedServerKey ) ?? storedServerKey;
                     var sender = new Sender( serverKey );
 
                     var personEntityTypeId = EntityTypeCache.Get( "Rock.Model.Person" ).Id;

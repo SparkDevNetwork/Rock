@@ -25,6 +25,8 @@ using System.Threading.Tasks;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Microsoft.EntityFrameworkCore;
+
 using Newtonsoft.Json;
 
 using Rock;
@@ -952,7 +954,7 @@ var headerText = dp.label;
 
                 transactionInfoList = new List<TransactionInfo>();
                 var threadRockContextAnalytics = new RockContextAnalytics();
-                threadRockContextAnalytics.Database.CommandTimeout = databaseTimeoutSeconds;
+                threadRockContextAnalytics.Database.SetCommandTimeout( databaseTimeoutSeconds );
 
                 var ds = new FinancialTransactionDetailService( threadRockContextAnalytics ).GetGivingAnalyticsTransactionDataSet(
                     dateRange.Start,
@@ -1059,7 +1061,7 @@ var headerText = dp.label;
                     idsWithValidTotals = new List<string>();
 
                     var threadRockContextAnalytics = new RockContextAnalytics();
-                    threadRockContextAnalytics.Database.CommandTimeout = databaseTimeoutSeconds;
+                    threadRockContextAnalytics.Database.SetCommandTimeout( databaseTimeoutSeconds );
 
                     var dtPersonSummary = new FinancialTransactionDetailService( threadRockContextAnalytics ).GetGivingAnalyticsPersonSummaryDataSet(
                         dateRange.Start,
@@ -1093,7 +1095,7 @@ var headerText = dp.label;
                 qryTasks.Add( Task.Run( () =>
                 {
                     var threadRockContextAnalytics = new RockContextAnalytics();
-                    threadRockContextAnalytics.Database.CommandTimeout = databaseTimeoutSeconds;
+                    threadRockContextAnalytics.Database.SetCommandTimeout( databaseTimeoutSeconds );
 
                     var ti = new TaskInfo { name = "Get Data View People", start = RockDateTime.Now };
                     taskInfos.Add( ti );
@@ -1283,7 +1285,7 @@ var headerText = dp.label;
                 taskInfos.Add( ti );
 
                 var threadRockContextAnalytics = new RockContextAnalytics();
-                threadRockContextAnalytics.Database.CommandTimeout = databaseTimeoutSeconds;
+                threadRockContextAnalytics.Database.SetCommandTimeout( databaseTimeoutSeconds );
                 var dt = new FinancialTransactionDetailService( threadRockContextAnalytics ).GetGivingAnalyticsPersonSummaryDataSet(
                     start, end, minAmount, maxAmount, accountIds, currencyTypeIds, sourceIds, transactionTypeIds, allowOnlyActive, allowOnlyTaxDeductible )
                     .Tables[0];
@@ -1371,7 +1373,7 @@ var headerText = dp.label;
                 taskInfos.Add( ti );
 
                 var threadRockContextAnalytics = new RockContextAnalytics();
-                threadRockContextAnalytics.Database.CommandTimeout = databaseTimeoutSeconds;
+                threadRockContextAnalytics.Database.SetCommandTimeout( databaseTimeoutSeconds );
 
                 var dt = new FinancialTransactionDetailService( threadRockContextAnalytics ).GetGivingAnalyticsAccountTotalsDataSet(
                     start, end, accountIds, currencyTypeIds, sourceIds, transactionTypeIds, allowOnlyActive, allowOnlyTaxDeductible )
@@ -1403,7 +1405,7 @@ var headerText = dp.label;
                 taskInfos.Add( ti );
 
                 var threadRockContextAnalytics = new RockContextAnalytics();
-                threadRockContextAnalytics.Database.CommandTimeout = databaseTimeoutSeconds;
+                threadRockContextAnalytics.Database.SetCommandTimeout( databaseTimeoutSeconds );
 
                 var dt = new FinancialTransactionDetailService( threadRockContextAnalytics ).GetGivingAnalyticsFirstLastEverDatesDataSet()
                     .Tables[0];
@@ -1438,7 +1440,7 @@ var headerText = dp.label;
                     var dataViewGetQueryArgs = new DataViewGetQueryArgs();
                     using ( var threadRockContextAnalytics = new RockContextAnalytics() )
                     {
-                        threadRockContextAnalytics.Database.CommandTimeout = databaseTimeoutSeconds;
+                        threadRockContextAnalytics.Database.SetCommandTimeout( databaseTimeoutSeconds );
                         var dataView = new DataViewService( threadRockContextAnalytics ).Get( dataViewId.Value );
                         if ( dataView != null )
                         {
@@ -1644,7 +1646,7 @@ var headerText = dp.label;
             }
 
             var rockContextAnalytics = new RockContextAnalytics();
-            rockContextAnalytics.Database.CommandTimeout = databaseTimeoutSeconds;
+            rockContextAnalytics.Database.SetCommandTimeout( databaseTimeoutSeconds );
 
             // If Data View was selected and Data View Results option is includes all people in the Data View.
             if ( dataViewId.HasValue && rblDataViewAction.SelectedValue == "All" && dataviewPersonIds.Any() )

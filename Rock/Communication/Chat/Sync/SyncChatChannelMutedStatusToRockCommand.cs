@@ -36,6 +36,11 @@ namespace Rock.Communication.Chat.Sync
         public string ChatChannelKey { get; set; }
 
         /// <summary>
+        /// Gets or sets the key that identifies the <see cref="ChatChannelType"/> in the external chat system.
+        /// </summary>
+        public string ChatChannelTypeKey { get; set; }
+
+        /// <summary>
         /// Gets or sets the key that identifies the <see cref="ChatUser"/> in the external chat system.
         /// </summary>
         /// <remarks>

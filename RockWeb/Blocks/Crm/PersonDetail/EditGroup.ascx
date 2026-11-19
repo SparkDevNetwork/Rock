@@ -1,4 +1,5 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="EditGroup.ascx.cs" Inherits="RockWeb.Blocks.Crm.PersonDetail.EditGroup" %>
+<%@ Import Namespace="Rock" %>
 
 <asp:UpdatePanel ID="upEditGroup" runat="server">
     <ContentTemplate>
@@ -57,7 +58,7 @@
                                         <div class="clearfix">
                                             <div class="person-image" id="divPersonImage" runat="server"></div>
                                             <div class="member-information">
-                                                <h4><%# Eval("NickName") %> <%# Eval("LastName") %><asp:Literal ID="lFamilyMemberAge" runat="server" /></h4>
+                                                <h4><%# ( Eval( "NickName" ) as string ).EncodeHtml() %> <%# ( Eval( "LastName" ) as string ).EncodeHtml() %><asp:Literal ID="lFamilyMemberAge" runat="server" /></h4>
 
                                                   <asp:RadioButtonList ID="rblRole" runat="server" DataValueField="Id" DataTextField="Name" />
 

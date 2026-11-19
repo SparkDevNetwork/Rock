@@ -40,7 +40,7 @@ namespace Rock.Blocks.Engagement
     [Category( "Steps" )]
     [Description( "Displays step records for a person in a step program." )]
     [IconCssClass( "ti ti-list-check" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
     [ContextAware( typeof( Person ) )]
 
     #region Block Attributes

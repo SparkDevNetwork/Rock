@@ -37,7 +37,7 @@ namespace Rock.Blocks.CheckIn.Configuration
     [DisplayName( "Check-in Configuration List" )]
     [Category( "Check-in > Configuration" )]
     [Description( "Displays a list of check-in configurations." )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 

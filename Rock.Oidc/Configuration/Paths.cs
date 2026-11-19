@@ -40,5 +40,10 @@ namespace Rock.Oidc.Configuration
         /// The user information
         /// </summary>
         public static readonly string UserInfo = "/Auth/UserInfo";
+
+        /// <summary>
+        /// The dynamic client registration path.
+        /// </summary>
+        internal static readonly string RegisterPath = "/Auth/Register";
     }
 }

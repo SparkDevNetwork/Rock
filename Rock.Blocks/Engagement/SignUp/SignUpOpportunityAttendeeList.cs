@@ -44,7 +44,7 @@ namespace Rock.Blocks.Engagement.SignUp
     [Category( "Engagement > Sign-Up" )]
     [Description( "Lists all the group members for the selected group, location and schedule." )]
     [IconCssClass( "ti ti-list" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 

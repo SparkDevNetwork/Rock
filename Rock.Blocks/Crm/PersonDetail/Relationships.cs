@@ -39,7 +39,7 @@ namespace Rock.Blocks.Crm.PersonDetail
     [Category( "CRM > Person Detail" )]
     [Description( "Allows you to view relationships of a particular person." )]
     [IconCssClass( "ti ti-users" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 

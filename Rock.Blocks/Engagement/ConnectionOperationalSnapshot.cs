@@ -37,7 +37,7 @@ namespace Rock.Blocks.Engagement
     [DisplayName( "Connection Operational Snapshot" )]
     [Category( "Engagement" )]
     [Description( "Displays analytics and operational metrics for Connection Requests and Connectors." )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
     [ContextAware( typeof( Campus ) )]
 
     #region Block Attributes

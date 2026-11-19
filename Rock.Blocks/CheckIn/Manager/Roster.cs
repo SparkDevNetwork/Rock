@@ -43,7 +43,7 @@ namespace Rock.Blocks.CheckIn.Manager
     [Category( "Check-in > Manager" )]
     [Description( "Block used to view people currently checked into a classroom, mark a person as 'present' in the classroom, check them out, Etc." )]
     [IconCssClass( "ti ti-building" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
     [SecurityAction( Authorization.DELETE_ATTENDANCE, "The roles and/or users that have access to delete attendance information." )]
 
     #region Block Attributes
@@ -369,8 +369,6 @@ namespace Rock.Blocks.CheckIn.Manager
                     await topicChannels.AddToChannelAsync( connectionId, channel );
                 }
             }
-
-            await topicChannels.AddToChannelAsync( connectionId, EntityUpdatedTopic.GetAttendanceDeletedChannel() );
 
             return ActionOk();
         }

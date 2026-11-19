@@ -40,7 +40,7 @@ namespace Rock.Blocks.Engagement
     [Category( "Streaks" )]
     [Description( "Shows a list of all achievement types." )]
     [IconCssClass( "ti ti-list" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     [LinkedPage( "Detail Page",
         Description = "The page that will show the achievement type details.",
@@ -161,6 +161,15 @@ namespace Rock.Blocks.Engagement
             .ToList();
 
             return achievementTypes.AsQueryable();
+        }
+
+        /// <inheritdoc/>
+        protected override GridEntityKeyOptions GetGridEntityKeyOptions()
+        {
+            return new GridEntityKeyOptions
+            {
+                EntityTypeId = EntityTypeCache.GetId<Rock.Model.AchievementType>()
+            };
         }
 
         /// <inheritdoc/>

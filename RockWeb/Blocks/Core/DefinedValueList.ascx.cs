@@ -424,7 +424,7 @@ namespace RockWeb.Blocks.Core
                     .Where( a =>
                         a.EntityTypeId == entityTypeId &&
                         a.IsGridColumn &&
-                        a.EntityTypeQualifierColumn.Equals( "DefinedTypeId", StringComparison.OrdinalIgnoreCase ) &&
+                        a.EntityTypeQualifierColumn == "DefinedTypeId" &&
                         a.EntityTypeQualifierValue.Equals( qualifier ) )
                     .OrderBy( a => a.Order )
                     .ThenBy( a => a.Name ) )

@@ -478,6 +478,11 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string OBSIDIAN_EXAMPLE_FIELD_TYPE_GALLERY = "B9C209C2-ABB8-4B48-A68E-944572007B03";
 
+        /// <summary>
+        /// The obsidian example sample data installer block type.
+        /// </summary>
+        public const string OBSIDIAN_EXAMPLE_SAMPLE_DATA_INSTALLER = "5C0E3AAA-E1B7-4220-B654-7DC84A5122C6";
+
         #endregion Obsidian Block Types
 
         #region Reporting Block Types

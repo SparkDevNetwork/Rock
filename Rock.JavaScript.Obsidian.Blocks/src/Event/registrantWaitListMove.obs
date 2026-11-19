@@ -96,6 +96,7 @@
                                      style="position: relative; height: 500px;">
                                     <iframe name="emailPreview"
                                             :srcdoc="previewHtml"
+                                            sandbox="allow-popups allow-popups-to-escape-sandbox"
                                             class="emaileditor-iframe bg-white inset-0 w-100 h-100 js-emailpreview-iframe email-wrapper email-content-desktop styled-scroll"
                                             frameborder="0"
                                             border="0"
@@ -245,6 +246,18 @@
     const fromEmail = ref(config.emailBag?.fromEmail ?? "");
     const subject = ref(config.emailBag?.subject ?? "");
     const messageBody = ref(config.emailBag?.body ?? "");
+
+    /*
+        10/16/2026 - MSE
+
+        The email preview iframe in the template holds the email merged with registrant data,
+        which an anonymous registrant can fill with HTML. It is sandboxed with
+        "allow-popups allow-popups-to-escape-sandbox" so that HTML cannot run script in Rock's
+        origin; nothing reads the frame and its height is fixed, so no other token is needed.
+        Never add allow-scripts: a same-origin frame that may run script can remove its own sandbox.
+
+        Reason: Stop stored XSS through the wait list transition email preview.
+    */
     const previewHtml = ref(config.emailBag?.previewHtml ?? "");
 
     const maxVisible = 6;

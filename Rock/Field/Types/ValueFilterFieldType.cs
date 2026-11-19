@@ -23,6 +23,7 @@ using System.Web.UI.WebControls;
 #endif
 
 using Rock.Attribute;
+using Rock.Model;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -58,7 +59,7 @@ namespace Rock.Field.Types
         {
             var configurationProperties = base.GetPublicEditConfigurationProperties( privateConfigurationValues );
 
-            configurationProperties[COMPARISON_TYPES_OPTIONS] = typeof( Model.ComparisonType ).ToEnumListItemBag().ToCamelCaseJson( false, true );
+            configurationProperties[COMPARISON_TYPES_OPTIONS] = typeof( ComparisonType ).ToEnumListItemBag().ToCamelCaseJson( false, true );
 
             return configurationProperties;
         }
@@ -70,18 +71,18 @@ namespace Rock.Field.Types
 
             if ( usage != ConfigurationValueUsage.View )
             {
-                Model.ComparisonType comparisonType;
+                ComparisonType comparisonType;
 
                 if ( !configurationValues.ContainsKey( COMPARISON_TYPES ) )
                 {
-                    comparisonType = Reporting.ComparisonHelper.StringFilterComparisonTypes | Model.ComparisonType.RegularExpression;
+                    comparisonType = Reporting.ComparisonHelper.StringFilterComparisonTypes | ComparisonType.RegularExpression;
                 }
                 else
                 {
-                    comparisonType = ( Model.ComparisonType ) configurationValues[COMPARISON_TYPES].AsInteger();
+                    comparisonType = ( ComparisonType ) configurationValues[COMPARISON_TYPES].AsInteger();
                 }
 
-                var values = comparisonType.GetFlags<Model.ComparisonType>().Cast<int>().ToList();
+                var values = comparisonType.GetFlags<ComparisonType>().Cast<int>().ToList();
                 configurationValues[COMPARISON_TYPES] = values.ConvertAll( v => v.ToString() ).ToCamelCaseJson( false, true );
             }
 
@@ -95,11 +96,11 @@ namespace Rock.Field.Types
 
             if ( configurationValues.ContainsKey( COMPARISON_TYPES ) )
             {
-                var comparisonTypes = configurationValues[COMPARISON_TYPES].FromJsonOrNull<List<Model.ComparisonType>>();
+                var comparisonTypes = configurationValues[COMPARISON_TYPES].FromJsonOrNull<List<ComparisonType>>();
 
                 if ( comparisonTypes != null )
                 {
-                    Model.ComparisonType comparisonType = 0;
+                    ComparisonType comparisonType = 0;
 
                     foreach ( var value in comparisonTypes )
                     {
@@ -174,7 +175,7 @@ namespace Rock.Field.Types
             {
                 var compoundFilterExpression = new CompoundFilterExpression();
 
-                compoundFilterExpression.ExpressionType = ( Model.FilterExpressionType ) jObject.Value<int>( "expressionType" );
+                compoundFilterExpression.ExpressionType = ( FilterExpressionType ) jObject.Value<int>( "expressionType" );
                 foreach ( var filter in jObject.Value<Newtonsoft.Json.Linq.JArray>( "filters" ) )
                 {
                     compoundFilterExpression.Filters.Add( GetExpression( ( Newtonsoft.Json.Linq.JObject ) filter ) );
@@ -187,7 +188,7 @@ namespace Rock.Field.Types
                 var comparisonFilterExpression = new ComparisonFilterExpression();
 
                 comparisonFilterExpression.Value = jObject.Value<string>( "value" );
-                comparisonFilterExpression.Comparison = ( Model.ComparisonType ) jObject.Value<int>( "comparison" );
+                comparisonFilterExpression.Comparison = ( ComparisonType ) jObject.Value<int>( "comparison" );
 
                 return comparisonFilterExpression;
             }
@@ -228,8 +229,8 @@ namespace Rock.Field.Types
         /// </remarks>
         internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
         {
-            var comparisonValues = Enum.GetValues( typeof( Model.ComparisonType ) )
-                .Cast<Model.ComparisonType>()
+            var comparisonValues = Enum.GetValues( typeof( ComparisonType ) )
+                .Cast<ComparisonType>()
                 .Select( c => $"{( int ) c} is {c.ConvertToString()}" )
                 .JoinStrings( ", " );
 
@@ -282,7 +283,7 @@ namespace Rock.Field.Types
             cbHideFilterMode.CheckedChanged += OnQualifierUpdated;
             controls.Add( cbHideFilterMode );
 
-            var defaultComparisonType = Reporting.ComparisonHelper.StringFilterComparisonTypes | Model.ComparisonType.RegularExpression;
+            var defaultComparisonType = Reporting.ComparisonHelper.StringFilterComparisonTypes | ComparisonType.RegularExpression;
             var cbComparisonTypes = new RockCheckBoxList()
             {
                 AutoPostBack = true,
@@ -291,8 +292,8 @@ namespace Rock.Field.Types
                 RepeatColumns = 2,
                 Help = "The comparison types the user can select from."
             };
-            cbComparisonTypes.BindToEnum<Model.ComparisonType>();
-            cbComparisonTypes.SetValues( defaultComparisonType.GetFlags<Model.ComparisonType>().Cast<int>() );
+            cbComparisonTypes.BindToEnum<ComparisonType>();
+            cbComparisonTypes.SetValues( defaultComparisonType.GetFlags<ComparisonType>().Cast<int>() );
             cbComparisonTypes.SelectedIndexChanged += OnQualifierUpdated;
             controls.Add( cbComparisonTypes );
 
@@ -323,11 +324,11 @@ namespace Rock.Field.Types
 
                     if ( controls[1] is RockCheckBoxList cbComparisonTypes )
                     {
-                        Model.ComparisonType comparisonType = 0;
+                        ComparisonType comparisonType = 0;
 
                         foreach ( int value in cbComparisonTypes.SelectedValuesAsInt )
                         {
-                            comparisonType |= ( Model.ComparisonType ) value;
+                            comparisonType |= ( ComparisonType ) value;
                         }
 
                         configurationValues[COMPARISON_TYPES].Value = ( ( int ) comparisonType ).ToString();
@@ -359,9 +360,9 @@ namespace Rock.Field.Types
                 {
                     if ( controls[1] is RockCheckBoxList cbComparisonTypes )
                     {
-                        Model.ComparisonType comparisonType = ( Model.ComparisonType ) configurationValues[COMPARISON_TYPES].Value.AsInteger();
+                        ComparisonType comparisonType = ( ComparisonType ) configurationValues[COMPARISON_TYPES].Value.AsInteger();
 
-                        cbComparisonTypes.SetValues( comparisonType.GetFlags<Model.ComparisonType>().Cast<int>() );
+                        cbComparisonTypes.SetValues( comparisonType.GetFlags<ComparisonType>().Cast<int>() );
                     }
                 }
             }
@@ -450,11 +451,11 @@ namespace Rock.Field.Types
 
                 if ( configurationValues.ContainsKey( COMPARISON_TYPES ) )
                 {
-                    Model.ComparisonType comparisonType = ( Model.ComparisonType ) configurationValues[COMPARISON_TYPES].Value.AsInteger();
+                    ComparisonType comparisonType = ( ComparisonType ) configurationValues[COMPARISON_TYPES].Value.AsInteger();
 
                     if ( comparisonType == 0 )
                     {
-                        comparisonType = Reporting.ComparisonHelper.StringFilterComparisonTypes | Model.ComparisonType.RegularExpression;
+                        comparisonType = Reporting.ComparisonHelper.StringFilterComparisonTypes | ComparisonType.RegularExpression;
                     }
 
                     ft.ComparisonTypes = comparisonType;

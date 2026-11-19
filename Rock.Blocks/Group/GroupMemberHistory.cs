@@ -43,7 +43,7 @@ namespace Rock.Blocks.Group
     [Category( "Groups" )]
     [Description( "Displays a timeline of history for a group member. If only GroupId is specified, a list of group members that have been in the group will be shown first." )]
     [IconCssClass( "ti ti-history" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 

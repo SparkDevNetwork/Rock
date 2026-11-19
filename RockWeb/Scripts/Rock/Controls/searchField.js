@@ -33,7 +33,45 @@
                             query = query.replace('%TYPE', self.$el.parents('.smartsearch').find('input:hidden').val());
                             query = query.replace('%QUERY', uriEncodedQuery);
                             return query;
+                        },
+                        filter: function (results) {
+                            /*
+                                10/18/2026 - MSE
+
+                                Search results are HTML with stored values encoded, so accented names come back
+                                as numeric entities (for example "Jos&#233;"). Typeahead copies each result's value
+                                as text into the input and the hint, so the value is set to the decoded text
+                                (parsed in an inert document) and the original HTML is kept for rendering the
+                                suggestion list and for navigation. Exact duplicate results are dropped, and if two
+                                different results decode to the same text the HTML is used as the value so typeahead
+                                does not drop one as a duplicate.
+
+                                Reason: Show plain names in the search input now that result values are encoded.
+                            */
+                            var seenValues = {};
+                            var seenResults = {};
+
+                            return $.map(results || [], function (result) {
+                                if (seenResults.hasOwnProperty(result)) {
+                                    return null;
+                                }
+
+                                seenResults[result] = true;
+
+                                var value = new DOMParser().parseFromString(result, 'text/html').body.textContent.trim();
+
+                                if (value === '' || seenValues.hasOwnProperty(value)) {
+                                    value = result;
+                                }
+
+                                seenValues[value] = true;
+
+                                return { value: value, html: result };
+                            });
                         }
+                    },
+                    template: function (datum) {
+                        return '<p>' + datum.html + '</p>';
                     }
                 });
 
@@ -47,8 +85,19 @@
                         var searchControl = document.getElementById(self.controlId);
                         searchControl.value = '';
 
+                        /*
+                            10/18/2026 - MSE
+
+                            The search term can be a Smart Search result (which contains stored values) or
+                            text the person typed. It is parsed in a separate, inert document so that any
+                            markup in it is never added to the live page and no event handlers or scripts run.
+
+                            Reason: Prevent XSS when a search term is selected or submitted.
+                        */
+                        var parsedTerm = new DOMParser().parseFromString('<p>' + term + '</p>', 'text/html');
+
                         // search for data elements in the search term
-                        var $dataEl = $("<p>" + term + "</p>").find("data").first();
+                        var $dataEl = $(parsedTerm.body).find("data").first();
 
                         // see if this is a universal search by looking for return-type and return-id data params
                         var returnType = $dataEl.attr("return-type");
@@ -67,8 +116,7 @@
                             });
 
                             // remove any search accessories. These are html elements with the class .search-accessory
-                            var resultElement = document.createElement('div');
-                            resultElement.innerHTML = term;
+                            var resultElement = parsedTerm.body;
                             //var resultElement = $("<div/>").html(term);
                             var accessories = resultElement.getElementsByClassName('search-accessory');
 
@@ -107,7 +155,7 @@
 
                 // Listen for typeahead's custom events and trigger search when hit
                 this.$el.on('typeahead:selected typeahead:autocompleted', function (e, obj, name) {
-                    search(obj.value);
+                    search(obj.html);
                 });
 
                 // Listen for the ENTER key being pressed while in the search box and trigger search when hit

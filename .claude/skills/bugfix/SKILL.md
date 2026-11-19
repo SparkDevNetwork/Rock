@@ -67,9 +67,7 @@ Start by finding the relevant files. The bug report may give you exact paths, or
 
 ### 1.3 — Investigate the Root Cause
 
-This is the most important step. Don't jump to conclusions — walk the code systematically.
-
-**Before starting, read `references/rock-bug-patterns.md`.** It catalogs Rock-specific bug patterns organized by symptom (stale data, NullRef, security bypass, UI not updating, wrong query results, thread-safety, data loss, cross-layer mismatches). Match the reported symptom to these patterns — they'll shortcut your investigation significantly.
+If the cause is not already clear, read `references/rock-bug-patterns.md`. It catalogs Rock-specific bug patterns organized by symptom (stale data, NullRef, security bypass, UI not updating, wrong query results, thread-safety, data loss, cross-layer mismatches). Match the reported symptom to these patterns.
 
 **Step A: Find the entry point.** Identify the method, event handler, block action, or API endpoint where the buggy behavior starts. For Obsidian blocks, this is often a `BlockAction` method on the C# side or a watcher/event handler on the Vue side. For WebForms, look at event handlers like `btnSave_Click` or page lifecycle methods.
 
@@ -95,32 +93,7 @@ This is the most important step. Don't jump to conclusions — walk the code sys
 
 ### 1.4 — Identify the Domain
 
-Determine the Rock RMS domain for the commit message based on where the bug lives. Use the file path as the primary signal:
-
-| Path contains | Domain |
-|---|---|
-| `/AI/` | AI |
-| `/Api/` or API controllers | API |
-| `/Cms/` or `/Blocks/Cms/` | CMS |
-| `/CheckIn/` | Check-in |
-| `/Communication/` | Communication |
-| `/Connection/` | Connection |
-| `/Core/` | Core |
-| `/Crm/` | CRM |
-| `/Engagement/` | Engagement |
-| `/Event/` | Event |
-| `/WebFarm/` | Farm |
-| `/Finance/` | Finance |
-| `/Group/` | Group |
-| `/Lava/` | Lava |
-| `/Lms/` | LMS |
-| `/Mobile/` | Mobile |
-| `/Prayer/` | Prayer |
-| `/Reporting/` | Reporting |
-| `/Workflow/` | Workflow |
-| Unclear or cross-cutting | Other |
-
-Valid domains (exactly one): `AI`, `API`, `CMS`, `Check-in`, `Communication`, `Connection`, `Core`, `CRM`, `Engagement`, `Event`, `Farm`, `Finance`, `Group`, `Lava`, `LMS`, `Mobile`, `Prayer`, `Reporting`, `Workflow`, `Other`
+Determine the release-note domain for the commit message from the path-to-domain mapping in `.claude/rules/rock-domains.md`, using the file path of the fix as the primary signal. Pick exactly one domain from that file's release-note list.
 
 ### 1.5 — Summarize Before Fixing
 
@@ -200,7 +173,7 @@ Output a ready-to-use commit message following Rock's release-note convention.
 - Start with `Fixed` (past tense) — this classifies it as a Bug Fix in release notes.
 - The description should be readable as a standalone release note — someone scanning the changelog should understand what was wrong without seeing the code.
 - Include `(Fixes #XXXX)` only if an issue number was provided in the bug report.
-- Use exactly one domain from the list above.
+- Use exactly one domain from `.claude/rules/rock-domains.md`.
 - If the fix is trivial (typo, unused import, whitespace) and doesn't warrant a release note, use the `-` prefix instead:
   ```
   - Fixed typo in variable name.

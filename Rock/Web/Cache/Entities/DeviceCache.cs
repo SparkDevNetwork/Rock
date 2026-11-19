@@ -106,7 +106,7 @@ namespace Rock.Web.Cache
         /// Gets  where print jobs for this device originates from.
         /// </summary>
         /// <value>
-        /// A <see cref="Rock.Model.PrintFrom"/> to indicate how print jobs should be handled from this device. If <c>PrintFrom.Client</c> the print job will
+        /// A <see cref="PrintFrom"/> to indicate how print jobs should be handled from this device. If <c>PrintFrom.Client</c> the print job will
         /// be handled from the client, otherwise <c>PrintFrom.Server</c> and the print job will be handled from the server.
         /// </value>
         [DataMember]
@@ -116,7 +116,7 @@ namespace Rock.Web.Cache
         /// Gets a flag that overrides which printer the print job is set to.
         /// </summary>
         /// <value>
-        /// A <see cref="Rock.Model.PrintTo"/> that indicates overrides where the print job is set to.  If <c>PrintTo.Default</c> the print job will be sent to the default
+        /// A <see cref="PrintTo"/> that indicates overrides where the print job is set to.  If <c>PrintTo.Default</c> the print job will be sent to the default
         /// printer, if <c>PrintTo.Kiosk</c> the print job will be sent to the printer associated with the kiosk, if <c>PrintTo.Location</c> the print job will be sent to the 
         /// printer at the check in location.
         /// </value>

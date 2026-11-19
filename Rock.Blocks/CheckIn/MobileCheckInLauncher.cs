@@ -53,7 +53,7 @@ namespace Rock.Blocks.CheckIn
     [Category( "Check-in" )]
     [Description( "Launch page for checking in from a person's mobile device." )]
     [IconCssClass( "ti ti-device-mobile" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 

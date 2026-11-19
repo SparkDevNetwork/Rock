@@ -38,7 +38,7 @@ namespace Rock.Web.UI.Controls
         {
             if ( OnFormatDataValue != null )
             {
-                CallbackEventArgs args = new CallbackEventArgs { DataValue = dataValue, CallbackField = this };
+                CallbackEventArgs args = new CallbackEventArgs { DataValue = dataValue, CallbackField = this, Encode = encode };
                 OnFormatDataValue( this, args );
                 return args.FormattedValue;
             }
@@ -56,6 +56,17 @@ namespace Rock.Web.UI.Controls
         public string GetFormattedDataValue( object dataValue )
         {
             return FormatDataValue( dataValue, this.HtmlEncode );
+        }
+
+        /// <summary>
+        /// Gets the formatted data value, telling the callback whether the result will be rendered as HTML.
+        /// </summary>
+        /// <param name="dataValue">The data value.</param>
+        /// <param name="encode"><c>true</c> when the result will be rendered as HTML and should be encoded; <c>false</c> for plain-text output such as an export.</param>
+        /// <returns>The formatted value produced by the callback.</returns>
+        internal string GetFormattedDataValue( object dataValue, bool encode )
+        {
+            return FormatDataValue( dataValue, encode );
         }
 
         /// <summary>
@@ -95,6 +106,14 @@ namespace Rock.Web.UI.Controls
             /// The formatted value.
             /// </value>
             public string FormattedValue { get; set; }
+
+            /// <summary>
+            /// Gets whether the formatted value will be rendered as HTML and should therefore be HTML encoded by the callback.
+            /// </summary>
+            /// <value>
+            /// <c>true</c> when rendering to the grid; <c>false</c> for plain-text output such as an export.
+            /// </value>
+            public bool Encode { get; set; }
 
             /// <summary>
             /// Gets or sets the callback field.

@@ -51,7 +51,7 @@ namespace Rock.Blocks.Cms
     [Category( "CMS" )]
     [Description( "Displays a list of content channel items." )]
     [IconCssClass( "ti ti-list" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
     [ContextAware]
 
     #region Block Attributes
@@ -516,6 +516,7 @@ namespace Rock.Blocks.Cms
                 .AddField( "isDownloadedFromContentLibrary", a => a.IsDownloadedFromContentLibrary )
                 .AddField( "isUploadedToContentLibrary", a => a.IsUploadedToContentLibrary )
                 .AddField( "contentLibraryLicenseTypeGuid", a => a.ContentLibraryLicenseTypeValueId.HasValue ? DefinedValueCache.Get( a.ContentLibraryLicenseTypeValueId.Value )?.Guid : null )
+                .AddField( "isEditable", a => a.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
                 .AddField( "isSecurityDisabled", a => !a.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
                 .AddField( "last28DaysViewsCount", a => 0 )
                 .AddTextField( "itemUrl", a =>
@@ -619,7 +620,8 @@ namespace Rock.Blocks.Cms
         /// <summary>
         /// Determines whether the content channel item can be used by the
         /// content library actions. The content library must be enabled for
-        /// the channel and the item must be one of the items shown in the list.
+        /// the channel, the item must be one of the items shown in the list and
+        /// the person must be able to edit the item.
         /// </summary>
         /// <param name="contentChannelItemId">The content channel item identifier.</param>
         /// <param name="rockContext">The rock context.</param>
@@ -634,10 +636,27 @@ namespace Rock.Blocks.Cms
             }
 
             var qry = GetListQueryable( rockContext ).Where( i => i.Id == contentChannelItemId );
+            var item = GetListItems( qry, rockContext ).FirstOrDefault();
 
-            if ( !GetListItems( qry, rockContext ).Any() )
+            if ( item == null )
             {
                 errorMessage = $"{ContentChannelItem.FriendlyTypeName} not found.";
+                return false;
+            }
+
+            /*
+                11/16/2026 - MSE
+
+                Uploading, updating and re-downloading write to the item and to this
+                church's entry in the Content Library, so they need EDIT on the item
+                (which inherits EDIT from the channel), the same as Delete. The list
+                query only proves the person can VIEW the item.
+
+                Reason: Prevent people with only VIEW access from changing items or publishing them to the Content Library.
+            */
+            if ( !item.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            {
+                errorMessage = $"Not authorized to edit {ContentChannelItem.FriendlyTypeName}.";
                 return false;
             }
 

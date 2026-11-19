@@ -15,12 +15,18 @@
 // </copyright>
 //
 
+#if NET
+namespace Rock.Enums.Core
+#else
 namespace Rock.Model
+#endif
 {
     /// <summary>
     /// The notification type for reminders.
     /// </summary>
+#if !NET
     [Enums.EnumDomain( "Core" )]
+#endif
     public enum ReminderNotificationType
     {
         /// <summary>

@@ -249,15 +249,37 @@ internal sealed partial class PersonSkill : AgentSkillComponent
 
     internal static void PopulateAdults( PersonDetailResult profileResult, Model.Group family, Action<Model.Person, PersonResult> setCustomValues = null )
     {
-        profileResult.AdultsInFamily = family.Members.Where( m => m.Person.AgeClassification == AgeClassification.Adult )
+        profileResult.AdultsInFamily = family.Members
+            .Where( m => !m.Person.IsDeceased && m.Person.AgeClassification == AgeClassification.Adult )
             .Select( m => GetFamilyMemberResult( m.Person, setCustomValues ) )
             .ToList();
     }
 
     internal static void PopulateChildren( PersonDetailResult profileResult, Model.Group family, Action<Model.Person, PersonResult> setCustomValues = null )
     {
-        profileResult.ChildrenInFamily = family.Members.Where( m => m.Person.AgeClassification == AgeClassification.Child )
+        profileResult.ChildrenInFamily = family.Members
+            .Where( m => !m.Person.IsDeceased && m.Person.AgeClassification == AgeClassification.Child )
             .Select( m => GetFamilyMemberResult( m.Person, setCustomValues ) )
+            .ToList();
+    }
+
+    /// <summary>
+    /// Gets the people the owner of a known relationship group is related to.
+    /// Deceased people are excluded, matching the rest of the person profile.
+    /// </summary>
+    /// <param name="knownRelationshipGroup">The known relationship group owned by the person.</param>
+    /// <param name="ownerPersonId">The identifier of the person that owns the group.</param>
+    /// <returns>The related people and their relationship roles.</returns>
+    internal static List<GroupMemberResult> GetKnownRelationshipResults( Model.Group knownRelationshipGroup, int ownerPersonId )
+    {
+        return knownRelationshipGroup.Members
+            .Where( m => m.PersonId != ownerPersonId && !m.Person.IsDeceased )
+            .Select( m => new GroupMemberResult
+            {
+                Role = new KeyNameResult { Id = m.GroupRoleId, Guid = m.GroupRole.Guid, Name = m.GroupRole.Name },
+                Status = m.GroupMemberStatus,
+                Person = new PersonResult { Id = m.PersonId, FirstName = m.Person.FirstName, LastName = m.Person.LastName, NickName = m.Person.NickName, Suffix = m.Person.SuffixValue?.Value }
+            } )
             .ToList();
     }
 

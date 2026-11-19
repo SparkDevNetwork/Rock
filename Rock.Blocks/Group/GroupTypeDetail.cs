@@ -45,7 +45,7 @@ namespace Rock.Blocks.Group
     [Category( "Groups" )]
     [Description( "Displays the details of a particular group type." )]
     [IconCssClass( "ti ti-question-mark" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 
@@ -1282,7 +1282,7 @@ namespace Rock.Blocks.Group
             bag.GroupAttributes = attributeService.GetByEntityTypeId( new Rock.Model.Group().TypeId, true )
                 .AsNoTracking()
                 .Where( a =>
-                    a.EntityTypeQualifierColumn.Equals( "GroupTypeId", StringComparison.OrdinalIgnoreCase ) &&
+                    a.EntityTypeQualifierColumn == "GroupTypeId" &&
                     a.EntityTypeQualifierValue.Equals( qualifierValue ) )
                 .OrderBy( a => a.Order )
                 .ThenBy( a => a.Name )
@@ -1293,7 +1293,7 @@ namespace Rock.Blocks.Group
             bag.GroupMemberAttributes = attributeService.GetByEntityTypeId( new GroupMember().TypeId, true )
                 .AsNoTracking()
                 .Where( a =>
-                    a.EntityTypeQualifierColumn.Equals( "GroupTypeId", StringComparison.OrdinalIgnoreCase ) &&
+                    a.EntityTypeQualifierColumn == "GroupTypeId" &&
                     a.EntityTypeQualifierValue.Equals( qualifierValue ) )
                 .OrderBy( a => a.Order )
                 .ThenBy( a => a.Name )
@@ -1304,7 +1304,7 @@ namespace Rock.Blocks.Group
             bag.GroupTypeAttributes = attributeService.GetByEntityTypeId( new GroupType().TypeId, true )
                 .AsNoTracking()
                 .Where( a =>
-                    a.EntityTypeQualifierColumn.Equals( "Id", StringComparison.OrdinalIgnoreCase ) &&
+                    a.EntityTypeQualifierColumn == "Id" &&
                     a.EntityTypeQualifierValue.Equals( qualifierValue ) )
                 .OrderBy( a => a.Order )
                 .ThenBy( a => a.Name )
@@ -1982,7 +1982,7 @@ namespace Rock.Blocks.Group
                         responseBag.InheritedGroupAttributes.AddRange(
                             attributeService.GetByEntityTypeId( groupEntityTypeId, false )
                                 .Where( a =>
-                                    a.EntityTypeQualifierColumn.Equals( "GroupTypeId", StringComparison.OrdinalIgnoreCase ) &&
+                                    a.EntityTypeQualifierColumn == "GroupTypeId" &&
                                     a.EntityTypeQualifierValue.Equals( qualifierValue ) )
                                 .OrderBy( a => a.Order )
                                 .ThenBy( a => a.Name )
@@ -2001,7 +2001,7 @@ namespace Rock.Blocks.Group
                         responseBag.InheritedGroupMemberAttributes.AddRange(
                             attributeService.GetByEntityTypeId( groupMemberEntityTypeId, false )
                                 .Where( a =>
-                                    a.EntityTypeQualifierColumn.Equals( "GroupTypeId", StringComparison.OrdinalIgnoreCase ) &&
+                                    a.EntityTypeQualifierColumn == "GroupTypeId" &&
                                     a.EntityTypeQualifierValue.Equals( qualifierValue ) )
                                 .OrderBy( a => a.Order )
                                 .ThenBy( a => a.Name )
@@ -2020,7 +2020,7 @@ namespace Rock.Blocks.Group
                         responseBag.InheritedGroupTypeAttributes.AddRange(
                             attributeService.GetByEntityTypeId( groupTypeEntityTypeId, false )
                                 .Where( a =>
-                                    a.EntityTypeQualifierColumn.Equals( "Id", StringComparison.OrdinalIgnoreCase ) &&
+                                    a.EntityTypeQualifierColumn == "Id" &&
                                     a.EntityTypeQualifierValue.Equals( qualifierValue ) )
                                 .OrderBy( a => a.Order )
                                 .ThenBy( a => a.Name )

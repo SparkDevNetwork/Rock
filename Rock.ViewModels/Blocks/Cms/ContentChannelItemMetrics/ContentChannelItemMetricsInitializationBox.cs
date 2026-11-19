@@ -67,5 +67,10 @@ namespace Rock.ViewModels.Blocks.Cms.ContentChannelItemMetrics
         /// Gets or sets the option lists for the Viewer Details grid filters.
         /// </summary>
         public ViewerFilterOptionsBag ViewerFilterOptions { get; set; }
+
+        /// <summary>
+        /// Gets or sets the error message to show instead of the metrics.
+        /// </summary>
+        public string ErrorMessage { get; set; }
     }
 }

@@ -39,7 +39,7 @@ namespace Rock.Blocks.CheckIn.Configuration
     [Category( "Check-in > Configuration" )]
     [Description( "Simulates the check-in process in a UI that can be used to quickly test different configuration settings." )]
     [IconCssClass( "ti ti-flask" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 

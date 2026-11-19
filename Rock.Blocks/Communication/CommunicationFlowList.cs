@@ -137,6 +137,13 @@ namespace Rock.Blocks.Communication
         }
 
         /// <inheritdoc/>
+        protected override List<CommunicationFlow> GetListItems( IQueryable<CommunicationFlow> queryable, RockContext rockContext )
+        {
+            var items = queryable.ToList();
+            return items.Where( a => a.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) ).ToList();
+        }
+
+        /// <inheritdoc/>
         protected override GridBuilder<CommunicationFlow> GetGridBuilder()
         {
             return new GridBuilder<CommunicationFlow>()

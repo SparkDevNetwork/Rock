@@ -15,12 +15,18 @@
 // </copyright>
 //
 
+#if NET
+namespace Rock.Enums.Communication
+#else
 namespace Rock.Model
+#endif
 {
     /// <summary>
     /// Represents the level at which an individual can unsubscribe from communications.
     /// </summary>
+#if !NET
     [Enums.EnumDomain( "Communication" )]
+#endif
     public enum UnsubscribeLevel
     {
         /// <summary>

@@ -43,7 +43,7 @@ namespace Rock.Blocks.Group
     [DisplayName( "Group Registration" )]
     [Category( "Group" )]
     [Description( "Allows a person to register for a group." )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 
@@ -361,6 +361,7 @@ namespace Rock.Blocks.Group
                 {
                     { "Group", group }
                 };
+                mergeFields.AddRockRequestContext( RequestContext );
 
                 var template = GetAttributeValue( AttributeKey.LavaTemplate );
                 box.LavaOverview = template.ResolveMergeFields( mergeFields );
@@ -986,6 +987,7 @@ namespace Rock.Blocks.Group
                     var mergeFields = new Dictionary<string, object>();
                     mergeFields.Add( "Group", targetGroup );
                     mergeFields.Add( "GroupMembers", newGroupMembers );
+                    mergeFields.AddRockRequestContext( RequestContext );
 
                     string template = GetAttributeValue( "ResultLavaTemplate" );
                     var resultLavaTemplate = template.ResolveMergeFields( mergeFields );

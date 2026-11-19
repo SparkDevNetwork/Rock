@@ -19,6 +19,7 @@ using System.ComponentModel;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Model;
 using Rock.Store;
 using Rock.Utility.ExtensionMethods;
 using Rock.ViewModels.Blocks.Store;
@@ -34,7 +35,7 @@ namespace Rock.Blocks.Store
     [Category( "Store" )]
     [Description( "Lists categories for Rock Store pages." )]
     [IconCssClass( "fa fa-list" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 

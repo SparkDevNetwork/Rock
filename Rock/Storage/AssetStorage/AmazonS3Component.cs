@@ -26,6 +26,7 @@ using Amazon.S3;
 using Amazon.S3.Model;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Model;
 using Rock.Utility.Settings;
 
@@ -694,10 +695,10 @@ namespace Rock.Storage.AssetStorage
 
             // check if thumbnail exists
             string thumbDir = $"{ThumbnailRootPath}/{assetStorageProvider.Id}/{path}";
-            Directory.CreateDirectory( FileSystemComponentHttpContext.Server.MapPath( thumbDir ) );
+            Directory.CreateDirectory( RockApp.Current.MapPath( thumbDir ) );
 
             string virtualThumbPath = Path.Combine( thumbDir, name );
-            string physicalThumbPath = FileSystemComponentHttpContext.Server.MapPath( virtualThumbPath );
+            string physicalThumbPath = RockApp.Current.MapPath( virtualThumbPath );
 
             // Encode the name thumb path since it can contain special characters
             virtualThumbPath = virtualThumbPath.EncodeHtml();

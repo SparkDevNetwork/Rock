@@ -28,6 +28,7 @@ using Rock.Data;
 using Rock.Enums.Cms;
 using Rock.Lava;
 using Rock.Model;
+using Rock.Net;
 using Rock.Security;
 using Rock.Transactions;
 using Rock.Utility;
@@ -51,7 +52,7 @@ namespace Rock.Blocks.Cms
     [Category( "CMS" )]
     [Description( "Block to display a specific content channel item." )]
     [IconCssClass( "ti ti-article" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
     [ConfigurationChangedReload( BlockReloadMode.Block )]
 
     #region Block Attributes
@@ -298,6 +299,12 @@ Guid - ContentChannelItem Guid";
         /// </summary>
         private static readonly TimeSpan InteractionTokenLifetime = TimeSpan.FromHours( 4 );
 
+        /// <summary>
+        /// Purpose that binds the interaction token to this block, so a tampered
+        /// or foreign token fails verification.
+        /// </summary>
+        private const string InteractionTokenEncryptionPurpose = "Rock.Blocks.Cms.ContentChannelItemView.InteractionToken";
+
         private enum LaunchWorkflowCondition
         {
             Always = 0,
@@ -370,6 +377,20 @@ Guid - ContentChannelItem Guid";
         [BlockAction]
         public BlockActionResult GetCustomSettings()
         {
+            /*
+                11/16/2026 - MSE
+
+                The settings include the Lava template, workflow type, cache settings and the list of
+                content channels. Only block administrators (the people who can open the settings modal)
+                may read them. This matches SaveCustomSettings and the Content Channel View block.
+
+                Reason: Require Administrate permission on the block before returning its settings.
+            */
+            if ( !BlockCache.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
+            {
+                return ActionForbidden( "Not authorized to edit block settings." );
+            }
+
             return GetSettingsForContentChannel( GetAttributeValue( AttributeKey.ContentChannel ).AsGuidOrNull() );
         }
 
@@ -380,6 +401,19 @@ Guid - ContentChannelItem Guid";
         [BlockAction]
         public BlockActionResult GetCustomSettingsForContentChannel( Guid contentChannelGuid )
         {
+            /*
+                11/16/2026 - MSE
+
+                This action returns the same settings and option lists as GetCustomSettings for any
+                channel Guid the caller supplies, so it needs the same Administrate check.
+
+                Reason: Require Administrate permission on the block before returning its settings.
+            */
+            if ( !BlockCache.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
+            {
+                return ActionForbidden( "Not authorized to edit block settings." );
+            }
+
             return GetSettingsForContentChannel( contentChannelGuid );
         }
 
@@ -689,7 +723,7 @@ Guid - ContentChannelItem Guid";
                 PageUrl = pageUrl
             };
 
-            bag.InteractionToken = Rock.Security.Encryption.EncryptString( payload.ToJson() );
+            bag.InteractionToken = Rock.Security.Encryption.EncryptStringForPurpose( payload.ToJson(), InteractionTokenEncryptionPurpose );
             bag.InteractionTokenLifetimeSeconds = ( int ) InteractionTokenLifetime.TotalSeconds;
 
             return bag;
@@ -709,7 +743,7 @@ Guid - ContentChannelItem Guid";
             string json;
             try
             {
-                json = Rock.Security.Encryption.DecryptString( token );
+                json = Rock.Security.Encryption.DecryptStringForPurpose( token, InteractionTokenEncryptionPurpose );
             }
             catch
             {
@@ -1215,8 +1249,34 @@ Guid - ContentChannelItem Guid";
                 .ToList();
         }
 
+        /// <summary>
+        /// Determines if the content channel item is approved to be displayed.
+        /// This checks that the current person is allowed to view the item, the
+        /// approval state of the item and that it is part of the configured
+        /// channel (if there is one).
+        /// </summary>
+        /// <param name="contentChannelItem">The item to be checked.</param>
+        /// <returns><c>true</c> if the item is okay to display; otherwise <c>false</c>.</returns>
         private bool ItemIsApprovedToDisplay( ContentChannelItem contentChannelItem )
         {
+            /*
+                11/16/2026 - MSE
+
+                The item must be viewable by the current person. Without this check an anonymous
+                visitor could read any approved item, including its title, page title and interaction
+                token, even when the item or its channel denies View. GetBreadCrumbs calls this method
+                on a block that was created without a request context, so RequestContext is null there
+                and the ambient request context is used instead. The output and page title caches are
+                read after this check, so one check here also protects the cached output.
+
+                Reason: Require View permission on the content channel item before it is shown.
+            */
+            var currentPerson = RequestContext?.CurrentPerson ?? RockRequestContextAccessor.Current?.CurrentPerson;
+            if ( !contentChannelItem.IsAuthorized( Authorization.VIEW, currentPerson ) )
+            {
+                return false;
+            }
+
             if ( contentChannelItem.ContentChannel.RequiresApproval && !GetApprovedStatuses().Contains( contentChannelItem.Status ) )
             {
                 return false;

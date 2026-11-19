@@ -41,7 +41,7 @@ namespace Rock.Blocks.Event
     [Category( "Event" )]
     [Description( "Displays the details of a particular registrant." )]
     [IconCssClass( "fa fa-user" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     [Rock.SystemGuid.EntityTypeGuid( "6e675de9-b320-4f79-9a94-6389901039f7" )]
     // WAS [Rock.SystemGuid.BlockTypeGuid( "8208ca56-7675-4741-b0d9-54a10b492011" )]
@@ -474,7 +474,7 @@ namespace Rock.Blocks.Event
             var returnUrl = PageParameter( PageParameterKey.ReturnUrl );
             var urls = new Dictionary<string, string>
             {
-                [NavigationUrlKey.ParentPage] = returnUrl.IsNotNullOrWhiteSpace() ? returnUrl : this.GetParentPageUrl( parentParams )
+                [NavigationUrlKey.ParentPage] = PageCache.Layout.Site.IsSafeRedirectUrl( returnUrl, RequestContext.RequestUri ) ? returnUrl : this.GetParentPageUrl( parentParams )
             };
 
             var instancePage = PageCache.ParentPage?.ParentPage;
@@ -1139,7 +1139,7 @@ namespace Rock.Blocks.Event
                 : null;
 
             var returnUrl = PageParameter( PageParameterKey.ReturnUrl );
-            return ActionOk( returnUrl.IsNotNullOrWhiteSpace() ? returnUrl : this.GetParentPageUrl( parentParams ) );
+            return ActionOk( PageCache.Layout.Site.IsSafeRedirectUrl( returnUrl, RequestContext.RequestUri ) ? returnUrl : this.GetParentPageUrl( parentParams ) );
         }
 
         #endregion Block Actions

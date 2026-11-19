@@ -18,6 +18,8 @@
 using System.Linq;
 using System.Runtime.Serialization;
 
+using Rock.Configuration;
+
 namespace Rock.Model
 {
     public partial class MetricValue
@@ -54,6 +56,23 @@ namespace Rock.Model
             {
                 return this.Metric != null ? this.Metric : base.ParentAuthority;
             }
+        }
+
+        /// <inheritdoc/>
+        public override bool IsAuthorized( string action, Person person )
+        {
+            /*
+                10/30/2026 - CLAUDE
+
+                The parent authority walk only reads the metric's saved rules, so it
+                skips the category security that lives in Metric.IsAuthorized. Defer
+                to the metric, the same way the metric blocks do.
+
+                Reason: Metric values must honor their metric's category security.
+            */
+            var metric = Metric ?? new MetricService( RockApp.Current.CreateRockContext() ).Get( MetricId );
+
+            return metric?.IsAuthorized( action, person ) ?? base.IsAuthorized( action, person );
         }
 
         /// <summary>

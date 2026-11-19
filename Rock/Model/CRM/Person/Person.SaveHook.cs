@@ -343,7 +343,7 @@ namespace Rock.Model
                                 {
                                     var personSearchKeyService = new PersonSearchKeyService( rockContext );
                                     var searchTypeValue = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_SEARCH_KEYS_EMAIL.AsGuid() );
-                                    if ( !personSearchKeyService.Queryable().Any( a => a.PersonAlias.PersonId == Entity.Id && a.SearchTypeValueId == searchTypeValue.Id && a.SearchValue.Equals( currentEmail, StringComparison.OrdinalIgnoreCase ) ) )
+                                    if ( !personSearchKeyService.Queryable().Any( a => a.PersonAlias.PersonId == Entity.Id && a.SearchTypeValueId == searchTypeValue.Id && a.SearchValue == currentEmail ) )
                                     {
                                         PersonSearchKey personSearchKey = new PersonSearchKey()
                                         {

@@ -42,6 +42,11 @@ using Rock.Web.Cache;
 using AdditionalSiteSettings = Rock.Mobile.AdditionalSiteSettings;
 using ShellType = Rock.Common.Mobile.Enums.ShellType;
 using TabLocation = Rock.Mobile.TabLocation;
+#if NET
+using DisplayInNavWhen = Rock.Enums.Cms.DisplayInNavWhen;
+#else
+using DisplayInNavWhen = Rock.Model.DisplayInNavWhen;
+#endif
 
 namespace Rock.Blocks.Mobile
 {
@@ -408,6 +413,7 @@ namespace Rock.Blocks.Mobile
             bag.Auth0RecordStatus = DefinedValueToListItemBag(
                 settings.Auth0RecordStatusValueId
                 ?? DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_RECORD_STATUS_PENDING.AsGuid() )?.Id );
+            bag.Auth0RequireVerifiedEmail = settings.Auth0RequireVerifiedEmail;
             bag.EntraClientId = settings.EntraClientId;
             bag.EntraTenantId = settings.EntraTenantId;
             bag.EntraAuthenticationComponent = ComponentGuidToListItemBag( settings.EntraAuthenticationComponent );
@@ -507,6 +513,9 @@ namespace Rock.Blocks.Mobile
 
             box.IfValidProperty( nameof( box.Bag.Auth0RecordStatus ),
                 () => settings.Auth0RecordStatusValueId = box.Bag.Auth0RecordStatus.GetEntityId<DefinedValue>( RockContext ) );
+
+            box.IfValidProperty( nameof( box.Bag.Auth0RequireVerifiedEmail ),
+                () => settings.Auth0RequireVerifiedEmail = box.Bag.Auth0RequireVerifiedEmail );
 
             box.IfValidProperty( nameof( box.Bag.EntraClientId ),
                 () => settings.EntraClientId = box.Bag.EntraClientId );
@@ -1583,7 +1592,7 @@ namespace Rock.Blocks.Mobile
                     PageTitle = pageName,
                     Description = string.Empty,
                     LayoutId = layout.Id,
-                    DisplayInNavWhen = Rock.Model.DisplayInNavWhen.WhenAllowed
+                    DisplayInNavWhen = DisplayInNavWhen.WhenAllowed
                 };
 
                 pageService.Add( page );

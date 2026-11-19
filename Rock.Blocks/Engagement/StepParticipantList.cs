@@ -44,7 +44,7 @@ namespace Rock.Blocks.Engagement
     [Category( "Steps" )]
     [Description( "Lists all the participants in a Step." )]
     [IconCssClass( "ti ti-list" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     [LinkedPage(
         "Detail Page",
@@ -175,6 +175,13 @@ namespace Rock.Blocks.Engagement
         private StepParticipantListOptionsBag GetBoxOptions()
         {
             var stepType = GetStepType();
+
+            // Do not describe a step type the person is not allowed to view.
+            if ( stepType?.IsAuthorized( Authorization.VIEW, GetCurrentPerson() ) != true )
+            {
+                stepType = null;
+            }
+
             var options = new StepParticipantListOptionsBag()
             {
                 IsCampusColumnVisible = CampusCache.All( false ).Count > 1,
@@ -239,7 +246,20 @@ namespace Rock.Blocks.Engagement
         protected override IQueryable<StepParticipantRow> GetListQueryable( RockContext rockContext )
         {
             var stepType = GetStepType();
-            if ( stepType == null )
+
+            /*
+                10/16/2026 - MSE
+
+                The step type comes from the page parameter (or the block setting),
+                so a person could swap in the Id of a step type they are not allowed
+                to see and get every participant for it. Rows are only returned
+                when the person can VIEW the step type, which falls back to the
+                step program. Every grid row and grid attribute value comes from
+                this queryable.
+
+                Reason: Step Participant List skipped VIEW on the step type.
+            */
+            if ( stepType == null || !stepType.IsAuthorized( Authorization.VIEW, GetCurrentPerson() ) )
             {
                 return new List<StepParticipantRow>().AsQueryable();
             }
@@ -287,6 +307,19 @@ namespace Rock.Blocks.Engagement
         protected override IQueryable<StepParticipantRow> GetOrderedListQueryable( IQueryable<StepParticipantRow> queryable, RockContext rockContext )
         {
             return queryable.OrderBy( a => a.Person.LastName ).ThenBy( a => a.Person.NickName );
+        }
+
+        /// <inheritdoc/>
+        protected override GridEntityKeyOptions GetGridEntityKeyOptions()
+        {
+            var options = base.GetGridEntityKeyOptions();
+
+            // The rows are StepParticipantRow objects, so the base class can't
+            // tell that the row keys identify Step records.
+            options.EntityTypeId = EntityTypeCache.GetId<Step>();
+            options.PersonKeyFieldPaths = new[] { "personIdKey" };
+
+            return options;
         }
 
         protected override List<StepParticipantRow> GetListItems( IQueryable<StepParticipantRow> queryable, RockContext rockContext )
@@ -366,7 +399,8 @@ namespace Rock.Blocks.Engagement
                 var availableAttributes = new List<AttributeCache>();
                 var stepType = GetStepType();
 
-                if ( stepType != null )
+                // Do not describe the columns of a step type the person cannot view.
+                if ( stepType != null && stepType.IsAuthorized( Authorization.VIEW, GetCurrentPerson() ) )
                 {
                     int entityTypeId = new Step().TypeId;
 

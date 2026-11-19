@@ -38,7 +38,7 @@ namespace Rock.Blocks.Crm.PersonDetail
     [DisplayName( "Connection Requests" )]
     [Category( "CRM > Person Detail" )]
     [Description( "Allows you to view connection requests of a particular person." )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 

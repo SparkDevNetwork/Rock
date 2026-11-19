@@ -44,7 +44,7 @@ namespace Rock.Blocks.Rsvp
     [Category( "Rsvp" )]
     [Description( "Shows detailed RSVP information for a specific occurrence and allows editing RSVP details." )]
     [IconCssClass( "ti ti-user-check" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     [DefinedTypeField(
         "Decline Reasons Type",

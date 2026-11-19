@@ -48,7 +48,7 @@ namespace Rock.Tests.Integration.Core.Lava.Shortcodes
             {
                 var output = LavaRenderTestHelper.Render( engine, input );
 
-                Assert.Contains( @"labels: [""Small Groups"", ""Serving Groups""],", output, "Labels from first shortcode are missing." );
+                Assert.Contains( @"labels: [""Small Groups"",""Serving Groups""],", output, "Labels from first shortcode are missing." );
                 Assert.Contains( @"labels: [""2015"",""2016"",""2017""],", output, "Labels from second shortcode are missing." );
             } );
         }

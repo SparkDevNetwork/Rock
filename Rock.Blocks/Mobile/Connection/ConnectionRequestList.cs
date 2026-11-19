@@ -52,7 +52,7 @@ namespace Rock.Blocks.Mobile.Connection
     [Category( "Mobile > Connection" )]
     [Description( "Displays the connection requests of a single connection opportunity with search, filtering, sorting and infinite-scroll paging." )]
     [IconCssClass( "ti ti-list-details" )]
-    [SupportedSiteTypes( Model.SiteType.Mobile )]
+    [SupportedSiteTypes( SiteType.Mobile )]
 
     #region Block Attributes
 

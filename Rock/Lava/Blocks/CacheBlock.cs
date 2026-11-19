@@ -225,6 +225,22 @@ namespace Rock.Lava.Blocks
             newContext.SetMergeFields( context.GetMergeFields() );
             newContext.SetInternalFields( context.GetInternalFields() );
 
+            /*
+                11/13/26 - CLAUDE
+
+                GetInternalFields() used to return values from the current scope only. When this
+                block is inside a child scope, such as an included file or a loop, the enabled
+                commands are held in an outer scope and were not copied, so the new context fell
+                back to the engine defaults. Those defaults can be narrower or wider than the
+                caller's commands. GetEnabledCommands() reads through all scopes, so the inner
+                template gets exactly the commands the calling template has. The Fluid engine's
+                GetInternalFields() now reads all scopes too; this explicit set is kept so the
+                result does not depend on the engine.
+
+                Reason: Keep the caller's enabled Lava commands inside a cache block. (Issue #7166)
+            */
+            newContext.SetEnabledCommands( context.GetEnabledCommands() );
+
             // Resolve the inner template.
             var result = engine.RenderTemplate( lavaTemplate, LavaRenderParameters.WithContext( newContext ) );
 

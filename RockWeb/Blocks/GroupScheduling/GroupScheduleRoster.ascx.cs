@@ -137,8 +137,6 @@ namespace RockWeb.Blocks.GroupScheduling
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            RockPage.AddCSSLink( "~/Themes/Rock/Styles/group-scheduler.css", true );
-
             if ( !this.IsPostBack )
             {
                 UpdateConfigurationFromUrl();

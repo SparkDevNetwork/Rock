@@ -28,6 +28,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Model.Groups.Group.Options;
 using Rock.Security;
+using Rock.Utility.Enums;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Group.GroupDetail;
 using Rock.ViewModels.Controls;
@@ -46,7 +47,7 @@ namespace Rock.Blocks.Group
     [Category( "Groups" )]
     [Description( "Displays the details of the given group." )]
     [IconCssClass( "ti ti-users-group" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 
@@ -982,7 +983,7 @@ namespace Rock.Blocks.Group
                 entity.ElevatedSecurityLevel = box.Bag.ElevatedSecurityLevel;
                 if ( !entity.IsSecurityRole )
                 {
-                    entity.ElevatedSecurityLevel = Rock.Utility.Enums.ElevatedSecurityLevel.None;
+                    entity.ElevatedSecurityLevel = ElevatedSecurityLevel.None;
                 }
             } );
 
@@ -1206,7 +1207,7 @@ namespace Rock.Blocks.Group
                     .ToList();
 
                 errorMessage = !blockAllowedGroupTypeIds.Contains( group.GroupTypeId )
-                    ? $"Groups with a '{groupTypeName}' group type cannot be saved here because of this block's group type settings (e.g. 'Group Types: Include' / 'Group Types: Exclude')."
+                    ? $"Groups with a '{groupTypeName}' group type cannot be saved here because of this block's group type settings ('Group Types: Include', 'Group Types: Exclude', 'Security Role Groups Only' or 'Navigation Group Types Only', which requires the group type's 'Show in Group Navigation' option)."
                     : $"The '{System.Net.WebUtility.HtmlEncode( parentGroup.Name )}' group does not allow child groups with a '{groupTypeName}' group type.";
                 return false;
             }
@@ -1287,6 +1288,42 @@ namespace Rock.Blocks.Group
             {
                 errorMessage = "One or more Group Sync rules are missing a required Role or Data View.";
                 return false;
+            }
+
+            // Group Syncs: a new data view must be a person data view the current
+            // person can view. Data views already stored on this group are kept so
+            // existing rules stay editable.
+            if ( bag.GroupSyncs?.Any() == true )
+            {
+                var storedDataViewGuids = group.Id > 0
+                    ? new GroupSyncService( RockContext ).Queryable()
+                        .Where( s => s.GroupId == group.Id )
+                        .Select( s => s.SyncDataView.Guid )
+                        .ToList()
+                    : new List<Guid>();
+                var personEntityTypeId = EntityTypeCache.GetId<Model.Person>();
+                var currentPerson = GetCurrentPerson();
+
+                foreach ( var sync in bag.GroupSyncs.Where( s => s != null ) )
+                {
+                    var dataViewGuid = sync.SyncDataView.Value.AsGuidOrNull();
+
+                    if ( !dataViewGuid.HasValue || storedDataViewGuids.Contains( dataViewGuid.Value ) )
+                    {
+                        continue;
+                    }
+
+                    var dataView = DataViewCache.Get( dataViewGuid.Value );
+                    var isDataViewAllowed = dataView != null
+                        && dataView.EntityTypeId == personEntityTypeId
+                        && dataView.IsAuthorized( Authorization.VIEW, currentPerson );
+
+                    if ( !isDataViewAllowed )
+                    {
+                        errorMessage = "One or more Group Sync rules use a data view you do not have permission to view.";
+                        return false;
+                    }
+                }
             }
 
             // Group Syncs: the chosen Role must belong to the active group type.
@@ -1624,7 +1661,7 @@ namespace Rock.Blocks.Group
             }
 
             var saveReturnUrl = PageParameter( PageParameterKey.ReturnUrl );
-            if ( saveReturnUrl.IsNotNullOrWhiteSpace() && IsSafeReturnUrl( saveReturnUrl ) )
+            if ( PageCache.Layout.Site.IsSafeRedirectUrl( saveReturnUrl, RequestContext.RequestUri ) )
             {
                 return ActionContent( System.Net.HttpStatusCode.OK, saveReturnUrl );
             }
@@ -2541,36 +2578,6 @@ namespace Rock.Blocks.Group
         }
 
         /// <summary>
-        /// Validates that a candidate <c>returnUrl</c> is same-origin
-        /// before any redirect honors it. Relative paths are accepted;
-        /// absolute URLs are accepted only when their host matches the
-        /// current request host.
-        /// </summary>
-        private bool IsSafeReturnUrl( string url )
-        {
-            if ( url.IsNullOrWhiteSpace() )
-            {
-                return true;
-            }
-
-            if ( !Uri.TryCreate( url, UriKind.RelativeOrAbsolute, out var parsedUri ) )
-            {
-                return false;
-            }
-
-            if ( !parsedUri.IsAbsoluteUri )
-            {
-                // Reject protocol-relative ("//attacker.example/...") URLs
-                // that some parsers treat as relative.
-                return !url.StartsWith( "//", StringComparison.Ordinal );
-            }
-
-            var requestHost = RequestContext?.RequestUri?.Host;
-            return requestHost.IsNotNullOrWhiteSpace()
-                && string.Equals( parsedUri.Host, requestHost, StringComparison.OrdinalIgnoreCase );
-        }
-
-        /// <summary>
         /// Computes the post-Delete / post-Archive redirect URL. Honors a
         /// same-origin <c>returnUrl</c> first; otherwise resolves
         /// <c>GroupListPage</c> with the parent group's IdKey and the
@@ -2579,7 +2586,7 @@ namespace Rock.Blocks.Group
         private string NavigateAfterDeleteOrArchive( int? parentGroupId )
         {
             var returnUrl = PageParameter( PageParameterKey.ReturnUrl );
-            if ( returnUrl.IsNotNullOrWhiteSpace() && IsSafeReturnUrl( returnUrl ) )
+            if ( PageCache.Layout.Site.IsSafeRedirectUrl( returnUrl, RequestContext.RequestUri ) )
             {
                 return returnUrl;
             }
@@ -2618,7 +2625,7 @@ namespace Rock.Blocks.Group
         private string GetAddModeCancelUrl()
         {
             var returnUrl = PageParameter( PageParameterKey.ReturnUrl );
-            if ( returnUrl.IsNotNullOrWhiteSpace() && IsSafeReturnUrl( returnUrl ) )
+            if ( PageCache.Layout.Site.IsSafeRedirectUrl( returnUrl, RequestContext.RequestUri ) )
             {
                 return returnUrl;
             }
@@ -2991,7 +2998,7 @@ namespace Rock.Blocks.Group
             var isAnyGroupTypeAllowedByBlock = GetAllowedGroupTypes( null, RockContext ).Any();
             if ( !isAnyGroupTypeAllowedByBlock )
             {
-                return "There are no group types available to select because of this block's group type settings (e.g. 'Group Types: Include' / 'Group Types: Exclude').";
+                return "There are no group types available to select because of this block's group type settings ('Group Types: Include', 'Group Types: Exclude', 'Security Role Groups Only' or 'Navigation Group Types Only', which requires the group type's 'Show in Group Navigation' option).";
             }
 
             var parentGroupName = parentGroup?.Name ?? string.Empty;
@@ -3004,7 +3011,7 @@ namespace Rock.Blocks.Group
                 return $"The '{parentGroupName}' group does not allow any child group types.";
             }
 
-            return $"The child group types allowed by the '{parentGroupName}' group are excluded by this block's group type settings (e.g. 'Group Types: Include' / 'Group Types: Exclude').";
+            return $"The child group types allowed by the '{parentGroupName}' group are excluded by this block's group type settings ('Group Types: Include', 'Group Types: Exclude', 'Security Role Groups Only' or 'Navigation Group Types Only', which requires the group type's 'Show in Group Navigation' option).";
         }
 
         /// <summary>
@@ -3065,7 +3072,7 @@ namespace Rock.Blocks.Group
         /// <summary>
         /// Builds the GroupRequirementType dropdown options for the Group
         /// Requirement modal. Each entry carries the type's
-        /// <see cref="Model.DueDateType"/> so the Due Date well can react
+        /// <see cref="DueDateType"/> so the Due Date well can react
         /// to the selection without a server round-trip.
         /// </summary>
         private List<GroupRequirementTypeBag> BuildGroupRequirementTypeOptions()
@@ -3193,7 +3200,7 @@ namespace Rock.Blocks.Group
             var attributes = new AttributeService( RockContext ).GetByEntityTypeId( new GroupMember().TypeId, false )
                 .AsNoTracking()
                 .Where( a =>
-                    a.EntityTypeQualifierColumn.Equals( "GroupTypeId", StringComparison.OrdinalIgnoreCase ) &&
+                    a.EntityTypeQualifierColumn == "GroupTypeId" &&
                     qualifierValues.Contains( a.EntityTypeQualifierValue ) )
                 .OrderBy( a => a.Order )
                 .ThenBy( a => a.Name )
@@ -3328,7 +3335,7 @@ namespace Rock.Blocks.Group
             var qualifierValues = groupTypeChain.Select( gt => gt.Id.ToString() ).ToList();
             var dateAttributes = new AttributeService( RockContext ).GetByEntityTypeId( new Model.Group().TypeId, false )
                 .Where( a =>
-                    a.EntityTypeQualifierColumn.Equals( "GroupTypeId", StringComparison.OrdinalIgnoreCase ) &&
+                    a.EntityTypeQualifierColumn == "GroupTypeId" &&
                     qualifierValues.Contains( a.EntityTypeQualifierValue ) &&
                     dateFieldTypeIds.Contains( a.FieldTypeId ) )
                 .OrderBy( a => a.Order )
@@ -3503,7 +3510,7 @@ namespace Rock.Blocks.Group
             return attributeService.GetByEntityTypeId( new GroupMember().TypeId, true )
                 .AsNoTracking()
                 .Where( a =>
-                    a.EntityTypeQualifierColumn.Equals( "GroupId", StringComparison.OrdinalIgnoreCase ) &&
+                    a.EntityTypeQualifierColumn == "GroupId" &&
                     a.EntityTypeQualifierValue.Equals( qualifierValue ) )
                 .OrderBy( a => a.Order )
                 .ThenBy( a => a.Name )
@@ -3580,7 +3587,7 @@ namespace Rock.Blocks.Group
                     AppliesToDataView = r.AppliesToDataView.ToListItemBag(),
                     AllowLeadersToOverride = r.AllowLeadersToOverride,
                     MustMeetRequirementToAddMember = r.MustMeetRequirementToAddMember,
-                    DueDateType = r.GroupRequirementType?.DueDateType ?? Model.DueDateType.Immediate,
+                    DueDateType = r.GroupRequirementType?.DueDateType ?? DueDateType.Immediate,
                     DueDateStaticDate = r.DueDateStaticDate?.ToRockDateTimeOffset(),
                     DueDateAttribute = r.DueDateAttribute != null
                         ? new ListItemBag { Value = r.DueDateAttribute.Guid.ToString(), Text = r.DueDateAttribute.Name }
@@ -3625,11 +3632,11 @@ namespace Rock.Blocks.Group
                     requirement.DueDateStaticDate = null;
                     requirement.DueDateAttributeId = null;
 
-                    if ( bag.DueDateType == Model.DueDateType.ConfiguredDate )
+                    if ( bag.DueDateType == DueDateType.ConfiguredDate )
                     {
                         requirement.DueDateStaticDate = bag.DueDateStaticDate?.DateTime;
                     }
-                    else if ( bag.DueDateType == Model.DueDateType.GroupAttribute )
+                    else if ( bag.DueDateType == DueDateType.GroupAttribute )
                     {
                         requirement.DueDateAttributeId = bag.DueDateAttribute?.GetEntityId<Rock.Model.Attribute>( RockContext );
                     }

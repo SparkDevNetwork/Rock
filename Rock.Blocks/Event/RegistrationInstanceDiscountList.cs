@@ -40,7 +40,7 @@ namespace Rock.Blocks.Event
     [Category( "Event" )]
     [Description( "Displays the discounts related to an event registration instance." )]
     [IconCssClass( "ti ti-list" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Secondary )]
     [Rock.SystemGuid.EntityTypeGuid( "1F95772E-90B6-4A43-8689-B3A685FA49E1" )]
@@ -239,6 +239,21 @@ namespace Rock.Blocks.Event
                         _registrationInstance = new RegistrationInstanceService( RockContext )
                             .Get( registrationInstanceKey, !PageCache.Layout.Site.DisablePredictableIds );
                     }
+                }
+
+                /*
+                    10/16/2026 - MSE
+
+                    The instance comes from the page parameter, so a person could swap in
+                    the IdKey of an instance they are not allowed to see and get its
+                    discount rows, totals and codes. VIEW on the instance falls back to
+                    the template and its category.
+
+                    Reason: Registration instance lists skipped VIEW on the instance.
+                */
+                if ( _registrationInstance != null && !_registrationInstance.IsAuthorized( Rock.Security.Authorization.VIEW, RequestContext.CurrentPerson ) )
+                {
+                    _registrationInstance = null;
                 }
             }
 

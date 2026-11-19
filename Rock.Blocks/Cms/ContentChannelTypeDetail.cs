@@ -44,7 +44,7 @@ namespace Rock.Blocks.Cms
     [Category( "CMS" )]
     [Description( "Displays the details for a content channel type." )]
     [IconCssClass( "ti ti-question-mark" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 
@@ -441,7 +441,7 @@ namespace Rock.Blocks.Cms
             var attributeService = new AttributeService( rockContext );
             return attributeService.GetByEntityTypeId( entityTypeId, true ).AsQueryable()
                 .Where( a =>
-                    a.EntityTypeQualifierColumn.Equals( "ContentChannelTypeId", StringComparison.OrdinalIgnoreCase ) &&
+                    a.EntityTypeQualifierColumn == "ContentChannelTypeId" &&
                     a.EntityTypeQualifierValue.Equals( qualifierValue.ToString() ) )
                 .OrderBy( a => a.Order )
                 .ToList();

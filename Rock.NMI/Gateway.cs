@@ -433,8 +433,7 @@ namespace Rock.NMI
 Result Code:  {threeStepChangeStep3Response.ResultCode} ({resultCodeMessage}).
 Result text: {threeStepChangeStep3Response.ResultText}.
 Amount: {threeStepChangeStep3Response.Amount}.
-Transaction id: {threeStepChangeStep3Response.TransactionId}.
-                    Card Holder Name: {threeStepChangeStep3Response.Billing?.FirstName} {threeStepChangeStep3Response.Billing?.LastName}." ) );
+Transaction id: {threeStepChangeStep3Response.TransactionId}." ) );
 
                     return null;
                 }
@@ -535,7 +534,7 @@ Transaction id: {threeStepChangeStep3Response.TransactionId}.
                 queryParameters.Add( "payment", NMIThreeStepPaymentType.check.ConvertToString( false ) );
             }
 
-            queryParameters.Add( "amount", amount.ToString( "0.00" ) );
+            queryParameters.Add( "amount", amount.ToString( "0.00", System.Globalization.CultureInfo.InvariantCulture ) );
 
             var refundResponse = PostToGatewayDirectPostAPI<RefundResponse>( financialGateway, queryParameters );
 
@@ -1112,7 +1111,7 @@ Transaction id: {threeStepChangeStep3Response.TransactionId}.
             XElement planElement = new XElement(
                 "plan",
                 new XElement( "payments", schedule.NumberOfPayments.HasValue ? schedule.NumberOfPayments.Value.ToString() : "0" ),
-                new XElement( "amount", paymentInfo.Amount.ToString() ) );
+                new XElement( "amount", paymentInfo.Amount.ToString( "0.00", System.Globalization.CultureInfo.InvariantCulture ) ) );
 
             switch ( selectedFrequencyGuid )
             {
@@ -1456,7 +1455,7 @@ Transaction id: {threeStepChangeStep3Response.TransactionId}.
                 queryParameters.Add( "payment_token", tokenizerToken );
             }
 
-            queryParameters.Add( "amount", amount.ToString( "0.00" ) );
+            queryParameters.Add( "amount", amount.ToString( "0.00", System.Globalization.CultureInfo.InvariantCulture ) );
 
             PopulateAddressParameters( referencedPaymentInfo, queryParameters );
 
@@ -1608,7 +1607,7 @@ Transaction id: {threeStepChangeStep3Response.TransactionId}.
             }
 
             queryParameters.Add( "plan_payments", schedule.NumberOfPayments.HasValue ? schedule.NumberOfPayments.Value.ToString() : "0" );
-            queryParameters.Add( "plan_amount", amount.ToString( "0.00" ) );
+            queryParameters.Add( "plan_amount", amount.ToString( "0.00", System.Globalization.CultureInfo.InvariantCulture ) );
 
             switch ( selectedFrequencyGuid )
             {

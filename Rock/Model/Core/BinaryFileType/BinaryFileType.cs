@@ -132,7 +132,7 @@ namespace Rock.Model
         /// Gets or sets the preferred format of the file type.
         /// </summary>
         /// <value>
-        /// A <see cref="Rock.Model.Format"/> enum value that represents the preferred format of the file type.
+        /// A <see cref="Format"/> enum value that represents the preferred format of the file type.
         /// </value>
         [DataMember]
         public Format PreferredFormat { get; set; }
@@ -141,7 +141,7 @@ namespace Rock.Model
         /// Gets or sets the preferred resolution of the file type.
         /// </summary>
         /// <value>
-        /// A <see cref="Rock.Model.Resolution"/> enum value that represents the preferred resolution of the file type.
+        /// A <see cref="Resolution"/> enum value that represents the preferred resolution of the file type.
         /// </value>
         [DataMember]
         public Resolution PreferredResolution { get; set; }
@@ -150,7 +150,7 @@ namespace Rock.Model
         /// Gets or sets the preferred color depth of the file type.
         /// </summary>
         /// <value>
-        /// A <see cref="Rock.Model.ColorDepth"/> enum value that represents the preferred color depth of the file type.
+        /// A <see cref="ColorDepth"/> enum value that represents the preferred color depth of the file type.
         /// </value>
         [DataMember]
         public ColorDepth PreferredColorDepth { get; set; }

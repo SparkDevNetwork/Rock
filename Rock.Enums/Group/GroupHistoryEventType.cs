@@ -15,12 +15,18 @@
 // </copyright>
 //
 
+#if NET
+namespace Rock.Enums.Group
+#else
 namespace Rock.Model
+#endif
 {
     /// <summary>
     /// Represents the kind of change a single event on the Group History timeline describes.
     /// </summary>
+#if !NET
     [Enums.EnumDomain( "Group" )]
+#endif
     public enum GroupHistoryEventType
     {
         /// <summary>

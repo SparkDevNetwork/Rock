@@ -990,6 +990,7 @@ namespace Rock.Jobs
                     {
                         AttemptLimit = 1,
                         GroupId = groupId,
+                        ChatChannelTypeKey = chatChannelTypeKey,
                         ChatChannelKey = chatChannelKey,
                         ChatPersonKey = channelMember.ChatUserKey,
                         ChatRole = chatRole,

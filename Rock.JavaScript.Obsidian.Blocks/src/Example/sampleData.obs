@@ -104,6 +104,9 @@
 
     let realTimeConnectionId = "";
 
+    /** The task this block started. Other blocks on the page report on the same topic. */
+    let currentTaskId = "";
+
     // #endregion
 
     // #region Functions
@@ -123,7 +126,12 @@
             realTimeConnectionId = topic.connectionId ?? "";
         });
 
-        topic.on("taskStarted", (_bag: TaskActivityProgressStatusBag) => {
+        topic.on("taskStarted", (bag: TaskActivityProgressStatusBag) => {
+            if (importState.value !== ImportState.Starting) {
+                return;
+            }
+
+            currentTaskId = bag.taskId ?? "";
             importState.value = ImportState.Importing;
             progressMessage.value = "Starting sample data import...";
             progressAlertType.value = AlertType.Info;
@@ -132,18 +140,30 @@
         });
 
         topic.on("updateTaskProgress", (data: TaskActivityProgressUpdateBag) => {
-            if (data?.message) {
+            if (data?.taskId !== currentTaskId) {
+                return;
+            }
+
+            if (data.message) {
                 progressMessage.value = data.message;
             }
         });
 
         topic.on("updateTaskLog", (data: TaskActivityProgressLogBag) => {
-            if (data?.message) {
+            if (data?.taskId !== currentTaskId) {
+                return;
+            }
+
+            if (data.message) {
                 logMessages.value += data.message;
             }
         });
 
         topic.on("taskCompleted", (bag: TaskActivityProgressStatusBag) => {
+            if (bag.taskId !== currentTaskId) {
+                return;
+            }
+
             if (bag.errors?.length) {
                 importState.value = ImportState.Error;
                 progressAlertType.value = AlertType.Danger;

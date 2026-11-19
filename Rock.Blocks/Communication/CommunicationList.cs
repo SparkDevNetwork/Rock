@@ -50,7 +50,7 @@ namespace Rock.Blocks.Communication
     [Category( "Communication" )]
     [Description( "Lists the status of all previously created communications." )]
     [IconCssClass( "ti ti-list" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 

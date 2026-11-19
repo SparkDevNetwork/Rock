@@ -16,12 +16,18 @@
 //
 using System.ComponentModel;
 
+#if NET
+namespace Rock.Enums.Engagement
+#else
 namespace Rock.Model
+#endif
 {
     /// <summary>
     /// Represents the attendance association of a StreakType.
     /// </summary>
+#if !NET
     [Enums.EnumDomain( "Engagement" )]
+#endif
     public enum StreakStructureType
     {
         /// <summary>

@@ -1000,7 +1000,7 @@ namespace RockWeb.Blocks.CheckIn
         {
             ddlTheme.Items.Clear();
             ddlTheme.Items.Add( new ListItem() );
-            DirectoryInfo di = new DirectoryInfo( this.Page.Request.MapPath( ResolveRockUrl( "~~" ) ) );
+            DirectoryInfo di = new DirectoryInfo( RockApp.Current.MapPath( ResolveRockUrl( "~~" ) ) );
             foreach ( var themeDir in di.Parent.EnumerateDirectories().OrderBy( a => a.Name ) )
             {
                 ddlTheme.Items.Add( new ListItem( themeDir.Name, themeDir.Name.ToLower() ) );

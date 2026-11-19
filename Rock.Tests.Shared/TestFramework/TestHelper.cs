@@ -27,6 +27,8 @@ using Moq;
 using Rock.Configuration;
 using Rock.Data;
 using Rock.Net;
+using Rock.Tests.Shared.TestFramework;
+using Rock.Utility.HtmlSanitization;
 using Rock.Web.Cache;
 
 namespace Rock.Tests.Shared.TestFramework
@@ -143,6 +145,7 @@ namespace Rock.Tests.Shared.TestFramework
             sc.AddSingleton<IDatabaseConfiguration, DatabaseConfiguration>();
             sc.AddSingleton<IUserAgentParser, UserAgentParser>();
             sc.AddSingleton( hostingMock.Object );
+            sc.AddSingleton<IHtmlAllowListSanitizer, HtmlAllowListSanitizer>();
 
             sc.AddSingleton<IRockContextFactory, RockContextFactory>();
 

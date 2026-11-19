@@ -79,8 +79,13 @@ namespace Rock.Net
             }
             catch ( WebException webException )
             {
-                string message = GetResponseString( webException.Response.GetResponseStream() );
-                throw new Exception( webException.Message + " - " + message );
+                string message = string.Empty;
+                if ( webException.Response != null )
+                {
+                    message = GetResponseString( webException.Response.GetResponseStream() );
+                }
+
+                throw new Exception( webException.Message + " - " + message, webException );
             }
         }
 

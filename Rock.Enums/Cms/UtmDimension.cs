@@ -16,12 +16,18 @@
 //
 using System.ComponentModel;
 
+#if NET
+namespace Rock.Enums.Cms
+#else
 namespace Rock.Model
+#endif
 {
     /// <summary>
     /// Identifies a UTM dimension captured on an interaction (utm_source, utm_medium, etc.).
     /// </summary>
+#if !NET
     [Enums.EnumDomain( "Cms" )]
+#endif
     public enum UtmDimension
     {
         /// <summary>

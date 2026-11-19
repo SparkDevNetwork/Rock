@@ -59,7 +59,7 @@ namespace Rock.Reporting
         /// Gets the expression type of this DataViewFilter.
         /// </summary>
         /// <value>
-        /// A <see cref="Rock.Model.FilterExpressionType" /> that represents the expression type for the filter.  When <c>FilterExpressionType.Filter</c> it represents a filter expression, when <c>FilterExpressionType.GroupAll</c> it means that 
+        /// A <see cref="FilterExpressionType" /> that represents the expression type for the filter.  When <c>FilterExpressionType.Filter</c> it represents a filter expression, when <c>FilterExpressionType.GroupAll</c> it means that 
         /// all conditions found in child expressions must be met, when <c>FilterExpressionType.GroupOr</c> it means that at least one condition found in the child filter expressions must be met.
         /// </value>
         FilterExpressionType ExpressionType { get; }

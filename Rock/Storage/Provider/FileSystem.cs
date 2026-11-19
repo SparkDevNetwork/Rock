@@ -21,6 +21,7 @@ using System.IO;
 
 using Newtonsoft.Json;
 
+using Rock.Configuration;
 using Rock.Model;
 
 namespace Rock.Storage.Provider
@@ -134,8 +135,7 @@ namespace Rock.Storage.Provider
                 return string.Empty;
             }
 
-            // allows a fallback for non-IIS environments
-            return System.Web.Hosting.HostingEnvironment.MapPath( relativePath ) ?? relativePath;
+            return RockApp.Current.MapPath( relativePath );
         }
 
         /// <summary>

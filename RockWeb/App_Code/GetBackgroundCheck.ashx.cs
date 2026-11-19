@@ -106,7 +106,7 @@ namespace RockWeb
                         }
                     }
 
-                    var legacyFileUrl = System.Web.VirtualPathUtility.ToAbsolute( "~/GetFile.ashx" )
+                    var legacyFileUrl = RockApp.Current.ResolveRockUrl( "~/GetFile.ashx" )
                         + "?guid=" + binaryFileGuid.ToString();
                     context.Response.Redirect( legacyFileUrl, false );
                     context.ApplicationInstance.CompleteRequest();

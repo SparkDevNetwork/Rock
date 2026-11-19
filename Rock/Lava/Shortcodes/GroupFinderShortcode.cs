@@ -454,6 +454,7 @@ You may have noticed that distance values are returned in meters. If you're more
 
             // Process the residual content and output results
             var mergeFields = context.GetMergeFields();
+            mergeFields.AddInternalFieldsFrom( context );
             mergeFields.AddOrReplace( "MatchedGroups", results );
 
             result.Write( residualBlockContent.ResolveMergeFields( mergeFields ) );
@@ -474,7 +475,8 @@ You may have noticed that distance values are returned in meters. If you're more
             }
 
             // Next check the RockRequestContext in the lava context.
-            if ( context.GetInternalField( "RockRequestContext" ) is RockRequestContext currentRequest )
+            var currentRequest = context.GetRockRequestContext();
+            if ( currentRequest != null )
             {
                 return currentRequest.CurrentPerson;
             }

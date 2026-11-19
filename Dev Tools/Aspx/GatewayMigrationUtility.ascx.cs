@@ -542,7 +542,7 @@ namespace RockWeb.Blocks.Finance
                 this.SetBlockUserPreference( UserPreferenceKey.MigrateSavedAccountsResultFileURL, logFileUrl );
                 hfMigrateSavedAccountsResultFileURL.Value = logFileUrl;
 
-                string logFile = this.Context.Server.MapPath( logFileUrl );
+                string logFile = RockApp.Current.MapPath( logFileUrl );
                 File.WriteAllText( logFile, migrateSavedAccountResultList.ToJson( indentOutput: true ) );
             }
             catch
@@ -848,7 +848,7 @@ namespace RockWeb.Blocks.Finance
                  try
                  {
 
-                     string logFile = this.Context.Server.MapPath( logFileUrl );
+                     string logFile = RockApp.Current.MapPath( logFileUrl );
                      this.SetBlockUserPreference( UserPreferenceKey.MigrateScheduledTransactionsResultFileURL, logFileUrl );
                      File.WriteAllText( logFile, scheduledTransactionMigrationResults.ToJson( indentOutput: true ) );
                  }
@@ -895,7 +895,7 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="System.EventArgs" /> instance containing the event data.</param>
         protected void btnDownloadSavedAccountsResultsJSON_Click( object sender, EventArgs e )
         {
-            string logFile = this.Context.Server.MapPath( hfMigrateSavedAccountsResultFileURL.Value );
+            string logFile = RockApp.Current.MapPath( hfMigrateSavedAccountsResultFileURL.Value );
             Response.Clear();
             Response.ContentType = "text/json";
             Response.AppendHeader( "Content-Disposition", "attachment; filename=" + Path.GetFileName( logFile ) );
@@ -914,7 +914,7 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="System.EventArgs" /> instance containing the event data.</param>
         protected void btnDownloadScheduledTransactionsResultsJSON_Click( object sender, EventArgs e )
         {
-            string logFile = this.Context.Server.MapPath( hfMigrateScheduledTransactionsResultFileURL.Value );
+            string logFile = RockApp.Current.MapPath( hfMigrateScheduledTransactionsResultFileURL.Value );
             Response.Clear();
             Response.ContentType = "text/json";
             Response.AppendHeader( "Content-Disposition", "attachment; filename=" + Path.GetFileName( logFile ) );

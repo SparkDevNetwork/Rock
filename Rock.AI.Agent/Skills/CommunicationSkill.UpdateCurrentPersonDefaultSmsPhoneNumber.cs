@@ -16,6 +16,7 @@
 
 using System.ComponentModel;
 
+using Rock.Security;
 using Rock.SystemGuid;
 using Rock.SystemKey;
 using Rock.Web.Cache;
@@ -43,7 +44,16 @@ internal partial class CommunicationSkill
         }
 
         var spn = SystemPhoneNumberCache.Get( numberIdKey, false );
-        if ( spn == null || !spn.IsActive || !spn.IsSmsEnabled )
+
+        /*
+            10/25/2026 - MSE
+
+            Only a number the person can VIEW may be saved as their default,
+            because the default is used as the SMS 'from' number when drafting.
+
+            Reason: Prevent saving a system phone number the person cannot view as their default.
+        */
+        if ( spn == null || !spn.IsActive || !spn.IsSmsEnabled || !spn.IsAuthorized( Authorization.VIEW, currentPerson ) )
         {
             return Error( "The provided numberIdKey does not correspond to a valid active SMS-enabled system phone number." )
                 .WithInstructions( "Ask the user to select one of their available SMS 'from' numbers." );

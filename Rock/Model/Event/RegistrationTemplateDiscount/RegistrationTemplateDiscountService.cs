@@ -159,7 +159,7 @@ namespace Rock.Model
                 var discount = Queryable()
                     .FirstOrDefault( d =>
                         d.RegistrationTemplate.Instances.Any( i => i.Id == registrationInstanceId ) &&
-                        d.Code.Equals( code, StringComparison.OrdinalIgnoreCase ) );
+                        d.Code == code );
 
                 if ( discount == null )
                 {
@@ -193,7 +193,7 @@ namespace Rock.Model
                         .AsNoTracking()
                         .Count( r =>
                             r.RegistrationInstanceId == registrationInstanceId &&
-                            r.DiscountCode.Equals( code, StringComparison.OrdinalIgnoreCase ) );
+                            r.DiscountCode == code );
 
                     registrationUsagesRemaining = discount.MaxUsage.Value - usageCount;
 

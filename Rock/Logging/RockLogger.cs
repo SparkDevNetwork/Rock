@@ -212,6 +212,21 @@ namespace Rock.Logging
             {
                 foreach ( var category in configuration.StandardCategories )
                 {
+                    /*
+                        10/20/26 - CLAUDE
+
+                        An empty category becomes a logging filter rule that matches every
+                        category and outranks the "Default" rule, which turns on logging for
+                        everything. Settings saved before the Log Settings block discarded
+                        blank entries can still contain one, so skip them here as well.
+
+                        Reason: A blank category must not enable logging for all categories.
+                    */
+                    if ( category.IsNullOrWhiteSpace() )
+                    {
+                        continue;
+                    }
+
                     logLevel.AddOrReplace( category, configuration.StandardLogLevel.ToString() );
                 }
             }

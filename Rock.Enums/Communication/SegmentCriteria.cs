@@ -15,12 +15,18 @@
 // </copyright>
 //
 
+#if NET
+namespace Rock.Enums.Communication
+#else
 namespace Rock.Model
+#endif
 {
     /// <summary>
     /// Flag indicating if communication is for all selected segments or any segments
     /// </summary>
+#if !NET
     [Enums.EnumDomain( "Communication" )]
+#endif
     public enum SegmentCriteria
     {
         /// <summary>

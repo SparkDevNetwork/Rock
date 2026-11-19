@@ -42,7 +42,7 @@ namespace Rock.Blocks.Cms
     [Category( "CMS" )]
     [Description( "Lists themes in the Theme folder." )]
     [IconCssClass( "ti ti-photo-scan" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     [LinkedPage( "Detail Page",
         Description = "Page to use for editing next-gen themes.",

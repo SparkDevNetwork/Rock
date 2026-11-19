@@ -47,7 +47,7 @@ namespace Rock.Blocks.Lms
     [Category( "LMS" )]
     [Description( "Displays a list of learning classes." )]
     [IconCssClass( "ti ti-list" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 

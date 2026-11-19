@@ -16,7 +16,6 @@
 //
 using System;
 using System.Collections.Generic;
-using System.IdentityModel.Metadata;
 using System.Threading.Tasks;
 
 using Rock.Configuration;

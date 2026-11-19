@@ -41,11 +41,12 @@ namespace Rock.AI.OpenAI.Provider
     [Export( typeof( AIProviderComponent ) )]
     [ExportMetadata( "ComponentName", "Open AI" )]
 
-    [TextField(
+    [EncryptedTextField(
         "Secret Key",
         Key = AttributeKey.SecretKey,
         Description = "The secret key for the OpenAI API.",
         IsRequired = true,
+        IsPassword = true,
         Order = 0 )]
     [TextField(
         "OpenAI Organization Id",
@@ -111,7 +112,30 @@ namespace Rock.AI.OpenAI.Provider
                 request.Model = GetAttributeValue( provider, AttributeKey.DefaultModel );
             }
 
-            var response = await openAIApi.GetChatCompletions( new OpenAIChatCompletionsRequest( request ) );
+            var openAIRequest = new OpenAIChatCompletionsRequest( request )
+            {
+                IsMaxCompletionTokensParameterUsed = true
+            };
+
+            var response = await openAIApi.GetChatCompletions( openAIRequest );
+
+            /*
+                11/17/26 - CLAUDE
+
+                Reasoning models reject temperature, top_p and stop. Rock sends
+                all three on every request, so retry once without them when
+                OpenAI rejects one. Older models such as gpt-4o accept them, so
+                those requests are sent exactly as before and never retry. A
+                temperature set in Lava or a workflow action is ignored on the
+                retry, because the model only supports its default.
+
+                Reason: Let the OpenAI provider use reasoning models.
+            */
+            if ( IsSamplingParameterRejected( response ) )
+            {
+                openAIRequest.AreSamplingParametersOmitted = true;
+                response = await openAIApi.GetChatCompletions( openAIRequest );
+            }
 
             // If there's an error message throw an Exception (to include the StackTrace) in the log.
             if ( response.ErrorMessage.IsNotNullOrWhiteSpace() || !response.IsSuccessful )
@@ -157,12 +181,43 @@ namespace Rock.AI.OpenAI.Provider
         }
 
         /// <summary>
+        /// Determines whether a chat completion failed because the model
+        /// rejected one of the sampling parameters (temperature, top_p or stop).
+        /// </summary>
+        /// <param name="response">The response from OpenAI.</param>
+        /// <returns><c>true</c> if a sampling parameter was rejected; otherwise <c>false</c>.</returns>
+        private static bool IsSamplingParameterRejected( OpenAIChatCompletionsResponse response )
+        {
+            if ( response == null || response.IsSuccessful )
+            {
+                return false;
+            }
+
+            var rejectedParameter = response.ErrorParameter;
+
+            return rejectedParameter == "temperature"
+                || rejectedParameter == "top_p"
+                || rejectedParameter == "stop";
+        }
+
+        /// <summary>
         /// Method to return an OpenAIApi object providing the connection information.
         /// </summary>
         /// <returns></returns>
         private OpenAIApi GetOpenAIApi( AIProvider provider )
         {
-            var key = GetAttributeValue( provider, AttributeKey.SecretKey );
+            /*
+                10/15/2026 - MSE
+
+                The secret key is stored encrypted. A value saved before the
+                key became an encrypted field is plain text until start-up
+                encrypts it, so fall back to the stored value when it does
+                not decrypt.
+
+                Reason: Keep AI provider secret keys encrypted at rest.
+            */
+            var storedKey = GetAttributeValue( provider, AttributeKey.SecretKey );
+            var key = Rock.Security.Encryption.DecryptString( storedKey ) ?? storedKey;
             var organization = GetAttributeValue( provider, AttributeKey.Organization );
 
             var api = new OpenAIApi( key, organization );

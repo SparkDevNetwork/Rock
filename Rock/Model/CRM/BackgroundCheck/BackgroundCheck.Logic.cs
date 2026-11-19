@@ -34,7 +34,7 @@ namespace Rock.Model
                 }
                 else
                 {
-                    return new PrayerRequest();
+                    return new BackgroundCheck();
                 }
             }
         }

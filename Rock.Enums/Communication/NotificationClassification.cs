@@ -15,12 +15,18 @@
 // </copyright>
 //
 
+#if NET
+namespace Rock.Enums.Communication
+#else
 namespace Rock.Model
+#endif
 {
     /// <summary>
     /// The classification of the notification (borrowed from Bootstrap)
     /// </summary>
+#if !NET
     [Enums.EnumDomain( "Communication" )]
+#endif
     public enum NotificationClassification
     {
         /// <summary>

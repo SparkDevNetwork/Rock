@@ -51,7 +51,7 @@ namespace Rock.Blocks.Engagement
     [Category( "Steps" )]
     [Description( "Displays the details of the given Step Type for editing." )]
     [IconCssClass( "ti ti-question-mark" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
     [ContextAware( typeof( Campus ) )]
 
     #region Block Attributes
@@ -743,7 +743,7 @@ namespace Rock.Blocks.Engagement
         {
             return new AttributeService( RockContext ).GetByEntityTypeId( new Step().TypeId, true ).AsQueryable()
                 .Where( a =>
-                    a.EntityTypeQualifierColumn.Equals( "StepTypeId", StringComparison.OrdinalIgnoreCase ) &&
+                    a.EntityTypeQualifierColumn == "StepTypeId" &&
                     a.EntityTypeQualifierValue.Equals( eventIdQualifierValue ) )
                 .OrderBy( a => a.Order )
                 .ThenBy( a => a.Name )
@@ -958,14 +958,17 @@ namespace Rock.Blocks.Engagement
                 avgDaysToComplete = ( int ) avgQuery.Average();
             }
 
-            return template.ResolveMergeFields( new Dictionary<string, object>
+            var mergeFields = new Dictionary<string, object>
             {
                 { "IndividualsCompleting", individualsCompleting },
                 { "AvgDaysToComplete", avgDaysToComplete },
                 { "StepsStarted", stepsStarted },
                 { "StepsCompleted", stepsCompleted },
                 { "StepType", stepType }
-            } );
+            };
+            mergeFields.AddRockRequestContext( RequestContext );
+
+            return template.ResolveMergeFields( mergeFields );
         }
 
         /// <summary>

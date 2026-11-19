@@ -21,6 +21,7 @@ using System.Web.UI;
 #endif
 
 using Rock.Attribute;
+using Rock.Reporting;
 
 namespace Rock.Field.Types
 {
@@ -44,6 +45,25 @@ namespace Rock.Field.Types
             }
 
             var videoUrl = privateValue;
+
+            /*
+                10/16/2026 - MSE
+
+                The stored value can come from forms that do not check its
+                format. Only an http or https (or relative) URL is placed in
+                the player's src, and it is encoded so a quote can't end the
+                attribute. Anything else is shown as plain encoded text with
+                no player.
+
+                Reason: Stored values were rendered as raw HTML.
+            */
+            var safeUrl = SocialMediaAccountFieldType.GetSafeUrl( videoUrl );
+
+            if ( safeUrl.IsNullOrWhiteSpace() )
+            {
+                return videoUrl.EncodeHtml();
+            }
+
             var htmlFormat = @"
 <video
     src='{0}'
@@ -68,7 +88,7 @@ namespace Rock.Field.Types
                 typeTag = "type='video/youtube' width=640 height=480";
             }
 
-            return string.Format( htmlFormat, videoUrl, typeTag );
+            return string.Format( htmlFormat, safeUrl.EncodeHtml(), typeTag );
         }
 
         /// <inheritdoc/>
@@ -80,7 +100,23 @@ namespace Rock.Field.Types
             }
 
             var encodedUrl = privateValue.EncodeHtml();
-            return $"<a href=\"{encodedUrl}\">{encodedUrl}</a>";
+
+            /*
+                10/16/2026 - MSE
+
+                Only an http or https (or relative) URL becomes a link, so a
+                value with the javascript scheme can't be clicked in a grid.
+
+                Reason: Any URL scheme was allowed in the href.
+            */
+            var safeUrl = SocialMediaAccountFieldType.GetSafeUrl( privateValue );
+
+            if ( safeUrl == null )
+            {
+                return encodedUrl;
+            }
+
+            return $"<a href=\"{safeUrl.EncodeHtml()}\">{encodedUrl}</a>";
         }
 
         #endregion
@@ -106,7 +142,7 @@ namespace Rock.Field.Types
             return new FieldTypeHints
             {
                 IsCompleteList = false,
-                ValueFormat = "A url pointing at a video file, stored as supplied. It is a link rather than the video itself, and nothing checks what the url returns, so a url that is not video saves cleanly and then fails to play."
+                ValueFormat = "A url pointing at a video file, stored as supplied. It is a link rather than the video itself, and nothing checks what the url returns, so a url that is not video saves cleanly and then fails to play. Only an http, https or relative url is given a player; any other scheme is stored but displayed as plain text."
             };
         }
 
@@ -131,6 +167,31 @@ namespace Rock.Field.Types
                 : GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
         }
 
+        /// <inheritdoc/>
+        public override string FormatValueAsHtml( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed = false )
+        {
+            var formattedValue = FormatValue( parentControl, value, configurationValues, condensed );
+
+            /*
+                10/16/2026 - MSE
+
+                FormatValue returns the raw URL when condensed because Lava,
+                workflows and other plain text consumers use it. Grids place
+                this value directly in HTML, so it is encoded here instead.
+
+                Reason: The condensed value was rendered as raw HTML.
+            */
+            return condensed
+                ? formattedValue?.EncodeHtml()
+                : formattedValue;
+        }
+
+        /// <inheritdoc/>
+        public override string FormatValueAsHtml( Control parentControl, int? entityTypeId, int? entityId, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed = false )
+        {
+            return FormatValueAsHtml( parentControl, value, configurationValues, condensed );
+        }
+
         /// <summary>
         /// Creates the control needed to filter (query) values using this field type.
         /// </summary>
@@ -139,7 +200,7 @@ namespace Rock.Field.Types
         /// <param name="required">if set to <c>true</c> [required].</param>
         /// <param name="filterMode">The filter mode.</param>
         /// <returns></returns>
-        public override System.Web.UI.Control FilterControl( System.Collections.Generic.Dictionary<string, ConfigurationValue> configurationValues, string id, bool required, Rock.Reporting.FilterMode filterMode )
+        public override System.Web.UI.Control FilterControl( System.Collections.Generic.Dictionary<string, ConfigurationValue> configurationValues, string id, bool required, FilterMode filterMode )
         {
             // This field type does not support filtering
             return null;

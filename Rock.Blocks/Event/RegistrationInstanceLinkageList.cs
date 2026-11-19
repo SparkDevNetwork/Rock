@@ -25,6 +25,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Obsidian.UI;
+using Rock.Security;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Event.RegistrationInstanceLinkageList;
 using Rock.Web.Cache;
@@ -38,7 +39,7 @@ namespace Rock.Blocks.Event
     [Category( "Event" )]
     [Description( "Displays the linkages associated with an event registration instance." )]
     [IconCssClass( "ti ti-list" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     [LinkedPage( "Detail Page",
         Description = "The page that will show the event item occurrence group map details.",
@@ -111,6 +112,8 @@ namespace Rock.Blocks.Event
 
         private RegistrationInstance _registrationInstance;
 
+        private bool _isRegistrationInstanceLoaded;
+
         #endregion
 
         #region Properties
@@ -175,7 +178,7 @@ namespace Rock.Blocks.Event
 
                 Reason: https://github.com/SparkDevNetwork/Rock/issues/6865
             */
-            return true;
+            return GetRegistrationInstance() != null;
         }
 
         /// <summary>
@@ -283,11 +286,11 @@ namespace Rock.Blocks.Event
 
                     if ( string.IsNullOrWhiteSpace( contentItemUrl ) )
                     {
-                        contentItems.Add( contentItem.Title );
+                        contentItems.Add( contentItem.Title.EncodeHtml() );
                     }
                     else
                     {
-                        contentItems.Add( string.Format( "<a href='{0}'>{1}</a>", contentItemUrl, contentItem.Title ) );
+                        contentItems.Add( string.Format( "<a href='{0}'>{1}</a>", contentItemUrl, contentItem.Title.EncodeHtml() ) );
                     }
                 }
             }
@@ -320,11 +323,11 @@ namespace Rock.Blocks.Event
 
                         if ( string.IsNullOrWhiteSpace( calendarEventUrl ) )
                         {
-                            calendarItems.Add( string.Format( "{0} ({1})", calendarItem.EventItem.Name, eventItemOccurrenceGroupMap.EventItemOccurrence.Campus?.Name ?? "All Campuses" ) );
+                            calendarItems.Add( string.Format( "{0} ({1})", calendarItem.EventItem.Name.EncodeHtml(), ( eventItemOccurrenceGroupMap.EventItemOccurrence.Campus?.Name ?? "All Campuses" ).EncodeHtml() ) );
                         }
                         else
                         {
-                            calendarItems.Add( string.Format( "<a href='{0}'>{1}</a> ({2})", calendarEventUrl, calendarItem.EventItem.Name, eventItemOccurrenceGroupMap.EventItemOccurrence.Campus?.Name ?? "All Campuses" ) );
+                            calendarItems.Add( string.Format( "<a href='{0}'>{1}</a> ({2})", calendarEventUrl, calendarItem.EventItem.Name.EncodeHtml(), ( eventItemOccurrenceGroupMap.EventItemOccurrence.Campus?.Name ?? "All Campuses" ).EncodeHtml() ) );
                         }
                     }
                 }
@@ -351,15 +354,17 @@ namespace Rock.Blocks.Event
         }
 
         /// <summary>
-        /// Gets the registration instance.
+        /// Gets the registration instance named by the page parameter when the current person can view it.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>The registration instance, or <c>null</c> if it doesn't exist or the current person isn't authorized to view it.</returns>
         private RegistrationInstance GetRegistrationInstance()
         {
-            if ( _registrationInstance != null )
+            if ( _isRegistrationInstanceLoaded )
             {
                 return _registrationInstance;
             }
+
+            _isRegistrationInstanceLoaded = true;
 
             var registrationInstanceKey = PageParameter( PageParameterKey.RegistrationInstanceId );
 
@@ -368,11 +373,31 @@ namespace Rock.Blocks.Event
                 return null;
             }
 
-            _registrationInstance = new RegistrationInstanceService( RockContext )
+            var registrationInstance = new RegistrationInstanceService( RockContext )
                 .GetQueryableByKey( registrationInstanceKey, !PageCache.Layout.Site.DisablePredictableIds )
                 .Include( a => a.RegistrationTemplate )
+                .Include( a => a.RegistrationTemplate.Category )
                 .AsNoTracking()
                 .FirstOrDefault();
+
+            if ( registrationInstance == null )
+            {
+                return null;
+            }
+
+            // Load the Registration Template.
+            if ( registrationInstance.RegistrationTemplate == null && registrationInstance.RegistrationTemplateId > 0 )
+            {
+                registrationInstance.RegistrationTemplate = new RegistrationTemplateService( RockContext ).Get( registrationInstance.RegistrationTemplateId );
+            }
+
+            // The template and its category must be loaded first so their security rules apply.
+            if ( !registrationInstance.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+            {
+                return null;
+            }
+
+            _registrationInstance = registrationInstance;
 
             return _registrationInstance;
         }

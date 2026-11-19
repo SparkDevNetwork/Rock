@@ -300,6 +300,26 @@ $(document).ready(function() {
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
+            /*
+                10/19/2026 - DSH
+
+                TH173: filter selections the person is not authorized to edit are
+                protected by FilterField, which keeps the selection the server set
+                (in ViewState) and ignores what was posted. Copy relies on the same
+                protection because it opens an unsaved clone in the editor.
+
+                When this block is converted to Obsidian there is no ViewState, so:
+                1. Save must apply the same rule itself. Match each posted filter by
+                   Guid against this data view's own stored filters (never filters of
+                   another data view). Keep the stored selection when the person is
+                   not authorized for it, and reject a posted selection they are not
+                   authorized for, using DataFilterComponent.IsSelectionAuthorizedForEdit.
+                2. Copy should become an eager copy: clone and save the data view on
+                   the server with the selections untouched, then open the new data
+                   view for editing.
+
+                Reason: Keep the TH173 protection when the editor no longer has ViewState.
+            */
             cvSecurityError.IsValid = true;
             var addAdminToCreator = GetAttributeValue( AttributeKey.AddAdministrateSecurityToItemCreator ).AsBoolean();
             var dvCategory = CategoryCache.Get( cpCategory.SelectedValueAsInt( false ).Value );
@@ -354,6 +374,24 @@ $(document).ready(function() {
                 && rblPersistenceType.SelectedValue == PersistenceType.Interval.ConvertToInt().ToString() ? ipPersistedScheduleInterval.IntervalInMinutes : null;
 
             var newDataViewFilter = ReportingHelper.GetFilterFromControls( phFilters );
+
+            /*
+                11/09/2026 - MSE
+
+                The data views that the filters reference come from posted values. A new or changed reference
+                must be a data view the person can VIEW. References the stored filter already holds are kept.
+                This runs before the stored filter is replaced and before anything is saved.
+
+                Reason: Stops a filter from being saved with a data view the person cannot VIEW.
+            */
+            var storedDataViewFilter = dataViewId == 0 ? null : dataView.DataViewFilter;
+            var filteredEntityType = EntityTypeCache.Get( etpEntityType.SelectedEntityTypeId ?? 0 )?.GetEntityType();
+            if ( !DataComponentSettingsHelper.IsAuthorizedForNewDataViewReferences( newDataViewFilter, storedDataViewFilter, filteredEntityType, CurrentPerson, rockContext ) )
+            {
+                cvSecurityError.IsValid = false;
+                cvSecurityError.ErrorMessage = "You are not authorized to use one or more of the selected Data Views.";
+                return;
+            }
 
             if ( !Page.IsValid )
             {
@@ -684,6 +722,15 @@ $(document).ready(function() {
             var dataView = dataViewService.Get( dataViewId );
 
             if ( dataView == null || !dataView.IsAuthorized( action, CurrentPerson ) )
+            {
+                return null;
+            }
+
+            // Editing also requires access to everything the data view uses,
+            // including each filter's selection, matching the check ShowDetail
+            // uses to decide whether to show the Edit button.
+            if ( action == Authorization.EDIT
+                && !dataView.IsAuthorizedForAllDataViewComponents( Authorization.EDIT, CurrentPerson, ( RockContext ) dataViewService.Context, out _ ) )
             {
                 return null;
             }
@@ -1306,6 +1353,28 @@ $(document).ready(function() {
             }
 
             dataView.DataViewFilter = ReportingHelper.GetFilterFromControls( phFilters );
+
+            /*
+                11/09/2026 - MSE
+
+                The preview runs the unsaved filter and shows rows, so it needs the same check as the save. The
+                stored filter is read only when the person can EDIT the data view that the posted id names, so a
+                posted id cannot be used to make the references of another data view count as already stored.
+
+                Reason: Stops a preview from using a data view the person cannot VIEW.
+            */
+            var storedDataViewId = hfDataViewId.Value.AsInteger();
+            var storedDataViewFilter = storedDataViewId == 0 ? null : GetAuthorizedDataView( new DataViewService( rockContext ), storedDataViewId, Authorization.EDIT )?.DataViewFilter;
+            var previewEntityType = EntityTypeCache.Get( dataView.EntityTypeId.Value )?.GetEntityType();
+            if ( !DataComponentSettingsHelper.IsAuthorizedForNewDataViewReferences( dataView.DataViewFilter, storedDataViewFilter, previewEntityType, CurrentPerson, rockContext ) )
+            {
+                nbPreviewError.NotificationBoxType = NotificationBoxType.Warning;
+                nbPreviewError.Text = "You are not authorized to use one or more of the selected Data Views.";
+                nbPreviewError.Visible = true;
+                modalPreview.Show();
+                return;
+            }
+
             dataView.IncludeDeceased = tglIncludeDeceased.Checked;
             dataView.DisableUseOfReadOnlyContext = cbDisableUseOfReadOnlyContext.Checked;
 

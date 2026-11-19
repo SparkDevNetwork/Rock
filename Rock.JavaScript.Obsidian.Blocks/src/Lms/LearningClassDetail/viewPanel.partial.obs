@@ -25,6 +25,7 @@
     import { LearningClassBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningClassDetail/learningClassBag";
     import { LearningClassDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningClassDetail/learningClassDetailOptionsBag";
     import { ConfigurationMode } from "@Obsidian/Enums/Lms/configurationMode";
+    import { escapeHtml } from "@Obsidian/Utility/stringUtils";
 
     const props = defineProps({
         modelValue: {
@@ -81,8 +82,16 @@
             }
         }
 
+        /*
+            10/19/2026 - MSE
+
+            This list is shown as HTML. The facilitator name and role are stored data, so
+            they are escaped and only the list and link markup stays HTML.
+
+            Reason: Prevent stored XSS through a facilitator name in Learning Class Detail.
+        */
         const facilitatorsText = props.modelValue.facilitators?.map(f => {
-            return `<li><a href="/person/${f.facilitatorPersonId}">${f.facilitatorName}</a><span class="ml-1 text-muted">${f.facilitatorRole}</span></li>`;
+            return `<li><a href="/person/${f.facilitatorPersonId}">${escapeHtml(f.facilitatorName ?? "")}</a><span class="ml-1 text-muted">${escapeHtml(f.facilitatorRole ?? "")}</span></li>`;
         }).join("") ?? "";
 
         if (facilitatorsText.length > 0) {

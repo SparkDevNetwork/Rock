@@ -237,7 +237,15 @@ namespace Rock.Blocks.Workflow
                 return ActionBadRequest( "Select a category for the imported workflow." );
             }
 
-            var binaryFile = new BinaryFileService( RockContext ).Get( fileGuid.Value );
+            var binaryFileService = new BinaryFileService( RockContext );
+
+            // Only process a new upload by the current person.
+            if ( !binaryFileService.IsUploadedBinaryFileAllowedForPerson( fileGuid, null, RequestContext.CurrentPerson ) )
+            {
+                return ActionBadRequest( "The uploaded file could not be found. Please re-upload it." );
+            }
+
+            var binaryFile = binaryFileService.Get( fileGuid.Value );
 
             if ( binaryFile == null )
             {

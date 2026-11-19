@@ -27,10 +27,10 @@ You are creating a git commit for Rock RMS. This skill orchestrates two pre-comm
 
 ## Output Style
 
-**Be terse. Do not narrate the workflow.**
+**Be terse. Show the user the questions that need an answer and the drafted message.**
 
-- Do NOT announce phases ("Phase 1:", "Phase 2:", "Skipping Phase 1"). Phases are internal structure for this skill, not user-facing labels.
-- Do NOT explain what you are about to do or what you skipped. If a phase has nothing to ask the user about, move on silently.
+- Phases are internal structure for this skill, not user-facing labels; leave phase names out of messages.
+- When a phase has nothing to ask, go straight to the next one. If a step fails or a command is slow, say so in one line.
 - Ask direct questions only. Use yes/no for binary choices, or a numbered list (1. 2. 3.) when there are several options. Never ask an open-ended question if a closed one will do.
 - Always include the **drafted commit message in a fenced code block** when asking the user to confirm. The user should be able to read the exact text that will be committed.
 - One question per turn unless they are tightly related (e.g., release-note y/n + the draft can come together).
@@ -82,7 +82,7 @@ If `specs/` is empty or only contains `completed/`, skip the rest of Phase 1.
 For each active spec, read its YAML frontmatter and any "Affected Code Paths" or "Proposed Fix" section. A spec is **likely related** if any of the following hold:
 
 - **Branch-name match.** The branch contains a recognizable token from the spec's filename (excluding the timestamp prefix) or from the spec's H1 title.
-- **File-path overlap.** The diff touches a file listed in the spec's `related_files` frontmatter or in its "Affected Code Paths" section.
+- **File-path overlap.** The diff touches a file listed in the spec's "Affected Code Paths" section.
 - **Conversation mention.** The user explicitly named the spec in this conversation (by topic, filename, or title).
 
 Score conservatively. **Only ask about specs with a real signal.** Asking about every active spec on every commit is noise; the user will start ignoring the prompt. If no spec scores, skip ahead to Phase 2 silently.

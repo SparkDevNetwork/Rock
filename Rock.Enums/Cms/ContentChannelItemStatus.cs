@@ -14,12 +14,18 @@
 // limitations under the License.
 // </copyright>
 //
+#if NET
+namespace Rock.Enums.Cms
+#else
 namespace Rock.Model
+#endif
 {
     /// <summary>
     /// Represents the approval status of a content channel item
     /// </summary>
+#if !NET
     [Enums.EnumDomain( "Cms" )]
+#endif
     public enum ContentChannelItemStatus
     {
         /// <summary>

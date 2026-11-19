@@ -22,6 +22,7 @@ using System.Runtime.Serialization;
 using Microsoft.Extensions.Logging;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.Cms;
 using Rock.Logging;
@@ -238,24 +239,10 @@ namespace Rock.Web.Cache
                 return;
             }
 
-            string physicalPath;
-
             // This will add a file system watcher so that when the block on the file system changes, this
             // object will be removed from cache. This is to force the cmsPage object to revalidate any
             // BlockPropery attributes that may have been added or modified.
-            if ( System.Web.HttpContext.Current != null )
-            {
-                physicalPath = System.Web.HttpContext.Current.Request.MapPath( Path );
-            }
-            else
-            {
-                physicalPath = System.Web.Hosting.HostingEnvironment.MapPath( Path );
-            }
-
-            if ( physicalPath == null )
-            {
-                return;
-            }
+            var physicalPath = RockApp.Current.MapPath( Path );
 
             var fileinfo = new FileInfo( physicalPath );
             if ( !fileinfo.Exists )

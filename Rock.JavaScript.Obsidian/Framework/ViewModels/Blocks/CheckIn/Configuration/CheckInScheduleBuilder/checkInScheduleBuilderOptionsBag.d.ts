@@ -50,6 +50,9 @@ export type CheckInScheduleBuilderOptionsBag = {
     /** The Default Schedule Category */
     defaultScheduleCategory?: ListItemBag | null;
 
+    /** The list of GroupTypes that can be chosen from, as list items for the Group Type filter. */
+    groupTypeItems?: ListItemBag[] | null;
+
     /** The list of GroupTypes that can be chosen from */
     groupTypes?: Guid[] | null;
 
@@ -58,6 +61,9 @@ export type CheckInScheduleBuilderOptionsBag = {
 
     /** Gets or sets the navigation urls. */
     navigationUrls?: Record<string, string> | null;
+
+    /** Gets or sets the security grant token that allows the location picker to load locations. */
+    securityGrantToken?: string | null;
 
     /**
      * Gets or sets the Guid of the currently-selected area (empty / null for "All Areas"), resolved

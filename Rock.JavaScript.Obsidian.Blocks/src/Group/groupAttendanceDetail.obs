@@ -247,8 +247,9 @@
     import { GroupAttendanceDetailLocationSelectionMode } from "@Obsidian/Enums/Blocks/Group/GroupAttendanceDetail/groupAttendanceDetailLocationSelectionMode";
     import { GroupAttendanceDetailScheduleSelectionMode } from "@Obsidian/Enums/Blocks/Group/GroupAttendanceDetail/groupAttendanceDetailScheduleSelectionMode";
     import { AttendanceStatus } from "@Obsidian/Enums/Event/attendanceStatus";
+    import { useStore } from "@Obsidian/PageState";
     import { Guid } from "@Obsidian/Types";
-    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { onConfigurationValuesChanged, useConfigurationValues, useDownloadBlockAction, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
     import { GroupAttendanceDetailAddPersonRequestBag } from "@Obsidian/ViewModels/Blocks/Group/GroupAttendanceDetail/groupAttendanceDetailAddPersonRequestBag";
     import { GroupAttendanceDetailAddPersonResponseBag } from "@Obsidian/ViewModels/Blocks/Group/GroupAttendanceDetail/groupAttendanceDetailAddPersonResponseBag";
@@ -258,7 +259,6 @@
     import { GroupAttendanceDetailInitializationBox } from "@Obsidian/ViewModels/Blocks/Group/GroupAttendanceDetail/groupAttendanceDetailInitializationBox";
     import { GroupAttendanceDetailMarkAttendanceRequestBag } from "@Obsidian/ViewModels/Blocks/Group/GroupAttendanceDetail/groupAttendanceDetailMarkAttendanceRequestBag";
     import { GroupAttendanceDetailPrintRosterRequestBag } from "@Obsidian/ViewModels/Blocks/Group/GroupAttendanceDetail/groupAttendanceDetailPrintRosterRequestBag";
-    import { GroupAttendanceDetailPrintRosterResponseBag } from "@Obsidian/ViewModels/Blocks/Group/GroupAttendanceDetail/groupAttendanceDetailPrintRosterResponseBag";
     import { GroupAttendanceDetailUpdateAttendanceOccurrenceTypeRequestBag } from "@Obsidian/ViewModels/Blocks/Group/GroupAttendanceDetail/groupAttendanceDetailUpdateAttendanceOccurrenceTypeRequestBag";
     import { GroupAttendanceDetailUpdateDidNotOccurRequestBag } from "@Obsidian/ViewModels/Blocks/Group/GroupAttendanceDetail/groupAttendanceDetailUpdateDidNotOccurRequestBag";
     import { GroupAttendanceDetailUpdateNotesRequestBag } from "@Obsidian/ViewModels/Blocks/Group/GroupAttendanceDetail/groupAttendanceDetailUpdateNotesRequestBag";
@@ -272,6 +272,8 @@
 
     const config = ref(useConfigurationValues<GroupAttendanceDetailInitializationBox>());
     const invokeBlockAction = useInvokeBlockAction();
+    const downloadBlockAction = useDownloadBlockAction();
+    const store = useStore();
 
     type NullableListItemBags = ListItemBag | ListItemBag[] | null;
 
@@ -834,6 +836,7 @@
     async function printAttendanceRoster(): Promise<void> {
         try {
             isPrintingRoster.value = true;
+            printRosterWarning.value = "";
             let occurrenceGuid = toGuidOrNull(attendanceOccurrenceGuid.value);
             const locationGuidOrNull = toGuidOrNull(locationGuid.value);
             const scheduleGuidOrNull = toGuidOrNull(scheduleGuid.value);
@@ -859,13 +862,27 @@
                 scheduleGuid: scheduleGuidOrNull
             };
 
-            var result = await invokeBlockAction<GroupAttendanceDetailPrintRosterResponseBag>("PrintRoster", { bag });
+            /*
+                10/21/2026 - MSE
 
-            if (result?.errorMessage) {
-                printRosterWarning.value = result.errorMessage;
-            }
-            else if (result?.data?.redirectUrl) {
-                window.location.href = result.data.redirectUrl;
+                PrintRoster now returns the roster file itself instead of a GetFile.ashx
+                link to a saved file. The download helper does not send page parameters,
+                so the same __context that invokeBlockAction sends is included here; the
+                server needs the GroupId page parameter to authorize the request.
+
+                Reason: Merged documents must not be downloadable by Id.
+            */
+            const result = await downloadBlockAction("PrintRoster", {
+                __context: {
+                    pageParameters: store.state.pageParameters,
+                    sessionGuid: store.state.sessionGuid,
+                    interactionGuid: store.state.interactionGuid
+                },
+                bag
+            }, "AttendanceRoster");
+
+            if (!result.isSuccess) {
+                printRosterWarning.value = result.errorMessage ?? "Unable to print the attendance roster.";
             }
         }
         finally {

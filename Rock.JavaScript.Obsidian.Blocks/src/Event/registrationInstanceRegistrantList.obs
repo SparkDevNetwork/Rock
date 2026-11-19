@@ -661,8 +661,9 @@
 
         const url = template.replace("((Key))", String(row.registrationIdKey));
 
-        // The anchor scrolls the registration detail page to this registrant.
-        window.location.href = `${url}#${row.registrantId}`;
+        // The anchor scrolls the registration detail page to this registrant,
+        // which names each registrant anchor by its identifier key.
+        window.location.href = `${url}#${encodeURIComponent(key)}`;
     }
 
     /**

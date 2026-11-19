@@ -16,6 +16,8 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
+using System.Linq;
 
 using Rock.Configuration;
 using Rock.Data;
@@ -130,6 +132,19 @@ namespace Rock.UniversalSearch.IndexModels
             }
 
             return result;
+        }
+
+        /// <inheritdoc/>
+        public override bool IsViewAllowed( Person person, RockContext rockContext )
+        {
+            var documentId = ( int ) this.Id;
+
+            // Include the document type since it is the parent authority used by the security check.
+            var document = new DocumentService( rockContext ).Queryable()
+                .Include( d => d.DocumentType )
+                .FirstOrDefault( d => d.Id == documentId );
+
+            return document?.IsAuthorized( Authorization.VIEW, person ) ?? false;
         }
     }
 }

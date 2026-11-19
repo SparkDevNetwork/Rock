@@ -41,7 +41,7 @@ namespace Rock.Blocks.Types.Mobile.Crm
     [Category( "Mobile > Crm" )]
     [IconCssClass( "ti ti-users" )]
     [Description( "Allows you to view the other members of a group person belongs to (e.g. Family groups)." )]
-    [SupportedSiteTypes( Model.SiteType.Mobile )]
+    [SupportedSiteTypes( SiteType.Mobile )]
 
     #region Block Attributes
 

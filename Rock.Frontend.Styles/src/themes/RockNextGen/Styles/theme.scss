@@ -119,6 +119,17 @@ body.navbar-side-open {
     padding: var(--spacing-medium) var(--spacing-large);
     margin: 0 0 var(--spacing-medium) 0;
 
+    &.page-header-empty {
+      background-color: transparent;
+      border: 0;
+      padding: 0;
+      margin: 0;
+
+      > .page-title {
+        display: none;
+      }
+    }
+
     .title {
       margin: 0;
       font-size: 24px;

@@ -1,0 +1,131 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="kpi-v2-card-content">
+        <div v-if="content.title" class="kpi-v2-card-content-title">{{ content.title }}</div>
+
+        <div v-if="content.display === KpiContentDisplay.MicroGrid" class="kpi-v2-micro-grid">
+            <div v-for="(item, index) in displayItems"
+                 :key="`${item.label}${index}`"
+                 class="kpi-v2-micro-grid-item"
+                 :class="{ 'kpi-v2-micro-grid-item-muted': item.isMuted }">
+                <span v-if="content.isNumbered" class="kpi-v2-micro-grid-item-position">{{ index + 1 }}.</span>
+
+                <a v-if="item.url && !item.isMuted"
+                   :href="item.url"
+                   class="kpi-v2-micro-grid-item-label"
+                   v-tooltip.overflow="item.label">{{ item.label }}</a>
+                <span v-else class="kpi-v2-micro-grid-item-label" v-tooltip.overflow="item.label">{{ item.label }}</span>
+
+                <span class="kpi-v2-micro-grid-item-value" v-tooltip="item.help ?? ''">{{ formatItemValue(item) }}</span>
+
+                <span v-if="isAnyItemTrendShown" class="kpi-v2-micro-grid-item-trend">
+                    <KpiTrend v-if="isItemTrendShown(item)"
+                              class="kpi-v2-micro-item-trend"
+                              :trend="item.valueTrend"
+                              :tooltip="item.valueTrendTooltip"
+                              :isLowerBetter="isLowerBetter"
+                              isCompact />
+                </span>
+            </div>
+        </div>
+
+        <div v-else-if="content.display === KpiContentDisplay.MicroCards"
+             class="kpi-v2-micro-cards"
+             :class="microCardsColumnsCssClass">
+            <div v-for="(item, index) in displayItems"
+                 :key="`${item.label}${index}`"
+                 class="kpi-v2-micro-cards-item"
+                 :class="{ 'kpi-v2-micro-cards-item-muted': item.isMuted }">
+                <div class="kpi-v2-micro-cards-item-header">
+                    <span class="kpi-v2-micro-cards-item-label" v-tooltip.overflow="item.label">{{ item.label }}</span>
+
+                    <KpiTrend v-if="isItemTrendShown(item)"
+                              class="kpi-v2-micro-item-trend"
+                              :trend="item.valueTrend"
+                              :tooltip="item.valueTrendTooltip"
+                              :isLowerBetter="isLowerBetter"
+                              isCompact />
+                </div>
+
+                <div class="kpi-v2-micro-cards-item-value" v-tooltip="item.help ?? ''">{{ formatItemValue(item) }}</div>
+            </div>
+        </div>
+
+        <div v-else-if="content.display === KpiContentDisplay.Custom" class="kpi-v2-card-content-custom">
+            <slot />
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import KpiTrend from "./kpiTrend.partial.obs";
+    import { vTooltip } from "@Obsidian/Directives/tooltip";
+    import { formatKpiValue, getKpiDisplayItems, hasKpiValue, KpiContent, KpiContentDisplay, KpiContentItem } from "@Obsidian/Core/Controls/kpi";
+    import { CurrencyInfoBag } from "@Obsidian/ViewModels/Rest/Utilities/currencyInfoBag";
+
+    const props = defineProps({
+        /** The content to show below the chart. */
+        content: {
+            type: Object as PropType<KpiContent>,
+            required: true
+        },
+
+        /** The organization currency used when the content's value format is "currency". */
+        currencyInfo: {
+            type: Object as PropType<CurrencyInfoBag | null>,
+            default: null
+        },
+
+        /** When true item trends treat a drop as positive and a rise as negative. */
+        isLowerBetter: {
+            type: Boolean,
+            default: false
+        }
+    });
+
+    // #region Computed Values
+
+    const displayItems = computed((): KpiContentItem[] => {
+        return getKpiDisplayItems(props.content.items);
+    });
+
+    // The micro-grid only reserves a trend column when at least one row has a trend.
+    const isAnyItemTrendShown = computed((): boolean => {
+        return displayItems.value.some(item => isItemTrendShown(item));
+    });
+
+    // Columns outside 2 to 4 have no CSS class, so they are clamped into range. A missing or invalid value uses 3.
+    const microCardsColumnsCssClass = computed((): string => {
+        const requestedColumns = Number.isFinite(props.content.columns) ? props.content.columns as number : 3;
+        const columns = Math.min(Math.max(Math.round(requestedColumns), 2), 4);
+
+        return `kpi-v2-micro-cards-columns-${columns}`;
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /**
+     * Formats an item value with the content's value format.
+     *
+     * @param item The content item.
+     * @returns The formatted value.
+     */
+    function formatItemValue(item: KpiContentItem): string {
+        return formatKpiValue(item.value, props.content.valueFormat, props.currencyInfo);
+    }
+
+    /**
+     * Determines if an item shows its trend. Items without a value never do.
+     *
+     * @param item The content item.
+     * @returns `true` if the trend should be shown.
+     */
+    function isItemTrendShown(item: KpiContentItem): boolean {
+        return hasKpiValue(item.value) && item.valueTrend !== null && item.valueTrend !== undefined;
+    }
+
+    // #endregion Functions
+</script>

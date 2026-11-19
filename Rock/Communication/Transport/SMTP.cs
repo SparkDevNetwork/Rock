@@ -38,10 +38,11 @@ namespace Rock.Communication.Transport
     [TextField( "User Name",
         IsRequired = false,
         Order = 2 )]
-    [TextField( "Password",
+    [EncryptedTextField( "Password",
         IsRequired = false,
         Order = 3,
-        IsPassword = true )]
+        IsPassword = true,
+        Key = "Password" )]
     [BooleanField( "Use SSL",
         DefaultBooleanValue = false,
         Order = 4 )]

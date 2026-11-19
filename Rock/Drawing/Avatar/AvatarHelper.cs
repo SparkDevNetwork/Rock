@@ -17,8 +17,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Web;
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -101,7 +101,7 @@ namespace Rock.Drawing.Avatar
         {
 
             // Load icon masks. 
-            var folderPath = System.Web.Hosting.HostingEnvironment.MapPath( "~\\App_Data\\Avatar\\" );
+            var folderPath = RockApp.Current.MapPath( "~\\App_Data\\Avatar\\" );
 
             // Load role guids that are allowed to refresh the cache
             AuthorizedRefreshCacheRoleGuids.Add( Rock.SystemGuid.Group.GROUP_ADMINISTRATORS.AsGuid() );
@@ -138,7 +138,7 @@ namespace Rock.Drawing.Avatar
         /// Without view security this makes no database call, so cached avatars stay cheap to serve.
         /// The Person Image file type itself is still enforced when the photo is loaded.
         /// </remarks>
-        [Rock.Attribute.RockInternal( "20.1" )]
+        [Rock.Attribute.RockInternal( "17.13" )]
         public static bool IsPhotoViewAllowed( int photoId )
         {
             var personImageType = BinaryFileTypeCache.Get( Rock.SystemGuid.BinaryFiletype.PERSON_IMAGE.AsGuid() );

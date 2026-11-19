@@ -26,6 +26,7 @@ using Rock.AI.Agent.Classes.Skills.WorkflowSkill;
 using Rock.Configuration;
 using Rock.Enums.AI.Agent;
 using Rock.Model;
+using Rock.Security;
 using Rock.Tests.Shared.TestAccess.AI.Agent;
 using Rock.Tests.Shared.TestFramework;
 using Rock.Utility;
@@ -58,6 +59,8 @@ public partial class WorkflowSkillTests
         var workflowType = SeedWorkflowType( rockContext, 3000, "Membership" );
         SeedWorkflow( rockContext, 3100, "Membership 1", workflowType.Id, activatedDateTime: RockDateTime.Now );
 
+        MockAuthorizationHelper.AllowAllUsersByDefault( rockContext, Authorization.VIEW_LIST );
+
         var skill = CreateSkill( scope.App, CreateRequestContext( rockContext ) );
 
         var result = skill.ListWorkflows( workflowTypeIdKey: IdHasher.Instance.GetHash( workflowType.Id ) );
@@ -88,6 +91,8 @@ public partial class WorkflowSkillTests
 
         var workflowType = SeedWorkflowType( rockContext, 3000, "Membership" );
         SeedWorkflow( rockContext, 3100, "Active", workflowType.Id, activatedDateTime: RockDateTime.Now );
+
+        MockAuthorizationHelper.AllowAllUsersByDefault( rockContext, Authorization.VIEW_LIST );
 
         var skill = CreateSkill( scope.App, CreateRequestContext( rockContext ) );
 
@@ -133,6 +138,8 @@ public partial class WorkflowSkillTests
         // A completed activity whose name should be excluded from the active list.
         SeedWorkflowActivity( rockContext, 3201, workflow, activatedDateTime: RockDateTime.Now, completedDateTime: RockDateTime.Now, activityTypeId: completedActivityType.Id );
 
+        MockAuthorizationHelper.AllowAllUsersByDefault( rockContext, Authorization.VIEW_LIST );
+
         var skill = CreateSkill( scope.App, CreateRequestContext( rockContext ) );
 
         var result = skill.ListWorkflows( workflowTypeIdKey: IdHasher.Instance.GetHash( workflowType.Id ) );
@@ -157,6 +164,8 @@ public partial class WorkflowSkillTests
 
         SeedWorkflow( rockContext, 3100, "Initiated", workflowType.Id, activatedDateTime: RockDateTime.Now, initiatorPersonAlias: initiatorAlias );
 
+        MockAuthorizationHelper.AllowAllUsersByDefault( rockContext, Authorization.VIEW_LIST );
+
         var skill = CreateSkill( scope.App, CreateRequestContext( rockContext ) );
 
         var result = skill.ListWorkflows( initiatedByPersonIdKey: IdHasher.Instance.GetHash( person.Id ) );
@@ -176,6 +185,8 @@ public partial class WorkflowSkillTests
 
         var workflow = SeedWorkflow( rockContext, 3100, "Assigned", workflowType.Id, activatedDateTime: RockDateTime.Now );
         SeedWorkflowActivity( rockContext, 3200, workflow, assignedPersonAlias: assignedAlias, activatedDateTime: RockDateTime.Now );
+
+        MockAuthorizationHelper.AllowAllUsersByDefault( rockContext, Authorization.VIEW_LIST );
 
         var skill = CreateSkill( scope.App, CreateRequestContext( rockContext ) );
 
@@ -214,6 +225,8 @@ public partial class WorkflowSkillTests
         var workflow = SeedWorkflow( rockContext, 3100, "Group Assigned", workflowType.Id, activatedDateTime: RockDateTime.Now );
         SeedWorkflowActivity( rockContext, 3200, workflow, assignedGroup: group, activatedDateTime: RockDateTime.Now );
 
+        MockAuthorizationHelper.AllowAllUsersByDefault( rockContext, Authorization.VIEW_LIST );
+
         var skill = CreateSkill( scope.App, CreateRequestContext( rockContext ) );
 
         var result = skill.ListWorkflows( assignedToPersonIdKey: IdHasher.Instance.GetHash( person.Id ) );
@@ -236,6 +249,107 @@ public partial class WorkflowSkillTests
         var skill = CreateSkill( scope.App, CreateRequestContext( rockContext ) );
 
         var result = skill.ListWorkflows( assignedToPersonIdKey: IdHasher.Instance.GetHash( person.Id ) );
+
+        Assert.AreEqual( ToolStatus.NoData, result.GetStatus() );
+    }
+
+    [TestMethod]
+    public void ListWorkflows_WithoutEditOrViewListPermission_ReturnsNoData()
+    {
+        using var scope = TestHelper.CreateScopedRockApp();
+        var rockContext = scope.App.CreateRockContext();
+
+        var workflowType = SeedWorkflowType( rockContext, 3000, "Membership" );
+        var currentPerson = MockData.CreatePerson( rockContext );
+        var otherPerson = MockData.CreatePerson( rockContext );
+
+        SeedWorkflow( rockContext, 3100, "Other", workflowType.Id, activatedDateTime: RockDateTime.Now, initiatorPersonAlias: otherPerson.Aliases.First() );
+
+        var skill = CreateSkill( scope.App, CreateRequestContext( rockContext, currentPerson ) );
+
+        var result = skill.ListWorkflows( workflowTypeIdKey: IdHasher.Instance.GetHash( workflowType.Id ) );
+
+        Assert.AreEqual( ToolStatus.NoData, result.GetStatus() );
+    }
+
+    [TestMethod]
+    public void ListWorkflows_AsInitiatorWithoutViewListPermission_ReturnsOnlyOwn()
+    {
+        using var scope = TestHelper.CreateScopedRockApp();
+        var rockContext = scope.App.CreateRockContext();
+
+        var workflowType = SeedWorkflowType( rockContext, 3000, "Membership" );
+        var currentPerson = MockData.CreatePerson( rockContext );
+        var otherPerson = MockData.CreatePerson( rockContext );
+
+        SeedWorkflow( rockContext, 3100, "Own", workflowType.Id, activatedDateTime: RockDateTime.Now, initiatorPersonAlias: currentPerson.Aliases.First() );
+        SeedWorkflow( rockContext, 3101, "Other", workflowType.Id, activatedDateTime: RockDateTime.Now, initiatorPersonAlias: otherPerson.Aliases.First() );
+
+        var skill = CreateSkill( scope.App, CreateRequestContext( rockContext, currentPerson ) );
+
+        var result = skill.ListWorkflows( workflowTypeIdKey: IdHasher.Instance.GetHash( workflowType.Id ) );
+
+        Assert.AreEqual( ToolStatus.Success, result.GetStatus() );
+
+        var page = ( PaginatedResult<WorkflowResult> ) result.GetContent();
+
+        CollectionAssert.AreEqual( new[] { "Own" }, page.Items.Select( w => w.Name ).ToList() );
+    }
+
+    [TestMethod]
+    public void ListWorkflows_WithOwnActiveAssignmentWithoutViewListPermission_ReturnsIt()
+    {
+        using var scope = TestHelper.CreateScopedRockApp();
+        var rockContext = scope.App.CreateRockContext();
+
+        var workflowType = SeedWorkflowType( rockContext, 3000, "Membership" );
+        var currentPerson = MockData.CreatePerson( rockContext );
+
+        var workflow = SeedWorkflow( rockContext, 3100, "Assigned", workflowType.Id, activatedDateTime: RockDateTime.Now );
+        SeedWorkflowActivity( rockContext, 3200, workflow, assignedPersonAlias: currentPerson.Aliases.First(), activatedDateTime: RockDateTime.Now );
+
+        var skill = CreateSkill( scope.App, CreateRequestContext( rockContext, currentPerson ) );
+
+        var result = skill.ListWorkflows( assignedToPersonIdKey: IdHasher.Instance.GetHash( currentPerson.Id ) );
+
+        Assert.AreEqual( ToolStatus.Success, result.GetStatus() );
+    }
+
+    [TestMethod]
+    public void ListWorkflows_WithOwnCompletedAssignmentWithoutViewListPermission_ReturnsNoData()
+    {
+        using var scope = TestHelper.CreateScopedRockApp();
+        var rockContext = scope.App.CreateRockContext();
+
+        var workflowType = SeedWorkflowType( rockContext, 3000, "Membership" );
+        var currentPerson = MockData.CreatePerson( rockContext );
+
+        var workflow = SeedWorkflow( rockContext, 3100, "Assigned", workflowType.Id, activatedDateTime: RockDateTime.Now );
+        SeedWorkflowActivity( rockContext, 3200, workflow, assignedPersonAlias: currentPerson.Aliases.First(), activatedDateTime: RockDateTime.Now, completedDateTime: RockDateTime.Now );
+
+        var skill = CreateSkill( scope.App, CreateRequestContext( rockContext, currentPerson ) );
+
+        var result = skill.ListWorkflows( assignedToPersonIdKey: IdHasher.Instance.GetHash( currentPerson.Id ) );
+
+        Assert.AreEqual( ToolStatus.NoData, result.GetStatus() );
+    }
+
+    [TestMethod]
+    public void ListWorkflows_WithOtherPersonAssignmentWithoutViewListPermission_ReturnsNoData()
+    {
+        using var scope = TestHelper.CreateScopedRockApp();
+        var rockContext = scope.App.CreateRockContext();
+
+        var workflowType = SeedWorkflowType( rockContext, 3000, "Membership" );
+        var currentPerson = MockData.CreatePerson( rockContext );
+        var otherPerson = MockData.CreatePerson( rockContext );
+
+        var workflow = SeedWorkflow( rockContext, 3100, "Assigned", workflowType.Id, activatedDateTime: RockDateTime.Now );
+        SeedWorkflowActivity( rockContext, 3200, workflow, assignedPersonAlias: otherPerson.Aliases.First(), activatedDateTime: RockDateTime.Now );
+
+        var skill = CreateSkill( scope.App, CreateRequestContext( rockContext, currentPerson ) );
+
+        var result = skill.ListWorkflows( assignedToPersonIdKey: IdHasher.Instance.GetHash( otherPerson.Id ) );
 
         Assert.AreEqual( ToolStatus.NoData, result.GetStatus() );
     }

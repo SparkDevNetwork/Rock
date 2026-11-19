@@ -39,7 +39,7 @@ namespace Rock.Blocks.Core
     [Category( "Core" )]
     [Description( "Displays a list of entity types." )]
     [IconCssClass( "fa fa-list" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     [Rock.SystemGuid.EntityTypeGuid( "712dd8aa-aafa-4e92-b804-d884b6848adf" )]
     // WAS [Rock.SystemGuid.BlockTypeGuid( "3136cb51-8b94-4116-9c34-59ba6425a1ca" )]

@@ -33,6 +33,8 @@ using Rock.ViewModels.Utility;
 using Rock.Web;
 using Rock.Web.Cache;
 
+using CommunicationType = Rock.Model.CommunicationType;
+
 namespace Rock.Blocks.Lms
 {
     /// <summary>
@@ -43,7 +45,7 @@ namespace Rock.Blocks.Lms
     [Category( "LMS" )]
     [Description( "Displays the details of a particular learning class announcement." )]
     [IconCssClass( "ti ti-question-mark" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 

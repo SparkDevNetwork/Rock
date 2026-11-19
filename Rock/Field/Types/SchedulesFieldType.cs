@@ -331,7 +331,7 @@ namespace Rock.Field.Types
         /// <param name="required">if set to <c>true</c> [required].</param>
         /// <param name="filterMode">The filter mode.</param>
         /// <returns></returns>
-        public override System.Web.UI.Control FilterControl( System.Collections.Generic.Dictionary<string, ConfigurationValue> configurationValues, string id, bool required, Rock.Reporting.FilterMode filterMode )
+        public override System.Web.UI.Control FilterControl( System.Collections.Generic.Dictionary<string, ConfigurationValue> configurationValues, string id, bool required, FilterMode filterMode )
         {
             return base.FilterControl( configurationValues, id, required, filterMode );
         }

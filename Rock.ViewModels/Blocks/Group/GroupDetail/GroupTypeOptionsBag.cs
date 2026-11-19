@@ -22,6 +22,8 @@ using Rock.Enums.Group;
 using Rock.Model;
 using Rock.ViewModels.Utility;
 
+using RelationshipStrength = Rock.Enums.Group.RelationshipStrength;
+
 namespace Rock.ViewModels.Blocks.Group.GroupDetail
 {
     /// <summary>

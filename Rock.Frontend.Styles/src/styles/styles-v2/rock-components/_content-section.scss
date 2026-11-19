@@ -22,6 +22,29 @@
     box-shadow: var(--box-shadow);
     padding-left: 0;
     padding-right: 0;
+
+    .contentsection-header-actions .ti-chevron-up {
+        /* 0.35 to match the transition speed in the collapse component */
+        transition: transform 0.35s ease-in-out;
+    }
+
+    &.contentsection-collapsed .contentsection-header-actions .ti-chevron-up {
+        transform: rotate(180deg);
+    }
+
+    .content-stack + .content-stack {
+        border-top: 1px var(--color-interface-soft) solid;
+        padding-top: var(--spacing-large);
+    }
+
+    // Make the body flush vertically, no padding. See PersonalizationSegmentDetail for example.
+    &.body-flush-vertical {
+
+        .contentsection-body {
+            padding-top: 0;
+            padding-bottom: 0;
+        }
+    }
 }
 
 /* HEADER */
@@ -31,6 +54,11 @@
     padding: var(--spacing-small) var(--spacing-large);
     display: flex;
     justify-content: space-between;
+
+    &:hover .contentsection-header-reveal-actions {
+        opacity: 100%;
+        pointer-events: auto;
+    }
 }
 
 .contentsection-collapsible > .contentsection-header {
@@ -53,11 +81,6 @@
     opacity: 0;
     transition: opacity 0.3s ease-in-out;
     pointer-events: none;
-}
-
-.contentsection-header:hover .contentsection-header-reveal-actions {
-    opacity: 100%;
-    pointer-events: auto;
 }
 
 .contentsection-header-title-and-description {
@@ -94,15 +117,6 @@
     line-height: var(--line-height-tight);
 }
 
-.contentsection .contentsection-header-actions .ti-chevron-up {
-    /* 0.35 to match the transition speed in the collapse component */
-    transition: transform 0.35s ease-in-out;
-}
-
-.contentsection.contentsection-collapsed .contentsection-header-actions .ti-chevron-up {
-    transform: rotate(180deg);
-}
-
 /* SECTION BODY */
 
 .contentsection-body {
@@ -124,54 +138,41 @@
     border-top: 1px var(--color-interface-soft) solid;
 }
 
-.contentsection .content-stack + .content-stack {
-    border-top: 1px var(--color-interface-soft) solid;
-    padding-top: var(--spacing-large);
-}
-
-// Make the body flush vertically, no padding. See PersonalizationSegmentDetail for example.
-.contentsection.body-flush-vertical {
-
-    .contentsection-body {
-        padding-top: 0;
-        padding-bottom: 0;
-    }
-}
-
 /* OVERFLOW BODY */
 
 .contentsection-body-overflow-toggle {
     padding-bottom: var(--spacing-small);
     padding-left: var(--spacing-xsmall);
+
+    .btn {
+        font-size: var(--font-size-small);
+        color: var(--color-primary);
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-tiny);
+
+        .ti-chevron-up {
+            /* 0.35 to match the transition speed in the collapse component */
+            transition: transform 0.35s ease-in-out;
+        }
+    }
 }
 
-.contentsection-body-overflow-toggle .btn {
-    font-size: var(--font-size-small);
-    color: var(--color-primary);
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-tiny);
-}
+.contentsection-body-overflow-toggle,
+.contentsection-body-overflow-collapsed {
 
-.contentsection-body-overflow-toggle .btn:hover > span,
-.contentsection-body-overflow-collapsed .btn:hover > span {
-    text-decoration: underline;
-}
+    .btn:hover > span {
+        text-decoration: underline;
+    }
 
-.contentsection-body-overflow-toggle .btn .ti-chevron-up {
-    /* 0.35 to match the transition speed in the collapse component */
-    transition: transform 0.35s ease-in-out;
+    .btn.btn-link:hover,
+    .btn.btn-link:focus {
+        text-decoration: none;
+    }
 }
 
 .contentsection-body-overflow-collapsed .btn .ti-chevron-up {
     transform: rotate(180deg);
-}
-
-.contentsection-body-overflow-toggle .btn.btn-link:hover,
-.contentsection-body-overflow-collapsed .btn.btn-link:hover,
-.contentsection-body-overflow-toggle .btn.btn-link:focus,
-.contentsection-body-overflow-collapsed .btn.btn-link:focus {
-    text-decoration: none;
 }
 
 .contentsection-body-overflow-content {
@@ -203,61 +204,52 @@
 
 .contentsection-footer-secondary-actions {
     margin-left: var(--spacing-large);
-}
 
-.contentsection-footer-secondary-actions > .btn.btn-default {
-    margin-left: var(--spacing-xsmall);
+    > .btn.btn-default {
+        margin-left: var(--spacing-xsmall);
+    }
 }
 
 /* ACTION BUTTONS */
 
-.contentsection-header-actions .btn-action,
-.contentsection-footer-actions .btn-action,
-.contentsection-footer-secondary-actions .btn-action,
-.contentsection-nav-header .btn-action {
-    border-radius: var(--rounded-small);
-    padding: var(--spacing-tiny);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--color-interface-strong);
-    border: 0;
-    background-color: transparent;
-    box-shadow: none;
-}
+.contentsection-header-actions,
+.contentsection-footer-actions,
+.contentsection-footer-secondary-actions,
+.contentsection-nav-header {
 
-.contentsection-header-actions .btn-action:hover,
-.contentsection-footer-actions .btn-action:hover,
-.contentsection-footer-secondary-actions .btn-action:hover,
-.contentsection-nav-header .btn-action:hover {
-    background-color: var(--color-interface-softest);
-    color: var(--color-interface-strong);
-}
+    .btn-action {
+        border-radius: var(--rounded-small);
+        padding: var(--spacing-tiny);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--color-interface-strong);
+        border: 0;
+        background-color: transparent;
+        box-shadow: none;
 
-.contentsection-header-actions .btn-action:focus,
-.contentsection-footer-actions .btn-action:focus,
-.contentsection-footer-secondary-actions .btn-action:focus,
-.contentsection-nav-header .btn-action:focus {
-    background-color: transparent;
-    box-shadow: none;
-}
+        &:hover {
+            background-color: var(--color-interface-softest);
+            color: var(--color-interface-strong);
+        }
 
-.contentsection-header-actions .btn-action:active,
-.contentsection-footer-actions .btn-action:active,
-.contentsection-footer-secondary-actions .btn-action:active,
-.contentsection-nav-header .btn-action:active {
-    background-color: transparent;
-    box-shadow: none;
-}
+        &:focus {
+            background-color: transparent;
+            box-shadow: none;
+        }
 
-.contentsection-header-actions .btn-action > i,
-.contentsection-footer-actions .btn-action > i,
-.contentsection-footer-secondary-actions .btn-action > i,
-.contentsection-nav-header .btn-action > i {
-    color: var(--color-interface-strong);
-    align-self: center;
-    font-size: var(--font-size-h5);
-    padding: 0 var(--spacing-tiny);
+        &:active {
+            background-color: transparent;
+            box-shadow: none;
+        }
+
+        > i {
+            color: var(--color-interface-strong);
+            align-self: center;
+            font-size: var(--font-size-h5);
+            padding: 0 var(--spacing-tiny);
+        }
+    }
 }
 
 // ======================== END BASE STYLE ========================
@@ -268,31 +260,38 @@
     background-color: var(--color-interface-softest);
     border: 1px var(--color-interface-soft) solid;
     box-shadow: none;
-}
 
-.contentsection-light > .contentsection-header {
-    border-bottom: 0;
-    padding-bottom: 0;
-}
+    > .contentsection-header {
+        border-bottom: 0;
+        padding-bottom: 0;
+        /* 0.35 to match the transition speed in the collapse component, so the padding eases in sync with the body */
+        transition: padding-bottom 0.35s ease-in-out;
+    }
 
-.contentsection-light > .contentsection-footer {
-    border-top: 0;
-}
+    > .contentsection-footer {
+        border-top: 0;
+        display: none;
+    }
 
-.contentsection-light > .contentsection-body {
-    padding: 0;
-    padding-top: 0;
-    padding-right: var(--spacing-large);
-    padding-bottom: var(--spacing-large);
-    padding-left: var(--spacing-large);
-}
+    > .contentsection-body {
+        padding: 0;
+        padding-top: 0;
+        padding-right: var(--spacing-large);
+        padding-bottom: var(--spacing-large);
+        padding-left: var(--spacing-large);
+    }
 
-.contentsection-light > .contentsection-footer {
-    display: none;
-}
+    > .contentsection-header + div > .contentsection-body {
+        border-top: none;
+    }
 
-.contentsection-light > .contentsection-header + div > .contentsection-body {
-    border-top: none;
+    &.contentsection-collapsed {
+
+      .contentsection-header {
+        padding-bottom: var(--spacing-small);
+      }
+
+    }
 }
 
 // ======================== END LIGHT SECTION ========================
@@ -310,55 +309,58 @@
     top: 0;
     /* keep it above your content as you scroll */
     z-index: 10;
-}
 
-.contentsection-nav .contentsection-nav-header {
-    width: 100%;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding-left: var(--spacing-xsmall);
-    margin-bottom: var(--spacing-tiny);
-}
+    .contentsection-nav-header {
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-left: var(--spacing-xsmall);
+        margin-bottom: var(--spacing-tiny);
+    }
 
-.contentsection-nav .contentsection-nav-header-title {
-    color: var(--color-interface-medium);
-    font-size: var(--font-size-small);
-    padding-left: var(--spacing-small);
-}
+    .contentsection-nav-header-title {
+        color: var(--color-interface-medium);
+        font-size: var(--font-size-small);
+        padding-left: var(--spacing-small);
+    }
 
-.contentsection-nav .contentsection-nav-link {
-    border: none;
-    border-radius: var(--rounded-small);
-    background-color: transparent;
-    color: var(--color-interface-strong);
-    padding: var(--spacing-xsmall) var(--spacing-small);
-    font-weight: normal;
-    font-size: var(--font-size-small);
-    display: flex;
-    align-items: center;
-    margin-bottom: var(--spacing-tiny);
-}
+    .contentsection-nav-link {
+        border: none;
+        border-radius: var(--rounded-small);
+        background-color: transparent;
+        color: var(--color-interface-strong);
+        padding: var(--spacing-xsmall) var(--spacing-small);
+        font-weight: normal;
+        font-size: var(--font-size-small);
+        display: flex;
+        align-items: center;
+        margin-bottom: var(--spacing-tiny);
+    }
 
-.contentsection-nav .list-group-item i.ti {
-    font-size: var(--font-size-regular);
-    margin-right: var(--spacing-xsmall);
-    color: var(--color-interface-strong);
-    align-self: center;
-}
+    .list-group-item {
 
-.contentsection-nav .list-group-item:hover {
-    background-color: var(--color-interface-softest);
-}
+        i.ti {
+            font-size: var(--font-size-regular);
+            margin-right: var(--spacing-xsmall);
+            color: var(--color-interface-strong);
+            align-self: center;
+        }
 
-.contentsection-nav .list-group-item.active {
-    background-color: var(--color-interface-softest);
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-interface-strong);
-}
+        &:hover {
+            background-color: var(--color-interface-softest);
+        }
 
-.contentsection-nav .list-group-item.active i.ti {
-    color: var(--color-interface-strong);
+        &.active {
+            background-color: var(--color-interface-softest);
+            font-weight: var(--font-weight-semibold);
+            color: var(--color-interface-strong);
+
+            i.ti {
+                color: var(--color-interface-strong);
+            }
+        }
+    }
 }
 
 // ======================== END CONTENT SECTION NAV ========================
@@ -372,13 +374,13 @@
     height: auto;
     width: 100%;
     align-items: flex-start;
-}
 
-.contentsection-container > .contentsection-nav {
-    flex: 0 0 20%;
-    position: sticky;
-    top: calc(var(--spacing-medium) + var(--sticky-element-offset, 0px)); // offset from top to account for fixed header
-    overflow-y: auto;
+    > .contentsection-nav {
+        flex: 0 0 20%;
+        position: sticky;
+        top: calc(var(--spacing-medium) + var(--sticky-element-offset, 0px)); // offset from top to account for fixed header
+        overflow-y: auto;
+    }
 }
 
 .full-work-surface .contentsection-container > .contentsection-nav {
@@ -419,6 +421,7 @@
     .contentsection-body {
         padding: var(--spacing-medium);
     }
+
     .contentsection-list {
         gap: var(--spacing-large);
     }
@@ -452,7 +455,7 @@
     gap: 0;
 
     .contentsection {
-      margin-bottom: var(--spacing-large);
+        margin-bottom: var(--spacing-large);
     }
 }
 

@@ -371,7 +371,7 @@ namespace RockWeb.Blocks.CheckIn
             {
                 this.EditFamilyState = FamilyRegistrationState.FromGroup( checkInFamily.Group );
                 hfGroupId.Value = checkInFamily.Group.Id.ToString();
-                mdEditFamily.Title = checkInFamily.Group.Name;
+                mdEditFamily.Title = checkInFamily.Group.Name.EncodeHtml();
 
                 int groupId = hfGroupId.Value.AsInteger();
                 var rockContext = RockApp.Current.CreateRockContext();
@@ -501,7 +501,7 @@ namespace RockWeb.Blocks.CheckIn
                         foreach ( var requiredAttribute in requiredAttributes )
                         {
                             var attributeValue = familyPersonState.PersonAttributeValuesState.GetValueOrNull( requiredAttribute.Key );
-                            var requiredAttributeDisplayValue = requiredAttribute.FieldType.Field.FormatValue( lRequiredAttributes, attributeValue != null ? attributeValue.Value : null, requiredAttribute.QualifierValues, true );
+                            var requiredAttributeDisplayValue = requiredAttribute.FieldType.Field.FormatValueAsHtml( lRequiredAttributes, requiredAttribute.EntityTypeId, familyPersonState.PersonId, attributeValue != null ? attributeValue.Value : null, requiredAttribute.QualifierValues, true );
                             descriptionList.Add( requiredAttribute.Name, requiredAttributeDisplayValue );
                         }
 
@@ -797,7 +797,7 @@ namespace RockWeb.Blocks.CheckIn
         {
             pnlEditPerson.Visible = false;
             pnlEditFamily.Visible = true;
-            mdEditFamily.Title = EditFamilyState.FamilyName;
+            mdEditFamily.Title = EditFamilyState.FamilyName.EncodeHtml();
             upContent.Update();
         }
 
@@ -958,7 +958,7 @@ namespace RockWeb.Blocks.CheckIn
         {
             pnlEditFamily.Visible = false;
             pnlEditPerson.Visible = true;
-            mdEditFamily.Title = familyPersonState.FullName;
+            mdEditFamily.Title = familyPersonState.FullName.EncodeHtml();
             upContent.Update();
         }
 

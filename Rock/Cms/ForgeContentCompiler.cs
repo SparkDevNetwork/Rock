@@ -63,9 +63,11 @@ namespace Rock.Cms
           forever; instead the compiler connects to the configured DevTools
           websocket. A failed connect is its own result, distinct from a missing
           browser, because it is a configuration problem and not a wait.
-        - A FRESH PAGE per compile, disposed afterward, so one compile cannot leave
-          state behind for the next. The browser itself is long lived because
-          launching one costs far more than opening a page.
+        - A FRESH BROWSER per compile, released afterward, so one compile cannot
+          leave state behind for the next and nothing outlives the compile. A
+          local browser is closed so its process exits; a remote one is only
+          disconnected. See the 10/15/2026 note below for why the browser is no
+          longer shared.
         - Chromium is NEVER downloaded from this path. PdfGenerator will fetch it on
           demand, which is correct for a background job with no one waiting, but here
           a person is waiting behind a save or an agent tool call and a 100 MB
@@ -87,6 +89,27 @@ namespace Rock.Cms
 
         Reason: Containing the compile in a child process removes the uncatchable
         crash instead of merely making it less likely.
+    */
+
+    /*
+        10/15/2026 - CLAUDE
+
+        The compile browser used to be a long-lived static shared by every compile
+        in the app domain. Nothing closed it when the app domain shut down, so each
+        app pool recycle, restart or deploy left the previous Chrome (about seven
+        processes) running with nothing connected to it, and the next compile
+        launched another. Those orphans held files in App_Data\ChromeEngine open,
+        which made deploys fail when they tried to move App_Data.
+
+        Sharing only saved Chromium startup (roughly 0.5 to 2 seconds). Each compile
+        already opens a fresh page and loads the whole compiler bundle into it, and
+        compiles only happen on a Forge Content save or an agent tool call, so the
+        browser is now launched (or connected) per compile and released in the
+        finally, matching PdfGenerator. Concurrent saves each get their own browser
+        and each one exits afterward.
+
+        Reason: A static browser leaked one Chrome per app domain and locked
+        App_Data during deploys.
     */
 
     /// <summary>
@@ -166,25 +189,6 @@ window.System = {
         #endregion Constants
 
         #region Fields
-
-        /// <summary>
-        /// The long-lived browser dedicated to compiling, separate from the one
-        /// PdfGenerator launches. Guarded by <see cref="_browserLock"/>.
-        /// </summary>
-        private static IBrowser _browser;
-
-        /// <summary>
-        /// The external render endpoint <see cref="_browser"/> was created for, or
-        /// an empty string when it is a locally launched browser. Compared against
-        /// the currently configured endpoint so a settings change swaps the browser
-        /// instead of silently keeping the old one. Guarded by <see cref="_browserLock"/>.
-        /// </summary>
-        private static string _browserEndpoint = string.Empty;
-
-        /// <summary>
-        /// Serializes browser creation so a burst of saves cannot launch several.
-        /// </summary>
-        private static readonly object _browserLock = new object();
 
         /// <summary>
         /// An explicit physical path to the compiler bundle, used by tests. When
@@ -322,14 +326,19 @@ window.System = {
         }
 
         /// <summary>
-        /// Runs the compiler bundle in a fresh page and returns its output.
+        /// Runs the compiler bundle in a fresh page of a browser launched (or
+        /// connected) for this compile alone, releases the browser, and returns
+        /// the output.
         /// </summary>
         /// <param name="bundle">The compiler bundle source.</param>
         /// <param name="source">The authored Vue single-file-component source.</param>
         /// <returns>The result of the compile attempt.</returns>
         private async Task<ForgeContentCompileResult> CompileInPageAsync( string bundle, string source )
         {
-            var browser = await GetBrowserAsync().ConfigureAwait( false );
+            // Read per compile so a settings change applies to the next save.
+            var externalRenderEndpoint = GetExternalRenderEndpoint();
+            var isRemote = externalRenderEndpoint.IsNotNullOrWhiteSpace();
+            var browser = await LaunchBrowserAsync( externalRenderEndpoint ).ConfigureAwait( false );
             IPage page = null;
 
             try
@@ -375,57 +384,9 @@ window.System = {
                         // real result.
                     }
                 }
+
+                await ReleaseBrowserAsync( browser, isRemote ).ConfigureAwait( false );
             }
-        }
-
-        /// <summary>
-        /// Gets the shared compile browser, launching or connecting when it is
-        /// missing, has disconnected, or was created for a different endpoint
-        /// configuration than is in effect now.
-        /// </summary>
-        /// <returns>A connected browser.</returns>
-        private async Task<IBrowser> GetBrowserAsync()
-        {
-            var desiredEndpoint = GetExternalRenderEndpoint() ?? string.Empty;
-            var existing = _browser;
-
-            if ( existing != null && existing.IsConnected && _browserEndpoint == desiredEndpoint )
-            {
-                return existing;
-            }
-
-            // Launching is slow enough that a burst of saves could otherwise start
-            // several browsers. The lock is held only while starting one.
-            var launchTask = null as Task<IBrowser>;
-            var staleBrowser = null as IBrowser;
-            var staleBrowserWasRemote = false;
-
-            lock ( _browserLock )
-            {
-                if ( _browser != null && _browser.IsConnected && _browserEndpoint == desiredEndpoint )
-                {
-                    return _browser;
-                }
-
-                staleBrowser = _browser;
-                staleBrowserWasRemote = _browserEndpoint != string.Empty;
-                _browser = null;
-                launchTask = LaunchBrowserAsync( desiredEndpoint );
-            }
-
-            // An endpoint change can leave a still-connected browser behind;
-            // release it so a local process does not outlive its usefulness.
-            await ReleaseBrowserAsync( staleBrowser, staleBrowserWasRemote ).ConfigureAwait( false );
-
-            var browser = await launchTask.ConfigureAwait( false );
-
-            lock ( _browserLock )
-            {
-                _browser = browser;
-                _browserEndpoint = desiredEndpoint;
-            }
-
-            return browser;
         }
 
         /// <summary>
@@ -434,7 +395,7 @@ window.System = {
         /// the configured external render endpoint when one is set, mirroring
         /// <see cref="PdfGenerator"/>'s handling of the same setting.
         /// </summary>
-        /// <param name="externalRenderEndpoint">The external render endpoint, or an empty string to launch locally.</param>
+        /// <param name="externalRenderEndpoint">The external render endpoint, or null or empty to launch locally.</param>
         /// <returns>The launched or connected browser.</returns>
         private async Task<IBrowser> LaunchBrowserAsync( string externalRenderEndpoint )
         {
@@ -465,16 +426,17 @@ window.System = {
         }
 
         /// <summary>
-        /// Releases a browser this compiler no longer uses because the endpoint
-        /// configuration changed. A remote browser is disconnected rather than
-        /// closed, because it is shared infrastructure this instance does not own;
-        /// a locally launched browser is closed so its process exits.
+        /// Releases the browser a compile used. A remote browser is disconnected
+        /// rather than closed, because it is shared infrastructure this instance
+        /// does not own; a locally launched browser is closed so its process exits.
         /// </summary>
         /// <param name="browser">The browser to release, or null.</param>
         /// <param name="isRemote">Whether the browser is a remote connection.</param>
         private static async Task ReleaseBrowserAsync( IBrowser browser, bool isRemote )
         {
-            if ( browser == null || !browser.IsConnected )
+            // A local browser that has lost its connection can still have a
+            // running process, so only a null browser is skipped.
+            if ( browser == null )
             {
                 return;
             }
@@ -492,8 +454,17 @@ window.System = {
             }
             catch
             {
-                // Intentionally ignored: the stale browser may already be gone, and
-                // failing to release it must not block getting a working one.
+                // A hung or crashed browser can fail to close cleanly. Dispose
+                // still kills a local browser's process so it cannot be orphaned.
+                try
+                {
+                    browser.Dispose();
+                }
+                catch
+                {
+                    // Intentionally ignored: releasing is best-effort and must not
+                    // mask the compile result.
+                }
             }
         }
 

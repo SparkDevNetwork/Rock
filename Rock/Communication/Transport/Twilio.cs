@@ -35,6 +35,7 @@ using Rock.Web.Cache;
 using Twilio;
 using Twilio.Rest.Api.V2010.Account;
 
+using CommunicationType = Rock.Model.CommunicationType;
 using TwilioExceptions = Twilio.Exceptions;
 using TwilioTypes = Twilio.Types;
 
@@ -51,9 +52,10 @@ namespace Rock.Communication.Transport
         IsRequired = true,
         Order = 0,
         Key = TwilioAttributeKey.Sid )]
-    [TextField( "Auth Token",
+    [EncryptedTextField( "Auth Token",
         Description = "Your Twilio Account Token",
         IsRequired = true,
+        IsPassword = true,
         Order = 1,
         Key = TwilioAttributeKey.AuthToken )]
     [IntegerField( "Long-Code Throttling",
@@ -121,14 +123,14 @@ namespace Rock.Communication.Transport
                 communication = new CommunicationService( rockContext ).Get( communication.Id );
 
                 if ( communication != null &&
-                    communication.Status == Model.CommunicationStatus.Approved &&
+                    communication.Status == CommunicationStatus.Approved &&
                     ( !communication.FutureSendDateTime.HasValue || communication.FutureSendDateTime.Value.CompareTo( RockDateTime.Now ) <= 0 ) )
                 {
                     var qryRecipients = new CommunicationRecipientService( rockContext ).Queryable();
                     unprocessedRecipientCount = qryRecipients
                         .Where( r =>
                             r.CommunicationId == communication.Id &&
-                            r.Status == Model.CommunicationRecipientStatus.Pending &&
+                            r.Status == CommunicationRecipientStatus.Pending &&
                             r.MediumEntityTypeId.HasValue &&
                             r.MediumEntityTypeId.Value == mediumEntityTypeId )
                         .Count();
@@ -170,8 +172,18 @@ namespace Rock.Communication.Transport
             string publicAppRoot = globalAttributes.GetValue( "PublicApplicationRoot" );
             var callbackUrl = publicAppRoot + "Webhooks/Twilio.ashx";
 
+            /*
+                11/16/2026 - JPH
+
+                The auth token is stored encrypted. A value saved before it
+                became an encrypted field stays plain text until start-up
+                encrypts it, so fall back to the stored value.
+
+                Reason: Keep transport secrets encrypted at rest.
+            */
             var accountSid = GetAttributeValue( TwilioAttributeKey.Sid );
-            var authToken = GetAttributeValue( TwilioAttributeKey.AuthToken );
+            var storedAuthToken = GetAttributeValue( TwilioAttributeKey.AuthToken );
+            var authToken = Rock.Security.Encryption.DecryptString( storedAuthToken ) ?? storedAuthToken;
 
             TwilioClient.Init( accountSid, authToken );
 
@@ -258,7 +270,8 @@ namespace Rock.Communication.Transport
                 }
 
                 string accountSid = GetAttributeValue( TwilioAttributeKey.Sid );
-                string authToken = GetAttributeValue( TwilioAttributeKey.AuthToken );
+                var storedAuthToken = GetAttributeValue( TwilioAttributeKey.AuthToken );
+                var authToken = Rock.Security.Encryption.DecryptString( storedAuthToken ) ?? storedAuthToken;
                 TwilioClient.Init( accountSid, authToken );
 
                 // Common Merge Field
@@ -582,9 +595,18 @@ namespace Rock.Communication.Transport
                             }
                         }
 
+                        /*
+                            10/16/2026 - MSE
+
+                            History.SummaryHtml now HTML encodes the stored value name, so this
+                            entry is written as plain text. Markup here would show as literal tags.
+
+                            Reason: History values are encoded when shown.
+                        */
+
                         // Add this to the Person Activity history
                         var historyChanges = new History.HistoryChangeList();
-                        historyChanges.AddCustom( string.Empty, History.HistoryChangeType.Property.ToString(), $"SMS Disabled for {phoneNumber.NumberTypeValue} {phoneNumber.NumberFormatted}. The error received from Twilio is <em>\"{ex.Message}\"</em> <a href='{ex.MoreInfo}' target='_blank' rel='noopener noreferrer'>More info here</a>" );
+                        historyChanges.AddCustom( string.Empty, History.HistoryChangeType.Property.ToString(), $"SMS Disabled for {phoneNumber.NumberTypeValue} {phoneNumber.NumberFormatted}. The error received from Twilio is \"{ex.Message}\". More info: {ex.MoreInfo}" );
                         HistoryService.SaveChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(), recipient.PersonAlias.Person.Id, historyChanges );
                     }
                 }

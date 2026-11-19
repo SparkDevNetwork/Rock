@@ -38,7 +38,7 @@ namespace Rock.Blocks.Core
     [Category( "Core" )]
     [Description( "Lists tags grouped by the first letter of the name with counts for people to select." )]
     [IconCssClass( "ti ti-tag" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 
@@ -200,10 +200,11 @@ namespace Rock.Blocks.Core
                     Count = tagInfo.Count
                 };
 
-                var firstChar = tagItem.Name.Substring( 0, 1 ).ToUpper()[0];
+                var firstChar = tagItem.Name.Substring( 0, 1 ).ToUpperInvariant()[0];
                 string key;
 
-                if ( char.IsLetter( firstChar ) )
+                // Letters outside A-Z (Hangul, accented, Greek, etc.) have no bucket and fall through to "*".
+                if ( char.IsLetter( firstChar ) && tagAlphabet.ContainsKey( firstChar.ToString() ) )
                 {
                     key = firstChar.ToString();
                 }

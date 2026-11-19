@@ -93,7 +93,7 @@ namespace Rock.Field.Types
 
                     if ( !string.IsNullOrWhiteSpace( fileName ) )
                     {
-                        configurationValues[FILE_PATH] = System.Web.VirtualPathUtility.ToAbsolute( "~/GetFile.ashx" );
+                        configurationValues[FILE_PATH] = RockApp.Current.ResolveRockUrl( "~/GetFile.ashx" );
                         configurationValues[ENCODED_FILENAME] = System.Web.HttpUtility.HtmlEncode( fileName );
                     }
                 }

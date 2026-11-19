@@ -46,7 +46,7 @@ namespace Rock.Blocks.Crm
     [Category( "CRM" )]
     [Description( "Used for updating information about several individuals at once." )]
     [IconCssClass( "ti ti-truck" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
     [SecurityAction( Authorization.EDIT_CONNECTION_STATUS, "The roles and/or users that can edit the connection status for the selected persons." )]
     [SecurityAction( Authorization.EDIT_RECORD_STATUS, "The roles and/or users that can edit the record status for the selected persons." )]
     [SecurityAction( Authorization.EDIT_RECORD_SOURCE, "The roles and/or users that can edit the record source for the selected persons." )]

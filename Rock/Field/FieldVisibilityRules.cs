@@ -165,25 +165,25 @@ namespace Rock.Field
 
             switch ( fieldVisibilityRules.FilterExpressionType )
             {
-                case Rock.Model.FilterExpressionType.GroupAll:
+                case FilterExpressionType.GroupAll:
                     {
                         // Show if all of the conditions are met (A && B && C && D)
                         visible = conditionResults.All( a => a == true );
                         break;
                     }
-                case Rock.Model.FilterExpressionType.GroupAllFalse:
+                case FilterExpressionType.GroupAllFalse:
                     {
                         // Hide if all of the conditions are met (A && B && C && D)
                         visible = !conditionResults.All( a => a == true );
                         break;
                     }
-                case Rock.Model.FilterExpressionType.GroupAny:
+                case FilterExpressionType.GroupAny:
                     {
                         // Show if any of the conditions are met (A || B || C || D)
                         visible = conditionResults.Any( a => a == true );
                         break;
                     }
-                case Rock.Model.FilterExpressionType.GroupAnyFalse:
+                case FilterExpressionType.GroupAnyFalse:
                     {
                         // Hide if any of the conditions are met (A || B || C || D)
                         visible = !conditionResults.Any( a => a == true );

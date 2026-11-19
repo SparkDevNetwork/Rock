@@ -493,9 +493,9 @@ namespace Rock.CheckIn
         {
             var result = $@"
 <div class='name'>
-    <span class='checkin-person-name js-checkin-person-name'>{this.FullName}</span>
+    <span class='checkin-person-name js-checkin-person-name'>{this.FullName.EncodeHtml()}</span>
 </div>
-<div class='parent-name small text-muted text-wrap'>{this.ParentNames}</div>";
+<div class='parent-name small text-muted text-wrap'>{this.ParentNames.EncodeHtml()}</div>";
 
             return result;
         }
@@ -506,7 +506,7 @@ namespace Rock.CheckIn
         /// <returns></returns>
         public string GetMobileTagAndSchedulesHtml()
         {
-            return $"<div class='person-tag'>{this.Tag}</div><div class='small text-muted text-wrap'>{this.ServiceTimes}</div>";
+            return $"<div class='person-tag'>{this.Tag.EncodeHtml()}</div><div class='small text-muted text-wrap'>{this.ServiceTimes.EncodeHtml()}</div>";
         }
 
         /// <summary>
@@ -591,7 +591,7 @@ namespace Rock.CheckIn
         /// <returns></returns>
         public string GetGroupNameAndPathHtml()
         {
-            return $@"<div class='group-name'>{this.GroupName}</div> <div class='small text-muted text-wrap'>{this.GroupTypePath}</div>";
+            return $@"<div class='group-name'>{this.GroupName.EncodeHtml()}</div> <div class='small text-muted text-wrap'>{this.GroupTypePath.EncodeHtml()}</div>";
         }
 
         /// <summary>
@@ -600,7 +600,7 @@ namespace Rock.CheckIn
         /// <returns></returns>
         public string GetParentGroupNameAndPathHtml()
         {
-            return $@"<div class='group-name'>{this.ParentGroupName}</div> <div class='small text-muted text-wrap'>{this.ParentGroupGroupTypePath}</div>";
+            return $@"<div class='group-name'>{this.ParentGroupName.EncodeHtml()}</div> <div class='small text-muted text-wrap'>{this.ParentGroupGroupTypePath.EncodeHtml()}</div>";
         }
 
         #endregion HTML

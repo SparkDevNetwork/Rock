@@ -63,18 +63,16 @@ If ambiguous, ask clarifying questions before proceeding.
 
 ## Step 2 — Determine Migration Number and Version
 
-1. Scan `Rock/Plugin/HotFixes/` for the highest existing migration number:
-   ```
-   Glob: Rock/Plugin/HotFixes/*.cs
-   ```
-   Parse the leading number from each filename (e.g., `279_MigrationRollupsForV18_3_0_1.cs` → 279).
+1. Find the highest existing migration number across every active chain branch (hotfix-17.13, hotfix-18.9, hotfix-19.9, release-20.0, hotfix-20.1, develop), not just the current checkout. For example, run `git ls-tree origin/<branch> Rock/Plugin/HotFixes/` on each branch. Parse the leading number from each filename (e.g., `279_MigrationRollupsForV18_3_0_1.cs` → 279).
 
-2. Next number = highest + 1
+2. Next number = highest across all those branches + 1. Reserve it on the Spark admin plugin migration numbers page before using it.
 
-3. Determine minimum Rock version:
-   - If the user specifies a version, use it
-   - If working on a specific release branch, use that version
-   - If unclear, ask the user
+3. Set the `[MigrationNumber( n, "x.y" )]` version to the release of the branch the PR targets, taken from the branch name:
+   - `hotfix-X.Y` and `release-X.Y` give "X.Y" (for example `hotfix-19.9` gives "19.9", `hotfix-17.13` gives "17.13").
+   - `develop` has no release in its name: use the major.minor of `<Version>` in its `Directory.Build.props`.
+   - Never copy the version from the previous migration, and do not trust the branch's version files on hotfix or release branches (they are often bumped only at packaging).
+   - A value above the branch release silently skips the migration.
+   - The mirror's PR check enforces this.
 
 4. Generate filename: `{number}_{PascalCaseDescription}.cs`
    - Class name = the PascalCase description (without the number prefix)
@@ -89,7 +87,7 @@ Before writing the migration, you must understand the actual database schema. Do
 - Look for: `[Required]` (NOT NULL), `[MaxLength(N)]` (string limits), FK navigation properties, enum-typed properties
 
 **Understand Rock's standard column patterns:**
-- Every entity inheriting `Model<T>` has: `Id` (identity), `Guid` (uniqueidentifier), `IsSystem` (bit), `CreatedDateTime`, `ModifiedDateTime`, `CreatedByPersonAliasId`, `ModifiedByPersonAliasId`
+- Every entity inheriting `Model<T>` has: `Id` (identity), `Guid` (uniqueidentifier), `CreatedDateTime`, `ModifiedDateTime`, `CreatedByPersonAliasId`, `ModifiedByPersonAliasId`, and the `Foreign*` columns. `IsSystem` (bit) is declared per entity, not on `Model<T>`; check the model before using it.
 - Audit FK columns (`CreatedByPersonAliasId`, `ModifiedByPersonAliasId`) reference `[PersonAlias]`, NOT `[Person]`
 - Campus FK columns typically use `ON DELETE SET NULL`
 - `[Order]` columns should be calculated from existing max, not hardcoded
@@ -122,6 +120,7 @@ Use the following template. The copyright block, namespace, class structure, and
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
+//
 
 using System;
 
@@ -250,8 +249,7 @@ Result: File written with `RockMigrationHelper.AddOrUpdateBlockTypeAttribute()` 
 User says: "Add a run-once job to fix broken achievement types from the v18.0 bug"
 
 Actions:
-1. Add `using Rock.Model;` for typeof() reference
-2. Use RockMigrationHelper.AddPostUpdateServiceJob() with job type, cron expression, and SystemGuid
+1. Use RockMigrationHelper.AddPostUpdateServiceJob() with job type, cron expression, and SystemGuid
 
 Result: File written with `AddPostUpdateServiceJob()` using `typeof(Rock.Jobs.PostUpdateJobs.PostV183UpdateAchievementTypes).FullName` and the correct SystemGuid.
 
@@ -294,5 +292,3 @@ Result: Severity-based findings report with actionable fix suggestions and a go/
 **String escaping errors at runtime:** Single quotes must be doubled in SQL within C# strings (`'O''Brien'`). Curly braces must be doubled in `$@"..."` strings (`{{`, `}}`). See `references/common-pitfalls.md` for full examples.
 
 **Wrong block type method (data loss risk):** Never use `UpdateBlockTypeByGuid()` for Obsidian or Mobile blocks — it can delete entity-based block types. Use `AddOrUpdateEntityBlockType()` instead. See `references/common-pitfalls.md` for details.
-
-**Missing `using Rock.Model;`:** Required when using `typeof()` for job types or entity types. Without it, the type reference may not resolve correctly.

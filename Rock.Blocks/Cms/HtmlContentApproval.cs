@@ -39,7 +39,7 @@ namespace Rock.Blocks.Cms
     [Category( "CMS" )]
     [Description( "Lists HTML content blocks that need approval." )]
     [IconCssClass( "fa fa-check" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     [SecurityAction(
         Authorization.APPROVE,

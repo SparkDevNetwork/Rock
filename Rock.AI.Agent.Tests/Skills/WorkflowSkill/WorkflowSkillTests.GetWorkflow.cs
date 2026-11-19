@@ -22,6 +22,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Configuration;
 using Rock.Enums.AI.Agent;
 using Rock.Model;
+using Rock.Security;
 using Rock.Tests.Shared.TestAccess.AI.Agent;
 using Rock.Tests.Shared.TestFramework;
 using Rock.Utility;
@@ -54,6 +55,8 @@ public partial class WorkflowSkillTests
         var workflowType = SeedWorkflowType( rockContext, 3000, "Membership" );
         var workflow = SeedWorkflow( rockContext, 3100, "Membership 1", workflowType.Id, activatedDateTime: RockDateTime.Now );
 
+        MockAuthorizationHelper.AllowAllUsersByDefault( rockContext, Authorization.VIEW_LIST );
+
         var skill = CreateSkill( scope.App, CreateRequestContext( rockContext ) );
 
         var result = skill.GetWorkflow( IdHasher.Instance.GetHash( workflow.Id ) );
@@ -85,11 +88,30 @@ public partial class WorkflowSkillTests
         rockContext.Set<WorkflowAction>().Add( action );
         activity.Actions.Add( action );
 
+        MockAuthorizationHelper.AllowAllUsersByDefault( rockContext, Authorization.VIEW_LIST );
+
         var skill = CreateSkill( scope.App, CreateRequestContext( rockContext ) );
 
         var result = skill.GetWorkflow( IdHasher.Instance.GetHash( workflow.Id ) );
 
         Assert.AreEqual( ToolStatus.Success, result.GetStatus() );
+    }
+
+    [TestMethod]
+    public void GetWorkflow_WithoutEditOrViewListPermission_ReturnsError()
+    {
+        using var scope = TestHelper.CreateScopedRockApp();
+        var rockContext = scope.App.CreateRockContext();
+
+        var workflowType = SeedWorkflowType( rockContext, 3000, "Membership" );
+        var workflow = SeedWorkflow( rockContext, 3100, "Membership 1", workflowType.Id, activatedDateTime: RockDateTime.Now );
+        var currentPerson = MockData.CreatePerson( rockContext );
+
+        var skill = CreateSkill( scope.App, CreateRequestContext( rockContext, currentPerson ) );
+
+        var result = skill.GetWorkflow( IdHasher.Instance.GetHash( workflow.Id ) );
+
+        Assert.AreEqual( ToolStatus.Error, result.GetStatus() );
     }
 
     #endregion

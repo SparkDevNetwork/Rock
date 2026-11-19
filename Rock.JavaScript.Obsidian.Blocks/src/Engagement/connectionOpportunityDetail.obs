@@ -11,7 +11,7 @@
                  :entityKey="entityKey"
                  :isAuditHidden="false"
                  :isBadgesVisible="true"
-                 :isDeleteVisible="isEditable"
+                 :isDeleteVisible="isDeleteVisible"
                  :isEditVisible="isEditable"
                  :isFollowVisible="true"
                  :isSecurityHidden="false"
@@ -122,6 +122,10 @@
 
     const options = computed((): ConnectionOpportunityDetailOptionsBag => {
         return config.options ?? ({} as ConnectionOpportunityDetailOptionsBag);
+    });
+
+    const isDeleteVisible = computed((): boolean => {
+        return options.value.isDeleteVisible === true;
     });
 
     // #endregion

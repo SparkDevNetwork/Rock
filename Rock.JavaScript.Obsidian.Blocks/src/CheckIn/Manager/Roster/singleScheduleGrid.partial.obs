@@ -46,7 +46,7 @@
                                detailField="area.text"
                                :quickFilterValue="getGroupFilterValue"
                                width="240px"
-                               :visiblePriority="rosterMode === RosterViewMode.All ? 'md' : 'lg'">
+                               visiblePriority="md">
             <template #format="{ row }: { row: RosterSingleAttendanceRecord }">
                 <div>
                     <div class="highlight-title">{{ row.group.text }}</div>

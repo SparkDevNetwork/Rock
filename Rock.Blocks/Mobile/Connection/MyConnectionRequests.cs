@@ -51,7 +51,7 @@ namespace Rock.Blocks.Mobile.Connection
     [Category( "Mobile > Connection" )]
     [Description( "Displays the current person's connection requests across all opportunities, grouped, searchable, sortable and filterable client-side." )]
     [IconCssClass( "ti ti-list-check" )]
-    [SupportedSiteTypes( Model.SiteType.Mobile )]
+    [SupportedSiteTypes( SiteType.Mobile )]
 
     #region Block Attributes
 

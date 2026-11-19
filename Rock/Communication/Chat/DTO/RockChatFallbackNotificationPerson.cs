@@ -18,6 +18,8 @@ using System;
 
 using Rock.Model;
 
+using CommunicationType = Rock.Model.CommunicationType;
+
 namespace Rock.Communication.Chat.DTO
 {
     /// <summary>

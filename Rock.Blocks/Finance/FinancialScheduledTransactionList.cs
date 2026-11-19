@@ -44,7 +44,7 @@ namespace Rock.Blocks.Finance
     [Category( "Finance" )]
     [Description( "Displays a list of financial scheduled transactions." )]
     [IconCssClass( "ti ti-list" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     [LinkedPage( "View Page",
         DefaultValue = "",
@@ -274,7 +274,7 @@ namespace Rock.Blocks.Finance
             var addScheduledTransactionPage = new Rock.Web.PageReference( GetAttributeValue( AttributeKey.AddPage ) );
             if ( addScheduledTransactionPage != null )
             {
-                if ( _person != null && _person.IsPersonTokenUsageAllowed() )
+                if ( _person != null && addScheduledTransactionPage.PageId > 0 && GetIsAddEnabled() && _person.IsPersonTokenUsageAllowed() )
                 {
                     // create a limited-use personkey that will last long enough for them to go thru all the 'postbacks' while posting a transaction
                     var personKey = _person.GetImpersonationToken(
@@ -474,6 +474,15 @@ namespace Rock.Blocks.Finance
         }
 
 
+
+        /// <inheritdoc/>
+        protected override GridEntityKeyOptions GetGridEntityKeyOptions()
+        {
+            return new GridEntityKeyOptions
+            {
+                EntityTypeId = EntityTypeCache.GetId<Rock.Model.FinancialScheduledTransaction>()
+            };
+        }
 
         /// <inheritdoc/>
         protected override GridBuilder<FinancialScheduledTransactionData> GetGridBuilder()

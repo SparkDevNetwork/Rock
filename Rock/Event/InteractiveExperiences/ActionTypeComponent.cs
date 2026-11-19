@@ -176,6 +176,19 @@ namespace Rock.Event.InteractiveExperiences
             return configuration;
         }
 
+        /// <summary>
+        /// Determines if the response is valid for the action. The default
+        /// implementation accepts any response. A component can override this
+        /// to refuse a response that is not valid for the action.
+        /// </summary>
+        /// <param name="action">The action the response is being recorded for.</param>
+        /// <param name="response">The response text sent by the participant.</param>
+        /// <returns><c>true</c> if the response is valid for the action; otherwise <c>false</c>.</returns>
+        public virtual bool IsResponseValid( InteractiveExperienceAction action, string response )
+        {
+            return true;
+        }
+
         #endregion
 
         #region Abstract Methods

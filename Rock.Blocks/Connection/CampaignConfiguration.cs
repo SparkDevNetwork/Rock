@@ -41,7 +41,7 @@ namespace Rock.Blocks.Connection
     [Category( "Connection" )]
     [Description( "Block used for Campaign Connection configuration which is also used by job." )]
     [IconCssClass( "ti ti-plug" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     [Rock.SystemGuid.EntityTypeGuid( "469C88A7-DB85-4BED-981A-34DF401E13F9" )]
     // was [Rock.SystemGuid.BlockTypeGuid( "57DB2B33-1ABA-49B6-91F2-1266319F2422" )]

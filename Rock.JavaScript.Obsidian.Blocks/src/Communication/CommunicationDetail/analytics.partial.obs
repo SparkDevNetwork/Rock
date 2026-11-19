@@ -20,9 +20,9 @@
                 {{ getAnalyticsDataErrorMessage }}
             </NotificationBox>
 
-            <NotificationBox v-else-if="showNoActivityMessage" :alertType="AlertType.Info" >
-                No activity found for this communication.
-            </NotificationBox>
+            <ContentSection v-else-if="showNoActivityMessage" title="Message Performance" light disableCollapse>
+                <EmptyState title="No Activity" description="No activity found for this communication." />
+            </ContentSection>
 
             <template v-else>
                 <ContentSection title="Performance KPIs" light disableCollapse>
@@ -122,15 +122,7 @@
         </template>
 
         <ContentSection v-else title="Message Performance" light disableCollapse>
-            <div class="communication-detail-no-metrics">
-                <i class="ti ti-alert-triangle ti-4x"></i>
-                <div class="no-metrics-to-show-message">
-                    Nothing To Show
-                </div>
-                <div class="communication-detail-no-metrics-message">
-                    Performance metrics are currently unavailable for this medium.
-                </div>
-            </div>
+            <EmptyState description="Performance metrics are currently unavailable for this medium." />
         </ContentSection>
     </div>
 </template>
@@ -147,6 +139,7 @@
     import UniqueOpensByGender from "./uniqueOpensByGender.partial.obs";
     import { useCommunicationDetail, useMediumFilter, useSelectedTab } from "./utils.partial";
     import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import EmptyState from "@Obsidian/Controls/emptyState.obs";
     import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
     import LoadingIndicator from "@Obsidian/Controls/loadingIndicator.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";

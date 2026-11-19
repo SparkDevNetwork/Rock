@@ -172,7 +172,7 @@ namespace RockWeb.Blocks.CheckIn
         protected void rSelection_ItemDataBound( object sender, RepeaterItemEventArgs e )
         {
             var person = e.Item.DataItem as CheckInPerson;
-            string buttonText = person.Person.FullName;
+            string buttonText = person.Person.FullName.EncodeHtml();
             var linkButton = e.Item.FindControl( "lbSelect" ) as LinkButton;
 
             if ( ! string.IsNullOrEmpty( person.SecurityCode ) )

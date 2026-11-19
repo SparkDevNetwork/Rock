@@ -25,10 +25,10 @@ namespace Rock.Model
     {
         /// <summary>
         /// Returns a queryable collection of  the <see cref="Rock.Model.WorkflowTrigger"/> by <see cref="Rock.Model.EntityType"/> name
-        /// and <see cref="Rock.Model.WorkflowTriggerType"/>
+        /// and <see cref="WorkflowTriggerType"/>
         /// </summary>
         /// <param name="entityTypeName">A <see cref="System.String"/> representing the name of the <see cref="Rock.Model.EntityType"/> to filter by.</param>
-        /// <param name="triggerType">The <see cref="Rock.Model.WorkflowTriggerType"/> to filter by.</param>
+        /// <param name="triggerType">The <see cref="WorkflowTriggerType"/> to filter by.</param>
         /// <returns>A queryable collection of <see cref="Rock.Model.WorkflowTrigger"/> entities that meet the specified criteria.</returns>
         public IQueryable<WorkflowTrigger> Get( string entityTypeName, WorkflowTriggerType triggerType )
         {

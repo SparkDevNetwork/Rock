@@ -18,6 +18,7 @@
 using System.Collections.Generic;
 
 using Rock.Enums.Crm;
+using Rock.Model;
 using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Crm.BulkUpdate
@@ -45,7 +46,7 @@ namespace Rock.ViewModels.Blocks.Crm.BulkUpdate
         /// <summary>
         /// Gets or sets the member status.
         /// </summary>
-        public Rock.Model.GroupMemberStatus? MemberStatus { get; set; }
+        public GroupMemberStatus? MemberStatus { get; set; }
 
         /// <summary>
         /// Gets or sets the member attributes.

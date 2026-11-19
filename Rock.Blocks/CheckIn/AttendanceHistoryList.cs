@@ -41,7 +41,7 @@ namespace Rock.Blocks.CheckIn
     [Category( "Check-in" )]
     [Description( "Block for displaying the attendance history of a person or a person and group." )]
     [IconCssClass( "ti ti-list" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     [BooleanField( "Filter Attendance By Default",
         Key = AttributeKey.FilterAttendanceByDefault,

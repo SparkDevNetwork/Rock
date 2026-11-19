@@ -79,7 +79,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
-        [StringValidation( StringValidationProfile.Unrestricted )]
+        [StringValidation( StringValidationProfile.LavaAndBasicHtml )]
         public string SourceMarkup { get; set; }
 
         /// <summary>

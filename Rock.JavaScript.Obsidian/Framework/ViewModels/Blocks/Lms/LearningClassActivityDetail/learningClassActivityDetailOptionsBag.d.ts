@@ -35,6 +35,9 @@ export type LearningClassActivityDetailOptionsBag = {
     /** Gets or sets the list of availability criteria options. */
     availabilityCriteriaOptions?: ListItemBag[] | null;
 
+    /** Gets or sets whether the current person is authorized to view grades. */
+    canViewGrades: boolean;
+
     /** Gets or sets the list of due date criteria options. */
     dueDateCriteriaOptions?: ListItemBag[] | null;
 

@@ -35,7 +35,7 @@ namespace Rock.Blocks.Fundraising
     [Category( "Fundraising" )]
     [Description( "Progress for all people in a fundraising opportunity" )]
     [IconCssClass( "ti ti-certificate" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 

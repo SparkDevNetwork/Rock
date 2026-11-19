@@ -39,7 +39,7 @@ namespace Rock.Blocks.Group
     [DisplayName( "Group Simple Register" )]
     [Category( "Group" )]
     [Description( "Prompts for name and email, creates a person record if none exists, and adds the person to a group." )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 

@@ -45,7 +45,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
     [Category( "Mobile > Groups" )]
     [Description( "Allows the user to view a list of members in a group." )]
     [IconCssClass( "ti ti-users" )]
-    [SupportedSiteTypes( Model.SiteType.Mobile )]
+    [SupportedSiteTypes( SiteType.Mobile )]
 
     #region Block Attributes
 
@@ -84,6 +84,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         IsRequired = false,
         DefaultValue = "",
         Category = "CustomSetting",
+        AllowLava = true,
         Key = AttributeKeys.AdditionalFields,
         Order = 4 )]
 

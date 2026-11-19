@@ -15,12 +15,18 @@
 // </copyright>
 //
 
+#if NET
+namespace Rock.Enums.Reporting
+#else
 namespace Rock.Model
+#endif
 {
     /// <summary>
     /// The type of Metric Value that a Metric Value represents
     /// </summary>
+#if !NET
     [Enums.EnumDomain( "Reporting" )]
+#endif
     public enum MetricValueType
     {
         /// <summary>

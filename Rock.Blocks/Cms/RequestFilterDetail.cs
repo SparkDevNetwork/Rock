@@ -41,7 +41,7 @@ namespace Rock.Blocks.Cms
     [Category( "CMS" )]
     [Description( "Displays the details of a particular request filter." )]
     [IconCssClass( "fa fa-question" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     [Rock.SystemGuid.EntityTypeGuid( "0E340E27-D6D9-4870-9835-401545C44801" )]
     // was [Rock.SystemGuid.BlockTypeGuid( "59E6D50E-70A8-4695-97A4-2DE33DD09ECF" )]
@@ -424,8 +424,8 @@ namespace Rock.Blocks.Cms
                         .Select( i => ( DeviceTypeRequestFilter.DeviceType ) i )
                         .ToArray()
                 },
-                QueryStringRequestFilterExpressionType = ( Rock.Model.FilterExpressionType ) bag.QueryStringRequestFilterExpressionType,
-                CookieRequestFilterExpressionType = ( Rock.Model.FilterExpressionType ) bag.CookieRequestFilterExpressionType,
+                QueryStringRequestFilterExpressionType = ( FilterExpressionType ) bag.QueryStringRequestFilterExpressionType,
+                CookieRequestFilterExpressionType = ( FilterExpressionType ) bag.CookieRequestFilterExpressionType,
                 EnvironmentRequestFilter = new EnvironmentRequestFilter
                 {
                     DaysOfWeek = ( bag.EnvironmentRequestFilter?.DaysOfWeek ?? new List<int>() )
@@ -441,7 +441,7 @@ namespace Rock.Blocks.Cms
                 .Select( q => new QueryStringRequestFilter
                 {
                     Key = q.Key,
-                    ComparisonType = ( Rock.Model.ComparisonType ) q.ComparisonType,
+                    ComparisonType = ( ComparisonType ) q.ComparisonType,
                     ComparisonValue = q.ComparisonValue,
                     Guid = q.Guid
                 } ).ToList();
@@ -450,7 +450,7 @@ namespace Rock.Blocks.Cms
                 .Select( c => new CookieRequestFilter
                 {
                     Key = c.Key,
-                    ComparisonType = ( Rock.Model.ComparisonType ) c.ComparisonType,
+                    ComparisonType = ( ComparisonType ) c.ComparisonType,
                     ComparisonValue = c.ComparisonValue,
                     Guid = c.Guid
                 } ).ToList();
@@ -459,7 +459,7 @@ namespace Rock.Blocks.Cms
                 .Select( b => new BrowserRequestFilter
                 {
                     BrowserFamily = ( BrowserRequestFilter.BrowserFamilyEnum ) b.BrowserFamily,
-                    VersionComparisonType = ( Rock.Model.ComparisonType ) b.VersionComparisonType,
+                    VersionComparisonType = ( ComparisonType ) b.VersionComparisonType,
                     MajorVersion = b.MajorVersion,
                     Guid = b.Guid
                 } ).ToList();
@@ -476,7 +476,7 @@ namespace Rock.Blocks.Cms
             config.GeolocationRequestFilters = ( bag.GeolocationRequestFilters ?? new List<GeolocationRequestFilterBag>() )
                 .Select( g => new GeolocationRequestFilter
                 {
-                    ComparisonType = ( Rock.Model.ComparisonType ) g.ComparisonType,
+                    ComparisonType = ( ComparisonType ) g.ComparisonType,
                     LocationComponent = ( GeolocationRequestFilter.LocationComponentEnum ) g.LocationComponent,
                     Value = g.Value,
                     Guid = g.Guid

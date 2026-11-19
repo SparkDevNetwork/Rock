@@ -56,6 +56,7 @@ namespace RockWeb.Blocks.Core
         IsRequired = true,
         DefaultValue = "{{ ScheduleName }}",
         Order = 2,
+        AllowLava = true,
         Key = AttributeKey.CurrentItemTemplate )]
 
     [TextField( "Dropdown Item Template",
@@ -63,6 +64,7 @@ namespace RockWeb.Blocks.Core
         IsRequired = true,
         DefaultValue = "{{ ScheduleName }}",
         Order = 2,
+        AllowLava = true,
         Key = AttributeKey.DropdownItemTemplate )]
 
     [TextField( "No Schedule Text",

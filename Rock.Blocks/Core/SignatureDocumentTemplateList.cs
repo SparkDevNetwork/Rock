@@ -40,7 +40,7 @@ namespace Rock.Blocks.Core
     [Category( "Core" )]
     [Description( "Lists all the signature document templates and allows for managing them." )]
     [IconCssClass( "ti ti-list" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     [LinkedPage( "Detail Page",
         Description = "The page that will show the signature document template details.",
@@ -147,6 +147,15 @@ namespace Rock.Blocks.Core
             var items = queryable.ToList();
             var currentPerson = GetCurrentPerson();
             return items.Where( s => s.SignatureDocumentTemplate.IsAuthorized( Authorization.VIEW, currentPerson ) ).ToList();
+        }
+
+        /// <inheritdoc/>
+        protected override GridEntityKeyOptions GetGridEntityKeyOptions()
+        {
+            return new GridEntityKeyOptions
+            {
+                EntityTypeId = EntityTypeCache.GetId<Rock.Model.SignatureDocumentTemplate>()
+            };
         }
 
         /// <inheritdoc/>

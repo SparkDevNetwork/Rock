@@ -15,12 +15,18 @@
 // </copyright>
 //
 
+#if NET
+namespace Rock.Enums.Event
+#else
 namespace Rock.Model
+#endif
 {
     /// <summary>
     /// The classification of how a scheduled attendance instance matches the preference of the individual.
     /// </summary>
+#if !NET
     [Enums.EnumDomain( "Event" )]
+#endif
     public enum ScheduledAttendanceItemMatchesPreference
     {
         /// <summary>

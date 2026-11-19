@@ -381,7 +381,7 @@ WHERE [RootPath] = '/Themes/KioskStark' AND IsSystem = 1
             // Map and delete block files.
             foreach ( var virtualPath in virtualPathsToDelete )
             {
-                var fullPath = System.Web.Hosting.HostingEnvironment.MapPath( virtualPath );
+                var fullPath = RockApp.Current.MapPath( virtualPath );
                 if ( File.Exists( fullPath ) )
                 {
                     File.Delete( fullPath );
@@ -390,7 +390,7 @@ WHERE [RootPath] = '/Themes/KioskStark' AND IsSystem = 1
             }
 
             // Delete the ~/Themes/KioskStark folder.
-            var themeFolderPath = System.Web.Hosting.HostingEnvironment.MapPath( "~/Themes/KioskStark" );
+            var themeFolderPath = RockApp.Current.MapPath( "~/Themes/KioskStark" );
             if ( Directory.Exists( themeFolderPath ) )
             {
                 Directory.Delete( themeFolderPath, recursive: true );

@@ -7,8 +7,7 @@ description: >-
   quasi-technical community members. Use when the user says "write docs for X",
   "document this feature", "update the docs", "how is X documented", "audit the docs",
   or describes a feature/subsystem they want a written reference for. Also use when the
-  spec skill hands off after completing a spec, or when the commit skill detects that
-  changed files are referenced in some doc's frontmatter.
+  spec skill hands off after completing a spec.
   Do NOT use for: writing end-user tutorials or how-to guides (different audience),
   generating API reference (separate tool), writing release notes, drafting RFCs or
   proposals (those are specs).
@@ -112,7 +111,7 @@ Heuristic: if you would write substantively the same paragraph in three differen
 
 ## Step 2 — Read the Code (mandatory before any "How it works" content)
 
-LLMs cheerfully invent plausible-sounding documentation that is wrong. **Do not infer mechanics from the conversation.** Before writing or updating any "How It Works", "Data Model", "Extension Points", or "Limitations" section, read the actual source files.
+LLMs cheerfully invent plausible-sounding documentation that is wrong. **Do not infer mechanics from the conversation.** Before writing or updating any "Mental Model", "What You Need to Know", "Key Architectural Decisions", or "Technical Reference" content, read the actual source files.
 
 Minimum source reading:
 
@@ -196,7 +195,7 @@ related_files:
 - `title` — the human-readable title. Mirrors the H1.
 - `last_updated` — ISO-8601 date of this edit. Bump on every meaningful change. Get with `date +%Y-%m-%d`.
 - `related_specs` — list of completed-spec paths **relative to the repo root**. Active specs (still in `specs/` root) MUST NOT appear here. Used by the auto-rendered Related Specs section, which computes the relative-to-doc form for the markdown link at render time. Omit the key if there are none.
-- `related_files` — list of source-code paths **relative to the repo root** that this doc materially depends on. Used by the commit/audit hooks to detect when source has changed and the doc may need refresh, and as the scope for the `git log` query that sources Recent Impactful Changes. Omit the key if there are none.
+- `related_files`: list of source-code paths **relative to the repo root** that this doc materially depends on. Used by audit mode to detect when source has changed and the doc may need refresh, and as the scope for the `git log` query that sources Recent Impactful Changes. Omit the key if there are none.
 
 Both lists store **repo-root-relative paths** in YAML so they are stable when docs move and so downstream tools (`git log`, `Glob`, audit-mode lookups) can consume them without translation.
 
@@ -379,7 +378,7 @@ After writing or updating files:
 - **No em-dashes.** Use commas, parentheses, sentence breaks. (Project rule. The example "Related Specs" line uses ` — ` because the renderer needs a visible separator that is not a hyphen; that is the only sanctioned use.)
 - **Linking conventions.** Source citations (Mental Model, What You Need to Know, Technical Reference) use repo-root-relative paths in `path/to/file.cs:line` form. The harness auto-links them and they remain valid as the reader's working copy evolves. Historical citations (Recent Impactful Changes, Considered but Rejected) use GitHub commit URLs in the form `[commit \`{short-hash}\`](https://github.com/SparkDevNetwork/Rock/commit/{short-hash})`; commits are immutable, so the link is forever-stable, and the citation IS the commit, not where the code lives now.
 - **Document the right pattern, not the shortcut.** When the system has a site or global setting that callers should respect, document the read-and-pass-through pattern. Hardcoding the easy value to bypass the setting is the wrong example to teach. Example: when resolving a Group reference, callers must honor `Site.DisablePredictableIds`; document the pass-through, not `allowIntegerIdentifier: true`.
-- **Never write an unverified date.** Dates in Recent Impactful Changes, Considered but Rejected, and frontmatter `last_updated` must come from a verifiable source (`git log`, spec frontmatter, `date +%Y-%m-%d`). If you cannot verify, omit. Approximate dates ("2024-late", "early 2025", "Q3") are forbidden.
+- **Take dates from a verifiable source.** Dates in Recent Impactful Changes, Considered but Rejected and frontmatter `last_updated` come from `git log`, spec frontmatter or `date +%Y-%m-%d`. If you can't verify a date, leave it out rather than writing an approximate one such as "early 2025" or "Q3".
 - **No marketing tone.** This is internal technical reference, not a feature blurb.
 - **Prefer terse opinionated writing over comprehensive overviews.** Generic mush is worse than a missing section.
 - **Write like you are briefing a colleague who just walked in.** What is the smallest set of things they need to know to be productive? Lead with that.
@@ -417,7 +416,7 @@ Workflow:
 1. Read the completed spec for the actual change that landed (the "Proposed Fix", any updates the user made before completion, the final file/line references).
 2. For each candidate doc:
    - Read it.
-   - Update the affected sections to reflect the new "as built" state. Common edits: revise "How It Works" steps, add a row to "Recent Impactful Changes" (and prune to 5), update "Limitations" if the spec resolved one, add to "Considered but Rejected" if the spec rejected an alternative.
+   - Update the affected sections to reflect the new "as built" state. Common edits: revise "Mental Model" or "Technical Reference" content, add a row to "Recent Impactful Changes" (and prune to 5), update "What You Need to Know" if the spec resolved a gotcha, add to "Considered but Rejected" if the spec rejected an alternative.
    - Append the spec's path to `related_specs` (if not already present), keeping the list filtered to `specs/completed/`.
    - Bump `last_updated` to today.
    - Re-render the Related Specs section.
@@ -446,7 +445,7 @@ You: Determine domain (`core`). Search and find `docs/core/cache-invalidation.md
 
 Spec skill hands off: completed spec at `specs/completed/lava/260428-lava-entity-select-tostring-regression.md`, candidate doc `docs/lava/entity-commands.md`.
 
-You: Read the spec to learn the landed change. Read the doc. Update the "How It Works" section to mention the `ParsingConfig` now used. Add a new "Recent Impactful Changes" bullet. Append the spec path to `related_specs`. Bump `last_updated`. Re-render the Related Specs section. Regenerate `docs/lava/README.md`. Output the file list.
+You: Read the spec to learn the landed change. Read the doc. Update the "Technical Reference" section to mention the `ParsingConfig` now used. Add a new "Recent Impactful Changes" bullet. Append the spec path to `related_specs`. Bump `last_updated`. Re-render the Related Specs section. Regenerate `docs/lava/README.md`. Output the file list.
 
 **Example 4 — audit request**
 

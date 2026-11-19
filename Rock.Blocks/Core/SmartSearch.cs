@@ -25,6 +25,7 @@ using System.Text;
 using Rock.Attribute;
 using Rock.Cms;
 using Rock.Enums.Cms;
+using Rock.Model;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Core.SmartSearch;
 
@@ -37,7 +38,7 @@ namespace Rock.Blocks.Core
     [Category( "Core" )]
     [Description( "Provides extensible options for searching in Rock." )]
     [IconCssClass( "ti ti-search" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     [DefaultBlockRole( BlockRole.System )]
     [Rock.SystemGuid.EntityTypeGuid( "A9F9C061-0073-4A7A-93DB-693A1F17D585" )]

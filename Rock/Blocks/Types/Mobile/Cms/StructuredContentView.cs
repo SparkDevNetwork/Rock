@@ -37,7 +37,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
     [Category( "Mobile > Cms" )]
     [Description( "Displays a structured content channel item for the user to view and fill out." )]
     [IconCssClass( "ti ti-list-details" )]
-    [SupportedSiteTypes( Model.SiteType.Mobile )]
+    [SupportedSiteTypes( SiteType.Mobile )]
 
     #region Block Attributes
 

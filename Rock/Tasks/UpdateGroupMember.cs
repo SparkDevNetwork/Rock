@@ -269,7 +269,7 @@ namespace Rock.Tasks
                         var person = new PersonService( rockContext ).Get( message.PersonId.Value );
                         if ( person != null )
                         {
-                            workflow.AttributeValues["Person"].Value = person.PrimaryAlias.Guid.ToString();
+                            workflow.AttributeValues["Person"].Value = person.PrimaryAlias?.Guid.ToString();
                         }
                     }
                 }

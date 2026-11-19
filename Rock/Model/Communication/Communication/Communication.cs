@@ -169,7 +169,7 @@ namespace Rock.Model
         /// Gets or sets the status of the Communication.
         /// </summary>
         /// <value>
-        /// A <see cref="Rock.Model.CommunicationStatus"/> enum value that represents the status of the Communication.
+        /// A <see cref="CommunicationStatus"/> enum value that represents the status of the Communication.
         /// </value>
         [DataMember]
         public CommunicationStatus Status { get; set; }

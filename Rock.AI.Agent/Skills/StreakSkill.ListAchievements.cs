@@ -22,8 +22,11 @@ using Rock.AI.Agent.Annotations;
 using Rock.AI.Agent.Classes.Common;
 using Rock.AI.Agent.Classes.Entity;
 using Rock.AI.Agent.Classes.Skills.PersonSkill;
+using Rock.Enums.AI.Agent;
 using Rock.Model;
+using Rock.Security;
 using Rock.SystemGuid;
+using Rock.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.AI.Agent.Skills;
@@ -52,7 +55,8 @@ internal partial class StreakSkill
         var personAliasEntityTypeId = EntityTypeCache.Get<PersonAlias>( true, AgentRequestContext.RockContext ).Id;
         var achievementTypeIds = AchievementTypeCache.All( AgentRequestContext.RockContext )
             .Where( at => at.AchieverEntityTypeId == personAliasEntityTypeId
-                && at.IsActive )
+                && at.IsActive
+                && at.IsAuthorized( Authorization.VIEW, AgentRequestContext.CurrentPerson ) )
             .Select( at => at.Id )
             .ToList();
         var personAliasQry = new PersonAliasService( AgentRequestContext.RockContext )
@@ -70,6 +74,7 @@ internal partial class StreakSkill
         qry = helper.WhereOptionalIdKey( qry, aa => aa.Person.Id, personIdKey );
         qry = helper.WhereOptionalIdKey( qry, aa => aa.AchievementAttempt.AchievementTypeId, achievementTypeIdKey );
         qry = helper.WhereOptionalPropertyBetween( qry, aa => aa.AchievementAttempt.AchievementAttemptEndDateTime, startDate, endDate );
+        qry = qry.Where( aa => achievementTypeIds.Contains( aa.AchievementAttempt.AchievementTypeId ) );
 
         if ( closedState == true )
         {
@@ -83,6 +88,14 @@ internal partial class StreakSkill
         if ( achievementTypeIdKey.IsNullOrWhiteSpace() && personIdKey.IsNullOrWhiteSpace() )
         {
             helper.AddError( "At least one of personIdKey or achievementTypeIdKey must be provided." );
+        }
+
+        var isOtherPersonOnPublicAgent = AgentRequestContext.AudienceType != AudienceType.Internal
+            && ( personIdKey.IsNullOrWhiteSpace() || IdHasher.Instance.GetId( personIdKey ) != AgentRequestContext.CurrentPerson?.Id );
+
+        if ( isOtherPersonOnPublicAgent )
+        {
+            helper.AddError( "You can only view your own achievements." );
         }
 
         if ( helper.HasErrors )

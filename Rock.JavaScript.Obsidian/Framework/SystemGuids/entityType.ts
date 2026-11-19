@@ -669,6 +669,8 @@ export const EntityType = {
     ObsidianExampleControlGallery: "7B916FEC-9395-4877-9856-427419C50AB5",
     /** The obsidian event field type gallery */
     ObsidianExampleFieldTypeGallery: "82F9C803-C998-46B2-B354-783D4D1E3B43",
+    /** The obsidian example sample data installer block entity type. */
+    ObsidianExampleSampleDataInstaller: "9FAF7796-F6E7-47F9-B949-E4ED251447DC",
     /** The obsidian form builder detail */
     ObsidianFormBuilderDetailBlockType: "BB44D8ED-DEDC-4C9B-A30D-C636019BC960",
     /** The obsidian form template detail */

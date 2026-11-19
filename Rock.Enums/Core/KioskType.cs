@@ -17,12 +17,18 @@
 
 using System.ComponentModel;
 
+#if NET
+namespace Rock.Enums.Core
+#else
 namespace Rock.Model
+#endif
 {
     /// <summary>
     /// The various types of checkin clients that a Check-in Kiosk could be using.
     /// </summary>
+#if !NET
     [Enums.EnumDomain( "Core" )]
+#endif
     public enum KioskType
     {
         /// <summary>

@@ -94,6 +94,5 @@ Tell the user the path, the number of tests by group (`plan.js summary` prints t
 
 ## Output Style
 
-- Be terse while working. Do not narrate each file you read.
 - Questions to the user go through AskUserQuestion with concrete options.
 - Writing in the plan follows the repo's writing rules: no em-dashes or double hyphens in prose.

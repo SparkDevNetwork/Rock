@@ -29,6 +29,7 @@ using Rock.Enums.Reporting;
 using Rock.Field;
 using Rock.Model;
 using Rock.Net;
+using Rock.Security;
 using Rock.ViewModels.Controls;
 using Rock.ViewModels.Reporting;
 using Rock.ViewModels.Utility;
@@ -137,89 +138,52 @@ namespace Rock.Reporting.DataFilter.Workflow
         {
             var data = new Dictionary<string, string>();
 
-            var workflowTypeService = new WorkflowTypeService( rockContext );
+            /*
+                10/29/2026 - MSE
 
-            var workflowTypes = workflowTypeService.Queryable().OrderBy( a => a.Name ).ToList();
+                Only send the attributes of the selected workflow type plus the
+                attributes that apply to every workflow type. This used to build
+                and send the attributes of every workflow type so the person could
+                switch types in the picker without a server call. On databases with
+                thousands of workflow attributes that ran out of memory or timed
+                out, once for every filter on the page. When the person picks
+                another workflow type, the Obsidian component asks for that type's
+                attributes through ExecuteComponentRequest.
 
-            var workflowTypeGuidsById = new Dictionary<int, Guid>();
-            var fieldFilterSourcesByWorkflowType = new Dictionary<Guid, List<FieldFilterSourceBag>>();
+                Reason: Workflow Attributes filter loaded every workflow attribute (GitHub #7115).
+            */
+            var config = selection.IsNullOrWhiteSpace() ? null : SelectionConfig.Parse( selection );
+            var workflowType = config != null
+                ? new WorkflowTypeService( rockContext ).Get( config.WorkflowTypeId ?? 0 )
+                : null;
 
-            // Prime the dictionary with empty lists to make it easier to add the entity fields
-            foreach ( var workflowTypeItem in workflowTypes )
-            {
-                workflowTypeGuidsById.Add( workflowTypeItem.Id, workflowTypeItem.Guid );
-                fieldFilterSourcesByWorkflowType.AddOrReplace( workflowTypeItem.Guid, new List<FieldFilterSourceBag>() );
-            }
-
-            // Add a list for when no workflow type is selected
-            fieldFilterSourcesByWorkflowType.AddOrReplace( Guid.Empty, new List<FieldFilterSourceBag>() );
-
-            var attributes = AttributeCache.AllForEntityType<Rock.Model.Workflow>()
-                .Where( a => a.IsActive )
-                .Where( a => a.FieldType.Field.HasFilterControl() )
-                .OrderBy( a => a.Order ).ThenBy( a => a.Name )
+            var attributes = GetFilterableAttributes( workflowType?.Id );
+            var sources = attributes
+                .Select( a => new
+                {
+                    IsForAllWorkflowTypes = !IsQualifiedByWorkflowType( a ),
+                    Source = GetFieldFilterSource( a )
+                } )
                 .ToList();
-            var allEntityFields = new List<EntityField>();
-            EntityHelper.AddEntityFieldsForAttributeList( allEntityFields, attributes );
 
-            // Go through all the entity fields and add them to the dictionary based on content channel type indicated by their entity type qualifier
-            foreach ( var attribute in attributes )
+            var fieldFilterSourcesByWorkflowType = new Dictionary<Guid, List<FieldFilterSourceBag>>
             {
-                //var attribute = AttributeCache.Get( entityField.AttributeGuid.Value );
-                Guid workflowTypeGuid = Guid.Empty;
+                // The list for when no workflow type is selected.
+                [Guid.Empty] = sources.Where( s => s.IsForAllWorkflowTypes ).Select( s => s.Source ).ToList()
+            };
 
-                if ( attribute.EntityTypeQualifierColumn == "WorkflowTypeId" )
-                {
-                    workflowTypeGuid = workflowTypeGuidsById.GetValueOrDefault( attribute.EntityTypeQualifierValue.AsInteger(), Guid.Empty );
-                }
-
-                var fieldType = attribute.FieldType;
-
-                var source = new FieldFilterSourceBag
-                {
-                    Guid = attribute.Guid,
-                    Type = FieldFilterSourceType.Attribute,
-                    Attribute = new PublicAttributeBag
-                    {
-                        AttributeGuid = attribute.Guid,
-                        ConfigurationValues = fieldType.Field.GetPublicConfigurationValues( attribute.ConfigurationValues, Field.ConfigurationValueUsage.Edit, null ),
-                        Description = attribute.Description,
-                        FieldTypeGuid = fieldType.Guid,
-                        Name = attribute.Name
-                    }
-                };
-
-                // Add to list for specific workflow type
-                if ( workflowTypeGuid != Guid.Empty )
-                {
-                    fieldFilterSourcesByWorkflowType.GetValueOrNull( workflowTypeGuid )?.Add( source );
-                }
-                // Add to each list, because it's global (not specific to a workflow type)
-                else
-                {
-                    foreach ( var filterSourceList in fieldFilterSourcesByWorkflowType )
-                    {
-                        filterSourceList.Value.Add( source );
-                    }
-                }
-
+            if ( workflowType != null )
+            {
+                fieldFilterSourcesByWorkflowType.AddOrReplace( workflowType.Guid, sources.Select( s => s.Source ).ToList() );
             }
 
             data.AddOrReplace( "fieldFilterSources", fieldFilterSourcesByWorkflowType.ToCamelCaseJson( false, true ) );
-
-            if ( selection.IsNullOrWhiteSpace() )
-            {
-                return data;
-            }
-
-            var config = SelectionConfig.Parse( selection );
 
             if ( config == null )
             {
                 return data;
             }
 
-            var workflowType = workflowTypeService.Get( config.WorkflowTypeId ?? 0 );
             data.AddOrReplace( "workflowType", workflowType?.ToListItemBag().ToCamelCaseJson( false, true ) ?? "" );
 
             if ( config.AttributeKey.IsNullOrWhiteSpace() )
@@ -227,7 +191,10 @@ namespace Rock.Reporting.DataFilter.Workflow
                 return data;
             }
 
-            var entityField = allEntityFields.ToList().FindFromFilterSelection( config.AttributeKey );
+            var allEntityFields = new List<EntityField>();
+            EntityHelper.AddEntityFieldsForAttributeList( allEntityFields, attributes );
+
+            var entityField = allEntityFields.FindFromFilterSelection( config.AttributeKey );
             var filterAttribute = AttributeCache.Get( entityField?.AttributeGuid ?? Guid.Empty );
             FieldFilterRuleBag filterRule = null;
 
@@ -291,6 +258,41 @@ namespace Rock.Reporting.DataFilter.Workflow
             config.AttributeFilterSettings = filterValue;
 
             return config.ToJson();
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> ExecuteComponentRequest( Dictionary<string, string> request, SecurityGrant securityGrant, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var action = request?.GetValueOrNull( "action" );
+
+            if ( action == "GetFieldFilterSources" )
+            {
+                // Called by the Obsidian component when the person picks a
+                // workflow type whose attributes were not sent with the
+                // component data.
+                var workflowTypeGuid = request.GetValueOrNull( "workflowTypeGuid" ).AsGuid();
+                List<FieldFilterSourceBag> sources;
+
+                if ( workflowTypeGuid == Guid.Empty )
+                {
+                    sources = GetFilterableAttributes( null ).Select( GetFieldFilterSource ).ToList();
+                }
+                else
+                {
+                    var workflowTypeId = WorkflowTypeCache.GetId( workflowTypeGuid );
+
+                    sources = workflowTypeId.HasValue
+                        ? GetFilterableAttributes( workflowTypeId ).Select( GetFieldFilterSource ).ToList()
+                        : new List<FieldFilterSourceBag>();
+                }
+
+                return new Dictionary<string, string>
+                {
+                    ["fieldFilterSources"] = sources.ToCamelCaseJson( false, true )
+                };
+            }
+
+            return null;
         }
 
         #endregion
@@ -689,6 +691,61 @@ namespace Rock.Reporting.DataFilter.Workflow
             }
 
             return sortedFields;
+        }
+
+        /// <summary>
+        /// Gets the active, filterable workflow attributes that apply to the
+        /// specified workflow type. This includes the attributes that apply to
+        /// every workflow type. Attributes that belong to other workflow types
+        /// are skipped before any work is done for them.
+        /// </summary>
+        /// <param name="workflowTypeId">The workflow type identifier, or <c>null</c> to only get the attributes that apply to every workflow type.</param>
+        /// <returns>The attributes, in display order.</returns>
+        private static List<AttributeCache> GetFilterableAttributes( int? workflowTypeId )
+        {
+            return AttributeCache.AllForEntityType<Rock.Model.Workflow>()
+                .Where( a => !IsQualifiedByWorkflowType( a )
+                    || ( workflowTypeId.HasValue && a.EntityTypeQualifierValue.AsIntegerOrNull() == workflowTypeId.Value ) )
+                .Where( a => a.IsActive )
+                .Where( a => a.FieldType.Field.HasFilterControl() )
+                .OrderBy( a => a.Order ).ThenBy( a => a.Name )
+                .ToList();
+        }
+
+        /// <summary>
+        /// Determines whether the attribute belongs to a single workflow type
+        /// rather than applying to every workflow type.
+        /// </summary>
+        /// <param name="attribute">The attribute.</param>
+        /// <returns><c>true</c> if the attribute is qualified by a workflow type; otherwise <c>false</c>.</returns>
+        private static bool IsQualifiedByWorkflowType( AttributeCache attribute )
+        {
+            return attribute.EntityTypeQualifierColumn == "WorkflowTypeId";
+        }
+
+        /// <summary>
+        /// Gets the field filter source that the Obsidian component uses to
+        /// let the person pick the attribute and enter the filter value.
+        /// </summary>
+        /// <param name="attribute">The attribute.</param>
+        /// <returns>The field filter source for the attribute.</returns>
+        private static FieldFilterSourceBag GetFieldFilterSource( AttributeCache attribute )
+        {
+            var fieldType = attribute.FieldType;
+
+            return new FieldFilterSourceBag
+            {
+                Guid = attribute.Guid,
+                Type = FieldFilterSourceType.Attribute,
+                Attribute = new PublicAttributeBag
+                {
+                    AttributeGuid = attribute.Guid,
+                    ConfigurationValues = fieldType.Field.GetPublicConfigurationValues( attribute.ConfigurationValues, Field.ConfigurationValueUsage.Edit, null ),
+                    Description = attribute.Description,
+                    FieldTypeGuid = fieldType.Guid,
+                    Name = attribute.Name
+                }
+            };
         }
 
         #endregion

@@ -145,6 +145,12 @@ namespace Rock.ViewModels.Blocks.Mobile.MobileApplicationDetail
         public ListItemBag Auth0RecordStatus { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether a first Auth0 sign-in is
+        /// linked to an existing person only if Auth0 reports the email as verified.
+        /// </summary>
+        public bool Auth0RequireVerifiedEmail { get; set; }
+
+        /// <summary>
         /// Gets or sets the Microsoft Entra (Azure AD) client ID for
         /// authentication support.
         /// </summary>

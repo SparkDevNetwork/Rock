@@ -2129,7 +2129,7 @@ namespace Rock.Utility
                         PersonAliasId = _peopleAliasDictionary[personGuid],
                         Comments = comment,
                         ConnectionStatus = noContact,
-                        ConnectionState = Rock.Model.ConnectionState.Active,
+                        ConnectionState = ConnectionState.Active,
                         CreatedDateTime = date
                     };
 
@@ -3297,7 +3297,7 @@ namespace Rock.Utility
                         UserLoginService.Create(
                                             rockContext,
                                             set.Key,
-                                            Rock.Model.AuthenticationServiceType.Internal,
+                                            AuthenticationServiceType.Internal,
                                             _authenticationDatabaseEntityTypeId,
                                             userName,
                                             password,

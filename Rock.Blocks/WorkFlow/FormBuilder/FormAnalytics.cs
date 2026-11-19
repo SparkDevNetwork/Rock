@@ -37,7 +37,7 @@ namespace Rock.Blocks.WorkFlow.FormBuilder
     [Category( "WorkFlow > FormBuilder" )]
     [Description( "Shows the interaction and analytics data for the given form." )]
     [IconCssClass( "ti ti-chart-line" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     [Rock.SystemGuid.EntityTypeGuid( "067E6DB1-37B5-4704-BE83-A9ACD11428B2" )]
     [Rock.SystemGuid.BlockTypeGuid( "778EFA7B-56BC-4ABB-B86D-FFD87B97691F" )]

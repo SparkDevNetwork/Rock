@@ -33,7 +33,7 @@ namespace Rock.Blocks.Lms
     [Category( "LMS" )]
     [Description( "Displays a list of public learning programs." )]
     [IconCssClass( "ti ti-list" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     [TextField( "Page Title",
         Description = "Provide a clear, welcoming title for the Learning Hub homepage. Example: 'Grow Together in Faith.'",

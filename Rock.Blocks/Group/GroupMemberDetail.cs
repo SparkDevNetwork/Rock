@@ -33,6 +33,8 @@ using Rock.ViewModels.Utility;
 using Rock.Web;
 using Rock.Web.Cache;
 
+using CommunicationType = Rock.Model.CommunicationType;
+
 namespace Rock.Blocks.Group
 {
     /// <summary>
@@ -42,7 +44,7 @@ namespace Rock.Blocks.Group
     [Category( "Groups" )]
     [Description( "Displays the details of the given group member for editing role, status, etc." )]
     [IconCssClass( "ti ti-user" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 
@@ -1142,7 +1144,7 @@ namespace Rock.Blocks.Group
                     Text = r.Name,
                     Value = this.GetLinkedPageUrl( AttributeKey.RegistrationPage, new Dictionary<string, string>
                     {
-                        [PageParameterKey.RegistrationId] = r.Id.ToString()
+                        [PageParameterKey.RegistrationId] = Rock.Utility.IdHasher.Instance.GetHash( r.Id )
                     } )
                 } )
                 .ToList();

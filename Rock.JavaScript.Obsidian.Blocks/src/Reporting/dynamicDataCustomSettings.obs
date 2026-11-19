@@ -38,7 +38,7 @@
 
             <CodeEditor v-model="query"
                         label="SQL Query"
-                        help="The SQL query or stored procedure name to execute. If you are providing SQL you can add items from the query string using Lava like this: '{{ QueryParmName }}'. If SQL parameters are included they will also need to be in the Parameters field below.<br><span class='tip tip-lava'></span>"
+                        help="The SQL query or stored procedure name to execute. To filter by a page parameter, write @Name in the SQL (for example WHERE [Id] = @GroupId) and add Name= to the Query Parameters setting (for example GroupId=; it is called Stored Procedure Parameters when the query is a stored procedure). Rock passes the page's value as a SQL parameter, for plain queries as well as stored procedures. Never print page parameters into the SQL with Lava, because that is not safe; always use @Name parameters. A page parameter value printed into the SQL with Lava is replaced with blank when it contains a single quote ('), a semicolon (;), two hyphens in a row or a slash followed by an asterisk (/*).<br><span class='tip tip-lava'></span>"
                         mode="sql"
                         :disabled="isDisabled" />
 

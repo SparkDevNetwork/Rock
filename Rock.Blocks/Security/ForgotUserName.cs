@@ -40,7 +40,7 @@ namespace Rock.Blocks.Security
     [DisplayName( "Forgot Username" )]
     [Category( "Security" )]
     [Description( "Allows a user to get their forgotten username information emailed to them." )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 

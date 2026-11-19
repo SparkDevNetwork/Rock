@@ -26,6 +26,7 @@ using System.Web;
 using Newtonsoft.Json;
 
 using Rock;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -317,7 +318,7 @@ public class LaunchWorkflow : IHttpHandler
     /// <param name="message">The message to be logged.</param>
     protected void WriteToLog( string message )
     {
-        string logFile = HttpContext.Current.Server.MapPath( "~/App_Data/Logs/LaunchWorkflow.txt" );
+        string logFile = RockApp.Current.MapPath( "~/App_Data/Logs/LaunchWorkflow.txt" );
 
         // Write to the log, but if an ioexception occurs wait a couple seconds and then try again (up to 3 times).
         var maxRetry = 3;

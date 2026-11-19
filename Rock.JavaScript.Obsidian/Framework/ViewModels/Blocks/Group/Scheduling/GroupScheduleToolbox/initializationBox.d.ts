@@ -68,6 +68,13 @@ export type InitializationBox = {
     /** Gets or sets whether the "schedule unavailability" feature is enabled. */
     isScheduleUnavailabilityEnabled: boolean;
 
+    /**
+     * Gets or sets the message to display when the current person is not authorized to view
+     * all of the selected person's schedule. A non-empty value indicates that some
+     * upcoming schedules are hidden.
+     */
+    limitedAuthorizationMessage?: string | null;
+
     /** Gets or sets the navigation urls. */
     navigationUrls?: Record<string, string> | null;
 

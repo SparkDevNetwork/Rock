@@ -428,11 +428,11 @@ internal sealed partial class WorkflowBuilderSkill : AgentSkillComponent
         };
 
         // Every setting is returned, with no per attribute permission filter.
-        // Settings are the action's configuration rather than someone's data, and
-        // the caller already had to pass the VIEW check on the workflow type to get
-        // here. Filtering individual settings would also produce a tree that
-        // contradicts itself: a form field pointing at a setting that the same
-        // response says does not exist.
+        // Settings can hold credentials, SQL and Lava, so the caller must already
+        // hold EDIT or ADMINISTRATE on the workflow type to get here (see
+        // GetWorkflowTypeViewError). Filtering individual settings would also
+        // produce a tree that contradicts itself: a form field pointing at a
+        // setting that the same response says does not exist.
         foreach ( var attribute in actionType.Attributes.Values
             .Where( a => !VestigialSettingKeys.Contains( a.Key ) )
             .OrderBy( a => a.Order )
@@ -1160,7 +1160,12 @@ internal sealed partial class WorkflowBuilderSkill : AgentSkillComponent
 
     /// <summary>
     /// Checks whether the current person may read the configuration of a workflow
-    /// type.
+    /// type. Reading the configuration requires edit rights (EDIT or ADMINISTRATE)
+    /// on the workflow type, not just VIEW, because action settings and attribute
+    /// default values can hold credentials, SQL and Lava. This matches the Workflow
+    /// Type Detail block, which only shows those settings in edit mode. Unlike
+    /// <see cref="GetWorkflowTypeEditError"/>, system workflow types can still be
+    /// read.
     /// </summary>
     /// <param name="workflowType">The workflow type being read.</param>
     /// <returns>The reason the read is not allowed, or <c>null</c> when it is.</returns>
@@ -1171,9 +1176,19 @@ internal sealed partial class WorkflowBuilderSkill : AgentSkillComponent
             return "The workflow type could not be found.";
         }
 
-        if ( !workflowType.IsAuthorized( Authorization.VIEW, AgentRequestContext.CurrentPerson ) )
+        var currentPerson = AgentRequestContext.CurrentPerson;
+
+        if ( !workflowType.IsAuthorized( Authorization.VIEW, currentPerson ) )
         {
             return $"You do not have permission to view the workflow type '{workflowType.Name}'.";
+        }
+
+        var canEdit = workflowType.IsAuthorized( Authorization.EDIT, currentPerson )
+            || workflowType.IsAuthorized( Authorization.ADMINISTRATE, currentPerson );
+
+        if ( !canEdit )
+        {
+            return $"You do not have permission to edit the workflow type '{workflowType.Name}', which is required to read its configuration.";
         }
 
         return null;

@@ -46,7 +46,7 @@ namespace Rock.Blocks.Example
     [DisplayName( "Rock Solid Church Sample Data" )]
     [Category( "Examples" )]
     [Description( "Loads the Rock Solid Church sample data into your Rock system." )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     [TextField( "XML Document URL",
         Description = @"The URL for the input sample data XML document. You can also use a local Windows file path (e.g. C:\Rock\Documentation\sampledata_1_14_0.xml) if you want to test locally with your own fake data. The file format is loosely defined on the Rock Solid Demo Church Specification wiki.",

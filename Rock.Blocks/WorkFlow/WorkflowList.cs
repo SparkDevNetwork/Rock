@@ -43,7 +43,7 @@ namespace Rock.Blocks.Workflow
     [Category( "Workflow" )]
     [Description( "Lists all the workflows." )]
     [IconCssClass( "ti ti-list" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     [LinkedPage( "Entry Page",
         Description = "Page used to launch a new workflow of the selected type.",
@@ -303,7 +303,7 @@ namespace Rock.Blocks.Workflow
                     .Where( a =>
                         a.EntityTypeId == entityTypeId &&
                         a.IsGridColumn &&
-                        a.EntityTypeQualifierColumn.Equals( "WorkflowTypeId", StringComparison.OrdinalIgnoreCase ) &&
+                        a.EntityTypeQualifierColumn == "WorkflowTypeId" &&
                         a.EntityTypeQualifierValue.Equals( workflowQualifier ) )
                     .OrderByDescending( a => a.EntityTypeQualifierColumn )
                     .ThenBy( a => a.Order )

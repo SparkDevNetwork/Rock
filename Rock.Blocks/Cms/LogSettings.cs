@@ -41,7 +41,7 @@ namespace Rock.Blocks.Cms
     [Category( "Administration" )]
     [Description( "Block to edit rock log settings." )]
     [IconCssClass( "ti ti-question-mark" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     [SystemGuid.EntityTypeGuid( "e5f272d4-e63f-46e7-9429-0d62cb458fd1" )]
     [SystemGuid.BlockTypeGuid( "fa01630c-18fb-472f-8bf1-013af257de3f" )]
@@ -123,7 +123,9 @@ namespace Rock.Blocks.Cms
                 StandardLogLevel = rockConfig.StandardLogLevel.ConvertToInt().ToString(),
             };
 
-            var selectedCategories = rockConfig.StandardCategories ?? new List<string>();
+            var selectedCategories = ( rockConfig.StandardCategories ?? new List<string>() )
+                .Where( c => c.IsNotNullOrWhiteSpace() )
+                .ToList();
             var standardCategories = RockLogger.GetStandardCategories();
             var categories = selectedCategories.Where( c => standardCategories.Contains( c ) ).ToList();
             var customCategories = selectedCategories.Where( c => !standardCategories.Contains( c ) ).ToList();
@@ -147,7 +149,12 @@ namespace Rock.Blocks.Cms
                 () => entity.StandardLogLevel = ( LogLevel ) box.Bag.StandardLogLevel.AsInteger() );
 
             box.IfValidProperty( nameof( box.Bag.Categories ),
-                () => entity.StandardCategories = box.Bag.Categories.Union( box.Bag.CustomCategories ).Distinct().ToList() );
+                () => entity.StandardCategories = box.Bag.Categories
+                    .Union( box.Bag.CustomCategories ?? new List<string>() )
+                    .Where( c => c.IsNotNullOrWhiteSpace() )
+                    .Select( c => c.Trim() )
+                    .Distinct()
+                    .ToList() );
 
             box.IfValidProperty( nameof( box.Bag.IsLocalLoggingEnabled ),
                 () => entity.IsLocalLoggingEnabled = box.Bag.IsLocalLoggingEnabled );

@@ -38,6 +38,8 @@ using Rock.ViewModels.Rest.Controls;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
+using CommunicationType = Rock.Model.CommunicationType;
+
 namespace Rock.Blocks.Communication
 {
     /// <summary>
@@ -377,13 +379,15 @@ namespace Rock.Blocks.Communication
 
         /// <summary>
         /// Gets the folder to use as the root when browsing or uploading documents.
+        /// This is the current user's own folder when <see cref="IsUserSpecificRoot"/> is enabled.
         /// </summary>
-        private string DocumentRootFolder => GetAttributeValue( AttributeKey.DocumentRootFolder );
+        private string DocumentRootFolder => GetUserSpecificRootFolder( GetAttributeValue( AttributeKey.DocumentRootFolder ) );
 
         /// <summary>
         /// Gets the folder to use as the root when browsing or uploading images.
+        /// This is the current user's own folder when <see cref="IsUserSpecificRoot"/> is enabled.
         /// </summary>
-        private string ImageFolderRoot => GetAttributeValue( AttributeKey.ImageRootFolder );
+        private string ImageFolderRoot => GetUserSpecificRootFolder( GetAttributeValue( AttributeKey.ImageRootFolder ) );
 
         /// <summary>
         /// Should the attachment uploader be shown for email communications?
@@ -861,6 +865,10 @@ namespace Rock.Blocks.Communication
                 testCommunication.ReviewerPersonAliasId = primaryAliasId;
                 testCommunication.Subject = string.Format( "[Test] {0}", testCommunication.Subject );
 
+                // A test is delivered only to the current person.
+                testCommunication.CCEmails = null;
+                testCommunication.BCCEmails = null;
+
                 foreach ( var attachment in communication.Attachments )
                 {
                     var cloneAttachment = attachment.Clone( false );
@@ -897,9 +905,22 @@ namespace Rock.Blocks.Communication
                 communicationService.Add( testCommunication );
                 rockContext.SaveChanges();
 
-                foreach ( var medium in testCommunication.GetMediums() )
+                /*
+                    10/15/2026 - MSE
+
+                    A test is only sent to the current person, so only that person's
+                    sign-in token belongs in it. Without this scope, Lava in the test
+                    (or a Lava-off bypass) could mint a working token for any other
+                    person. This matches the Communication Entry Wizard test send.
+
+                    Reason: Prevent person token minting in test sends (RCVE-2026-2gmq).
+                */
+                using ( PersonTokenScope.RestrictTo( currentPerson ) )
                 {
-                    medium.Send( testCommunication );
+                    foreach ( var medium in testCommunication.GetMediums() )
+                    {
+                        medium.Send( testCommunication );
+                    }
                 }
 
                 testRecipient = new CommunicationRecipientService( rockContext )
@@ -1004,6 +1025,20 @@ namespace Rock.Blocks.Communication
                     .Queryable()
                     .AsNoTracking()
                     .Count( r => r.CommunicationId == communication.Id );
+
+                // CC and BCC addresses receive the email too, so they count toward
+                // the approval limit and the bulk email threshold.
+                if ( communication.CommunicationType == CommunicationType.Email )
+                {
+                    recipientCount += CountEmailAddresses( communication.CCEmails ) + CountEmailAddresses( communication.BCCEmails );
+
+                    if ( !communication.IsBulkCommunication
+                         && GetMediumComponent( bag.MediumEntityTypeGuid ).Medium is Rock.Communication.Medium.Email emailMedium
+                         && emailMedium.IsBulkEmailThresholdExceeded( recipientCount ) )
+                    {
+                        communication.IsBulkCommunication = true;
+                    }
+                }
 
                 if ( recipientCount > this.MaximumRecipients && !authorization.IsBlockApproveActionAuthorized )
                 {
@@ -1200,6 +1235,62 @@ namespace Rock.Blocks.Communication
                 return ActionBadRequest( "Invalid communication list." );
             }
 
+            /*
+                11/13/2026 - JMH
+
+                The block settings below decide what the page offers, so a request
+                has to be held to them as well. Values the block loaded itself stay
+                allowed (the medium and recipients already stored on the communication
+                and the Person page parameter), or editing a saved draft would be refused.
+
+                Reason: Apply the medium, additional recipient and Simple mode settings to every Save, Test and Send.
+            */
+            var storedMediumGuid = communication == null ? null : GetMediumEntityTypeGuid( communication.CommunicationType );
+
+            if ( bag.MediumEntityTypeGuid != storedMediumGuid && !GetMediums( currentPerson ).Any( m => m.Value.AsGuid() == bag.MediumEntityTypeGuid ) )
+            {
+                return ActionBadRequest( "Invalid communication medium." );
+            }
+
+            if ( !this.AreAdditionalEmailRecipientsAllowed && bag.AdditionalEmailAddresses?.Any() == true )
+            {
+                var storedNamelessEmails = communication == null
+                    ? new List<string>()
+                    : GetRecipientBags( rockContext, new RecipientQueryOptions { CommunicationId = communication.Id, IsNamelessOnly = true } )
+                        .Select( r => r.Email )
+                        .ToList();
+
+                if ( bag.AdditionalEmailAddresses.Any( a => !storedNamelessEmails.Contains( a, StringComparer.OrdinalIgnoreCase ) ) )
+                {
+                    return ActionBadRequest( "Additional email recipients are not allowed." );
+                }
+            }
+
+            if ( this.Mode == Mode.Simple && bag.Recipients?.Any() == true )
+            {
+                var allowedAliasGuids = communication == null
+                    ? new List<Guid>()
+                    : GetRecipientBags( rockContext, new RecipientQueryOptions { CommunicationId = communication.Id } )
+                        .Select( r => r.PersonAliasGuid )
+                        .ToList();
+
+                var pagePersonId = this.PersonId;
+
+                if ( communication == null && this.IsPersonPageParameterEnabled && pagePersonId.HasValue )
+                {
+                    allowedAliasGuids.AddRange( new PersonAliasService( rockContext )
+                        .GetPrimaryAliasQuery()
+                        .Where( p => p.PersonId == pagePersonId.Value )
+                        .Select( p => p.Guid )
+                        .ToList() );
+                }
+
+                if ( bag.Recipients.Any( r => !allowedAliasGuids.Contains( r.PersonAliasGuid ) ) )
+                {
+                    return ActionBadRequest( "Recipients cannot be added in this mode." );
+                }
+            }
+
             return null;
         }
 
@@ -1232,6 +1323,18 @@ namespace Rock.Blocks.Communication
 
             return GetCommunicationListGroupBags( rockContext, currentPerson )
                 .Any( g => g.Value.Equals( communicationListGroupGuidValue, StringComparison.OrdinalIgnoreCase ) );
+        }
+
+        /// <summary>
+        /// Counts the email addresses in a delimited address list.
+        /// </summary>
+        /// <param name="emails">The comma or semicolon delimited email addresses.</param>
+        /// <returns>The number of addresses in the list.</returns>
+        private static int CountEmailAddresses( string emails )
+        {
+            return emails.IsNullOrWhiteSpace()
+                ? 0
+                : emails.Replace( ';', ',' ).Split( ',' ).Count( e => e.IsNotNullOrWhiteSpace() );
         }
 
         /// <summary>
@@ -1716,7 +1819,7 @@ namespace Rock.Blocks.Communication
             var isNewCommunication = communication.Id == 0;
 
             // If started from a grid and not edited yet, treat it as new so 'Default As Bulk' block setting will apply.
-            var isNewCommunicationFromGrid = communication.Status == Model.CommunicationStatus.Transient
+            var isNewCommunicationFromGrid = communication.Status == CommunicationStatus.Transient
                 && communication.CreatedDateTime.HasValue
                 && communication.ModifiedDateTime.HasValue
                 && communication.CreatedDateTime.Value == communication.ModifiedDateTime.Value;
@@ -2028,6 +2131,76 @@ namespace Rock.Blocks.Communication
         }
 
         /// <summary>
+        /// Gets the root folder the HTML editor's file and image browsers may
+        /// use. When the User Specific Folders setting is enabled, this is a
+        /// folder named after the current user inside the configured root.
+        /// </summary>
+        /// <param name="rootFolder">The configured root folder. An empty value means the default ~/Content folder.</param>
+        /// <returns>The root folder the current user may browse and upload to, or <c>null</c> if the current user has no usable folder.</returns>
+        private string GetUserSpecificRootFolder( string rootFolder )
+        {
+            if ( !IsUserSpecificRoot )
+            {
+                return rootFolder;
+            }
+
+            var userFolderName = GetUserFolderName();
+
+            if ( userFolderName == null )
+            {
+                return null;
+            }
+
+            if ( rootFolder.IsNullOrWhiteSpace() )
+            {
+                rootFolder = "~/Content";
+            }
+
+            return $"{rootFolder.EnsureTrailingForwardslash()}{userFolderName}/";
+        }
+
+        /// <summary>
+        /// Gets the name of the current user's own folder, which is their
+        /// user name when it can safely be used as a single folder name.
+        /// </summary>
+        /// <returns>The folder name, or <c>null</c> if there is no logged in user or the user name is not a safe folder name.</returns>
+        private string GetUserFolderName()
+        {
+            var userName = RequestContext.CurrentUser?.UserName;
+
+            if ( userName.IsNullOrWhiteSpace() )
+            {
+                return null;
+            }
+
+            // Windows ignores trailing dots and spaces in folder names, so
+            // "jsmith." would be the same folder as "jsmith".
+            var hasUnsafeEnds = userName != userName.Trim() || userName.EndsWith( "." );
+            var hasInvalidCharacters = userName.IndexOfAny( System.IO.Path.GetInvalidFileNameChars() ) >= 0
+                || userName.Contains( "/" )
+                || userName.Contains( "\\" );
+
+            if ( hasUnsafeEnds || hasInvalidCharacters )
+            {
+                return null;
+            }
+
+            return userName;
+        }
+
+        /// <summary>
+        /// Determines whether the HTML editor's file and image browsers have
+        /// a folder the current user may use. This is only <c>false</c> when
+        /// User Specific Folders is enabled and the current user has no safe
+        /// folder of their own.
+        /// </summary>
+        /// <returns><c>true</c> if the browsers have a folder to use; otherwise <c>false</c>.</returns>
+        private bool IsHtmlEditorFolderAvailable()
+        {
+            return !IsUserSpecificRoot || GetUserFolderName() != null;
+        }
+
+        /// <summary>
         /// Gets the security grant token that will be used by UI controls on
         /// this block to ensure they have the proper permissions.
         /// </summary>
@@ -2070,10 +2243,16 @@ namespace Rock.Blocks.Communication
         /// ADMINISTRATE on the block. This does not depend on the Enable
         /// Asset Manager setting because the File Browser and Image Browser
         /// rely on the same grant; the setting only controls the toolbar button.
+        /// Never authorized when the current user has no user specific folder.
         /// </summary>
         /// <returns><c>true</c> if the current person may browse the asset manager; otherwise <c>false</c>.</returns>
         private bool IsAssetManagerViewAuthorized()
         {
+            if ( !IsHtmlEditorFolderAvailable() )
+            {
+                return false;
+            }
+
             var currentPerson = GetCurrentPerson();
 
             return currentPerson != null
@@ -2084,11 +2263,17 @@ namespace Rock.Blocks.Communication
         /// <summary>
         /// Determines whether the current person may upload, rename, move
         /// and delete files and folders with the asset manager. Requires EDIT
-        /// or ADMINISTRATE on the block.
+        /// or ADMINISTRATE on the block. Never authorized when the current
+        /// user has no user specific folder.
         /// </summary>
         /// <returns><c>true</c> if the current person may manage files in the asset manager; otherwise <c>false</c>.</returns>
         private bool IsAssetManagerEditAuthorized()
         {
+            if ( !IsHtmlEditorFolderAvailable() )
+            {
+                return false;
+            }
+
             var currentPerson = GetCurrentPerson();
 
             return currentPerson != null
@@ -2248,7 +2433,7 @@ namespace Rock.Blocks.Communication
             }
 
             communication.EnabledLavaCommands = this.EnabledLavaCommands;
-            communication.IsBulkCommunication = bag.IsBulkCommunication;
+            communication.IsBulkCommunication = bag.IsBulkCommunication || ( this.Mode == Mode.Simple && this.IsSendSimpleAsBulkEnabled );
             communication.ExcludeDuplicateRecipientAddress = bag.ExcludeDuplicateRecipientAddress;
 
             if ( medium != null )
@@ -2274,8 +2459,29 @@ namespace Rock.Blocks.Communication
             new StructuredContentHelper( bag.PushOpenMessageJson )
                 .DetectAndApplyDatabaseChanges( communication.PushOpenMessageJson, rockContext );
 
+            var storedCcEmails = communication.CCEmails;
+            var storedBccEmails = communication.BCCEmails;
+
             // Copy the communication data in the request to the Communication object.
             CommunicationDetails.Copy( new CommunicationDetailsAdapter( bag, rockContext ), communication );
+
+            if ( !this.IsCcBccEntryAllowed )
+            {
+                // With CC/BCC entry off, the only values the block supplies are the
+                // ones already stored on the communication or set by the selected template.
+                // An empty value is kept, since a template without CC or BCC clears them.
+                var ccBccTemplate = GetAuthorizedTemplate( rockContext, bag.CommunicationTemplateGuid );
+
+                if ( communication.CCEmails.IsNotNullOrWhiteSpace() && communication.CCEmails != storedCcEmails && communication.CCEmails != ccBccTemplate?.CCEmails )
+                {
+                    communication.CCEmails = storedCcEmails;
+                }
+
+                if ( communication.BCCEmails.IsNotNullOrWhiteSpace() && communication.BCCEmails != storedBccEmails && communication.BCCEmails != ccBccTemplate?.BCCEmails )
+                {
+                    communication.BCCEmails = storedBccEmails;
+                }
+            }
 
             var communicationType = communication.CommunicationType;
             List<ListItemBag> binaryFileAttachments;
@@ -2381,6 +2587,22 @@ namespace Rock.Blocks.Communication
                 communication.FromEmail = communication.FromEmail.SanitizeLava();
                 communication.FromName = communication.FromName.SanitizeLava();
                 communication.ReplyToEmail = communication.ReplyToEmail.SanitizeLava();
+
+                /*
+                    10/15/2026 - MSE
+
+                    The SMS and push transports render these fields as Lava too
+                    (PushSound is not shown in the UI but can be posted to the block
+                    action, and PushOpenMessage is rendered when the recipient opens a
+                    Show Details push). Without this, Enable Lava = No only held for
+                    email.
+
+                    Reason: Enable Lava = No must not run Lava (RCVE-2026-2gmq).
+                */
+                communication.SMSMessage = communication.SMSMessage.SanitizeLava();
+                communication.PushTitle = communication.PushTitle.SanitizeLava();
+                communication.PushOpenMessage = communication.PushOpenMessage.SanitizeLava();
+                communication.PushSound = communication.PushSound.SanitizeLava();
             }
 
             return communication;

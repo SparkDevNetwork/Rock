@@ -8,11 +8,11 @@ description: >-
   or asks for a written decision record/RFC. Also use when the user wants to formalize
   the analysis of a bug or regression before applying the fix. ALSO use when the user
   says "complete this spec", "mark spec as done", "the X spec is finished", "archive
-  this spec", or similar — the skill will move the file into `specs/completed/{Domain}/`
+  this spec", or similar — the skill will move the file into `specs/completed/{folder}/`
   and update `specs/completed/INDEX.md`.
   ALSO use when the user says "reject this spec", "won't fix", "won't do", "mark spec as
   rejected", "abandon this spec", or similar — the skill will capture a rejection reason,
-  append a Rejection section to the spec, move the file into `specs/rejected/{Domain}/`,
+  append a Rejection section to the spec, move the file into `specs/rejected/{folder}/`,
   and update `specs/rejected/INDEX.md`.
   Do NOT use for: writing code, writing release notes, or writing CLAUDE.md / rule files.
 argument-hint: "Topic of the spec, OR the path/name of an existing spec to mark complete"
@@ -51,7 +51,7 @@ Before drafting, collect the following. Ask the user only for what is genuinely 
    - **Feature / architecture** — new feature, refactor, or design decision.
    - **Issue / regression** — analysis of an existing bug or unwanted behavior.
    - **Hybrid** — a feature with a specific problem motivating it. Use both section sets.
-3. **Contributors** — **ALWAYS ASK** at the start: "Who else should be listed as a contributor on this spec? (full names — first and last — comma-separated, or 'none')". Do not skip this step. If the user says "none", set the field to `[]`. Every contributor name MUST include both a first and last name; if a single name is given (e.g. "Daniel"), ask for the last name before writing the file. Do not guess or use initials.
+3. **Contributors:** Ask at the start: "Who else should be listed as a contributor on this spec? (first and last names, comma-separated, or 'none')". The conversation rarely reveals collaborators, so ask even when everything else is known. If the user says "none", set the field to `[]`. Contributor names need a first and last name because the index is read by people outside the conversation; if a single name is given (e.g. "Daniel"), ask for the last name rather than guessing or using initials.
 4. **Author** — read from `git config user.name`. The value MUST be a full human name (first AND last name). If git returns only a first name, a single token, initials, or empty, ask the user for their full name before writing the file. Do not invent a name.
 5. **Brief summary** — one or two sentences. Derive from the conversation if obvious; otherwise ask.
 6. **External resource links** — collect any external URLs the user has referenced (Figma, Asana, GitHub issues/PRs, Notion pages, design system docs, customer tickets, related public docs). These will be cross-checked in Step 2 before the spec is written.
@@ -332,7 +332,7 @@ If the user gestures at a commit without a hash ("the one I just made", "the mer
 
 ### Step C4 — Move the file
 
-Move the spec from `specs/{filename}` to `specs/completed/{Domain}/{filename}`. Preserve the original filename verbatim (timestamp prefix included) so the chronological hash stays intact.
+Move the spec from `specs/{filename}` to `specs/completed/{folder}/{filename}`, where `{folder}` is the lowercase folder form chosen in Step C2. Preserve the original filename verbatim (timestamp prefix included) so the chronological hash stays intact.
 
 Use `git mv` if the source file is tracked by git, otherwise plain `mv`. Verify the move succeeded before updating the index.
 
@@ -341,12 +341,12 @@ Use `git mv` if the source file is tracked by git, otherwise plain `mv`. Verify 
 If the spec has an artifacts subfolder at `specs/artifacts/{spec-filename-without-ext}/`, move it alongside the spec.
 
 1. **Check** for `specs/artifacts/{spec-filename-without-ext}/`. If it does not exist, skip this step.
-2. **Create** `specs/completed/{Domain}/artifacts/` if it does not exist.
+2. **Create** `specs/completed/{folder}/artifacts/` if it does not exist.
 3. **Move** the per-spec subfolder into the completed domain's artifacts folder:
    - Source: `specs/artifacts/{spec-filename-without-ext}/`
-   - Destination: `specs/completed/{Domain}/artifacts/{spec-filename-without-ext}/`
+   - Destination: `specs/completed/{folder}/artifacts/{spec-filename-without-ext}/`
    - Use `git mv` for the entire subfolder if tracked by git; otherwise `mv`.
-4. **Audit links** in the moved spec. Open the spec at its new location and check every relative link or image reference. Because the spec is now at `specs/completed/{Domain}/{filename}` and the artifacts are at `specs/completed/{Domain}/artifacts/{spec-filename-without-ext}/`, the relative form `artifacts/{spec-filename-without-ext}/{file}` continues to resolve correctly. **However**, if the original spec used any other form (e.g. `../artifacts/...`, repo-rooted paths, or absolute paths), rewrite those links to the new relative form so they resolve from the new location.
+4. **Audit links** in the moved spec. Open the spec at its new location and check every relative link or image reference. Because the spec is now at `specs/completed/{folder}/{filename}` and the artifacts are at `specs/completed/{folder}/artifacts/{spec-filename-without-ext}/`, the relative form `artifacts/{spec-filename-without-ext}/{file}` continues to resolve correctly. **However**, if the original spec used any other form (e.g. `../artifacts/...`, repo-rooted paths, or absolute paths), rewrite those links to the new relative form so they resolve from the new location.
 5. **Verify each link resolves** to a real file at the new location before moving on. Do not skip the audit; broken links in completed specs are easy to ship and hard to find later.
 
 If `specs/artifacts/` is now empty after the move (no other active specs have artifacts), leave it in place. Do not delete the parent directory.
@@ -368,7 +368,7 @@ If `INDEX.md` does not yet exist, create it with this header:
 ```markdown
 # Completed Specs Index
 
-This index lists every spec that has been moved into `specs/completed/`. It is maintained by the `spec` skill — please do not edit by hand.
+This index lists every spec that has been moved into `specs/completed/`. It is maintained by the `spec` skill, please do not edit by hand.
 
 | Spec | Domain | Author | Summary | Commit |
 |------|--------|--------|---------|--------|
@@ -470,19 +470,19 @@ Do not edit any other section of the spec. The point is to preserve the original
 
 ### Step R5 — Move the file
 
-Move the spec from `specs/{filename}` to `specs/rejected/{Domain}/{filename}`. Preserve the original filename verbatim (timestamp prefix included).
+Move the spec from `specs/{filename}` to `specs/rejected/{folder}/{filename}`, where `{folder}` is the lowercase folder form chosen in Step R2. Preserve the original filename verbatim (timestamp prefix included).
 
 Use `git mv` if the source file is tracked by git, otherwise plain `mv`. Verify the move succeeded before updating the index.
 
 ### Step R6 — Move the spec's artifacts (if any) and adjust links
 
-Same logic as Step C5 in completion mode, but the destination is `specs/rejected/{Domain}/artifacts/{spec-filename-without-ext}/`.
+Same logic as Step C5 in completion mode, but the destination is `specs/rejected/{folder}/artifacts/{spec-filename-without-ext}/`.
 
 1. **Check** for `specs/artifacts/{spec-filename-without-ext}/`. If it does not exist, skip this step.
-2. **Create** `specs/rejected/{Domain}/artifacts/` if it does not exist.
+2. **Create** `specs/rejected/{folder}/artifacts/` if it does not exist.
 3. **Move** the per-spec subfolder:
    - Source: `specs/artifacts/{spec-filename-without-ext}/`
-   - Destination: `specs/rejected/{Domain}/artifacts/{spec-filename-without-ext}/`
+   - Destination: `specs/rejected/{folder}/artifacts/{spec-filename-without-ext}/`
    - Use `git mv` if tracked by git; otherwise `mv`.
 4. **Audit links** in the moved spec. The relative form `artifacts/{spec-filename-without-ext}/{file}` continues to resolve from the new location. Rewrite any non-relative or `../`-based links so they resolve against the new location, and verify each link points to a real file.
 

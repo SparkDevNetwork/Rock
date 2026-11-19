@@ -24,6 +24,7 @@ using Microsoft.Extensions.Logging;
 using Rock.Data;
 using Rock.Model;
 using Rock.Net;
+using Rock.Security;
 using Rock.SystemGuid;
 using Rock.ViewModels.Controls;
 using Rock.ViewModels.Utility;
@@ -135,6 +136,32 @@ internal sealed partial class PrayerSkill : AgentSkillComponent
     private List<ListItemBag> GetPrayerCategoryOptions( RockContext rockContext )
     {
         return GetPrayerCategoriesQueryable( rockContext )?.ToListItemBagList();
+    }
+
+    /// <summary>
+    /// Determines if the person is allowed to make changes to, or delete, an
+    /// existing prayer request. The person the request is for and the person
+    /// that created the request are allowed, as is anybody with EDIT access
+    /// to the request.
+    /// </summary>
+    /// <param name="prayerRequest">The existing prayer request.</param>
+    /// <param name="person">The person that wants to change the request.</param>
+    /// <returns><c>true</c> if the person can change the request; otherwise <c>false</c>.</returns>
+    private static bool IsAuthorizedToEditPrayerRequest( PrayerRequest prayerRequest, Model.Person person )
+    {
+        // Checked first so a request with no requester or creator never
+        // matches an anonymous caller.
+        if ( person == null )
+        {
+            return false;
+        }
+
+        var isRequester = prayerRequest.RequestedByPersonAlias?.PersonId == person.Id;
+        var isCreator = prayerRequest.CreatedByPersonAlias?.PersonId == person.Id;
+
+        return isRequester
+            || isCreator
+            || prayerRequest.IsAuthorized( Authorization.EDIT, person );
     }
 
     #endregion

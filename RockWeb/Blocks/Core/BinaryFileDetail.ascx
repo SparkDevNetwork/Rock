@@ -2,6 +2,7 @@
 
 <asp:UpdatePanel ID="upBinaryFile" runat="server">
     <ContentTemplate>
+        <Rock:NotificationBox ID="nbNotAuthorized" runat="server" NotificationBoxType="Warning" Visible="false" />
         <asp:Panel ID="pnlDetails" runat="server" Visible="false" CssClass="panel panel-block">
             <asp:HiddenField ID="hfBinaryFileId" runat="server" />
 

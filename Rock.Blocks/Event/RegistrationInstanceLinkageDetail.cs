@@ -40,7 +40,7 @@ namespace Rock.Blocks.Event
     [Category( "Event" )]
     [Description( "Block for editing a linkage associated to an event registration instance." )]
     [IconCssClass( "ti ti-question-mark" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 

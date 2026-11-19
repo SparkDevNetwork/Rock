@@ -20,6 +20,8 @@ using System.ComponentModel;
 using System.Web.Compilation;
 using System.Web.UI;
 
+using Rock.Configuration;
+
 namespace Rock.Web
 {
     /// <summary>
@@ -38,7 +40,7 @@ namespace Rock.Web
         /// <returns></returns>
         public static object GetEvalData( string expression, Type target, string entry )
         {
-            string result = Fingerprint.Tag( System.Web.VirtualPathUtility.ToAbsolute( expression ) );
+            string result = Fingerprint.Tag( RockApp.Current.ResolveRockUrl( expression ) );
             return result;
         }
 

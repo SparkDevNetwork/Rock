@@ -29,6 +29,7 @@ using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Obsidian.UI;
+using Rock.Security;
 using Rock.ViewModels.Blocks.Event.RegistrationInstanceSendPaymentReminder;
 using Rock.ViewModels.Core.Grid;
 using Rock.Web.Cache;
@@ -43,7 +44,7 @@ namespace Rock.Blocks.Event
     [Category( "Event" )]
     [Description( "Sends payment reminders for paid registrations that have a remaining balance." )]
     [IconCssClass( "ti ti-bell" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     [LinkedPage(
         "Registration Instance Page",
@@ -95,6 +96,8 @@ namespace Rock.Blocks.Event
                 return box;
             }
 
+            box.IsSendDisabled = !CanSendReminders( registrationInstance );
+
             var template = registrationInstance.RegistrationTemplate;
 
             if ( template == null )
@@ -124,11 +127,16 @@ namespace Rock.Blocks.Event
                 .WithBlock( this )
                 .BuildDefinition();
             box.HasOutstandingBalances = true;
-            box.FromName = template.PaymentReminderFromName?.ResolveMergeFields( sampleMergeFields ) ?? string.Empty;
-            box.FromEmail = template.PaymentReminderFromEmail?.ResolveMergeFields( sampleMergeFields ) ?? string.Empty;
-            box.Subject = template.PaymentReminderSubject?.ResolveMergeFields( sampleMergeFields ) ?? string.Empty;
             box.MessageBody = template.PaymentReminderEmailTemplate ?? string.Empty;
-            box.PreviewHtml = box.MessageBody.ResolveMergeFields( sampleMergeFields );
+
+            using ( PersonTokenScope.RestrictTo( GetCurrentPerson() ) )
+            {
+                box.FromName = template.PaymentReminderFromName?.ResolveMergeFields( sampleMergeFields ) ?? string.Empty;
+                box.FromEmail = template.PaymentReminderFromEmail?.ResolveMergeFields( sampleMergeFields ) ?? string.Empty;
+                box.Subject = template.PaymentReminderSubject?.ResolveMergeFields( sampleMergeFields ) ?? string.Empty;
+                box.PreviewHtml = box.MessageBody.ResolveMergeFields( sampleMergeFields );
+            }
+
             box.InstructionsHtml = BuildInstructionsHtml( paymentReminderTimeSpanDays );
             box.Registrations = gridData.Bags;
             box.PreSelectedKeys = gridData.PreSelectedKeys;
@@ -151,8 +159,39 @@ namespace Rock.Blocks.Event
                 return null;
             }
 
-            return new RegistrationInstanceService( RockContext )
+            var registrationInstance = new RegistrationInstanceService( RockContext )
                 .Get( key, !PageCache.Layout.Site.DisablePredictableIds );
+
+            /*
+                10/16/2026 - MSE
+
+                The instance comes from the page parameter, so a person could swap in
+                the IdKey of an instance they are not allowed to see and get its
+                registrations, balances and preview, or send reminders. VIEW on the
+                instance falls back to the template and its category.
+
+                Reason: Registration instance lists skipped VIEW on the instance.
+            */
+            if ( registrationInstance == null || !registrationInstance.IsAuthorized( Rock.Security.Authorization.VIEW, RequestContext.CurrentPerson ) )
+            {
+                return null;
+            }
+
+            return registrationInstance;
+        }
+
+        /// <summary>
+        /// Determines whether the current person may send payment reminders for the registration instance.
+        /// </summary>
+        /// <param name="registrationInstance">The registration instance the reminders are for.</param>
+        /// <returns><c>true</c> if the person can edit the block, or can edit or administrate the registration instance; otherwise <c>false</c>.</returns>
+        private bool CanSendReminders( RegistrationInstance registrationInstance )
+        {
+            var currentPerson = RequestContext.CurrentPerson;
+
+            return BlockCache.IsAuthorized( Rock.Security.Authorization.EDIT, currentPerson )
+                || registrationInstance.IsAuthorized( Rock.Security.Authorization.EDIT, currentPerson )
+                || registrationInstance.IsAuthorized( Rock.Security.Authorization.ADMINISTRATE, currentPerson );
         }
 
         /// <summary>
@@ -379,6 +418,11 @@ namespace Rock.Blocks.Event
                 return ActionBadRequest( "Registration Instance not found." );
             }
 
+            if ( !CanSendReminders( registrationInstance ) )
+            {
+                return ActionForbidden( "You are not authorized to send payment reminders for this registration instance." );
+            }
+
             var sampleRegistration = ResolveSampleRegistration( registrationInstance, request.SampleRegistrationKey );
 
             if ( sampleRegistration == null )
@@ -387,7 +431,13 @@ namespace Rock.Blocks.Event
             }
 
             var mergeFields = BuildMergeFields( sampleRegistration, registrationInstance );
-            var html = ( request.MessageBody ?? string.Empty ).ResolveMergeFields( mergeFields );
+            string html;
+
+            // The preview goes back to its author, so only the author's own token may appear in it.
+            using ( PersonTokenScope.RestrictTo( GetCurrentPerson() ) )
+            {
+                html = ( request.MessageBody ?? string.Empty ).ResolveMergeFields( mergeFields );
+            }
 
             return ActionOk( new ResolvePreviewResponseBag { PreviewHtml = html } );
         }
@@ -419,6 +469,11 @@ namespace Rock.Blocks.Event
             if ( registrationInstance == null )
             {
                 return ActionBadRequest( "Registration Instance not found." );
+            }
+
+            if ( !CanSendReminders( registrationInstance ) )
+            {
+                return ActionForbidden( "You are not authorized to send payment reminders for this registration instance." );
             }
 
             var disablePredictableIds = PageCache.Layout.Site.DisablePredictableIds;
@@ -464,7 +519,17 @@ namespace Rock.Blocks.Event
 
                         emailMessage.AddRecipient( registration.GetConfirmationRecipient( mergeFields ) );
 
-                        if ( emailMessage.Send( out var sendErrors ) )
+                        bool isSent;
+                        List<string> sendErrors;
+
+                        // The reminder goes to this registration's confirmation address,
+                        // so the registrar is the only person whose token belongs in it.
+                        using ( PersonTokenScope.RestrictTo( registration.PersonAlias?.Person ) )
+                        {
+                            isSent = emailMessage.Send( out sendErrors );
+                        }
+
+                        if ( isSent )
                         {
                             registration.LastPaymentReminderDateTime = RockDateTime.Now;
                             rockContext.SaveChanges();

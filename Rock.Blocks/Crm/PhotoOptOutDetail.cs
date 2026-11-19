@@ -33,7 +33,7 @@ namespace Rock.Blocks.Crm
     [Category( "CRM" )]
     [Description( "Allows a person to opt-out of future photo requests." )]
     [IconCssClass( "ti ti-question-mark" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 
@@ -95,7 +95,7 @@ namespace Rock.Blocks.Crm
 
             try
             {
-                entity = personService.GetByPersonActionIdentifier( personKey, "OptOut" ) ?? personService.GetByUrlEncodedKey( personKey );
+                entity = personService.GetByPersonActionIdentifier( personKey, "OptOut" ) ?? personService.GetByImpersonationToken( personKey, false, PageCache.Id );
             }
             catch
             {

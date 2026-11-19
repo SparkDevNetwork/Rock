@@ -15,12 +15,18 @@
 // </copyright>
 //
 
+#if NET
+namespace Rock.Enums.Workflow
+#else
 namespace Rock.Model
+#endif
 {
     /// <summary>
     /// Type of workflow trigger
     /// </summary>
+#if !NET
     [Enums.EnumDomain( "Workflow" )]
+#endif
     public enum WorkflowTriggerType
     {
         /// <summary>

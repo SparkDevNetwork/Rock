@@ -1211,5 +1211,14 @@ namespace Rock.Plugin.HotFixes {
                 return ResourceManager.GetString("_323_ShowInactiveGroupPlacementMembers_spGetGroupPlacementPeople", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   ALTER FUNCTION script that makes the SQL spouse lookup honor the Bible Strict Spouse system setting.
+        /// </summary>
+        public static string _334_FixSpouseFunctionBibleStrictSetting7117_ufnCrm_GetSpousePersonIdFromPersonId {
+            get {
+                return ResourceManager.GetString("_334_FixSpouseFunctionBibleStrictSetting7117_ufnCrm_GetSpousePersonIdFromPersonId", resourceCulture);
+            }
+        }
     }
 }

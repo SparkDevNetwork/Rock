@@ -71,13 +71,16 @@
             return valueBuilder.build();
         }
 
-        const averageGradePercentText = props.modelValue?.averageGradePercent?.toFixed(1).toString() ?? "0";
-        const labelType = props.modelValue.averageGradeIsPassing ? "success" : "warning";
-        const averageScoreHtml = props.modelValue.averageGrade
-            ? `<span class="label label-${labelType}">${props.modelValue.averageGrade} (${averageGradePercentText}%)</span>`
-            : `<span class="label label-${labelType}">${averageGradePercentText}%</span>`;
+        // Only show the average score to people who can view grades.
+        if (props.options.canViewGrades) {
+            const averageGradePercentText = props.modelValue?.averageGradePercent?.toFixed(1).toString() ?? "0";
+            const labelType = props.modelValue.averageGradeIsPassing ? "success" : "warning";
+            const averageScoreHtml = props.modelValue.averageGrade
+                ? `<span class="label label-${labelType}">${props.modelValue.averageGrade} (${averageGradePercentText}%)</span>`
+                : `<span class="label label-${labelType}">${averageGradePercentText}%</span>`;
 
-        valueBuilder.addHtmlValue("Average Score", averageScoreHtml);
+            valueBuilder.addHtmlValue("Average Score", averageScoreHtml);
+        }
 
         const availableDateText = props.modelValue?.availableDateDescription ?? "";
         if (availableDateText.length > 0) {

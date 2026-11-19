@@ -33,7 +33,7 @@ namespace Rock.Blocks.Group
     [DisplayName( "Group Simple Register Confirm" )]
     [Category( "Groups" )]
     [Description( "Confirmation block that will update a group member's status to active. (Use with Group Simple Register block)." )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 

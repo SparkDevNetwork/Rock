@@ -44,7 +44,7 @@ namespace Rock.Blocks.Cms
     [Category( "CMS" )]
     [Description( "Displays the details for a content channel." )]
     [IconCssClass( "ti ti-question-mark" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     [Rock.SystemGuid.EntityTypeGuid( "c7c776c4-f1db-477d-87e3-62f8f82ba773" )]
     [Rock.SystemGuid.BlockTypeGuid( "B28075DA-46C1-4F6B-933D-DFCFEFB439EE" )]
@@ -167,7 +167,7 @@ namespace Rock.Blocks.Cms
                 .GetByEntityTypeId( contentChannelItemEntityTypeId, true )
                 .AsNoTracking()
                 .Where( a =>
-                    a.EntityTypeQualifierColumn.Equals( "ContentChannelTypeId", StringComparison.OrdinalIgnoreCase ) &&
+                    a.EntityTypeQualifierColumn == "ContentChannelTypeId" &&
                     a.EntityTypeQualifierValue.Equals( contentChannelTypeId.ToString() ) &&
                     a.Key != null &&
                     a.Key != string.Empty )
@@ -500,7 +500,7 @@ namespace Rock.Blocks.Cms
 
                 attributeService.GetByEntityTypeId( new ContentChannelItem().TypeId, true ).AsQueryable()
                     .Where( a =>
-                        a.EntityTypeQualifierColumn.Equals( "ContentChannelId", StringComparison.OrdinalIgnoreCase ) &&
+                        a.EntityTypeQualifierColumn == "ContentChannelId" &&
                         a.EntityTypeQualifierValue.Equals( id.ToString() ) )
                     .OrderBy( a => a.Order )
                     .ToList()
@@ -805,7 +805,7 @@ namespace Rock.Blocks.Cms
                 .GetByEntityTypeId( new ContentChannelItem().TypeId, true )
                 .AsQueryable()
                 .Where( a =>
-                    a.EntityTypeQualifierColumn.Equals( "ContentChannelTypeId", StringComparison.OrdinalIgnoreCase ) &&
+                    a.EntityTypeQualifierColumn == "ContentChannelTypeId" &&
                     a.EntityTypeQualifierValue.Equals( contentChannelTypeId.ToString() ) )
                 .Select( a => new ListItemBag() { Text = a.Name, Value = a.Guid.ToString() } )
                 .ToList();

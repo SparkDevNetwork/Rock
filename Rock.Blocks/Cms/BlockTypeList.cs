@@ -43,7 +43,7 @@ namespace Rock.Blocks.Cms
     [Category( "CMS" )]
     [Description( "Displays a list of block types." )]
     [IconCssClass( "ti ti-list" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     [LinkedPage( "Detail Page",
         Description = "The page that will show the block type details.",
@@ -215,6 +215,15 @@ namespace Rock.Blocks.Cms
         protected override IQueryable<BlockTypeListBag> GetOrderedListQueryable( IQueryable<BlockTypeListBag> queryable, RockContext rockContext )
         {
             return queryable.OrderBy( a => a.Name ).ThenBy( a => a.Category );
+        }
+
+        /// <inheritdoc/>
+        protected override GridEntityKeyOptions GetGridEntityKeyOptions()
+        {
+            return new GridEntityKeyOptions
+            {
+                EntityTypeId = EntityTypeCache.GetId<Rock.Model.BlockType>()
+            };
         }
 
         /// <inheritdoc/>

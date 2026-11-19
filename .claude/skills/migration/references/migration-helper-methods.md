@@ -40,7 +40,7 @@ Use these ONLY for blocks that have a physical `.ascx` file:
 UpdateBlockType( string name, string description, string path, string category, string guid )
 UpdateBlockTypeByGuid( string name, string description, string path, string category, string guid )
 AddBlockType( string name, string description, string path, string category, string guid )
-RenameBlockType( string oldPath, string newPath, string newCategory = null, string newDescription = null )
+RenameBlockType( string oldPath, string newPath, string newCategory = null, string newName = null, string newDescription = null )
 ```
 
 **WARNING:** `UpdateBlockTypeByGuid()` contains SQL that does `DELETE FROM [BlockType] WHERE [Path] = '{path}'`. If you accidentally pass a path for an Obsidian block (which has no path), this can delete unrelated block types with empty Path values. This exact bug occurred in a production migration.
@@ -60,7 +60,7 @@ DeleteBlockType( string guid )  // Safe for both — deletes by GUID only
 ## Page
 
 ```csharp
-AddPage( bool isSystem, string parentPageGuid, string layoutGuid, string name, string description, string guid, string iconCssClass = "" )
+AddPage( bool skipIfAlreadyExists, string parentPageGuid, string layoutGuid, string name, string description, string guid, string iconCssClass = "", string insertAfterPageGuid = "" )
 MovePage( string pageGuid, string newParentPageGuid )
 DeletePage( string guid )
 RenamePage( string pageGuid, string newName )
@@ -79,7 +79,7 @@ DeletePageRoute( string guid )
 ## Block
 
 ```csharp
-AddBlock( bool isSystem, Guid pageGuid, Guid? layoutGuid, Guid siteGuid, Guid blockTypeGuid, string name, string zone, string preHtml, string postHtml, int order, string guid )
+AddBlock( bool skipIfAlreadyExists, Guid? pageGuid, Guid? layoutGuid, Guid? siteGuid, Guid? blockTypeGuid, string name, string zone, string preHtml, string postHtml, int order, string guid )
 DeleteBlock( string guid )
 ```
 
@@ -88,7 +88,7 @@ Note: `pageGuid` and `blockTypeGuid` use `.AsGuid()` when passing string GUIDs.
 ## Block Attributes
 
 ```csharp
-AddOrUpdateBlockTypeAttribute( string blockTypeGuid, string fieldTypeGuid, string name, string key, string category, string description, int order, string defaultValue, string guid )
+AddOrUpdateBlockTypeAttribute( string blockTypeGuid, string fieldTypeGuid, string name, string key, string abbreviatedName, string description, int order, string defaultValue, string guid )
 AddBlockTypeAttribute( string blockTypeGuid, string fieldTypeGuid, string name, string key, string category, string description, int order, string defaultValue, string guid )
 AddBlockAttributeValue( string blockGuid, string attributeGuid, string value )
 ```
@@ -96,20 +96,19 @@ AddBlockAttributeValue( string blockGuid, string attributeGuid, string value )
 ## Defined Type / Defined Value
 
 ```csharp
-AddDefinedType( string category, string name, string description, string guid, string helpText = "" )
-UpdateDefinedType( string guid, string category, string name, string description, string helpText = "" )
+AddDefinedType( string category, string name, string description, string guid, string helpText = null )
 DeleteDefinedType( string guid )
 
 AddDefinedValue( string definedTypeGuid, string value, string description, string guid, bool isSystem = true )
-UpdateDefinedValue( string guid, string value, string description, int order )
+UpdateDefinedValue( string definedTypeGuid, string value, string description, string guid, bool isSystem = true, int? foreignId = null, string foreignKey = "" )
 DeleteDefinedValue( string guid )
 ```
 
 ## Attribute (general)
 
 ```csharp
-UpdatePersonAttribute( string fieldTypeGuid, string categoryGuid, string name, string abbreviatedName, string key, string iconCssClass, string description, int order, string defaultValue, string guid )
-AddOrUpdatePersonAttributeByGuid( string fieldTypeGuid, string categoryGuid, string name, string abbreviatedName, string key, string iconCssClass, string description, int order, string defaultValue, string guid )
+UpdatePersonAttribute( string fieldTypeGuid, string categoryGuid, string name, string key, string iconCssClass, string description, int order, string defaultValue, string guid )
+AddOrUpdatePersonAttributeByGuid( string fieldTypeGuid, List<string> categoryGuids, string name, string abbreviatedName, string key, string iconCssClass, string description, int order, string defaultValue, string guid )
 ```
 
 ## Category
@@ -124,16 +123,15 @@ DeleteCategory( string guid )
 ```csharp
 AddSecurityAuth( string entityTypeName, string action, string groupGuid, string guid )
 AddSecurityAuthForPage( string pageGuid, int order, string action, bool allow, string groupGuid, int specialRole, string authGuid )
-AddSecurityAuthForBlockType( string blockTypeGuid, int order, string action, bool allow, string groupGuid, int specialRole, string authGuid )
-AddSecurityAuthForEntityType( string entityTypeName, int order, string action, bool allow, string groupGuid, Rock.Model.SpecialRole specialRole, string authGuid )
+AddSecurityAuthForEntityType( string entityTypeName, int order, string action, bool allow, string groupGuid, int specialRole, string authGuid )
 ```
 
 ## Group Type
 
 ```csharp
-AddGroupType( string name, string description, string groupTerm, string groupMemberTerm, bool allowMultipleLocations, bool showInGroupList, bool showInNavigation, string iconCssClass, int order, string inheritedGroupTypeGuid, string guid )
-UpdateGroupType( string guid, string name, string description, string groupTerm, string groupMemberTerm )
-AddGroupTypeRole( string groupTypeGuid, string name, string description, int order, bool isLeader, bool canView, bool canEdit, string guid, bool canManageMembers = false )
+AddGroupType( string name, string description, string groupTerm, string groupMemberTerm, bool allowMultipleLocations, bool showInGroupList, bool showInNavigation, string iconCssClass, int order, string inheritedGroupTypeGuid, int locationSelectionMode, string groupTypePurposeValueGuid, string guid, bool isSystem = true )
+UpdateGroupType( string name, string description, string groupTerm, string groupMemberTerm, string defaultGroupRoleGuid, bool allowMultipleLocations, bool showInGroupList, bool showInNavigation, string iconCssClass, int order, string inheritedGroupTypeGuid, int locationSelectionMode, string groupTypePurposeValueGuid, string guid, bool isSystem = true )
+AddGroupTypeRole( string groupTypeGuid, string name, string description, int order, int? maxCount, int? minCount, string guid, bool isSystem = true, bool isLeader = false, bool isDefaultGroupTypeRole = false )
 DeleteGroupType( string guid )
 ```
 
@@ -147,7 +145,7 @@ AddPostUpdateServiceJob( string name, string description, string jobType, string
 
 ```csharp
 DeleteByGuid( string guid, string tableName )  // Generic delete any record by GUID
-AddOrUpdateLavaShortcode( string name, string description, string documentation, string markup, string guid, ... )
+AddOrUpdateLavaShortcode( string name, string tagName, string description, string documentation, string markup, string parameters, int tagType, string categoryGuid, string guid )
 DeleteLavaShortcode( string guid )
 ```
 
@@ -177,6 +175,6 @@ For the full list, browse `Rock/SystemGuid/*.cs`.
 | Integer | `A75DFC58-7A1B-4799-BF31-451B2BBE38FF` |
 | Date | `6B6AA175-4758-453F-8D83-FCD8044B5F36` |
 | Person | `E4EAB7B2-0B76-429B-AFE4-AD86D7428C70` |
-| Defined Value | `59D5A94C-94A0-4630-B80A-BB21FAF1E9E9` |
+| Defined Value | `59D5A94C-94A0-4630-B80A-BB25697D74C7` |
 | Page Reference | `BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108` |
 | Single Select (DropDown) | `7525C4CB-EE6B-41D4-9B64-A08048D5A5C0` |

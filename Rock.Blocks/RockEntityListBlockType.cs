@@ -22,6 +22,7 @@ using System.Linq;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Obsidian.UI;
 using Rock.ViewModels.Core.Grid;
 using Rock.Web.Cache;
 
@@ -149,6 +150,15 @@ namespace Rock.Blocks
             }
 
             return GetGridBuilder().Build( items );
+        }
+
+        /// <inheritdoc/>
+        protected override GridEntityKeyOptions GetGridEntityKeyOptions()
+        {
+            return new GridEntityKeyOptions
+            {
+                EntityTypeId = EntityTypeCache.Get<T>( false )?.Id
+            };
         }
 
         #endregion

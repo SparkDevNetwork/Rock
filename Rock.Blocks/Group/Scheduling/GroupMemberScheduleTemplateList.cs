@@ -39,7 +39,7 @@ namespace Rock.Blocks.Group.Scheduling
     [Category( "Group Scheduling" )]
     [Description( "Lists group member schedule templates." )]
     [IconCssClass( "ti ti-list" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     [LinkedPage( "Detail Page",
         Description = "The page that will show the group member schedule template details.",

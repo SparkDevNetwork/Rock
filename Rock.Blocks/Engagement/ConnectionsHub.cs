@@ -36,6 +36,8 @@ using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
+using CommunicationType = Rock.Model.CommunicationType;
+
 using static Rock.Model.ConnectionType.ConnectionTypeAdditionalSettings;
 
 namespace Rock.Blocks.Engagement
@@ -48,7 +50,7 @@ namespace Rock.Blocks.Engagement
     [Category( "Engagement" )]
     [Description( "Displays the Connections Hub." )]
     [IconCssClass( "ti ti-list" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
     [ContextAware( typeof( Campus ) )]
 
     #region Block Attributes
@@ -175,7 +177,7 @@ namespace Rock.Blocks.Engagement
             public const string FilterStateConnectionTypeIdKey = "FilterState_ConnectionTypeIdKey_{0}";
             public const string FilterAttributeValuesConnectionTypeIdKey = "FilterAttributeValues_ConnectionTypeIdKey_{0}";
             public const string SelectedViewConnectionTypeIdKey = "SelectedView_ConnectionTypeIdKey_{0}";
-            public const string FilterConnectionType = "FilterConnectionType"; 
+            public const string FilterConnectionType = "FilterConnectionType";
         }
 
         private static class SqlParamKey
@@ -242,6 +244,14 @@ namespace Rock.Blocks.Engagement
         /// connector and the slicer's connector filter is locked to "My Requests".
         /// </summary>
         private bool IsLimitedToAssignedConnections => GetAttributeValue( AttributeKey.OnlyShowAssigned ).AsBoolean();
+
+        /// <summary>
+        /// Gets a value indicating whether the connector filter is locked to the current person,
+        /// either by the "Limit to Assigned Connections" block setting or because the block is in
+        /// My Connections mode. When true, the Connector page parameter and the saved
+        /// SelectedConnector preference are ignored.
+        /// </summary>
+        private bool IsConnectorLockedToCurrentPerson => IsLimitedToAssignedConnections || IsMyConnectionsMode;
 
         public PersonPreferenceCollection PersonPreferences
         {
@@ -424,10 +434,10 @@ namespace Rock.Blocks.Engagement
             }
 
             var connectorPerson = new PersonService( RockContext ).Get( PageParameter( PageParameterKey.Connector ), !PageCache.Layout.Site.DisablePredictableIds );
-            if ( IsLimitedToAssignedConnections )
+            if ( IsConnectorLockedToCurrentPerson )
             {
-                // The block setting locks the connector filter to the current person, so the
-                // Connector page parameter and any previously saved selection are ignored.
+                // The block setting or My Connections mode locks the connector filter to the current
+                // person, so the Connector page parameter and any previously saved selection are ignored.
                 this.PersonPreferences.SetValue( PreferenceKey.SelectedConnector, RequestContext.CurrentPerson.IdKey );
                 this.PersonPreferences.Save();
             }
@@ -655,7 +665,17 @@ namespace Rock.Blocks.Engagement
             };
             tempTypeRequest.LoadAttributes();
 
-            foreach ( var attribute in tempTypeRequest.Attributes.Values.Where( a => a.IsGridColumn ) )
+            /*
+                11/16/2026 - MSE
+
+                Only attributes the current person can view are offered as
+                column choices (and as attribute filters where the block has
+                them), so a denied attribute's name and edit definition are
+                never sent to the browser.
+
+                Reason: Grid attribute choices must honor attribute VIEW security.
+            */
+            foreach ( var attribute in tempTypeRequest.Attributes.Values.Where( a => a.IsGridColumn && a.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) ) )
             {
                 attributesByKey[attribute.Key] = attribute;
                 typeLevelAttributeKeys.Add( attribute.Key );
@@ -670,7 +690,7 @@ namespace Rock.Blocks.Engagement
                 };
                 tempOpportunityRequest.LoadAttributes();
 
-                foreach ( var attribute in tempOpportunityRequest.Attributes.Values.Where( a => a.IsGridColumn ) )
+                foreach ( var attribute in tempOpportunityRequest.Attributes.Values.Where( a => a.IsGridColumn && a.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) ) )
                 {
                     // Type-level attributes are unconditionally shown, so we do not narrow
                     // their scope by adding any opportunity Guids to them.
@@ -738,28 +758,16 @@ namespace Rock.Blocks.Engagement
 
         private void SetMyConnectionsModeOptions( ConnectionsHubOptionsBag options )
         {
-            // When limited to assigned connections the view is always the current person's,
-            // regardless of the Connector page parameter.
-            var connectorPerson = IsLimitedToAssignedConnections
-                ? RequestContext.CurrentPerson
-                : new PersonService( RockContext ).Get( PageParameter( PageParameterKey.Connector ), !PageCache.Layout.Site.DisablePredictableIds );
-
-            if ( connectorPerson == null )
+            // My Connections is always the current person's view, regardless of the Connector
+            // page parameter. See IsConnectorLockedToCurrentPerson.
+            if ( RequestContext.CurrentPerson == null )
             {
                 options.ErrorMessage = "Connector not found.";
                 return;
             }
 
             options.IsMyConnectionsView = true;
-
-            if ( RequestContext.CurrentPerson.Id == connectorPerson.Id )
-            {
-                options.Title = "My Requests";
-            }
-            else
-            {
-                options.Title = $"{connectorPerson.FullName.ToPossessive()} Requests";
-            }
+            options.Title = "My Requests";
 
             options.IconCssClass = "ti ti-user-circle";
 
@@ -1033,13 +1041,20 @@ namespace Rock.Blocks.Engagement
         /// where they belong to a connector group (global, or a campus group matching the request's campus).
         /// </summary>
         /// <param name="rows">The grid rows returned by the SQL query.</param>
-        /// <param name="connectionType">The Connection Type the rows belong to.</param>
+        /// <param name="connectionType">The Connection Type the rows belong to. Use <see cref="FilterRowsByViewAuthorizationAcrossTypes"/> when the rows can span several types.</param>
         /// <returns>The subset of rows the current person is authorized to view.</returns>
         private List<ConnectionRequestSqlRow> FilterRowsByViewAuthorization( List<ConnectionRequestSqlRow> rows, ConnectionType connectionType )
         {
-            if ( rows.Count == 0 || connectionType == null )
+            if ( rows.Count == 0 )
             {
                 return rows;
+            }
+
+            // Without a type there is nothing to authorize against, so show nothing rather than
+            // everything.
+            if ( connectionType == null )
+            {
+                return new List<ConnectionRequestSqlRow>();
             }
 
             var currentPerson = RequestContext.CurrentPerson;
@@ -1080,6 +1095,40 @@ namespace Rock.Blocks.Engagement
             {
                 return viewableOpportunityIds.Contains( row.ConnectionOpportunityId );
             } ).ToList();
+        }
+
+        /// <summary>
+        /// Filters grid rows that can span several Connection Types (My Connections with no Type
+        /// filter) by applying <see cref="FilterRowsByViewAuthorization"/> to each type's rows. Each
+        /// type is loaded once with its opportunities, so the cost grows with the number of types in
+        /// the result, not the number of rows. Rows whose type can't be loaded are dropped, and the
+        /// original row order is kept.
+        /// </summary>
+        /// <param name="rows">The grid rows returned by the SQL query.</param>
+        /// <returns>The subset of rows the current person is authorized to view.</returns>
+        private List<ConnectionRequestSqlRow> FilterRowsByViewAuthorizationAcrossTypes( List<ConnectionRequestSqlRow> rows )
+        {
+            var connectionTypeIds = rows.Select( row => row.ConnectionTypeId ).Distinct().ToList();
+
+            var connectionTypes = new ConnectionTypeService( RockContext )
+                .Queryable()
+                .Include( ct => ct.ConnectionOpportunities )
+                .Where( ct => connectionTypeIds.Contains( ct.Id ) )
+                .ToList();
+
+            var authorizedRowIds = new HashSet<int>();
+
+            foreach ( var connectionType in connectionTypes )
+            {
+                var connectionTypeRows = rows.Where( row => row.ConnectionTypeId == connectionType.Id ).ToList();
+
+                foreach ( var row in FilterRowsByViewAuthorization( connectionTypeRows, connectionType ) )
+                {
+                    authorizedRowIds.Add( row.Id );
+                }
+            }
+
+            return rows.Where( row => authorizedRowIds.Contains( row.Id ) ).ToList();
         }
 
         /// <summary>
@@ -1521,7 +1570,7 @@ namespace Rock.Blocks.Engagement
                 ? connectionTypeService.Queryable().Where( ct => ct.Id == configuredConnectionTypeId.Value )
                 : connectionTypeService.Queryable().Where( ct => !filterConnectionType.HasValue || ct.Guid == filterConnectionType.Value );
 
-            var selectedConnector = IsLimitedToAssignedConnections
+            var selectedConnector = IsConnectorLockedToCurrentPerson
                 ? RequestContext.CurrentPerson
                 : new PersonService( RockContext ).Get( SelectedConnector, !PageCache.Layout.Site.DisablePredictableIds );
 
@@ -3518,7 +3567,7 @@ namespace Rock.Blocks.Engagement
                 DueDate = connectionRequest.DueDate?.ToRockDateTimeOffset(),
                 CompletedDateTime = connectionRequest.ConnectedDateTime?.ToRockDateTimeOffset(),
                 DueStatus = GetDueStatus(connectionRequest.DueDate, connectionRequest.DueSoonDate, connectionRequest.ConnectionState, connectionRequest.ConnectedDateTime ),
-                Comments = connectionRequest.Comments?.ConvertMarkdownToHtml(),
+                Comments = connectionRequest.Comments?.ConvertMarkdownToSanitizedHtml(),
                 ConnectionTypeSource = connectionRequest.ConnectionTypeSource?.Name,
                 CelebrationText = GetCelebrationText( connectionRequest.Id ),
                 ActionItems = new List<ListItemBag>(),
@@ -4767,10 +4816,10 @@ WHERE 1 = 1" );
             }
 
             // Connector filter
-            if ( IsLimitedToAssignedConnections )
+            if ( IsConnectorLockedToCurrentPerson )
             {
-                // The block setting restricts every request to the current person as connector,
-                // regardless of the saved SelectedConnector preference.
+                // The block setting or My Connections mode restricts every request to the current
+                // person as connector, regardless of the saved SelectedConnector preference.
                 sql.Append( "\n  AND cp.[Id] = @CurrentPersonId" );
             }
             else if ( SelectedConnector.IsNotNullOrWhiteSpace() )
@@ -4797,8 +4846,11 @@ WHERE 1 = 1" );
 
             // Apply view security to the materialized rows, mirroring the legacy board's authority,
             // ConnectionRequestService.GetConnectionRequestViewModelSecurityQuery. EnableRequestSecurity
-            // is a Connection Type level flag, so the whole result set follows a single branch.
-            sqlRows = FilterRowsByViewAuthorization( sqlRows, connectionType );
+            // is a Connection Type level flag, so each type's rows follow a single branch. With no type
+            // selected (My Connections, All Types) the rows are filtered type by type.
+            sqlRows = connectionType != null
+                ? FilterRowsByViewAuthorization( sqlRows, connectionType )
+                : FilterRowsByViewAuthorizationAcrossTypes( sqlRows );
 
             var connectionRequests = new List<ConnectionRow>( sqlRows.Count );
 
@@ -8124,7 +8176,20 @@ WHERE 1 = 1" );
                     }
                 }
 
-                _gridAttributes = availableAttributes;
+                /*
+                    11/16/2026 - MSE
+
+                    Keep only the attributes the current person can view. Every
+                    consumer reads this cached list (the row attribute loader, the
+                    grid columns and any attribute filters), so a denied attribute
+                    is never loaded into the grid, shown as a column or used to
+                    filter the requests.
+
+                    Reason: Grid attribute values must honor attribute VIEW security.
+                */
+                _gridAttributes = availableAttributes
+                    .Where( a => a.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+                    .ToList();
             }
 
             return _gridAttributes;

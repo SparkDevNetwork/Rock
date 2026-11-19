@@ -174,6 +174,17 @@ namespace Rock.Blocks.Communication
                 )
                 .FirstOrDefault();
 
+            if ( communicationFlowPerformanceBag == null )
+            {
+                return null;
+            }
+
+            var communicationFlow = new CommunicationFlowService( rockContext ).Get( communicationFlowId );
+            if ( communicationFlow == null || !communicationFlow.IsAuthorized( Rock.Security.Authorization.VIEW, GetCurrentPerson() ) )
+            {
+                return null;
+            }
+
             // Get message instances. These are the actual messages that were (or will be) sent to recipients.
             communicationFlowPerformanceBag.Messages = ctx.CommunicationFlowInstanceCommunications
                 .Where( ic => ic.CommunicationFlowCommunication.CommunicationFlowId == communicationFlowId )
@@ -384,7 +395,25 @@ namespace Rock.Blocks.Communication
                 return ActionBadRequest( "No entity set data was provided." );
             }
 
-            var rockEntitySet = GridHelper.CreateEntitySet( entitySet );
+            var flow = new CommunicationFlowService( RockContext ).Get( CommunicationFlowPageParameter, !PageCache.Layout.Site.DisablePredictableIds );
+
+            if ( flow == null || !flow.IsAuthorized( Rock.Security.Authorization.VIEW, GetCurrentPerson() ) )
+            {
+                return ActionForbidden( "Not authorized." );
+            }
+
+            // The messages grid only lists this flow's messages, so those are the only keys a set may hold.
+            var flowCommunicationTypeId = EntityTypeCache.GetId<CommunicationFlowCommunication>();
+
+            if ( flowCommunicationTypeId == null || EntityTypeCache.Get( entitySet.EntityTypeKey.AsGuid() )?.Id != flowCommunicationTypeId )
+            {
+                return ActionBadRequest( "No entities were found to create the set." );
+            }
+
+            var allowedKeys = new GridEntityKeys();
+            allowedKeys.AddKeys( flowCommunicationTypeId.Value, flow.CommunicationFlowCommunications.Select( c => c.IdKey ) );
+
+            var rockEntitySet = GridHelper.CreateEntitySet( entitySet, allowedKeys );
 
             if ( rockEntitySet == null )
             {

@@ -276,7 +276,7 @@ Each candidate must pass these gates. If it fails any gate, move it to SKIPPED w
 
 If you cannot articulate how a future Claude conversation would behave differently because of this memory, do not save it.
 
-**Skip:** "Maxwell prefers a 4-space indent." (TS/C# tooling already enforces this. Saving it changes nothing.)
+**Skip:** "Maxwell prefers a 4-space indent." (Already the house convention in `.claude/rules/obsidian-conventions.md` and visible in existing files. Saving it changes nothing.)
 
 **Save:** "When applying review-conversion findings, fix only what the user explicitly approves and stop; do not auto-fix the entire report." (This will change how I behave in future review sessions.)
 

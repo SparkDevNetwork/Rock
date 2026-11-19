@@ -14,12 +14,18 @@
 // limitations under the License.
 // </copyright>
 //
+#if NET
+namespace Rock.Enums.Cms
+#else
 namespace Rock.Model
+#endif
 {
     /// <summary>
     /// Represents the type of DateRange that is supported.
     /// </summary>
+#if !NET
     [Enums.EnumDomain( "Cms" )]
+#endif
     public enum ContentChannelDateType
     {
         /// <summary>

@@ -42,7 +42,7 @@ namespace Rock.Blocks.Cms
     [Category( "CMS" )]
     [Description( "Displays the details of a particular site." )]
     [IconCssClass( "ti ti-question-mark" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 
@@ -638,7 +638,7 @@ namespace Rock.Blocks.Cms
         {
             return new AttributeService( rockContext ).GetByEntityTypeId( new Page().TypeId, true ).AsQueryable()
                 .Where( a =>
-                    a.EntityTypeQualifierColumn.Equals( "SiteId", StringComparison.OrdinalIgnoreCase ) &&
+                    a.EntityTypeQualifierColumn == "SiteId" &&
                     a.EntityTypeQualifierValue.Equals( siteIdQualifierValue ) )
                 .OrderBy( a => a.Order )
                 .ThenBy( a => a.Name )
@@ -828,7 +828,7 @@ namespace Rock.Blocks.Cms
 
                 var layoutService = new LayoutService( RockContext );
                 var layouts = layoutService.GetBySiteId( siteCache.Id );
-                var layout = layouts.FirstOrDefault( l => l.FileName.Equals( "FullWidth", StringComparison.OrdinalIgnoreCase ) );
+                var layout = layouts.FirstOrDefault( l => l.FileName == "FullWidth" );
                 if ( layout == null )
                 {
                     layout = layouts.FirstOrDefault();

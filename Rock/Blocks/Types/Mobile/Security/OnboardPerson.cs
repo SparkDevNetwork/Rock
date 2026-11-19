@@ -34,6 +34,14 @@ using Rock.Security;
 using Rock.Utility.Enums;
 using Rock.Web.Cache;
 
+#if NET
+using EmailPreference = Rock.Enums.Crm.EmailPreference;
+using Gender = Rock.Enums.Crm.Gender;
+#else
+using EmailPreference = Rock.Model.EmailPreference;
+using Gender = Rock.Model.Gender;
+#endif
+
 namespace Rock.Blocks.Types.Mobile.Security
 {
     /// <summary>
@@ -45,7 +53,7 @@ namespace Rock.Blocks.Types.Mobile.Security
     [Category( "Mobile > Security" )]
     [Description( "Provides an interface for the user to safely identify themselves and create a login." )]
     [IconCssClass( "ti ti-plane-departure" )]
-    [SupportedSiteTypes( Model.SiteType.Mobile )]
+    [SupportedSiteTypes( SiteType.Mobile )]
 
     #region Block Attributes
 
@@ -780,6 +788,18 @@ namespace Rock.Blocks.Types.Mobile.Security
         private const int CompleteOnboardingTimeLimit = 60;
 
         /// <summary>
+        /// The purpose used to encrypt and authenticate the state sent to
+        /// the client, so the state can only be read by this block.
+        /// </summary>
+        private const string StateEncryptionPurpose = "Rock.Mobile.OnboardPerson.State";
+
+        /// <summary>
+        /// The error message returned for any state that is not valid,
+        /// not verified or has expired.
+        /// </summary>
+        private const string ExpiredStateErrorMessage = "Your verification has expired, please try again.";
+
+        /// <summary>
         /// Gets the per-IP throttle limit.
         /// </summary>
         /// <value>
@@ -1341,7 +1361,7 @@ namespace Rock.Blocks.Types.Mobile.Security
         /// </summary>
         /// <param name="gender">The mobile gender.</param>
         /// <returns>The web gender value.</returns>
-        private Rock.Model.Gender? ToWeb( Rock.Common.Mobile.Enums.Gender? gender )
+        private Gender? ToWeb( Rock.Common.Mobile.Enums.Gender? gender )
         {
             if ( !gender.HasValue )
             {
@@ -1351,13 +1371,13 @@ namespace Rock.Blocks.Types.Mobile.Security
             switch ( gender.Value )
             {
                 case Common.Mobile.Enums.Gender.Male:
-                    return Rock.Model.Gender.Male;
+                    return Gender.Male;
 
                 case Common.Mobile.Enums.Gender.Female:
-                    return Rock.Model.Gender.Female;
+                    return Gender.Female;
 
                 default:
-                    return Rock.Model.Gender.Unknown;
+                    return Gender.Unknown;
             }
         }
 
@@ -1378,9 +1398,9 @@ namespace Rock.Blocks.Types.Mobile.Security
                 FirstName = details.FirstName,
                 LastName = details.LastName,
                 Email = details.Email,
-                Gender = ToWeb( details.Gender ) ?? Rock.Model.Gender.Unknown,
+                Gender = ToWeb( details.Gender ) ?? Gender.Unknown,
                 IsEmailActive = true,
-                EmailPreference = Rock.Model.EmailPreference.EmailAllowed,
+                EmailPreference = EmailPreference.EmailAllowed,
                 RecordTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id,
                 ConnectionStatusValueId = dvcConnectionStatus?.Id,
                 RecordStatusValueId = dvcRecordStatus?.Id,
@@ -1485,7 +1505,7 @@ namespace Rock.Blocks.Types.Mobile.Security
                 person.PhoneNumbers.Remove( existingPhoneNumber );
             }
 
-            person.Gender = ToWeb( details.Gender ) ?? Rock.Model.Gender.Unknown;
+            person.Gender = ToWeb( details.Gender ) ?? Gender.Unknown;
             person.Email = details.Email;
 
             var familyGroup = person.GetFamily( rockContext );
@@ -1660,6 +1680,28 @@ namespace Rock.Blocks.Types.Mobile.Security
             return smsMessage.Send( out _ );
         }
 
+        /// <summary>
+        /// Encrypts and authenticates the state so it can be sent to the client.
+        /// </summary>
+        /// <param name="state">The state to encrypt.</param>
+        /// <returns>The encrypted state.</returns>
+        private static string EncryptState( EncryptedState state )
+        {
+            return Rock.Security.Encryption.EncryptStringForPurpose( state.ToJson(), StateEncryptionPurpose );
+        }
+
+        /// <summary>
+        /// Decrypts the state sent back by the client. Any state that was not
+        /// issued by <see cref="EncryptState(EncryptedState)"/> or has been
+        /// modified returns <c>null</c>.
+        /// </summary>
+        /// <param name="encryptedState">The encrypted state.</param>
+        /// <returns>The decrypted state; otherwise <c>null</c>.</returns>
+        private static EncryptedState DecryptState( string encryptedState )
+        {
+            return Rock.Security.Encryption.DecryptStringForPurpose( encryptedState, StateEncryptionPurpose )?.FromJsonOrNull<EncryptedState>();
+        }
+
         #endregion
 
         #region Action Methods
@@ -1818,7 +1860,7 @@ namespace Rock.Blocks.Types.Mobile.Security
                 return ActionOk( new SendCodeResponse
                 {
                     IsSuccess = true,
-                    State = Rock.Security.Encryption.EncryptString( state.ToJson() )
+                    State = EncryptState( state )
                 } );
             }
         }
@@ -1855,7 +1897,15 @@ namespace Rock.Blocks.Types.Mobile.Security
             using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var identityVerificationService = new IdentityVerificationService( rockContext );
-                var state = Rock.Security.Encryption.DecryptString( request.State ).FromJsonOrThrow<EncryptedState>();
+                var state = DecryptState( request.State );
+
+                if ( state == null )
+                {
+                    return new BlockActionResult( System.Net.HttpStatusCode.Unauthorized )
+                    {
+                        Error = ExpiredStateErrorMessage
+                    };
+                }
 
                 bool isCodeValid = identityVerificationService.VerifyIdentityVerificationCode( state.IdentityVerificationId, VerificationTimeLimit, request.Code, ValidationCodeAttempts );
 
@@ -1899,7 +1949,7 @@ namespace Rock.Blocks.Types.Mobile.Security
 
                 return ActionOk( new VerifyCodeResponse
                 {
-                    State = Rock.Security.Encryption.EncryptString( state.ToJson() ),
+                    State = EncryptState( state ),
                     CreateLogin = person == null ? true : !person.Users.Any( a => ( a.IsConfirmed ?? true ) && !( a.IsLockedOut ?? false ) ),
                     InitialValues = GetInitialValues( person )
                 } );
@@ -1943,15 +1993,15 @@ namespace Rock.Blocks.Types.Mobile.Security
                 Person person = null;
                 var siteCache = PageCache.Layout.Site;
                 var personService = new PersonService( rockContext );
-                var state = Rock.Security.Encryption.DecryptString( request.State ).FromJsonOrThrow<EncryptedState>();
+                var state = DecryptState( request.State );
 
                 // Make sure the code was verified and the individual has not
                 // taken too long to finish onboarding.
-                if ( !state.VerifiedDateTime.HasValue || state.VerifiedDateTime.Value.AddMinutes( CompleteOnboardingTimeLimit ) < RockDateTime.Now )
+                if ( state == null || !state.VerifiedDateTime.HasValue || state.VerifiedDateTime.Value.AddMinutes( CompleteOnboardingTimeLimit ) < RockDateTime.Now )
                 {
                     return new BlockActionResult( System.Net.HttpStatusCode.Unauthorized )
                     {
-                        Error = "Your verification has expired, please try again."
+                        Error = ExpiredStateErrorMessage
                     };
                 }
 
@@ -2009,7 +2059,7 @@ namespace Rock.Blocks.Types.Mobile.Security
                     }
                 }
 
-                if ( isSamePerson && person.Gender != Rock.Model.Gender.Unknown && person.Gender != ToWeb( request.Details.Gender ) )
+                if ( isSamePerson && person.Gender != Gender.Unknown && person.Gender != ToWeb( request.Details.Gender ) )
                 {
                     isSamePerson = false;
                 }

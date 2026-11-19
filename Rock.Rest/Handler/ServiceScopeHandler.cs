@@ -85,7 +85,7 @@ namespace Rock.Rest.Handler
                 {
                     var originalContent = responseMessage.Content;
 
-                    responseMessage.Content = new ScopedPushStreamContent( scope, pushStreamContent );
+                    responseMessage.Content = new ScopedPushStreamContent( scope, rockRequestContext, pushStreamContent );
                 }
                 else
                 {

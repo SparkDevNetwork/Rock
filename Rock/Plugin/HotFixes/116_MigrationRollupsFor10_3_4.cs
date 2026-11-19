@@ -15,8 +15,8 @@
 // </copyright>
 
 using System.Linq;
-using System.Web.Hosting;
 
+using Rock.Configuration;
 using Rock.Store;
 
 namespace Rock.Plugin.HotFixes
@@ -126,7 +126,7 @@ namespace Rock.Plugin.HotFixes
             if ( installedPackages != null && installedPackages.Any( a => a.PackageId == 129 ) )
             {
                 installedPackages.RemoveAll( a => a.PackageId == 129 );
-                string packageFile = HostingEnvironment.MapPath( "~/App_Data/InstalledStorePackages.json" );
+                string packageFile = RockApp.Current.MapPath( "~/App_Data/InstalledStorePackages.json" );
                 string packagesAsJson = installedPackages.ToJson();
                 System.IO.File.WriteAllText( packageFile, packagesAsJson );
             }

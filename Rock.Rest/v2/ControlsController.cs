@@ -838,7 +838,17 @@ namespace Rock.Rest.v2
             else
             {
                 editedLocation = locationService.Get( editedLocation.Street1, editedLocation.Street2, editedLocation.City, editedLocation.State, editedLocation.County, editedLocation.PostalCode, editedLocation.Country, null );
-                addressString = editedLocation.GetFullStreetAddress().ConvertCrLfToHtmlBr();
+
+                /*
+                    10/19/2026 - MSE
+
+                    The address picker renders this string as HTML and the lookup can return an
+                    existing stored location, so the address text is encoded before the line
+                    breaks become <br>. The Address bag fields stay raw; they fill text inputs.
+
+                    Reason: Stored address text must not render as HTML.
+                */
+                addressString = editedLocation.GetFullStreetAddress().EncodeHtml().ConvertCrLfToHtmlBr();
             }
 
             return Ok( new AddressControlValidateAddressResultsBag
@@ -894,7 +904,15 @@ namespace Rock.Rest.v2
                 };
             }
 
-            return Ok( editedLocation.GetFullStreetAddress().ConvertCrLfToHtmlBr() );
+            /*
+                10/19/2026 - MSE
+
+                The address picker renders this string as HTML, so the address text is
+                encoded before the line breaks become <br>.
+
+                Reason: Stored address text must not render as HTML.
+            */
+            return Ok( editedLocation.GetFullStreetAddress().EncodeHtml().ConvertCrLfToHtmlBr() );
         }
 
         #endregion
@@ -1191,14 +1209,14 @@ namespace Rock.Rest.v2
             if ( asset.IsLocalAsset )
             {
                 // The root folder and restricted folders can't be deleted.
-                if ( IsLocalRootFolder( asset ) || IsRestrictedLocalFolder( System.Web.HttpContext.Current.Server.MapPath( asset.FullPath ) ) )
+                if ( IsLocalRootFolder( asset ) || IsRestrictedLocalFolder( RockApp.Current.MapPath( asset.FullPath ) ) )
                 {
                     return BadRequest();
                 }
 
                 try
                 {
-                    var physicalFolder = System.Web.HttpContext.Current.Server.MapPath( asset.FullPath );
+                    var physicalFolder = RockApp.Current.MapPath( asset.FullPath );
                     Directory.Delete( physicalFolder, true );
                 }
                 catch ( Exception ex )
@@ -1274,7 +1292,7 @@ namespace Rock.Rest.v2
 
             if ( parsedAsset.IsLocalAsset )
             {
-                var physicalFolder = System.Web.HttpContext.Current.Server.MapPath( parsedAsset.FullPath );
+                var physicalFolder = RockApp.Current.MapPath( parsedAsset.FullPath );
                 Directory.CreateDirectory( Path.Combine( physicalFolder, options.NewFolderName ) );
 
                 return Ok( new AssetManagerTreeItemBag
@@ -1358,12 +1376,12 @@ namespace Rock.Rest.v2
 
                 // Only local folders inside the root can be renamed, and not
                 // the root folder or restricted folders.
-                if ( asset == null || !asset.IsLocalAsset || IsLocalRootFolder( asset ) || IsRestrictedLocalFolder( System.Web.HttpContext.Current.Server.MapPath( asset.FullPath ) ) )
+                if ( asset == null || !asset.IsLocalAsset || IsLocalRootFolder( asset ) || IsRestrictedLocalFolder( RockApp.Current.MapPath( asset.FullPath ) ) )
                 {
                     return BadRequest();
                 }
 
-                var physicalPath = System.Web.HttpContext.Current.Server.MapPath( asset.FullPath );
+                var physicalPath = RockApp.Current.MapPath( asset.FullPath );
                 var renamedPath = Path.Combine( Path.GetDirectoryName( physicalPath.TrimEnd( '/', '\\' ) ), options.NewFolderName );
 
                 if ( !IsPhysicalPathWithinRoot( renamedPath, asset.Root ) || IsUploadRestrictedLocalPath( renamedPath ) )
@@ -1411,15 +1429,15 @@ namespace Rock.Rest.v2
 
                 // Only local folders inside the root can be moved, and not
                 // the root folder or restricted folders.
-                if ( asset == null || !asset.IsLocalAsset || options.TargetFolder == null || IsLocalRootFolder( asset ) || IsRestrictedLocalFolder( System.Web.HttpContext.Current.Server.MapPath( asset.FullPath ) ) )
+                if ( asset == null || !asset.IsLocalAsset || options.TargetFolder == null || IsLocalRootFolder( asset ) || IsRestrictedLocalFolder( RockApp.Current.MapPath( asset.FullPath ) ) )
                 {
                     return BadRequest();
                 }
 
                 var baseFolderName = Path.GetFileName( asset.FullPath.TrimEnd( '/', '\\' ) );
-                var currentPhysicalPath = System.Web.HttpContext.Current.Server.MapPath( asset.FullPath );
+                var currentPhysicalPath = RockApp.Current.MapPath( asset.FullPath );
                 var targetRootRelativePath = Path.Combine( asset.Root, options.TargetFolder.TrimStart( '/', '\\' ), baseFolderName );
-                var targetPhyicalPath = System.Web.HttpContext.Current.Server.MapPath( targetRootRelativePath );
+                var targetPhyicalPath = RockApp.Current.MapPath( targetRootRelativePath );
 
                 if ( !IsPhysicalPathWithinRoot( targetPhyicalPath, asset.Root ) || IsUploadRestrictedLocalPath( targetPhyicalPath ) )
                 {
@@ -1480,14 +1498,14 @@ namespace Rock.Rest.v2
                         return BadRequest();
                     }
 
-                    if ( options.Files.Any( f => IsUploadRestrictedLocalPath( System.Web.HttpContext.Current.Server.MapPath( f ) ) ) )
+                    if ( options.Files.Any( f => IsUploadRestrictedLocalPath( RockApp.Current.MapPath( f ) ) ) )
                     {
                         return BadRequest();
                     }
 
                     foreach ( string file in options.Files )
                     {
-                        var physicalPath = System.Web.HttpContext.Current.Server.MapPath( file );
+                        var physicalPath = RockApp.Current.MapPath( file );
                         File.Delete( physicalPath );
                     }
                 }
@@ -1550,7 +1568,7 @@ namespace Rock.Rest.v2
                         return BadRequest( "Invalid file." );
                     }
 
-                    var physicalPath = System.Web.HttpContext.Current.Server.MapPath( options.File );
+                    var physicalPath = RockApp.Current.MapPath( options.File );
                     fileName = Path.GetFileName( physicalPath );
                     stream = File.Open( physicalPath, FileMode.Open, FileAccess.Read );
                 }
@@ -1631,7 +1649,7 @@ namespace Rock.Rest.v2
                         return BadRequest( "Invalid file name." );
                     }
 
-                    var physicalPath = System.Web.HttpContext.Current.Server.MapPath( options.File );
+                    var physicalPath = RockApp.Current.MapPath( options.File );
                     var renamedPath = Path.Combine( Path.GetDirectoryName( physicalPath ), options.NewFileName );
 
                     if ( !IsPhysicalPathWithinRoot( renamedPath, root ) || IsUploadRestrictedLocalPath( renamedPath ) )
@@ -1704,7 +1722,7 @@ namespace Rock.Rest.v2
 
             try
             {
-                physicalZipFile = System.Web.HttpContext.Current.Server.MapPath( Path.Combine( root, options.FileName ) );
+                physicalZipFile = RockApp.Current.MapPath( Path.Combine( root, options.FileName ) );
             }
             catch ( Exception )
             {
@@ -1833,7 +1851,7 @@ namespace Rock.Rest.v2
                 }
 
                 var selectedSubPath = selectedFolder.Substring( normalizedRoot.Length ).TrimStart( '/' );
-                var physicalRootFolder = System.Web.HttpContext.Current.Server.MapPath( root );
+                var physicalRootFolder = RockApp.Current.MapPath( root );
                 var physicalSelectedFolder = Path.GetFullPath( Path.Combine( physicalRootFolder, selectedSubPath.Replace( '/', Path.DirectorySeparatorChar ) ) ).TrimEnd( '/', '\\' );
 
                 if ( !Rock.Utility.FileUtilities.IsPathWithinFolder( physicalSelectedFolder, physicalRootFolder ) )
@@ -2045,7 +2063,7 @@ namespace Rock.Rest.v2
         {
             try
             {
-                var physicalPath = System.Web.HttpContext.Current.Server.MapPath( path );
+                var physicalPath = RockApp.Current.MapPath( path );
 
                 return IsPhysicalPathWithinRoot( physicalPath, root );
             }
@@ -2070,7 +2088,7 @@ namespace Rock.Rest.v2
 
             try
             {
-                var physicalRoot = System.Web.HttpContext.Current.Server.MapPath( root );
+                var physicalRoot = RockApp.Current.MapPath( root );
 
                 return Rock.Utility.FileUtilities.IsPathWithinFolder( physicalPath, physicalRoot );
             }
@@ -2090,7 +2108,7 @@ namespace Rock.Rest.v2
         {
             try
             {
-                var physicalWebRoot = Path.GetFullPath( System.Web.HttpContext.Current.Server.MapPath( "~/" ) ).TrimEnd( '/', '\\' );
+                var physicalWebRoot = Path.GetFullPath( RockApp.Current.MapPath( "~/" ) ).TrimEnd( '/', '\\' );
                 var fullPath = Path.GetFullPath( physicalPath ).TrimEnd( '/', '\\' );
 
                 if ( !Rock.Utility.FileUtilities.IsPathWithinFolder( fullPath, physicalWebRoot ) )
@@ -2160,8 +2178,8 @@ namespace Rock.Rest.v2
         {
             try
             {
-                var physicalPath = System.Web.HttpContext.Current.Server.MapPath( asset.FullPath );
-                var physicalRoot = System.Web.HttpContext.Current.Server.MapPath( asset.Root );
+                var physicalPath = RockApp.Current.MapPath( asset.FullPath );
+                var physicalRoot = RockApp.Current.MapPath( asset.Root );
 
                 return Rock.Utility.FileUtilities.IsPathWithinFolder( physicalRoot, physicalPath );
             }
@@ -2234,7 +2252,7 @@ namespace Rock.Rest.v2
                 parsedAsset.EncryptedRoot = selectedFolder.EncryptedRoot;
             }
 
-            var localRoot = System.Web.HttpContext.Current.Server.MapPath( parsedAsset.Root );
+            var localRoot = RockApp.Current.MapPath( parsedAsset.Root );
 
             if ( !Directory.Exists( localRoot ) )
             {
@@ -2316,8 +2334,8 @@ namespace Rock.Rest.v2
                 asset.Root = "~/" + asset.Root;
             }
 
-            var localRoot = System.Web.HttpContext.Current.Server.MapPath( asset.Root );
-            var localPath = System.Web.HttpContext.Current.Server.MapPath( asset.FullDirectoryPath );
+            var localRoot = RockApp.Current.MapPath( asset.Root );
+            var localPath = RockApp.Current.MapPath( asset.FullDirectoryPath );
             var subDirectories = Directory.GetDirectories( localPath ).OrderBy( a => a ).ToList();
 
             foreach ( var subDir in subDirectories )
@@ -2379,8 +2397,8 @@ namespace Rock.Rest.v2
         /// <returns>An object containing the list of files as well as flags for restrictions on the folder.</returns>
         private AssetManagerGetFilesResultsBag<Asset> GetFilesInFolder( AssetManagerAsset asset, string browseMode /* image or doc */ )
         {
-            var physicalRootFolder = System.Web.HttpContext.Current.Server.MapPath( asset.Root );
-            var physicalFolder = System.Web.HttpContext.Current.Server.MapPath( asset.FullDirectoryPath );
+            var physicalRootFolder = RockApp.Current.MapPath( asset.Root );
+            var physicalFolder = RockApp.Current.MapPath( asset.FullDirectoryPath );
 
             var fileTypeWhiteList = "*.*";
             var fileList = new List<string>();
@@ -2730,6 +2748,26 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "1B7BA1CB-6D3F-4DE7-AC02-EAAADF89C7ED" )]
         public IActionResult AttributeMatrixEditorNormalizeEditValue( [FromBody] AttributeMatrixEditorNormalizeEditValueOptionsBag options )
         {
+            if ( options?.Attributes == null || options.AttributeValues == null )
+            {
+                return BadRequest( "Invalid options." );
+            }
+
+            // Only matrix item attributes may be converted here. Otherwise any
+            // attribute's value conversion, including one that saves data, could
+            // be run by an anonymous caller.
+            var matrixItemEntityTypeId = EntityTypeCache.GetId<AttributeMatrixItem>();
+
+            foreach ( var attribute in options.Attributes )
+            {
+                var attributeCache = attribute.Value != null ? AttributeCache.Get( attribute.Value.AttributeGuid ) : null;
+
+                if ( attributeCache == null || attributeCache.EntityTypeId != matrixItemEntityTypeId )
+                {
+                    return BadRequest( "Invalid attribute." );
+                }
+            }
+
             using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var publicValues = options.Attributes.ToDictionary( a => a.Key, a =>
@@ -2908,6 +2946,11 @@ namespace Rock.Rest.v2
                     return Unauthorized();
                 }
 
+                // Make the current person available to Lava so badges that
+                // check security (such as the Attribute filter) evaluate it
+                // against the person viewing the badge.
+                System.Web.HttpContext.Current.AddOrReplaceItem( "CurrentPerson", RockRequestContext.CurrentPerson );
+
                 return Ok( badge.RenderBadge( entity ) );
             }
         }
@@ -2992,6 +3035,11 @@ namespace Rock.Rest.v2
                 badges = badges.Where( b => b.IsAuthorized( Security.Authorization.VIEW, RockRequestContext.CurrentPerson )
                         || grant?.IsAccessGranted( b, Security.Authorization.VIEW ) == true )
                     .ToList();
+
+                // Make the current person available to Lava so badges that
+                // check security (such as the Attribute filter) evaluate it
+                // against the person viewing the badge.
+                System.Web.HttpContext.Current.AddOrReplaceItem( "CurrentPerson", RockRequestContext.CurrentPerson );
 
                 // Render all the badges and then filter out any that are empty.
                 var badgeResults = badges.Select( b => b.RenderBadge( entity ) )
@@ -4778,7 +4826,12 @@ namespace Rock.Rest.v2
                     ? AttributeCache.Get( options.UpdateAttributeGuid.Value )
                     : null;
 
-                if ( updateAttribute?.FieldType?.Guid == SystemGuid.FieldType.DEFINED_VALUE.AsGuid() )
+                // Only an attribute built on this defined type and open to adding values may be updated.
+                var isAttributeForDefinedType = updateAttribute?.FieldType?.Guid == SystemGuid.FieldType.DEFINED_VALUE.AsGuid()
+                    && updateAttribute.ConfigurationValues.GetValueOrNull( "definedtype" ).AsIntegerOrNull() == definedType.Id
+                    && updateAttribute.ConfigurationValues.GetValueOrNull( "AllowAddingNewValues" ).AsBoolean();
+
+                if ( isAttributeForDefinedType )
                 {
                     var needSave = Field.Helper.AddDefinedValueToAttributeConfiguration( updateAttribute.Id, definedValue.Id, rockContext );
 
@@ -4842,6 +4895,49 @@ namespace Rock.Rest.v2
         #region Email Editor
 
         /// <summary>
+        /// Determines whether the unique identifier belongs to one of the
+        /// starter email sections that the email editor seeds.
+        /// </summary>
+        /// <param name="guid">The email section unique identifier.</param>
+        /// <returns><c>true</c> if the unique identifier is a starter email section; otherwise, <c>false</c>.</returns>
+        private static bool IsStarterEmailSectionGuid( Guid guid )
+        {
+            return guid == Rock.SystemGuid.EmailSection.STARTER_HERO.AsGuid()
+                || guid == Rock.SystemGuid.EmailSection.STARTER_STANDARD_PROMO.AsGuid()
+                || guid == Rock.SystemGuid.EmailSection.STARTER_3_COLUMN_PROMO.AsGuid();
+        }
+
+        /// <summary>
+        /// Validates the source markup of an email section.
+        /// </summary>
+        /// <param name="sourceMarkup">The source markup to validate.</param>
+        /// <returns>The validation error message, or <c>null</c> if the markup is valid.</returns>
+        private static string GetEmailSectionSourceMarkupError( string sourceMarkup )
+        {
+            /*
+                10/18/2026 - MSE
+
+                Email section markup is shared with every email editor user and
+                is inserted into the editor iframe, which runs on the Rock origin.
+                Script tags, javascript: URLs and event handler attributes are
+                rejected here. This always runs and is not gated on
+                DbContext.EnableStringValidation, which is off by default.
+
+                Reason: Prevent stored script in saved email sections.
+            */
+            try
+            {
+                StringValueValidator.Validate( sourceMarkup, StringValueValidator.GetEffectiveRules( Rock.Enums.Security.StringValidationProfile.LavaAndBasicHtml ), typeof( EmailSection ), nameof( EmailSection.SourceMarkup ) );
+
+                return null;
+            }
+            catch ( PropertyValidationException ex )
+            {
+                return ex.Message;
+            }
+        }
+
+        /// <summary>
         /// Creates an email section.
         /// </summary>
         /// <param name="options">The email section to create.</param>
@@ -4892,16 +4988,32 @@ namespace Rock.Rest.v2
                 var thumbnailBinaryFileGuid = options.ThumbnailBinaryFile?.Value.AsGuidOrNull();
                 var thumbnailBinaryFile = thumbnailBinaryFileGuid.HasValue ? new BinaryFileService( rockContext ).Get( thumbnailBinaryFileGuid.Value ) : null;
 
+                /*
+                    10/18/2026 - MSE
+
+                    The editor seeds the three starter sections from the browser
+                    with IsSystem set, so the flag is still honored for those.
+                    Any other section is saved as a normal section so that its
+                    creator and administrators can still edit or delete it.
+
+                    Reason: Prevent locking planted sections with IsSystem.
+                */
                 var emailSection = new EmailSection
                 {
                     Category = category,
                     Guid = options.Guid,
-                    IsSystem = options.IsSystem,
+                    IsSystem = options.IsSystem && IsStarterEmailSectionGuid( options.Guid ),
                     Name = options.Name,
                     SourceMarkup = options.SourceMarkup,
                     ThumbnailBinaryFile = thumbnailBinaryFile,
                     UsageSummary = options.UsageSummary
                 };
+
+                var sourceMarkupError = GetEmailSectionSourceMarkupError( options.SourceMarkup );
+                if ( sourceMarkupError != null )
+                {
+                    return BadRequest( sourceMarkupError );
+                }
 
                 if ( !emailSection.IsValid )
                 {
@@ -5097,6 +5209,12 @@ namespace Rock.Rest.v2
                     }
                 }
 
+                var sourceMarkupError = GetEmailSectionSourceMarkupError( options.SourceMarkup );
+                if ( sourceMarkupError != null )
+                {
+                    return BadRequest( sourceMarkupError );
+                }
+
                 if ( emailSection == null )
                 {
                     // Create a new email section.
@@ -5201,6 +5319,8 @@ namespace Rock.Rest.v2
         [Authenticate]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponse( HttpStatusCode.NoContent )]
+        [ProducesResponse( HttpStatusCode.NotFound )]
+        [ProducesResponse( HttpStatusCode.Unauthorized )]
         [Rock.SystemGuid.RestActionGuid( "FFE635FE-3988-4286-AEC6-0ADFAC162A58" )]
         public IActionResult EmailEditorRegisterRsvpRecipients( [FromBody] EmailEditorRegisterRsvpRecipientsOptionsBag options )
         {
@@ -5216,6 +5336,18 @@ namespace Rock.Rest.v2
 
             using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
+                var occurrence = new AttendanceOccurrenceService( rockContext ).Get( options.OccurrenceId );
+
+                if ( occurrence?.Group == null )
+                {
+                    return NotFound();
+                }
+
+                if ( !IsGroupAllowedForRsvp( occurrence.Group, GetPerson() ) )
+                {
+                    return Unauthorized();
+                }
+
                 var attendanceService = new AttendanceService( rockContext );
 
                 attendanceService.RegisterRSVPRecipients( options.OccurrenceId, options.PersonIds );
@@ -5271,6 +5403,7 @@ namespace Rock.Rest.v2
         [Authenticate]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponse( HttpStatusCode.OK, Type = typeof( List<ListItemBag> ) )]
+        [ProducesResponse( HttpStatusCode.Unauthorized )]
         [Rock.SystemGuid.RestActionGuid( "25C14E2A-36A2-46C6-8B22-848D83A6D2C9" )]
         public IActionResult EmailEditorGetFutureAttendanceOccurrences( EmailEditorGetFutureAttendanceOccurrencesOptionsBag bag )
         {
@@ -5286,10 +5419,17 @@ namespace Rock.Rest.v2
 
             using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
+                // Load with proxies on so IsAuthorized can walk parent group security.
+                var group = new GroupService( rockContext ).Get( bag.GroupGuid );
+
+                if ( !IsGroupAllowedForRsvp( group, GetPerson() ) )
+                {
+                    return Unauthorized();
+                }
+
                 var previousProxyCreationEnabled = rockContext.Configuration.ProxyCreationEnabled;
                 rockContext.Configuration.ProxyCreationEnabled = false;
 
-                var group = new GroupService( rockContext ).Get( bag.GroupGuid );
                 var occurrences = new AttendanceOccurrenceService( rockContext )
                     .GetFutureGroupOccurrences( group, null )
                     .Select( OccurrenceAsListItemBag )
@@ -5309,6 +5449,7 @@ namespace Rock.Rest.v2
         [Authenticate]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponse( HttpStatusCode.OK, Type = typeof( EmailEditorAttendanceOccurrenceBag ) )]
+        [ProducesResponse( HttpStatusCode.Unauthorized )]
         [Rock.SystemGuid.RestActionGuid( "2A8A1319-3A64-4449-876D-480FD500EAEC" )]
         public IActionResult EmailEditorCreateAttendanceOccurrence( [FromBody] EmailEditorCreateAttendanceOccurrenceOptionsBag bag )
         {
@@ -5324,6 +5465,13 @@ namespace Rock.Rest.v2
 
             using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
+                var group = new GroupService( rockContext ).Get( bag.GroupId );
+
+                if ( !IsGroupAllowedForRsvp( group, GetPerson() ) )
+                {
+                    return Unauthorized();
+                }
+
                 var occurrence = new AttendanceOccurrenceService( rockContext )
                     .GetOrAdd( bag.OccurrenceDate, bag.GroupId, bag.LocationId, bag.ScheduleId );
 
@@ -5357,6 +5505,24 @@ namespace Rock.Rest.v2
                 ThumbnailBinaryFile = emailSection.ThumbnailBinaryFile.ToListItemBag(),
                 UsageSummary = emailSection.UsageSummary
             };
+        }
+
+        /// <summary>
+        /// Determines whether the person can use the group for email RSVPs, matching the RSVP group picker.
+        /// </summary>
+        /// <param name="group">The group the RSVP occurrence belongs to.</param>
+        /// <param name="person">The signed-in person making the request, or <c>null</c> when no one is signed in.</param>
+        /// <returns><c>true</c> if a person is signed in, the group's type has RSVP enabled and the person can view the group; otherwise <c>false</c>.</returns>
+        private static bool IsGroupAllowedForRsvp( Rock.Model.Group group, Person person )
+        {
+            if ( group == null || person == null )
+            {
+                return false;
+            }
+
+            var groupType = GroupTypeCache.Get( group.GroupTypeId );
+
+            return groupType?.EnableRSVP == true && group.IsAuthorized( Authorization.VIEW, person );
         }
 
         private static ListItemBag OccurrenceAsListItemBag( AttendanceOccurrence attendanceOccurrence )
@@ -6532,6 +6698,24 @@ namespace Rock.Rest.v2
                     if ( followings.Any() )
                     {
                         return Ok();
+                    }
+
+                    /*
+                        11/16/2026 - MSE
+
+                        Following an entity shows it in the person's followed items and sends
+                        following events about it, so the person must be able to view it. People
+                        can still follow other people, because person VIEW is allowed by default.
+                        Unfollow is not checked, so a person can always stop following.
+
+                        Reason: Do not follow records the caller cannot view.
+                    */
+                    var followEntityType = EntityTypeCache.Get( options.EntityTypeGuid );
+                    var followEntity = followEntityType != null ? Reflection.GetIEntityForEntityType( followEntityType.GetEntityType(), options.EntityKey, true, rockContext ) : null;
+
+                    if ( followEntity is ISecured followSecured && !followSecured.IsAuthorized( Authorization.VIEW, RockRequestContext.CurrentPerson ) )
+                    {
+                        return Unauthorized();
                     }
 
                     var following = new Following
@@ -8955,10 +9139,16 @@ namespace Rock.Rest.v2
 
             if ( parentLocationGuid == Guid.Empty )
             {
-                qry = locationService.Queryable().AsNoTracking().Where( a => a.ParentLocationId == null );
                 if ( rootLocationGuid != Guid.Empty )
                 {
-                    qry = qry.Where( a => a.Guid == rootLocationGuid );
+                    // Ignore ParentLocationId when a root location is supplied,
+                    // since the root location may itself have a parent (#4705).
+                    qry = locationService.Queryable().AsNoTracking().Where( a => a.Guid == rootLocationGuid );
+                }
+                else
+                {
+                    // Look for top-level named locations when no root location is supplied.
+                    qry = locationService.Queryable().AsNoTracking().Where( a => a.ParentLocationId == null );
                 }
             }
             else
@@ -11038,11 +11228,19 @@ namespace Rock.Rest.v2
                         }
                     }
 
-                    var appPath = System.Web.VirtualPathUtility.ToAbsolute( "~" );
+                    /*
+                        10/19/2026 - MSE
+
+                        The person link control renders this popup with v-html, so the person and
+                        spouse names are encoded before they are placed in the markup.
+
+                        Reason: Stored names must not render as HTML.
+                    */
+                    var appPath = RockRequestContext.ResolveRockUrl( "~" );
                     html.AppendFormat(
                         "<header>{0} <h3>{1}<small>{2}</small></h3></header>",
                         Person.GetPersonPhotoImageTag( person, 65, 65 ),
-                        person.FullName,
+                        person.FullName.EncodeHtml(),
                         person.ConnectionStatusValue != null ? person.ConnectionStatusValue.Value : string.Empty );
 
                     html.Append( "<div class='body'>" );
@@ -11052,7 +11250,7 @@ namespace Rock.Rest.v2
                     {
                         html.AppendFormat(
                             "<div><strong>Spouse</strong> {0}</div>",
-                            spouse.LastName == person.LastName ? spouse.FirstName : spouse.FullName );
+                            ( spouse.LastName == person.LastName ? spouse.FirstName : spouse.FullName ).EncodeHtml() );
                     }
 
                     int? age = person.Age;
@@ -11326,12 +11524,12 @@ namespace Rock.Rest.v2
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponse( HttpStatusCode.OK, Type = typeof( ReminderButtonGetRemindersResultsBag ) )]
         [ProducesResponse( HttpStatusCode.BadRequest )]
+        [ProducesResponse( HttpStatusCode.Unauthorized )]
         [Rock.SystemGuid.RestActionGuid( "4D015951-9B44-4E70-99AD-8D52728ADF3E" )]
         public IActionResult ReminderButtonGetReminders( [FromBody] ReminderButtonGetRemindersOptionsBag options )
         {
             using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
-                var reminderViewModels = ReminderButtonGetReminders( options.EntityTypeGuid, options.EntityGuid, rockContext );
                 var currentPerson = GetPerson();
                 var currentPersonId = currentPerson?.Id;
 
@@ -11341,7 +11539,34 @@ namespace Rock.Rest.v2
                 }
 
                 var entityType = EntityTypeCache.Get( options.EntityTypeGuid );
+
+                if ( entityType == null )
+                {
+                    return BadRequest();
+                }
+
                 var contextEntity = Rock.Reflection.GetIEntityForEntityType( entityType.GetEntityType(), options.EntityGuid );
+
+                if ( contextEntity == null )
+                {
+                    return BadRequest();
+                }
+
+                /*
+                    11/16/2026 - MSE
+
+                    The response includes the entity's display name, so a caller must be able
+                    to view the entity. Entities without record security (such as person
+                    aliases) are not checked here, as before.
+
+                    Reason: Do not return the name of a record the caller cannot view.
+                */
+                if ( contextEntity is ISecured secured && !secured.IsAuthorized( Authorization.VIEW, currentPerson ) )
+                {
+                    return Unauthorized();
+                }
+
+                var reminderViewModels = ReminderButtonGetReminders( options.EntityTypeGuid, options.EntityGuid, rockContext );
 
                 // Load reminder types for this context entity.
                 var reminderTypeService = new ReminderTypeService( rockContext );
@@ -11397,6 +11622,20 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "58DC4454-ED33-4871-9BD1-2AC9118340E2" )]
         public IActionResult ReminderButtonAddReminder( [FromBody] ReminderButtonAddReminderOptionsBag options )
         {
+            /*
+                11/16/2026 - MSE
+
+                The reminder button is only shown to signed in people, and a reminder is
+                always owned by a person. Without this check an anonymous caller could create
+                reminders assigned to any person whose Guid they hold.
+
+                Reason: Adding a reminder requires a signed in person.
+            */
+            if ( RockRequestContext.CurrentPerson == null )
+            {
+                return Unauthorized();
+            }
+
             if ( options.EntityTypeGuid.IsEmpty() || options.EntityGuid.IsEmpty() || options.ReminderTypeGuid.IsEmpty() )
             {
                 return BadRequest();
@@ -11405,6 +11644,12 @@ namespace Rock.Rest.v2
             using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entityType = EntityTypeCache.Get( options.EntityTypeGuid );
+
+                if ( entityType == null )
+                {
+                    return BadRequest();
+                }
+
                 var contextEntity = Rock.Reflection.GetIEntityForEntityType( entityType.GetEntityType(), options.EntityGuid );
 
                 var reminderTypeService = new ReminderTypeService( RockApp.Current.CreateRockContext() );
@@ -11416,6 +11661,30 @@ namespace Rock.Rest.v2
                 }
 
                 if ( !reminderType.IsAuthorized( Authorization.VIEW, RockRequestContext.CurrentPerson ) )
+                {
+                    return Unauthorized();
+                }
+
+                if ( contextEntity == null )
+                {
+                    return BadRequest();
+                }
+
+                /*
+                    11/16/2026 - MSE
+
+                    A reminder type only applies to its own entity type, the same rule
+                    ReminderButtonGetReminders uses when it lists the types for the entity, and
+                    the caller must be able to view the entity the reminder is about.
+
+                    Reason: Do not add reminders to records the caller cannot view.
+                */
+                if ( reminderType.EntityTypeId != contextEntity.TypeId )
+                {
+                    return BadRequest();
+                }
+
+                if ( contextEntity is ISecured secured && !secured.IsAuthorized( Authorization.VIEW, RockRequestContext.CurrentPerson ) )
                 {
                     return Unauthorized();
                 }
@@ -11443,6 +11712,12 @@ namespace Rock.Rest.v2
                 if ( person == null && !options.AssignedToGuid.IsEmpty() )
                 {
                     personAlias = new PersonAliasService( rockContext ).Get( options.AssignedToGuid );
+                }
+
+                // An unknown assignee Guid matches neither a person nor an alias.
+                if ( personAlias == null && person?.PrimaryAliasId == null )
+                {
+                    return BadRequest();
                 }
 
                 if ( personAlias != null )
@@ -12424,7 +12699,7 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "6b39600f-3037-48d8-861e-6e7d0bb5972f" )]
         public IActionResult UniversalItemSearchPickerGetItems( [FromBody] UniversalItemSearchPickerOptionsBag options )
         {
-            var data = Encryption.DecryptString( options.Context ).FromJsonOrNull<UniversalItemSearchPickerFieldType.ContextData>();
+            var data = UniversalItemSearchPickerFieldType.DecryptContextData( options.Context );
 
             if ( data == null )
             {
@@ -12469,7 +12744,7 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "529df00f-2338-4d9b-a947-aa0ec5459f35" )]
         public IActionResult UniversalItemTreePickerGetItems( [FromBody] UniversalItemTreePickerOptionsBag options )
         {
-            var data = Encryption.DecryptString( options.Context ).FromJsonOrNull<UniversalItemTreePickerFieldType.ContextData>();
+            var data = UniversalItemTreePickerFieldType.DecryptContextData( options.Context );
 
             if ( data == null )
             {

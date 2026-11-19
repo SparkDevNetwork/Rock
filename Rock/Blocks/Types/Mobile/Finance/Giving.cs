@@ -49,7 +49,7 @@ namespace Rock.Blocks.Types.Mobile.Finance
     [Category( "Mobile > Finance" )]
     [Description( "Allows an individual to give. Apple and Google Pay are supported." )]
     [IconCssClass( "ti ti-heart-handshake" )]
-    [SupportedSiteTypes( Model.SiteType.Mobile )]
+    [SupportedSiteTypes( SiteType.Mobile )]
 
     #region Block Attributes
 
@@ -781,7 +781,10 @@ namespace Rock.Blocks.Types.Mobile.Finance
                 },
                 SavedAccount = new ListItemViewModel
                 {
-                    Text = scheduledTransaction.FinancialPaymentDetail?.FinancialPersonSavedAccount?.Name,
+                    // A gift paid by Apple Pay or Google Pay has no saved account,
+                    // so name its currency type for the shell to show instead.
+                    Text = scheduledTransaction.FinancialPaymentDetail?.FinancialPersonSavedAccount?.Name
+                        ?? scheduledTransaction.FinancialPaymentDetail?.CurrencyTypeValue?.Value,
                     Value = scheduledTransaction.FinancialPaymentDetail?.FinancialPersonSavedAccount?.Guid.ToString()
                 }
             };
@@ -1320,6 +1323,65 @@ namespace Rock.Blocks.Types.Mobile.Finance
         }
 
         /// <summary>
+        /// Creates a gateway customer from the Apple Pay or Google Pay token
+        /// in the update request and returns the payment information that
+        /// moves a scheduled transaction to it. No saved account is created,
+        /// the same as a new gift made with Apple Pay or Google Pay.
+        /// </summary>
+        /// <param name="options">The update request holding the wallet token.</param>
+        /// <param name="errorMessage">The error message if the customer could not be created.</param>
+        /// <returns>The payment information, or <c>null</c> if an error occurred.</returns>
+        private ReferencePaymentInfo GetPlatformPaymentReferenceInfo( UpdateScheduledTransactionBag options, out string errorMessage )
+        {
+            var person = RequestContext.CurrentPerson;
+            var currencyTypeValue = DefinedValueCache.Get( options.CurrencyTypeValue.AsGuid() );
+            var isWalletCurrencyType = currencyTypeValue != null
+                && ( currencyTypeValue.Guid == Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_APPLE_PAY.AsGuid()
+                    || currencyTypeValue.Guid == Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_ANDROID_PAY.AsGuid() );
+
+            if ( person == null || !isWalletCurrencyType )
+            {
+                errorMessage = "The selected payment method is not supported.";
+                return null;
+            }
+
+            if ( options.PaymentToken.IsNullOrWhiteSpace() )
+            {
+                errorMessage = "No payment token was received from Apple Pay or Google Pay.";
+                return null;
+            }
+
+            var paymentInfo = new ReferencePaymentInfo
+            {
+                ReferenceNumber = options.PaymentToken,
+                InitialCurrencyTypeValue = currencyTypeValue,
+                FirstName = person.FirstName,
+                LastName = person.LastName,
+                Email = options.Email.IsNotNullOrWhiteSpace() ? options.Email : person.Email,
+                Street1 = options.Street1,
+                Street2 = options.Street2,
+                City = options.City,
+                State = options.State,
+                PostalCode = options.PostalCode,
+                Country = options.Country,
+                AdditionalParameters = options.AdditionalParameters ?? new Dictionary<string, string>(),
+                TransactionTypeValueId = TransactionType.Id
+            };
+
+            var customerToken = MyWellGatewayComponent.CreateCustomerAccount( MyWellGateway, paymentInfo, out errorMessage );
+            if ( errorMessage.IsNotNullOrWhiteSpace() || customerToken.IsNullOrWhiteSpace() )
+            {
+                errorMessage = errorMessage.IsNotNullOrWhiteSpace() ? errorMessage : "Unable to set up the selected payment method.";
+                return null;
+            }
+
+            paymentInfo.GatewayPersonIdentifier = customerToken;
+            errorMessage = string.Empty;
+
+            return paymentInfo;
+        }
+
+        /// <summary>
         /// Gets the saved account if it belongs to the current person and
         /// the gateway used by this block.
         /// </summary>
@@ -1649,13 +1711,51 @@ namespace Rock.Blocks.Types.Mobile.Finance
             var financialScheduledTransactionDetailService = new FinancialScheduledTransactionDetailService( RockContext );
 
             string errorMessage;
-            var useExistingPaymentMethod = options.SavedAccountId == scheduledTransaction.FinancialPaymentDetail?.FinancialPersonSavedAccount?.IdKey;
-            var useSavedAccount = options.SavedAccountId.IsNotNullOrWhiteSpace() && options.SavedAccountId != scheduledTransaction.FinancialPaymentDetail?.FinancialPersonSavedAccount?.IdKey;
+
+            /*
+                11/16/2026 - PS
+
+                A schedule paid by Apple Pay or Google Pay has no saved account,
+                so the shell has nothing to select for it. No selection (null,
+                or the empty Guid older shells send) now keeps the current
+                method instead of throwing, and a wallet token switches the
+                schedule to the wallet.
+
+                The shell sends a saved account's Guid, which never equals the
+                IdKey below, so re-selecting the schedule's own card has always
+                gone through the saved account path. That is left as is because
+                it is the path every card edit has used since 19.1.
+
+                Reason: Let the mobile shell keep or switch the payment method,
+                including to Apple Pay or Google Pay.
+            */
+            var currentSavedAccount = scheduledTransaction.FinancialPaymentDetail?.FinancialPersonSavedAccount;
+            var isSavedAccountSelected = options.SavedAccountId.IsNotNullOrWhiteSpace() && options.SavedAccountId.AsGuidOrNull() != Guid.Empty;
+            var isCurrentSavedAccountSelected = currentSavedAccount != null && options.SavedAccountId == currentSavedAccount.IdKey;
+
+            // A wallet request with no token must fail in the helper below
+            // instead of falling through to "keep the current method", which
+            // would report success without switching anything.
+            var usePlatformPayment = options.PaymentToken.IsNotNullOrWhiteSpace() || options.CurrencyTypeValue.IsNotNullOrWhiteSpace();
+            var useExistingPaymentMethod = !usePlatformPayment && ( !isSavedAccountSelected || isCurrentSavedAccountSelected );
 
             ReferencePaymentInfo referencePaymentInfo;
 
-            if ( useExistingPaymentMethod )
+            if ( usePlatformPayment )
             {
+                referencePaymentInfo = GetPlatformPaymentReferenceInfo( options, out errorMessage );
+                if ( referencePaymentInfo == null )
+                {
+                    return ActionBadRequest( errorMessage );
+                }
+            }
+            else if ( useExistingPaymentMethod )
+            {
+                if ( scheduledTransaction.FinancialPaymentDetail == null )
+                {
+                    return ActionBadRequest( "Please select a payment method." );
+                }
+
                 // use save payment method as original transaction
                 referencePaymentInfo = new ReferencePaymentInfo
                 {
@@ -1664,7 +1764,7 @@ namespace Rock.Blocks.Types.Mobile.Finance
                     ReferenceNumber = MyWellGatewayComponent.GetReferenceNumber( scheduledTransaction, out errorMessage )
                 };
             }
-            else if ( useSavedAccount )
+            else
             {
                 var savedAccount = GetCurrentPersonSavedAccount( options.SavedAccountId );
                 if ( savedAccount == null )
@@ -1673,11 +1773,6 @@ namespace Rock.Blocks.Types.Mobile.Finance
                 }
 
                 referencePaymentInfo = savedAccount.GetReferencePayment();
-            }
-            else
-            {
-                // shouldn't happen
-                throw new Exception( "Unable to determine payment method" );
             }
 
             referencePaymentInfo.Amount = options.AmountSelections.Sum( a => a.Amount );
@@ -1705,7 +1800,10 @@ namespace Rock.Blocks.Types.Mobile.Finance
             // Update the transaction frequency with the new value.
             scheduledTransaction.TransactionFrequencyValueId = DefinedValueCache.Get( options.FrequencyValueId, !this.PageCache.Layout.Site.DisablePredictableIds )?.Id
                 ?? scheduledTransaction.TransactionFrequencyValueId;
-            scheduledTransaction.StartDate = options.NextProcessDate;
+
+            // NextProcessDate arrives bound to the host server's clock, the same as
+            // ProcessDate in GetSchedule, so normalize it to a Rock date before storing it.
+            scheduledTransaction.StartDate = RockDateTime.ConvertLocalDateTimeToRockDateTime( options.NextProcessDate ).Date;
 
             // If we are using the existing payment method, DO NOT clear out the FinancialPaymentDetail record.
             if ( !useExistingPaymentMethod )

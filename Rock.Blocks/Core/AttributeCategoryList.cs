@@ -39,7 +39,7 @@ namespace Rock.Blocks.Core
     [Category( "Core" )]
     [Description( "Allows attribute categories to be managed." )]
     [IconCssClass( "ti ti-folder" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     [Rock.SystemGuid.EntityTypeGuid( "B23C0C3C-E868-472A-88D6-2E9E94EF1860" )]
     // was [Rock.SystemGuid.BlockTypeGuid( "EB736280-D4CB-4153-A99E-7E49FB15B594" )]

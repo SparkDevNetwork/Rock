@@ -125,6 +125,7 @@
     import { Guid } from "@Obsidian/Types";
     import { Enumerable } from "@Obsidian/Utility/linq";
     import { deepEqual } from "@Obsidian/Utility/util";
+    import { escapeHtml } from "@Obsidian/Utility/stringUtils";
     import { confirm } from "@Obsidian/Utility/dialogs";
     import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
     import { AlertType } from "@Obsidian/Enums/Controls/alertType";
@@ -442,7 +443,7 @@
 
             if (hasInvalidNewGroups) {
                 const allowedNames = configsRequiringSpecificGroups
-                    .map(c => c.groupType?.text)
+                    .map(c => escapeHtml(c.groupType?.text ?? ""))
                     .join(", ");
                 groupsModalErrorMessage.value = `One or more of the selected groups is not one of the configured group types that allow specifying a group (<strong>${allowedNames}</strong>). Please select groups that have one of these group types.`;
                 return;

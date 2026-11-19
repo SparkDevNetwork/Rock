@@ -17,12 +17,18 @@
 
 using Rock.Enums;
 
+#if NET
+namespace Rock.Enums.Security
+#else
 namespace Rock.Utility.Enums
+#endif
 {
     /// <summary>
     /// This enum is used by the merge and duplicate prevention processes to determine if a person can be merged.
     /// </summary>
+#if !NET
     [EnumDomain( "Security" )]
+#endif
     public enum AccountProtectionProfile
     {
         /// <summary>

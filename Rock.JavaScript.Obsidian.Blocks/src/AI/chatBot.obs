@@ -235,7 +235,7 @@
             return;
         }
 
-        const storageKey = "Rock.AI.ChatBot.DockedChat";
+        const storageKey = "Rock.AI.ChatBot.DockedChatPanel";
         const data = safeParseJson<SessionState>(sessionStorage.getItem(storageKey));
 
         if (!data) {
@@ -249,7 +249,7 @@
 
     function saveSessionDataInternal(): void {
         nextTick(() => {
-            const storageKey = "Rock.AI.ChatBot.DockedChat";
+            const storageKey = "Rock.AI.ChatBot.DockedChatPanel";
             const dockedPanel = dockedChatContainer.value?.closest(".docked-panel-container");
             // The conversation container is the scroll element, so read its scroll position.
             const scrollContainer = dockedChatContainer.value?.querySelector(".conversation-container");
@@ -352,11 +352,18 @@
 
                 saveSessionData();
 
+                let streamErrorMessage: string | null = null;
+
                 // eslint-disable-next-line no-constant-condition
                 while (true) {
                     const { value, done } = await reader.read();
 
                     if (done) {
+                        break;
+                    }
+
+                    if (value.errorMessage) {
+                        streamErrorMessage = value.errorMessage;
                         break;
                     }
 
@@ -391,6 +398,16 @@
                     }
 
                     saveSessionData();
+                }
+
+                // The server does not save the response when it fails, so
+                // discard any partial response along with the user's message.
+                if (streamErrorMessage) {
+                    liveMessage.value = null;
+                    messages.pop();
+                    saveSessionData();
+                    await alert(streamErrorMessage);
+                    return;
                 }
 
                 messages.push(liveMessage.value);

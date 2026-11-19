@@ -14,12 +14,18 @@
 // limitations under the License.
 // </copyright>
 
+#if NET
+namespace Rock.Enums.Event
+#else
 namespace Rock.Model
+#endif
 {
     /// <summary>
     /// How signature document should be presented to registrant
     /// </summary>
+#if !NET
     [Enums.EnumDomain( "Event" )]
+#endif
     public enum SignatureDocumentAction
     {
         /// <summary>

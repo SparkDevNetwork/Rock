@@ -39,7 +39,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
     [Category( "Mobile > Groups" )]
     [Description( "Allows you to set your scheduling preferences." )]
     [IconCssClass( "ti ti-user-edit" )]
-    [SupportedSiteTypes( Model.SiteType.Mobile )]
+    [SupportedSiteTypes( SiteType.Mobile )]
 
     #region Block Attributes
 

@@ -104,9 +104,19 @@ namespace Rock.Badge.Component
             var monthsToDisplay = GetAttributeValue( badge, AttributeKey.MonthsToDisplay ).AsIntegerOrNull() ?? 24;
             var showAsIndividual = GetAttributeValue( badge, AttributeKey.AdultAttendanceType ).AsBoolean();
 
+            /*
+                10/14/2026 - MSE
+
+                The tooltip is placed in an HTML attribute, which the browser decodes once,
+                and badge tooltips are then rendered as HTML (BadgeControl sets html: true).
+                A person can set their own name (for example through a public signup form),
+                so the name is HTML encoded twice to still be encoded when it is rendered.
+
+                Reason: Prevent stored XSS through a person's name in the badge tooltip.
+            */
             if ( showAsIndividual || person.AgeClassification == AgeClassification.Child )
             {
-                tooltip = $"{person.NickName.ToPossessive().EncodeHtml()} attendance for the last {monthsToDisplay} months. Each bar is a month.";
+                tooltip = $"{person.NickName.ToPossessive().EncodeHtml().EncodeHtml()} attendance for the last {monthsToDisplay} months. Each bar is a month.";
             }
             else
             {

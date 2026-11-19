@@ -538,7 +538,7 @@ namespace RockWeb.Blocks.Core
             edtDefinedTypeAttributes.ReservedKeyNames = new AttributeService( RockApp.Current.CreateRockContext() )
                 .GetByEntityTypeId( new DefinedValue().TypeId, true ).AsQueryable()
                 .Where( a =>
-                    a.EntityTypeQualifierColumn.Equals( "DefinedTypeId", StringComparison.OrdinalIgnoreCase ) &&
+                    a.EntityTypeQualifierColumn == "DefinedTypeId" &&
                     a.EntityTypeQualifierValue.Equals( hfDefinedTypeId.Value ) &&
                     !a.Guid.Equals( attributeGuid ) )
                 .Select( a => a.Key )
@@ -571,7 +571,7 @@ namespace RockWeb.Blocks.Core
             var attributes = attributeService
                 .GetByEntityTypeId( new DefinedValue().TypeId, true ).AsQueryable()
                 .Where( a =>
-                    a.EntityTypeQualifierColumn.Equals( "DefinedTypeId", StringComparison.OrdinalIgnoreCase ) &&
+                    a.EntityTypeQualifierColumn == "DefinedTypeId" &&
                     a.EntityTypeQualifierValue.Equals( qualifierValue ) )
                 .OrderBy( a => a.Order )
                 .ThenBy( a => a.Name )
@@ -665,8 +665,9 @@ namespace RockWeb.Blocks.Core
             }
 
             // Make sure an existing attribute can only be updated if it
-            // already belongs to this defined type.
-            if ( edtDefinedTypeAttributes.AttributeId.HasValue )
+            // already belongs to this defined type. A new attribute has an
+            // Id of 0, which SaveAttributeEdits treats as new.
+            if ( edtDefinedTypeAttributes.AttributeId.GetValueOrDefault() > 0 )
             {
                 var existingAttribute = new AttributeService( RockApp.Current.CreateRockContext() ).Get( edtDefinedTypeAttributes.AttributeId.Value );
 
@@ -715,7 +716,7 @@ namespace RockWeb.Blocks.Core
             var attributes = new AttributeService( RockApp.Current.CreateRockContext() )
                 .GetByEntityTypeId( new DefinedValue().TypeId, true ).AsQueryable()
                 .Where( a =>
-                    a.EntityTypeQualifierColumn.Equals( "DefinedTypeId", StringComparison.OrdinalIgnoreCase ) &&
+                    a.EntityTypeQualifierColumn == "DefinedTypeId" &&
                     a.EntityTypeQualifierValue.Equals( qualifierValue ) )
                 .OrderBy( a => a.Order )
                 .ThenBy( a => a.Name )

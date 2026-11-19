@@ -143,9 +143,25 @@ namespace Rock.RealTime.Topics
                 {
                     occurrenceState.PersonAliasId = new PersonAliasService( rockContext ).GetPrimaryAliasId( Context.CurrentPersonId.Value );
                 }
-                else
+                else if ( Context.VisitorAliasId.HasValue )
                 {
-                    occurrenceState.PersonAliasId = Context.VisitorAliasId;
+                    /*
+                        11/16/2026 - MSE
+
+                        The visitor key cookie is sent by the client, so the alias in
+                        it is not proof of who the participant is. Only use it when
+                        it belongs to the Anonymous Visitor person. Otherwise the
+                        participant has no alias, so an answer or participation
+                        cannot be attributed to a person who is not signed in.
+
+                        Reason: Prevent forged attribution of answers and participation.
+                    */
+                    var visitorPersonId = new PersonAliasService( rockContext ).GetPersonId( Context.VisitorAliasId.Value );
+
+                    if ( visitorPersonId.HasValue && visitorPersonId.Value == new PersonService( rockContext ).GetOrCreateAnonymousVisitorPersonId() )
+                    {
+                        occurrenceState.PersonAliasId = Context.VisitorAliasId;
+                    }
                 }
             }
 

@@ -163,8 +163,9 @@ namespace Rock.RealTime
 
         /// <summary>
         /// Handles a request for a client connection to connect to a specific
-        /// topic. This will track the connection and then call the topic's
-        /// <see cref="Topic{T}.OnConnectedAsync"/> method.
+        /// topic. The first join of a topic on a connection calls the topic's
+        /// <see cref="Topic{T}.OnConnectedAsync"/> method, and the connection
+        /// is only tracked as joined after that method succeeds.
         /// </summary>
         /// <param name="realTimeHub">The hub object that is currently processing the real request.</param>
         /// <param name="topicIdentifier">The topic identifier that should be connected to.</param>
@@ -181,29 +182,55 @@ namespace Rock.RealTime
 
             var state = GetConnectionState<EngineConnectionState>( connectionIdentifier );
 
-            var connectedCount = state.ConnectedTopics.IncrementTopic( topicIdentifier );
+            /*
+                10/16/2026 - MSE
 
-            if ( connectedCount == 1 )
+                The join used to be counted before the topic's OnConnectedAsync
+                check ran, and the check only ran for the first join. A second
+                join sent while the first check was still running returned
+                success without any check, and the connection stayed joined
+                after the first check failed. Joins and leaves on a connection
+                now run one at a time, and the join is only counted after the
+                check passes.
+
+                Reason: Stop unauthorized connections from joining a topic by racing two joins.
+            */
+            await state.TopicJoinLock.WaitAsync();
+
+            try
             {
-                try
+                // Run the topic's join check for the first join of this topic
+                // on this connection.
+                if ( !state.ConnectedTopics.IsConnected( topicIdentifier ) )
                 {
-                    await topicInstance.OnConnectedAsync();
-                }
-                catch ( Exception ex )
-                {
-                    state.ConnectedTopics.DecrementTopic( topicIdentifier, out var topicChannels );
-
                     try
                     {
-                        await RemoveFromTopicChannelsAsync( realTimeHub, connectionIdentifier, topicIdentifier, topicChannels );
+                        await topicInstance.OnConnectedAsync();
                     }
                     catch
                     {
-                        // Intentionally ignored, this is only best effort.
-                    }
+                        state.ConnectedTopics.DecrementTopic( topicIdentifier, out var topicChannels );
 
-                    throw ex;
+                        try
+                        {
+                            await RemoveFromTopicChannelsAsync( realTimeHub, connectionIdentifier, topicIdentifier, topicChannels );
+                        }
+                        catch
+                        {
+                            // Intentionally ignored, this is only best effort.
+                        }
+
+                        throw;
+                    }
                 }
+
+                // Count the join only after the check passed, so IsConnected
+                // stays false while it runs and after it fails.
+                state.ConnectedTopics.IncrementTopic( topicIdentifier );
+            }
+            finally
+            {
+                state.TopicJoinLock.Release();
             }
 
             return true;
@@ -229,23 +256,41 @@ namespace Rock.RealTime
 
             var state = GetConnectionState<EngineConnectionState>( connectionIdentifier );
 
-            if ( state.ConnectedTopics.DecrementTopic( topicIdentifier, out var topicChannels ) > 0 )
-            {
-                return true;
-            }
+            /*
+                10/16/2026 - MSE
+
+                Leaves take the same per connection lock as joins so a leave
+                cannot change the join count while a join on the same
+                connection is still running the topic's OnConnectedAsync check.
+
+                Reason: Keep the topic join count consistent with the join check.
+            */
+            await state.TopicJoinLock.WaitAsync();
 
             try
             {
-                await RemoveFromTopicChannelsAsync( realTimeHub, connectionIdentifier, topicIdentifier, topicChannels );
+                if ( state.ConnectedTopics.DecrementTopic( topicIdentifier, out var topicChannels ) > 0 )
+                {
+                    return true;
+                }
+
+                try
+                {
+                    await RemoveFromTopicChannelsAsync( realTimeHub, connectionIdentifier, topicIdentifier, topicChannels );
+                }
+                catch
+                {
+                    // Intentionally ignored, this is only best effort.
+                }
+
+                await topicInstance.OnDisconnectedAsync();
+
+                return true;
             }
-            catch
+            finally
             {
-                // Intentionally ignored, this is only best effort.
+                state.TopicJoinLock.Release();
             }
-
-            await topicInstance.OnDisconnectedAsync();
-
-            return true;
         }
 
         /// <summary>

@@ -56,6 +56,16 @@ export class RatingFieldType extends FieldTypeBase {
         catch {
             ratingValue = null;
         }
+
+        // 11/09/2026 - MSE
+        // A stored rating below zero would make the unselected loop below run for a very
+        // long time, so it is treated as zero. Values above the maximum are already
+        // bounded by the loops.
+        // Reason: Rating values must stay within the field's configured range.
+        if (ratingValue && !((ratingValue.value ?? 0) >= 0)) {
+            ratingValue.value = 0;
+        }
+
         const rating = ratingValue?.value ?? 0;
         const maxRating = toNumberOrNull(configurationValues[ConfigurationKey.MaxRating]) ?? 5;
         let html = "";

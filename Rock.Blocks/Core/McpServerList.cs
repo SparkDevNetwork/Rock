@@ -154,7 +154,7 @@ namespace Rock.Blocks.Core
             Reason: Tooltips can't extend past an iframe's boundary; widening them keeps
             the rendered tooltip short enough to fit.
         */
-        [CustomSettingsBlockType( typeof( McpServerList ), Model.SiteType.Web )]
+        [CustomSettingsBlockType( typeof( McpServerList ), SiteType.Web )]
         public class McpServerListCustomSettingsProvider : RockCustomSettingsProvider
         {
             private const string TooltipWidthScript = @"

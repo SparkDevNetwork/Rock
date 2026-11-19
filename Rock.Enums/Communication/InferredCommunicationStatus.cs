@@ -15,7 +15,9 @@
 // </copyright>
 //
 
+#if !NET
 using Rock.Model;
+#endif
 
 namespace Rock.Enums.Communication
 {

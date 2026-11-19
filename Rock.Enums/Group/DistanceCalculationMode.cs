@@ -17,7 +17,11 @@
 
 using System.ComponentModel;
 
+#if NET
+namespace Rock.Enums.Group
+#else
 namespace Rock.Model
+#endif
 {
     /// <summary>
     /// How far a group is from a person, how that distance is measured, and how the person shares where they are.
@@ -28,7 +32,9 @@ namespace Rock.Model
     /// everything the lower modes require, which lets the block fall back to the next lower mode when a
     /// mode's external dependency is unavailable.
     /// </remarks>
+#if !NET
     [Enums.EnumDomain( "Group" )]
+#endif
     public enum DistanceCalculationMode
     {
         /// <summary>

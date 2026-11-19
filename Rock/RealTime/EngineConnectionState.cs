@@ -15,6 +15,8 @@
 // </copyright>
 //
 
+using System.Threading;
+
 using Rock.Net;
 
 namespace Rock.RealTime
@@ -31,6 +33,14 @@ namespace Rock.RealTime
         /// </summary>
         /// <value>The topics this connection has connected to.</value>
         public ConcurrentTopicChannels ConnectedTopics { get; } = new ConcurrentTopicChannels();
+
+        /// <summary>
+        /// Serializes topic join and leave requests for this connection so a
+        /// topic's OnConnectedAsync check and the join count update cannot
+        /// interleave.
+        /// </summary>
+        /// <value>The lock used to serialize topic joins and leaves.</value>
+        internal SemaphoreSlim TopicJoinLock { get; } = new SemaphoreSlim( 1, 1 );
 
         /// <summary>
         /// Gets or sets the request representing the original connection.

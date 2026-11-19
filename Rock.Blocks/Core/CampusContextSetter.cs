@@ -37,7 +37,7 @@ namespace Rock.Blocks.Core
     [Category( "Core" )]
     [Description( "Block that can be used to set the default campus context for the site or page." )]
     [IconCssClass( "ti ti-building" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 
@@ -54,6 +54,7 @@ namespace Rock.Blocks.Core
         IsRequired = true,
         DefaultValue = "{{ CampusName }}",
         Order = 1,
+        AllowLava = true,
         Key = AttributeKey.CurrentItemTemplate )]
 
     [TextField( "Dropdown Item Template",
@@ -61,6 +62,7 @@ namespace Rock.Blocks.Core
         IsRequired = true,
         DefaultValue = "{{ CampusName }}",
         Order = 2,
+        AllowLava = true,
         Key = AttributeKey.DropdownItemTemplate )]
 
     [TextField( "No Campus Text",
@@ -274,6 +276,7 @@ namespace Rock.Blocks.Core
                 {
                     { "CampusName", currentCampus.Name }
                 };
+                mergeObjects.AddRockRequestContext( RequestContext );
 
                 options.CurrentSelectionText = GetAttributeValue( AttributeKey.CurrentItemTemplate ).ResolveMergeFields( mergeObjects );
             }
@@ -288,12 +291,12 @@ namespace Rock.Blocks.Core
             var dropdownItemTemplate = GetAttributeValue( AttributeKey.DropdownItemTemplate );
             if ( dropdownItemTemplate.IsNotNullOrWhiteSpace() )
             {
+                var mergeObjects = new Dictionary<string, object>();
+                mergeObjects.AddRockRequestContext( RequestContext );
+
                 foreach ( var campus in campusList )
                 {
-                    var mergeObjects = new Dictionary<string, object>
-                    {
-                        { "CampusName", campus.Text }
-                    };
+                    mergeObjects["CampusName"] = campus.Text;
                     campus.Text = dropdownItemTemplate.ResolveMergeFields( mergeObjects );
                 }
             }

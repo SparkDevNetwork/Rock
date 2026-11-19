@@ -18,7 +18,7 @@ namespace Rock.Blocks.Event
     [DisplayName( "Registration List Lava" )]
     [Category( "Event" )]
     [Description( "List recent registrations using a Lava template." )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 

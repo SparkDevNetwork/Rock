@@ -678,11 +678,32 @@ namespace RockWeb.Blocks.Reporting
                 }
             }
 
+            var storedReportDataViewId = report.DataViewId;
+
             report.Name = tbName.Text;
             report.Description = tbDescription.Text;
             report.CategoryId = cpCategory.SelectedValueAsInt();
             report.EntityTypeId = etpEntityType.SelectedEntityTypeId;
             report.DataViewId = dvpDataView.SelectedValueAsInt();
+
+            /*
+                11/09/2026 - MSE
+
+                The data view of the report comes from a posted value. When it differs from the stored
+                one, the person must be able to VIEW it. An unchanged data view is kept.
+
+                Reason: Stops a report from being saved with a data view the person cannot VIEW.
+            */
+            if ( report.DataViewId.HasValue && report.DataViewId != storedReportDataViewId )
+            {
+                var reportDataView = new DataViewService( rockContext ).Get( report.DataViewId.Value );
+                if ( reportDataView == null || !reportDataView.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                {
+                    cvSecurityError.IsValid = false;
+                    cvSecurityError.ErrorMessage = "You are not authorized to use one or more of the selected Data Views.";
+                    return;
+                }
+            }
             report.FetchTop = nbFetchTop.Text.AsIntegerOrNull();
             report.QueryHint = tbQueryHint.Text;
 
@@ -702,6 +723,13 @@ namespace RockWeb.Blocks.Reporting
 
                 // Controls will render the error messages
                 return;
+            }
+
+            // Keep what each report field stored before the fields are deleted and re-added, so unchanged data view references can be told apart from new ones.
+            var storedFields = new Dictionary<Guid, (int? DataSelectComponentEntityTypeId, string Selection)>();
+            foreach ( var storedField in report.ReportFields )
+            {
+                storedFields[storedField.Guid] = (storedField.DataSelectComponentEntityTypeId, storedField.Selection);
             }
 
             // delete all the reportFields so we can cleanly add them
@@ -792,6 +820,42 @@ namespace RockWeb.Blocks.Reporting
                 reportField.IsCommunicationMergeField = mergeFields.Contains( reportField.Guid );
                 reportField.IsCommunicationRecipientField = recipientFields.Contains( reportField.Guid );
 
+                /*
+                    11/09/2026 - MSE
+
+                    The data view that a report column references is part of the posted selection. A new or
+                    changed reference must be a data view the person can VIEW. A reference that the stored column
+                    with the same Guid and column type already holds is kept so reports built by someone else can
+                    still be saved. Nothing is saved when this fails.
+
+                    Reason: Stops a report column from being saved with a data view the person cannot VIEW.
+                */
+                if ( reportFieldType == ReportFieldType.DataSelectComponent && reportField.DataSelectComponentEntityTypeId.HasValue )
+                {
+                    var selectComponent = this.GetDataSelectComponent( rockContext, reportField.DataSelectComponentEntityTypeId.Value );
+                    var newDataViewGuid = GetReportFieldDataViewGuid( selectComponent, reportField.Selection );
+
+                    if ( newDataViewGuid.HasValue )
+                    {
+                        Guid? storedDataViewGuid = null;
+                        if ( storedFields.TryGetValue( reportField.Guid, out var storedField ) && storedField.DataSelectComponentEntityTypeId == reportField.DataSelectComponentEntityTypeId )
+                        {
+                            storedDataViewGuid = GetReportFieldDataViewGuid( selectComponent, storedField.Selection );
+                        }
+
+                        if ( newDataViewGuid != storedDataViewGuid )
+                        {
+                            var fieldDataView = new DataViewService( rockContext ).Get( newDataViewGuid.Value );
+                            if ( fieldDataView == null || !fieldDataView.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                            {
+                                cvSecurityError.IsValid = false;
+                                cvSecurityError.ErrorMessage = "You are not authorized to use one or more of the selected Data Views.";
+                                return;
+                            }
+                        }
+                    }
+                }
+
                 report.ReportFields.Add( reportField );
             }
 
@@ -831,6 +895,18 @@ namespace RockWeb.Blocks.Reporting
             }
 
             NavigateToPage( RockPage.Guid, qryParams );
+        }
+
+        /// <summary>
+        /// Gets the Guid of the data view that a report column selection references.
+        /// </summary>
+        /// <param name="component">The data select component of the column.</param>
+        /// <param name="selection">The selection of the column.</param>
+        /// <returns>The data view Guid, or <c>null</c> when the column does not reference one.</returns>
+        private Guid? GetReportFieldDataViewGuid( DataSelectComponent component, string selection )
+        {
+            return ( component as Rock.Reporting.DataSelect.Group.ParticipationRateSelect )?.GetRelatedDataViewGuid( selection )
+                ?? ( component as Rock.Reporting.DataSelect.Person.GroupParticipationSelect )?.GetRelatedDataViewGuid( selection );
         }
 
         /// <summary>

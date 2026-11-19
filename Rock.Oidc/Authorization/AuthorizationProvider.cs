@@ -321,6 +321,15 @@ namespace Rock.Oidc.Authorization
             }
             else
             {
+                if ( !AuthClientService.AreRedirectUrisValid( authClient ) )
+                {
+                    context.Reject(
+                        error: OpenIdConnectConstants.Errors.InvalidRequest,
+                        description: "The specified 'redirect_uri' is invalid." );
+
+                    return;
+                }
+
                 context.Validate( authClient.RedirectUri );
             }
         }
@@ -401,6 +410,19 @@ namespace Rock.Oidc.Authorization
                 context.Reject(
                     error: OpenIdConnectConstants.Errors.InvalidClient,
                     description: "The specified client credentials are invalid." );
+
+                return;
+            }
+
+            // Self-registered (DCR) and CIMD clients are only offered the authorization code flow.
+            var isSelfRegisteredClient = authClient.Id == 0 || AuthClientService.IsDynamicClient( authClient );
+            var isBrowserSignInGrant = context.Request.IsAuthorizationCodeGrantType() || context.Request.IsRefreshTokenGrantType();
+
+            if ( isSelfRegisteredClient && !isBrowserSignInGrant )
+            {
+                context.Reject(
+                    error: OpenIdConnectConstants.Errors.UnsupportedGrantType,
+                    description: "Only authorization code and refresh token grant types are accepted for this client." );
 
                 return;
             }

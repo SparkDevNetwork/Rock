@@ -37,7 +37,7 @@ namespace Rock.Blocks.Reporting
     [Category( "Reporting" )]
     [Description( "Handles displaying report search results and redirects to the report result page (via route ~/reporting/reports) when only one match was found." )]
     [IconCssClass( "ti ti-search" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     [CodeEditorField( "Report URL Format",
         Description = "The URL to use for linking to a report. <span class='tip tip-lava'></span>",

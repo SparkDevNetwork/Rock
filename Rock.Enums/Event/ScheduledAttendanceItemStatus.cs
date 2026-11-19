@@ -15,12 +15,18 @@
 // </copyright>
 //
 
+#if NET
+namespace Rock.Enums.Event
+#else
 namespace Rock.Model
+#endif
 {
     /// <summary>
     /// Tracks the scheduled attendance status of the individual.
     /// </summary>
+#if !NET
     [Enums.EnumDomain( "Event" )]
+#endif
     public enum ScheduledAttendanceItemStatus
     {
         /// <summary>

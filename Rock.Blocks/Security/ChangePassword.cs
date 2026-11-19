@@ -33,7 +33,7 @@ namespace Rock.Blocks.Security
     [DisplayName( "Change Password" )]
     [Category( "Security" )]
     [Description( "Block for a user to change their password." )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 

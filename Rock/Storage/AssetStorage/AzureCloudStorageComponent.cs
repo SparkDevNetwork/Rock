@@ -26,6 +26,7 @@ using Microsoft.Azure.Storage.Auth;
 using Microsoft.Azure.Storage.Blob;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Model;
 using Rock.Security;
 
@@ -316,6 +317,17 @@ namespace Rock.Storage.AssetStorage
 
                 // Retrieve reference to a blob named "myblob".
                 CloudBlockBlob blockBlob = container.GetBlockBlobReference( asset.Key );
+
+                /*
+                    10/29/2026 - MSE
+
+                    Azure stores a blob uploaded without a content type as application/octet-stream, which makes
+                    browsers download images and PDFs instead of displaying them. Set the type from the file name.
+
+                    Reason: Assets uploaded to Azure Cloud Storage must be served with the correct Content-Type.
+                    https://github.com/SparkDevNetwork/Rock/issues/7112
+                 */
+                blockBlob.Properties.ContentType = System.Web.MimeMapping.GetMimeMapping( GetNameFromKey( asset.Key ) );
                 blockBlob.UploadFromStream( asset.AssetStream );
                 return true;
             }
@@ -557,10 +569,10 @@ namespace Rock.Storage.AssetStorage
 
             // check if thumbnail exists
             string thumbDir = $"{ThumbnailRootPath}/{assetStorageProvider.Id}/{path}";
-            Directory.CreateDirectory( FileSystemComponentHttpContext.Server.MapPath( thumbDir ) );
+            Directory.CreateDirectory( RockApp.Current.MapPath( thumbDir ) );
 
             string virtualThumbPath = Path.Combine( thumbDir, name );
-            string physicalThumbPath = FileSystemComponentHttpContext.Server.MapPath( virtualThumbPath );
+            string physicalThumbPath = RockApp.Current.MapPath( virtualThumbPath );
 
             // Encode the name thumb path since it can contain special characters
             virtualThumbPath = virtualThumbPath.EncodeHtml();

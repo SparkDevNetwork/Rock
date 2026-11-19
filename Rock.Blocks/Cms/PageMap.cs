@@ -36,7 +36,7 @@ namespace Rock.Blocks.Cms
     [DisplayName( "Page Map" )]
     [Category( "CMS" )]
     [Description( "Displays a page map in a tree view." )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 

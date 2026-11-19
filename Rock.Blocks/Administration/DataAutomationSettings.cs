@@ -43,7 +43,7 @@ namespace Rock.Blocks.Administration
     [Category( "Administration" )]
     [Description( "Block used to set values specific to data automation (updating person status, family campus, etc.)." )]
     [IconCssClass( "ti ti-adjustments-horizontal" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     [SystemGuid.EntityTypeGuid( "9BD3B6EF-D0D5-4D27-8BF9-F4826A4807FF" )]
     [Rock.SystemGuid.BlockTypeGuid( "E34C45E9-97CA-4902-803B-1EFAC9174083" )]

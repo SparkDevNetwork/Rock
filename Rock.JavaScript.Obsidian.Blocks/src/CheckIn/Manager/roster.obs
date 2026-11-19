@@ -108,6 +108,15 @@
     let lastVisibleTime = Date.now();
     let durationUpdateTimer: number | undefined;
 
+    /**
+     * The last column the individual chose to sort by. This is reused when the
+     * grid data source is refreshed without a new sort request (for example
+     * after Present, Check-out or Delete). It is kept across roster mode and
+     * schedule changes when the new view has that column, otherwise it is
+     * cleared.
+     */
+    let lastSortColumn: string | undefined;
+
     let entityUpdatedTopic: ITopic | undefined = undefined;
 
     // #endregion
@@ -218,9 +227,25 @@
      * Updates the data source for the roster grid based on the current
      * roster mode and sort column.
      *
-     * @param col The column that is being sorted, if any.
+     * @param col The column that is being sorted, if any. When not provided
+     * the last column the individual sorted by is used.
      */
     function updateGridDataSource(col?: string): void {
+        /*
+            10/30/2026 - MSE
+
+            The grid only tells us the sort column when a header is clicked.
+            Row actions refresh the data source with no column, which reset the
+            sort to the default. Remember the last chosen column and reuse it.
+
+            Reason: Keep the user's sort after Present, Check-out and Delete.
+        */
+        if (col !== undefined) {
+            lastSortColumn = col;
+        }
+
+        const sortColumn = lastSortColumn;
+
         if (!gridData.value) {
             gridDataSource.value = gridDataPendingPromise;
             return;
@@ -236,11 +261,11 @@
                     records: a.toArray()
                 }));
 
-            if (col === "details") {
+            if (sortColumn === "details") {
                 filteredRows = filteredRows
                     .orderBy(a => Math.min(...a.records.map(r => r.checkInDuration)));
             }
-            else if (col === "attendee") {
+            else if (sortColumn === "attendee") {
                 filteredRows = filteredRows.orderBy(a => a.attendee.fullName);
             }
             else {
@@ -258,16 +283,16 @@
                 .where(a => statusMatchesMode(a.status, rosterMode.value));
 
 
-            if (col === "tag") {
+            if (sortColumn === "tag") {
                 filteredRows = filteredRows.orderBy(a => a.code);
             }
-            else if (col === "group") {
+            else if (sortColumn === "group") {
                 filteredRows = filteredRows.orderBy(a => a.group.text);
             }
-            else if (col === "status") {
+            else if (sortColumn === "status") {
                 filteredRows = filteredRows.orderBy(a => a.status);
             }
-            else if (col === "duration") {
+            else if (sortColumn === "duration") {
                 if (rosterMode.value === RosterViewMode.Present) {
                     filteredRows = filteredRows.orderBy(a => a.presentDuration);
                 }
@@ -278,7 +303,7 @@
                     filteredRows = filteredRows.orderBy(a => a.checkInDuration);
                 }
             }
-            else if (col === "attendee") {
+            else if (sortColumn === "attendee") {
                 filteredRows = filteredRows.orderBy(a => a.attendee.fullName);
             }
             else {
@@ -290,6 +315,34 @@
             gridDataSource.value = {
                 rows: clone(filteredRows.toArray())
             };
+        }
+    }
+
+    /**
+     * Clears the remembered sort column when the current view does not have
+     * that column. The single schedule grid always has the attendee, tag and
+     * group columns. The multi schedule grid (no schedule selected) has the
+     * attendee and details columns. The status and duration columns only
+     * exist on some tabs and the duration changes meaning per tab, so they
+     * are only kept when the tab did not change.
+     *
+     * @param isRosterModeChanged Whether the roster mode (tab) just changed.
+     */
+    function clearSortColumnIfUnavailable(isRosterModeChanged: boolean): void {
+        if (!lastSortColumn) {
+            return;
+        }
+
+        const availableColumns = schedule.value
+            ? ["attendee", "tag", "group"]
+            : ["attendee", "details"];
+
+        if (schedule.value && !isRosterModeChanged) {
+            availableColumns.push("status", "duration");
+        }
+
+        if (!availableColumns.includes(lastSortColumn)) {
+            lastSortColumn = undefined;
         }
     }
 
@@ -562,6 +615,7 @@
 
         if (message.data.entityType === "Rock.Model.Schedule") {
             schedule.value = await contextEntities.get("Rock.Model.Schedule");
+            clearSortColumnIfUnavailable(false);
             updateGridDataSource();
         }
 
@@ -595,6 +649,7 @@
      */
     function onRosterModeChanged(mode: RosterViewMode): void {
         rosterMode.value = mode;
+        clearSortColumnIfUnavailable(true);
         updateGridDataSource();
     }
 

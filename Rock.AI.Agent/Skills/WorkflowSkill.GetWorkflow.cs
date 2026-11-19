@@ -21,6 +21,7 @@ using Rock.AI.Agent.Annotations;
 using Rock.AI.Agent.Classes.Common;
 using Rock.AI.Agent.Classes.Entity;
 using Rock.AI.Agent.Classes.Skills.WorkflowSkill;
+using Rock.Security;
 using Rock.SystemGuid;
 using Rock.Web.Cache;
 
@@ -50,6 +51,22 @@ internal partial class WorkflowSkill
         {
             return helper.ErrorResult
                 .WithInstructions( $"Call the {nameof( ListWorkflows )} function to determine the available workflows." );
+        }
+
+        /*
+            10/16/2026 - MSE
+
+            The VIEW check above is the workflow type's launch right. Reading a
+            workflow's values needs EDIT, or VIEW and VIEW_LIST, the same rule
+            Workflow Detail uses.
+
+            Reason: Do not return workflow values the person is not allowed to view.
+        */
+        var currentPerson = AgentRequestContext.CurrentPerson;
+
+        if ( !workflow.IsAuthorized( Authorization.EDIT, currentPerson ) && !workflow.IsAuthorized( Authorization.VIEW_LIST, currentPerson ) )
+        {
+            return Error( "You are not authorized to view this workflow." );
         }
 
         workflow.LoadAttributes( rockContext );

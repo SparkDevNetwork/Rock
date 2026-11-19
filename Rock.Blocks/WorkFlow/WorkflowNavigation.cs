@@ -39,7 +39,7 @@ namespace Rock.Blocks.Workflow
     [Category( "Workflow" )]
     [Description( "Block for navigating workflow types and launching and/or managing workflows." )]
     [IconCssClass( "ti ti-settings-cog" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     [CategoryField( "Categories",
         Description = "The categories to display.",

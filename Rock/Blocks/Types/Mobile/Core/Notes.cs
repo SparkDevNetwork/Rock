@@ -34,6 +34,8 @@ using Rock.Tasks;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 
+using CommunicationType = Rock.Model.CommunicationType;
+
 namespace Rock.Blocks.Types.Mobile.Core
 {
     /// <summary>
@@ -45,7 +47,7 @@ namespace Rock.Blocks.Types.Mobile.Core
     [Category( "Mobile > Core" )]
     [Description( "Displays entity notes to the user and allows adding new notes." )]
     [IconCssClass( "ti ti-sticker-2" )]
-    [SupportedSiteTypes( Model.SiteType.Mobile )]
+    [SupportedSiteTypes( SiteType.Mobile )]
 
     #region Block Attributes
 
@@ -314,7 +316,7 @@ namespace Rock.Blocks.Types.Mobile.Core
                     if ( defaultNoteImageFile != null )
                     {
                         var url = defaultNoteImageFile.Path;
-                        url = url.StartsWith( "~" ) ? System.Web.VirtualPathUtility.ToAbsolute( url ) : url;
+                        url = url.StartsWith( "~" ) ? RequestContext.ResolveRockUrl( url ) : url;
                         if ( !url.StartsWith( "http", StringComparison.OrdinalIgnoreCase ) )
                         {
                             var uri = new Uri( GlobalAttributesCache.Get().GetValue( "PublicApplicationRoot" ) );
@@ -654,19 +656,50 @@ namespace Rock.Blocks.Types.Mobile.Core
         [BlockAction]
         public BlockActionResult GetNote( Guid noteGuid )
         {
+            if ( noteGuid == Guid.Empty )
+            {
+                return ActionBadRequest();
+            }
+
+            var entityType = EntityTypeCache.Get( ContextEntityType );
+            var entity = entityType != null ? RequestContext.GetContextEntity( entityType.GetEntityType() ) : null;
+            if ( entity == null )
+            {
+                return ActionNotFound();
+            }
+
+            var viewableNoteTypeIds = GetViewableNoteTypes().Select( t => t.Id ).ToList();
+            var currentPerson = RequestContext.CurrentPerson;
+
             using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
+                /*
+                    10/16/2026 - MSE
 
-                if ( noteGuid == null )
-                {
-                    return ActionBadRequest();
-                }
+                    GetNote must only return a note that this block would list for the current
+                    person: one attached to the context entity, of a note type the block shows and
+                    the person can view, and visible to the person (private and approval rules).
+                    The note's own VIEW permission is then checked as GetViewableNotes does.
 
-                var note = new NoteService( rockContext ).Get( noteGuid );
+                    Reason: Prevent reading any note, including private notes, by Guid.
+                */
+                var note = new NoteService( rockContext ).Queryable()
+                    .Include( a => a.NoteType )
+                    .Include( a => a.CreatedByPersonAlias )
+                    .AreViewableBy( currentPerson?.Id )
+                    .Where( a => a.Guid == noteGuid
+                        && a.EntityId == entity.Id
+                        && viewableNoteTypeIds.Contains( a.NoteTypeId ) )
+                    .FirstOrDefault();
 
                 if ( note == null )
                 {
                     return ActionNotFound();
+                }
+
+                if ( !note.IsAuthorized( Authorization.VIEW, currentPerson ) )
+                {
+                    return ActionForbidden( "Not authorized to view note." );
                 }
 
                 return ActionOk( new Rock.Common.Mobile.Blocks.Core.Notes.Note

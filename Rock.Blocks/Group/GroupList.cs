@@ -42,7 +42,7 @@ namespace Rock.Blocks.Group
     [Category( "Groups" )]
     [Description( "Lists all groups for the configured group types or all groups for the specified person context." )]
     [IconCssClass( "ti ti-list" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
     [ContextAware]
     [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Primary )]
     [CustomizedGrid]

@@ -28,6 +28,7 @@
     import { FinancialAccountBag } from "@Obsidian/ViewModels/Blocks/Finance/FinancialAccountDetail/financialAccountBag";
     import { FinancialAccountDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Finance/FinancialAccountDetail/financialAccountDetailOptionsBag";
     import { asTrueOrFalseString } from "@Obsidian/Utility/booleanUtils";
+    import { escapeHtml } from "@Obsidian/Utility/stringUtils";
 
     const props = defineProps({
         modelValue: {
@@ -110,7 +111,15 @@
         }
 
         if (props.modelValue.accountParticipants && props.modelValue.accountParticipants.length > 0) {
-            const accountParticipantsHtml = props.modelValue.accountParticipants.map(a => `${a.personFullName} (${a.purposeKeyDescription})`).join("<br>");
+            /*
+                10/19/2026 - MSE
+
+                This value is shown as HTML. The participant name is stored data a person can
+                set, so each name and purpose is escaped and only the line breaks are markup.
+
+                Reason: Prevent stored XSS through a participant name in Financial Account Detail.
+            */
+            const accountParticipantsHtml = props.modelValue.accountParticipants.map(a => `${escapeHtml(a.personFullName ?? "")} (${escapeHtml(a.purposeKeyDescription ?? "")})`).join("<br>");
             valueBuilder.addHtmlValue("Account Participants", accountParticipantsHtml);
         }
 

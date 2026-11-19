@@ -148,6 +148,12 @@ namespace Rock.Blocks.Security
     [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.PHONE_NUMBER_LOOKUP )]
     public class PhoneNumberIdentification : RockBlockType
     {
+        /// <summary>
+        /// Purpose that binds the verification token to this block, so a tampered
+        /// or foreign token fails verification.
+        /// </summary>
+        private const string VerificationTokenEncryptionPurpose = "Rock.Blocks.Security.PhoneNumberIdentification.VerificationToken";
+
         #region Keys
 
         private static class AttributeKey
@@ -282,7 +288,7 @@ namespace Rock.Blocks.Security
                     return ActionBadRequest( "Verification text message failed to send." );
                 }
 
-                var verificationToken = Encryption.EncryptString( identityVerification.Id.ToString() );
+                var verificationToken = Encryption.EncryptStringForPurpose( identityVerification.Id.ToString(), VerificationTokenEncryptionPurpose );
                 return ActionOk( verificationToken );
             }
             catch ( IdentityVerificationIpLimitReachedException )
@@ -715,7 +721,7 @@ namespace Rock.Blocks.Security
 
             try
             {
-                return Encryption.DecryptString( verificationToken ).AsIntegerOrNull();
+                return Encryption.DecryptStringForPurpose( verificationToken, VerificationTokenEncryptionPurpose ).AsIntegerOrNull();
             }
             catch
             {

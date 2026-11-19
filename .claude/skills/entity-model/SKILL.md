@@ -7,7 +7,7 @@ description: >-
   an entity", "new entity model", "scaffold entity", "add a new table",
   "new model class", or describes a new domain object that needs a database table.
   Also use when asked to "review entity model" or "check my entity".
-  Do NOT use for ViewModels/Bags — use /bag-generator instead.
+  Do NOT use for ViewModels/Bags.
   Do NOT use for migrations — use /migration after scaffolding the entity.
 argument-hint: "Describe the entity to create (e.g., 'a CampusSchedule entity in the Core domain that links a Campus to a Schedule with an IsActive flag'), or say 'review' to review an existing entity"
 compatibility: Requires Claude Code with access to the Rock RMS codebase.
@@ -138,7 +138,6 @@ Read `references/common-pitfalls.md` and run through the checklist before presen
 **Output:** Write the files and show their contents in conversation. Remind the user of next steps:
 1. Run `Rock.CodeGeneration` (WPF app) to generate the `[Entity]Service.CodeGenerated.cs` file
 2. Use `/migration` to scaffold and write the EF migration that creates the table
-3. Use `/bag-generator` (if available) to create ViewModels/Bags for Obsidian blocks
 
 ---
 

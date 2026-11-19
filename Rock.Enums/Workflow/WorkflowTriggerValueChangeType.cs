@@ -15,12 +15,18 @@
 // </copyright>
 //
 
+#if NET
+namespace Rock.Enums.Workflow
+#else
 namespace Rock.Model
+#endif
 {
     /// <summary>
     /// This is determined by the values for EntityTypeQualifierValue and EntityTypeQualifierValuePrevious
     /// </summary>
+#if !NET
     [Enums.EnumDomain( "Workflow" )]
+#endif
     public enum WorkflowTriggerValueChangeType
     {
         /// <summary>

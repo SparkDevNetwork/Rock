@@ -45,7 +45,7 @@ namespace Rock.Blocks.CheckIn.Manager
     [Category( "Check-in > Manager" )]
     [Description( "Block to show details of a person's attendance" )]
     [IconCssClass( "ti ti-user-check" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 

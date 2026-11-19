@@ -14,12 +14,18 @@
 // limitations under the License.
 // </copyright>
 //
+#if NET
+namespace Rock.Enums.Cms
+#else
 namespace Rock.Model
+#endif
 {
     /// <summary>
     /// Scripting language for the dataset
     /// </summary>
+#if !NET
     [Enums.EnumDomain( "Cms" )]
+#endif
     public enum PersistedDatasetScriptType
     {
         /// <summary>

@@ -26,6 +26,7 @@ using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
+using Rock.Web.Cache;
 
 namespace Rock.Rest.Controllers
 {
@@ -43,7 +44,40 @@ namespace Rock.Rest.Controllers
         [Rock.SystemGuid.RestActionGuid( "7611D15B-55CD-4D84-96B5-1A11340D8D8A" )]
         public IEnumerable<IChartData> GetChartData( ChartGroupBy groupBy = ChartGroupBy.Week, AttendanceGraphBy graphBy = AttendanceGraphBy.Total, DateTime? startDate = null, DateTime? endDate = null, string groupIds = null, string campusIds = null, string scheduleIds = null, int? dataViewId = null )
         {
-            return new AttendanceService( RockApp.Current.CreateRockContext() ).GetChartData( groupBy, graphBy, startDate, endDate, groupIds, campusIds, dataViewId, scheduleIds );
+            /*
+                10/18/2026 - MSE
+
+                Only count attendance for groups the caller can view, and only apply a person data
+                view the caller can view. With no viewable group, or a data view that is missing,
+                not a person data view, or not viewable, return no data, because the service treats
+                an empty group list as every group.
+
+                Reason: Any person allowed on this endpoint could read attendance for any group.
+            */
+            var person = GetPerson();
+
+            var authorizedGroupIds = ( groupIds ?? string.Empty ).Split( ',' ).AsIntegerList()
+                .Distinct()
+                .Where( id => GroupCache.Get( id )?.IsAuthorized( Rock.Security.Authorization.VIEW, person ) == true )
+                .ToList();
+
+            if ( !authorizedGroupIds.Any() )
+            {
+                return new List<IChartData>();
+            }
+
+            if ( dataViewId.HasValue )
+            {
+                var dataView = DataViewCache.Get( dataViewId.Value );
+                if ( dataView == null
+                    || dataView.EntityTypeId != EntityTypeCache.GetId<Rock.Model.Person>()
+                    || !dataView.IsAuthorized( Rock.Security.Authorization.VIEW, person ) )
+                {
+                    return new List<IChartData>();
+                }
+            }
+
+            return new AttendanceService( RockApp.Current.CreateRockContext() ).GetChartData( groupBy, graphBy, startDate, endDate, authorizedGroupIds.AsDelimited( "," ), campusIds, dataViewId, scheduleIds );
         }
 
         /// <summary>
@@ -363,8 +397,24 @@ namespace Rock.Rest.Controllers
         [Rock.SystemGuid.RestActionGuid( "E3C50A1C-DF4E-4828-A0D0-A0BED27EDBE1" )]
         public void RegisterRSVPRecipients( int occurrenceId, [FromBody] List<string> personIds )
         {
+            var rockContext = new RockContext();
+            var occurrence = new AttendanceOccurrenceService( rockContext ).Get( occurrenceId );
+
+            if ( occurrence?.Group == null )
+            {
+                throw new HttpResponseException( HttpStatusCode.NotFound );
+            }
+
+            var groupType = GroupTypeCache.Get( occurrence.Group.GroupTypeId );
+            var person = GetPerson();
+
+            if ( person == null || groupType?.EnableRSVP != true || !occurrence.Group.IsAuthorized( Rock.Security.Authorization.VIEW, person ) )
+            {
+                throw new HttpResponseException( HttpStatusCode.Unauthorized );
+            }
+
             var personIdList = personIds.Select( int.Parse ).ToList();
-            new AttendanceService( RockApp.Current.CreateRockContext() )
+            new AttendanceService( rockContext )
                 .RegisterRSVPRecipients( occurrenceId, personIdList );
         }
 

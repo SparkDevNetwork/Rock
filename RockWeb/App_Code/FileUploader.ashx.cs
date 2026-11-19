@@ -93,7 +93,9 @@ namespace RockWeb
                 if ( !string.IsNullOrWhiteSpace( authToken ) )
                 {
                     var userLoginService = new UserLoginService( RockApp.Current.CreateRockContext() );
-                    var userLogin = userLoginService.Queryable().Where( u => u.ApiKey == authToken ).FirstOrDefault();
+                    var userLogin = userLoginService.Queryable().Where( u => u.ApiKey == authToken
+                            && ( u.ApiKeyPurpose == null || u.ApiKeyPurpose != Rock.Enums.Security.ApiKeyPurpose.Mcp ) )
+                        .FirstOrDefault();
                     if ( userLogin != null )
                     {
                         var identity = new GenericIdentity( userLogin.UserName );
@@ -258,7 +260,25 @@ namespace RockWeb
         private void ProcessAssetStorageProviderAsset( HttpContext context, HttpPostedFile uploadedFile )
         {
             int? assetStorageId = context.Request.Form[ParameterKey.StorageId].AsIntegerOrNull();
-            string assetKey = context.Request.Form[ParameterKey.Key] + uploadedFile.FileName;
+            /*
+                10/19/2026 - MSE
+
+                The asset storage provider upload grant does not name a provider
+                or a key, so the provider and key posted by the browser have to
+                be checked here. The file name is scrubbed the same way as
+                content uploads, the provider must be active and have a
+                component, keys with a backslash or a segment made only of dots
+                and spaces are refused, and cloud provider keys must stay inside
+                the provider's root folder. The file system component already
+                keeps keys inside its root folder when it uploads. Its root
+                folder may be typed with backslashes, which it maps the same as
+                forward slashes, so backslashes in its keys are turned into
+                forward slashes instead of being refused.
+
+                Reason: A grant holder could write to an inactive provider or to
+                any object in a cloud bucket outside the provider's root folder.
+            */
+            string assetKey = ( context.Request.Form[ParameterKey.Key] ?? string.Empty ) + ScrubFileName( uploadedFile.FileName );
 
             if ( assetStorageId == null || assetKey.IsNullOrWhiteSpace() )
             {
@@ -266,14 +286,40 @@ namespace RockWeb
             }
 
             var assetStorageProviderCache = AssetStorageProviderCache.Get( assetStorageId.Value );
-            var component = assetStorageProviderCache.AssetStorageComponent;
+            var component = assetStorageProviderCache?.AssetStorageComponent;
+
+            if ( assetStorageProviderCache == null
+                || !assetStorageProviderCache.IsActive
+                || !assetStorageProviderCache.EntityTypeId.HasValue
+                || component == null )
+            {
+                throw new Rock.Web.FileUploadException( "Invalid storage provider.", System.Net.HttpStatusCode.BadRequest );
+            }
+
+            if ( component is Rock.Storage.AssetStorage.FileSystemComponent )
+            {
+                assetKey = assetKey.Replace( '\\', '/' );
+            }
+
+            if ( !IsValidAssetKey( assetKey ) )
+            {
+                throw new Rock.Web.FileUploadException( "Invalid key.", System.Net.HttpStatusCode.BadRequest );
+            }
+
+            var assetStorageProvider = assetStorageProviderCache.ToEntity();
+
+            if ( !( component is Rock.Storage.AssetStorage.FileSystemComponent )
+                && !IsKeyWithinRoot( assetKey, component.GetRootFolder( assetStorageProvider ) ) )
+            {
+                throw new Rock.Web.FileUploadException( "Invalid key.", System.Net.HttpStatusCode.BadRequest );
+            }
 
             var asset = new Rock.Storage.AssetStorage.Asset();
             asset.Key = assetKey;
             asset.Type = Rock.Storage.AssetStorage.AssetType.File;
             asset.AssetStream = uploadedFile.InputStream;
 
-            if ( component.UploadObject( assetStorageProviderCache.ToEntity(), asset ) )
+            if ( component.UploadObject( assetStorageProvider, asset ) )
             {
                 context.Response.Write( new { Id = string.Empty, FileName = assetKey }.ToJson() );
             }
@@ -313,7 +359,7 @@ namespace RockWeb
             }
 
             // Get the absolute path for our trusted root.
-            string trustedPhysicalRootFolder = Path.GetFullPath( context.Request.MapPath( trustedRootFolder ) );
+            string trustedPhysicalRootFolder = Path.GetFullPath( RockApp.Current.MapPath( trustedRootFolder ) );
 
             // Treat rooted folder paths as relative.
             string untrustedRelativeFolderPath = "";
@@ -389,6 +435,11 @@ namespace RockWeb
         private const string UnknownMimeType = "application/octet-stream";
 
         /// <summary>
+        /// The longest mime type that can be stored on a <see cref="BinaryFile"/>.
+        /// </summary>
+        private const int MaxMimeTypeLength = 255;
+
+        /// <summary>
         /// The mime types that clients and remote servers send when they do not know the type
         /// of the file.
         /// </summary>
@@ -398,6 +449,13 @@ namespace RockWeb
             "binary/octet-stream",
             "application/x-octet-stream"
         };
+
+        /// <summary>
+        /// Matches a well-formed mime type, a type and subtype with optional parameters.
+        /// </summary>
+        private static readonly Regex _validMimeTypeRegex = new Regex(
+            @"^[A-Za-z0-9][A-Za-z0-9!#$&^_.+-]*/[A-Za-z0-9][A-Za-z0-9!#$&^_.+-]*(\s*;\s*[A-Za-z0-9!#$&^_.+-]+=([A-Za-z0-9!#$&^_.+-]+|""[^""\\\r\n]*""))*\z",
+            RegexOptions.Compiled );
 
         /// <summary>
         /// The image mime types that can be inferred from the file's contents when the client
@@ -482,9 +540,13 @@ namespace RockWeb
             */
             isInferred = false;
 
-            var mimeType = uploadedFile.ContentType;
+            var mimeType = uploadedFile.ContentType?.Trim();
 
-            if ( mimeType.IsNotNullOrWhiteSpace() && !_unknownMimeTypes.Contains( mimeType.Trim() ) )
+            // A malformed or oversized type is handled like a missing one rather than failing the upload.
+            if ( mimeType.IsNotNullOrWhiteSpace()
+                && mimeType.Length <= MaxMimeTypeLength
+                && !_unknownMimeTypes.Contains( mimeType )
+                && _validMimeTypeRegex.IsMatch( mimeType ) )
             {
                 return mimeType;
             }
@@ -766,6 +828,48 @@ namespace RockWeb
             scrubbedFileName = string.Concat( scrubbedFileName.Split( illegalChars ) );
 
             return scrubbedFileName;
+        }
+
+        /// <summary>
+        /// Determines whether an asset storage provider key is safe to use. A key
+        /// is not safe if it contains a backslash or a path segment made only of
+        /// dots and spaces, such as "." or "..". Empty segments are allowed.
+        /// </summary>
+        /// <param name="key">The asset key.</param>
+        /// <returns><c>true</c> if the key is safe to use; otherwise, <c>false</c>.</returns>
+        private static bool IsValidAssetKey( string key )
+        {
+            if ( key.IndexOf( '\\' ) >= 0 )
+            {
+                return false;
+            }
+
+            return !key.Split( '/' ).Any( s => s.Length > 0 && s.Trim( '.', ' ' ).Length == 0 );
+        }
+
+        /// <summary>
+        /// Determines whether an asset storage provider key is inside the
+        /// provider's root folder. A blank root folder or a root folder of "/"
+        /// means the whole storage location, so every key is inside it.
+        /// </summary>
+        /// <param name="key">The asset key.</param>
+        /// <param name="rootFolder">The provider's root folder.</param>
+        /// <returns><c>true</c> if the key is inside the root folder; otherwise, <c>false</c>.</returns>
+        private static bool IsKeyWithinRoot( string key, string rootFolder )
+        {
+            var root = rootFolder?.Trim() ?? string.Empty;
+
+            if ( root.Length == 0 || root == "/" )
+            {
+                return true;
+            }
+
+            if ( !root.EndsWith( "/" ) )
+            {
+                root += "/";
+            }
+
+            return key.StartsWith( root, StringComparison.Ordinal );
         }
 
         /// <summary>

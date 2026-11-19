@@ -43,7 +43,7 @@ namespace Rock.Blocks.Cms
     [Category( "CMS" )]
     [Description( "Displays a list of adaptive messages." )]
     [IconCssClass( "ti ti-list" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     [LinkedPage( "Detail Page",
         Description = "The page that will show the adaptive message details.",
@@ -198,6 +198,15 @@ namespace Rock.Blocks.Cms
             GridAttributeLoader.LoadFor( items, a => a.AdaptiveMessage, _gridAttributes.Value, rockContext );
 
             return items;
+        }
+
+        /// <inheritdoc/>
+        protected override GridEntityKeyOptions GetGridEntityKeyOptions()
+        {
+            return new GridEntityKeyOptions
+            {
+                EntityTypeId = EntityTypeCache.GetId<Rock.Model.AdaptiveMessage>()
+            };
         }
 
         /// <inheritdoc/>

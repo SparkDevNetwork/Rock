@@ -319,6 +319,17 @@ namespace Rock.Reporting.DataSelect.Group
         }
 
         /// <summary>
+        /// Gets the Guid of the data view that is referenced by a selection.
+        /// </summary>
+        /// <param name="selection">The selection.</param>
+        /// <returns>The data view Guid, or <c>null</c>.</returns>
+        [Rock.Attribute.RockInternal( "17.13" )]
+        public Guid? GetRelatedDataViewGuid( string selection )
+        {
+            return new ParticipationRateSelectSettings( selection ?? string.Empty ).DataViewGuid;
+        }
+
+        /// <summary>
         /// Gets the selection.
         /// This is typically a string that contains the values selected with the Controls
         /// </summary>

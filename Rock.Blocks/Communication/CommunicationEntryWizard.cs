@@ -639,7 +639,9 @@ namespace Rock.Blocks.Communication
                 return ActionBadRequest( validationResult.ErrorMessage );
             }
 
-            var optionsErrorMessage = GetCommunicationOptionsErrorMessage( bag );
+            // The page loads recipients as soon as a list is chosen, which can be
+            // before the person has picked one of the offered communication types.
+            var optionsErrorMessage = GetCommunicationOptionsErrorMessage( bag, isCommunicationTypeValidated: false );
             if ( optionsErrorMessage != null )
             {
                 return ActionBadRequest( optionsErrorMessage );
@@ -1032,6 +1034,10 @@ namespace Rock.Blocks.Communication
             {
                 return ActionBadRequest( "Category is required." );
             }
+            else if ( category.EntityTypeId != EntityTypeCache.GetId<CommunicationTemplate>() )
+            {
+                return ActionBadRequest( "Invalid category." );
+            }
             else if ( !category.IsAuthorized( Authorization.EDIT, currentPerson ) )
             {
                 return ActionBadRequest( "You don't have edit access to this category." );
@@ -1153,11 +1159,40 @@ namespace Rock.Blocks.Communication
         /// </summary>
         private List<ListItemBag> GetPersonalizationSegments( RockContext rockContext, Person authorizedPerson )
         {
-            var personalizationSegmentCategory = this.PersonalizationSegmentCategoryGuid;
+            var personalizationSegmentCategoryGuid = this.PersonalizationSegmentCategoryGuid;
 
-            return new PersonalizationSegmentService( rockContext )
-                        .Queryable().AsNoTracking()
-                        .Where( p => p.Categories.Any( c => c.Guid == personalizationSegmentCategory ) )
+            var segmentQuery = new PersonalizationSegmentService( rockContext )
+                        .Queryable().AsNoTracking();
+
+            var personalizationSegmentCategory = CategoryCache.Get( personalizationSegmentCategoryGuid );
+
+            if ( personalizationSegmentCategory != null )
+            {
+                /*
+                    10/30/2026 - MSE
+
+                    List the segments in the configured category and in any of its descendant
+                    categories. Matching only the exact category hid every segment that an admin
+                    organized into a child category. Match on the category Ids (the root's Id comes
+                    from the cached category) to avoid a Guid-based join.
+
+                    Reason: Segments in child categories of the configured category were not listed.
+                */
+                var categoryIds = new CategoryService( rockContext )
+                    .GetAllDescendents( personalizationSegmentCategory.Id )
+                    .Select( c => c.Id )
+                    .ToList();
+                categoryIds.Add( personalizationSegmentCategory.Id );
+
+                segmentQuery = segmentQuery.Where( p => p.Categories.Any( c => categoryIds.Contains( c.Id ) ) );
+            }
+            else
+            {
+                // No category could be resolved, so keep the previous behavior of matching the configured Guid exactly.
+                segmentQuery = segmentQuery.Where( p => p.Categories.Any( c => c.Guid == personalizationSegmentCategoryGuid ) );
+            }
+
+            return segmentQuery
                         .ToList()
                         .Where( p => p.IsAuthorized( Authorization.VIEW, authorizedPerson ) )
                         .Select( p => new ListItemBag
@@ -1183,11 +1218,18 @@ namespace Rock.Blocks.Communication
         /// </summary>
         private List<ListItemBag> GetPersonalizationSegments( RockContext rockContext, List<int> personalizationSegmentIds )
         {
-            var personalizationSegmentCategoryGuid = this.PersonalizationSegmentCategoryGuid;
+            /*
+                10/30/2026 - MSE
 
+                Do not filter these segments by category. They are the segments already saved on the
+                communication, and filtering them by the configured category dropped any segment that
+                was in another category (or whose category changed). The next save of the draft then
+                wrote the list back without it, which lost the segment for good.
+
+                Reason: Keep every segment already saved on the communication.
+            */
             return new PersonalizationSegmentService( rockContext )
                 .GetByIds( personalizationSegmentIds )
-                .Where( p => p.Categories.Any( c => c.Guid == personalizationSegmentCategoryGuid ) )
                 .Select( p => new ListItemBag
                 {
                     // We need integer IDs to store in the Communication.PersonalizationSegmentIds column.
@@ -1760,7 +1802,7 @@ namespace Rock.Blocks.Communication
                     CreatedByPersonAliasId = currentPerson.PrimaryAliasId,
                     SenderPersonAlias = currentPerson.PrimaryAlias,
                     SenderPersonAliasId = currentPerson.PrimaryAliasId,
-                    CommunicationType = CommunicationType.Email
+                    CommunicationType = GetDefaultCommunicationType( currentPerson )
                 };
             }
 
@@ -2580,14 +2622,17 @@ namespace Rock.Blocks.Communication
         }
 
         /// <summary>
-        /// Validates the communication list and SMS from number in a request
-        /// against the options this block offers. The value already stored on
-        /// an editable communication (and, for the SMS number, the selected
-        /// template's number) is also allowed.
+        /// Validates the communication list, personalization segments, SMS from number, communication type
+        /// and individual recipients in a request against the options this block offers.
         /// </summary>
+        /// <remarks>
+        /// The value already stored on an editable communication (and, for the
+        /// SMS number, the selected template's number) is also allowed.
+        /// </remarks>
         /// <param name="bag">The communication request.</param>
+        /// <param name="isCommunicationTypeValidated"><c>true</c> to validate the communication type; <c>false</c> for requests that neither save nor send.</param>
         /// <returns>An error message, or <see langword="null"/> if the request is valid.</returns>
-        private string GetCommunicationOptionsErrorMessage( CommunicationEntryWizardCommunicationBag bag )
+        private string GetCommunicationOptionsErrorMessage( CommunicationEntryWizardCommunicationBag bag, bool isCommunicationTypeValidated = true )
         {
             var currentPerson = GetCurrentPerson();
             var existingCommunication = GetExistingCommunication( this.RockContext, bag );
@@ -2620,6 +2665,21 @@ namespace Rock.Blocks.Communication
                 }
             }
 
+            // Segments already on the communication stay valid so it can still be edited.
+            var newSegmentIds = GetPersonalizationSegmentIds( bag.PersonalizationSegments )?
+                .Except( existingCommunication?.PersonalizationSegments.SplitDelimitedValues().AsIntegerList() ?? new List<int>() )
+                .ToList();
+
+            if ( newSegmentIds?.Any() == true )
+            {
+                var offeredSegmentIds = new HashSet<int>( GetPersonalizationSegments( RockContext, currentPerson ).Select( s => s.Value.AsInteger() ) );
+
+                if ( newSegmentIds.Any( id => !offeredSegmentIds.Contains( id ) ) )
+                {
+                    return "Invalid personalization segment.";
+                }
+            }
+
             if ( bag.SmsFromSystemPhoneNumberGuid.HasValue && !bag.SmsFromSystemPhoneNumberGuid.Value.IsEmpty() )
             {
                 var smsFromNumberGuid = bag.SmsFromSystemPhoneNumberGuid.Value;
@@ -2635,6 +2695,90 @@ namespace Rock.Blocks.Communication
                     {
                         return "Invalid SMS from number.";
                     }
+                }
+            }
+
+            var communicationType = ConvertCommunicationType( bag.CommunicationType );
+
+            if ( isCommunicationTypeValidated && existingCommunication?.CommunicationType != communicationType )
+            {
+                var offeredValues = GetCommunicationMediumBags( currentPerson ).Select( m => m.Value ).ToList();
+                var requiredValue = communicationType == CommunicationType.Email ? SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL
+                    : communicationType == CommunicationType.SMS ? SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS
+                    : communicationType == CommunicationType.PushNotification ? SystemGuid.EntityType.COMMUNICATION_MEDIUM_PUSH_NOTIFICATION
+                    : "Recipient Preference";
+
+                if ( !offeredValues.Contains( requiredValue, StringComparer.OrdinalIgnoreCase ) )
+                {
+                    return "Invalid communication type.";
+                }
+            }
+
+            if ( this.DisableAddingIndividualsToRecipientLists && bag.IndividualRecipientPersonAliasIdKeys?.Any() == true )
+            {
+                /*
+                    11/13/2026 - JMH
+
+                    The page still sends individual recipients when adding is disabled:
+                    the members left after removing people from the selected list, the
+                    recipients of an existing communication, and the person from the
+                    Person page parameter. Those are allowed and anyone else is an addition.
+                    People are compared by person so a non-primary alias is not refused.
+
+                    Reason: Refuse added individuals without breaking recipient removal.
+                */
+                var requestedPersonAliasIds = GetPersonAliasIdsFromIdKeys( bag.IndividualRecipientPersonAliasIdKeys );
+
+                var requestedPersonIds = new PersonAliasService( this.RockContext )
+                    .Queryable()
+                    .Where( pa => requestedPersonAliasIds.Contains( pa.Id ) )
+                    .Select( pa => pa.PersonId )
+                    .Distinct()
+                    .ToList();
+
+                var allowedPersonIds = new HashSet<int>();
+
+                if ( existingCommunication != null )
+                {
+                    allowedPersonIds.UnionWith( new CommunicationRecipientService( this.RockContext )
+                        .Queryable()
+                        .Where( r => r.CommunicationId == existingCommunication.Id )
+                        .Select( r => r.PersonAlias.PersonId )
+                        .ToList() );
+                }
+
+                var listGroupId = bag.CommunicationListGroupGuid.HasValue
+                    ? GroupCache.GetId( bag.CommunicationListGroupGuid.Value )
+                    : null;
+
+                if ( listGroupId.HasValue )
+                {
+                    // Archived members are included because the page's recipient list includes them.
+                    allowedPersonIds.UnionWith( new GroupMemberService( this.RockContext )
+                        .Queryable( includeDeceased: true, includeArchived: true )
+                        .Where( gm => gm.GroupId == listGroupId.Value && gm.GroupMemberStatus == GroupMemberStatus.Active )
+                        .Select( gm => gm.PersonId )
+                        .ToList() );
+                }
+
+                var pagePersonKey = this.PersonOrPersonIdPageParameter;
+
+                if ( GetAttributeValue( AttributeKey.EnablePersonParameter ).AsBoolean() && pagePersonKey.IsNotNullOrWhiteSpace() )
+                {
+                    var pagePersonId = new PersonService( this.RockContext )
+                        .GetQueryableByKey( pagePersonKey, !this.PageCache.Layout.Site.DisablePredictableIds )
+                        .Select( p => ( int? ) p.Id )
+                        .FirstOrDefault();
+
+                    if ( pagePersonId.HasValue )
+                    {
+                        allowedPersonIds.Add( pagePersonId.Value );
+                    }
+                }
+
+                if ( requestedPersonIds.Any( id => !allowedPersonIds.Contains( id ) ) )
+                {
+                    return "Individual recipients cannot be added on this page.";
                 }
             }
 
@@ -2991,6 +3135,27 @@ namespace Rock.Blocks.Communication
             }
 
             return mediums;
+        }
+
+        /// <summary>
+        /// Gets the communication type a new communication starts with.
+        /// </summary>
+        /// <param name="currentPerson">The person the mediums are offered to.</param>
+        /// <returns>Email when it is offered or nothing is; otherwise the first offered type.</returns>
+        private CommunicationType GetDefaultCommunicationType( Person currentPerson )
+        {
+            var offeredValues = GetCommunicationMediumBags( currentPerson ).Select( m => m.Value ).ToList();
+
+            // A page that does not offer Email has to start on a type it will accept
+            // back, since the type can be submitted without ever being picked.
+            if ( !offeredValues.Any() || offeredValues.Contains( SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL, StringComparer.OrdinalIgnoreCase ) )
+            {
+                return CommunicationType.Email;
+            }
+
+            return offeredValues.First().Equals( SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS, StringComparison.OrdinalIgnoreCase )
+                ? CommunicationType.SMS
+                : CommunicationType.PushNotification;
         }
 
         /// <summary>
@@ -3383,7 +3548,11 @@ namespace Rock.Blocks.Communication
                     }
                 }
 
-                if ( previewAsPersonalizationSegmentId.HasValue )
+                // The preview only offers segments selected on the communication, which have already been validated.
+                var isPreviewSegmentSelected = previewAsPersonalizationSegmentId.HasValue
+                    && GetPersonalizationSegmentIds( bag.PersonalizationSegments )?.Contains( previewAsPersonalizationSegmentId.Value ) == true;
+
+                if ( isPreviewSegmentSelected )
                 {
                     // Use the first person returned for this personalization segment.
                     var personAliasPersonalizationQuery = new PersonalizationSegmentService( rockContext )

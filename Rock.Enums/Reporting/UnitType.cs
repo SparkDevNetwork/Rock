@@ -15,12 +15,18 @@
 // </copyright>
 //
 
+#if NET
+namespace Rock.Enums.Reporting
+#else
 namespace Rock.Model
+#endif
 {
     /// <summary>
     /// The unit type for a metric
     /// </summary>
+#if !NET
     [Enums.EnumDomain( "Reporting" )]
+#endif
     public enum UnitType
     {
         /// <summary>

@@ -31,6 +31,8 @@ using Rock.ViewModels.Blocks.Communication.CommunicationTemplateDetail;
 using Rock.Web;
 using Rock.Web.Cache;
 
+using CommunicationType = Rock.Model.CommunicationType;
+
 namespace Rock.Blocks.Communication
 {
     /// <summary>
@@ -39,7 +41,7 @@ namespace Rock.Blocks.Communication
     [DisplayName( "Communication Template Detail" )]
     [Category( "Communication" )]
     [Description( "Used for editing a communication template that can be selected when creating a new communication, SMS, etc. to people." )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 
@@ -135,6 +137,18 @@ namespace Rock.Blocks.Communication
                     .GetQueryableByKey( communicationTemplateKey, !PageCache.Layout.Site.DisablePredictableIds )
                     .Include( c => c.Attachments.Select( a => a.BinaryFile ) )
                     .FirstOrDefault();
+
+                if ( communicationTemplate != null && !communicationTemplate.IsAuthorized( Authorization.VIEW, currentPerson ) )
+                {
+                    return new CommunicationTemplateDetailInitializationBox
+                    {
+                        ErrorMessage = "You are not authorized to view this communication template.",
+                        NavigationUrls =
+                        {
+                            [NavigationUrlKey.ParentPage] = this.GetParentPageUrl()
+                        }
+                    };
+                }
 
                 if ( communicationTemplate != null )
                 {
@@ -396,8 +410,20 @@ namespace Rock.Blocks.Communication
             {
                 if ( newCategoryGuid.HasValue )
                 {
-                    communicationTemplate.Category = new CategoryService( this.RockContext ).Get( newCategoryGuid.Value );
-                    communicationTemplate.CategoryId = communicationTemplate.Category?.Id;
+                    // The template inherits its security from its category, so only
+                    // accept a category the picker would have offered.
+                    var newCategory = new CategoryService( this.RockContext ).Get( newCategoryGuid.Value );
+                    var isCategoryAllowed = newCategory != null
+                        && newCategory.EntityTypeId == EntityTypeCache.GetId<CommunicationTemplate>()
+                        && newCategory.IsAuthorized( Authorization.VIEW, currentPerson );
+
+                    if ( !isCategoryAllowed )
+                    {
+                        return ActionBadRequest( "Invalid category." );
+                    }
+
+                    communicationTemplate.Category = newCategory;
+                    communicationTemplate.CategoryId = newCategory.Id;
                 }
                 else
                 {
@@ -460,6 +486,15 @@ namespace Rock.Blocks.Communication
                 {
                     if ( newSmsFromSystemPhoneNumberGuid.HasValue )
                     {
+                        var isSmsFromNumberAllowed = SystemPhoneNumberCache.All( false )
+                            .Any( spn => spn.Guid == newSmsFromSystemPhoneNumberGuid.Value
+                                && spn.IsAuthorized( Authorization.VIEW, currentPerson ) );
+
+                        if ( !isSmsFromNumberAllowed )
+                        {
+                            return ActionBadRequest( "Invalid SMS from number." );
+                        }
+
                         communicationTemplate.SmsFromSystemPhoneNumber = new SystemPhoneNumberService( this.RockContext ).Get( newSmsFromSystemPhoneNumberGuid.Value );
                         communicationTemplate.SmsFromSystemPhoneNumberId = communicationTemplate.SmsFromSystemPhoneNumber?.Id;
                     }

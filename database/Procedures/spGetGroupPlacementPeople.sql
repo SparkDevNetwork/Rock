@@ -319,7 +319,6 @@ BEGIN
 				gm.GroupTypeId,
 				gm.Id AS GroupMemberId, 
 				gm.GroupRoleId, 
-				gm.GroupMemberStatus, 
 				p.Id AS PersonId, 
 				p.FirstName, 
 				p.NickName, 
@@ -342,10 +341,9 @@ BEGIN
 				END AS FilterTarget
 			) ft
 			WHERE gm.IsArchived = 0
+			AND gm.GroupMemberStatus != 0
 			AND (
-				-- Source group members must be active to be eligible for placement.
-				(gm.GroupId = @SourceEntityId AND gm.GroupMemberStatus != 0)
-				-- Destination group members are returned regardless of status so inactive members still show as placed.
+				gm.GroupId = @SourceEntityId
 				OR gm.GroupId IN (SELECT GroupId FROM #DestinationGroups)
 			)
 			AND (
@@ -479,7 +477,6 @@ BEGIN
 				NULL AS GroupTypeId, 
 				NULL AS GroupMemberId, 
 				NULL AS GroupRoleId, 
-				NULL AS GroupMemberStatus, 
 				p.Id AS PersonId, 
 				p.FirstName, 
 				p.NickName, 
@@ -507,7 +504,6 @@ BEGIN
 				g.GroupTypeId, 
 				gm.Id AS GroupMemberId, 
 				gm.GroupRoleId, 
-				gm.GroupMemberStatus, 
 				p.Id AS PersonId, 
 				p.FirstName, 
 				p.NickName, 
@@ -525,6 +521,7 @@ BEGIN
 			INNER JOIN [GroupMember] gm ON p.Id = gm.PersonId
 			INNER JOIN #DestinationGroups g ON gm.GroupId = g.GroupId
 			WHERE gm.IsArchived = 0
+			AND gm.GroupMemberStatus != 0
 		) ep
 		CROSS APPLY (
 			SELECT CASE
@@ -702,7 +699,6 @@ BEGIN
 			g.GroupTypeId,
 			gm.Id AS GroupMemberId,
 			gm.GroupRoleId,
-			gm.GroupMemberStatus,
 			gm.DateTimeAdded,
 			p.Id AS PersonId, 
 			p.FirstName,
@@ -747,12 +743,14 @@ BEGIN
 				WHERE r.PersonAliasId = pa.Id
 			)
 			AND gm.IsArchived = 0
+			AND gm.GroupMemberStatus != 0
 		) x -- Gets all people. (placed registrants, unplaced registrants, and placed non-registrants)
         INNER JOIN PersonAlias pa ON x.PersonAliasId = pa.Id
 		INNER JOIN Person p ON pa.PersonId = p.Id
         LEFT JOIN GroupMember gm ON gm.PersonId = p.Id
             AND gm.GroupId IN (SELECT GroupId FROM #DestinationGroups)
 			AND gm.IsArchived = 0
+			AND gm.GroupMemberStatus != 0
 		LEFT JOIN #DestinationGroups g ON gm.GroupId = g.GroupId
 		LEFT JOIN FeeData fd ON fd.RegistrationRegistrantId = x.RegistrantId
 		CROSS APPLY (
@@ -940,7 +938,6 @@ BEGIN
 			g.GroupTypeId, 
 			gm.Id AS GroupMemberId, 
 			gm.GroupRoleId,
-			gm.GroupMemberStatus,
 			gm.DateTimeAdded,
 			p.Id AS PersonId, 
 			p.FirstName, 
@@ -985,12 +982,14 @@ BEGIN
 				WHERE r.PersonAliasId = pa.Id
 			)
 			AND gm.IsArchived = 0
+			AND gm.GroupMemberStatus != 0
 		) x -- Gets all people. (placed registrants, unplaced registrants, and placed non-registrants)
         INNER JOIN PersonAlias pa ON x.PersonAliasId = pa.Id
         INNER JOIN Person p ON pa.PersonId = p.Id
         LEFT JOIN GroupMember gm ON gm.PersonId = p.Id
             AND gm.GroupId IN (SELECT GroupId FROM #DestinationGroups)
 			AND gm.IsArchived = 0
+			AND gm.GroupMemberStatus != 0
 		LEFT JOIN #DestinationGroups g ON gm.GroupId = g.GroupId
 		LEFT JOIN FeeData fd ON fd.RegistrationRegistrantId = X.RegistrantId
 		CROSS APPLY (

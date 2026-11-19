@@ -20,6 +20,7 @@ using System.Data;
 using System.IO;
 using System.Linq;
 
+using Rock.Configuration;
 using Rock.Extension;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -357,7 +358,7 @@ namespace Rock.Storage.AssetStorage
 
             string fileExtension = Path.GetExtension( fileName ).TrimStart( '.' );
             string virtualThumbnailFilePath = string.Format( "/Assets/Icons/FileTypes/{0}.png", fileExtension );
-            string thumbnailFilePath = FileSystemComponentHttpContext.Request.MapPath( virtualThumbnailFilePath );
+            string thumbnailFilePath = RockApp.Current.MapPath( virtualThumbnailFilePath );
 
             if ( !File.Exists( thumbnailFilePath ) )
             {
@@ -407,10 +408,32 @@ namespace Rock.Storage.AssetStorage
         {
             string cleanKey = asset.Key.TrimStart( '~' );
             string virtualPath = $"{ThumbnailRootPath}/{assetStorageProvider.Id}/{cleanKey}";
-            string physicalPath = FileSystemComponentHttpContext.Server.MapPath( virtualPath );
 
             try
             {
+                /*
+                    10/16/26 - JMH
+
+                    The asset key can come from the browser, so a key with parent
+                    directory segments could point the thumbnail delete at any folder
+                    or file in the web root. Whole segments are compared so object
+                    names with two dots in them (photo..jpg) still delete.
+
+                    Reason: Keep thumbnail deletes inside the provider's thumbnail folder.
+                */
+                if ( cleanKey.Split( '/', '\\' ).Any( s => s == ".." ) )
+                {
+                    throw new Rock.Web.FileUploadException( "Invalid path.", System.Net.HttpStatusCode.BadRequest );
+                }
+
+                string physicalPath = RockApp.Current.MapPath( virtualPath );
+                string physicalThumbnailRoot = RockApp.Current.MapPath( $"{ThumbnailRootPath}/{assetStorageProvider.Id}" );
+
+                if ( !Rock.Utility.FileUtilities.IsPathWithinFolder( physicalPath, physicalThumbnailRoot ) )
+                {
+                    throw new Rock.Web.FileUploadException( "Invalid path.", System.Net.HttpStatusCode.BadRequest );
+                }
+
                 if ( asset.Type == AssetType.File )
                 {
                     if ( File.Exists( physicalPath ) )
@@ -521,7 +544,7 @@ namespace Rock.Storage.AssetStorage
         /// <param name="height">The height.</param>
         private void CreateImageThumbnailFromFile( AssetStorageProvider assetStorageProvider, Asset asset, string physicalThumbPath, int? width = null, int? height = null )
         {
-            string assetFilePath = FileSystemComponentHttpContext.Request.MapPath( asset.Key );
+            string assetFilePath = RockApp.Current.MapPath( asset.Key );
 
             if ( Path.GetExtension( asset.Name ).Equals( ".svg", StringComparison.OrdinalIgnoreCase ) ||
                 Path.GetExtension( asset.Name ).Equals( ".ico", StringComparison.OrdinalIgnoreCase ) ||

@@ -17,12 +17,18 @@
 
 using System.ComponentModel;
 
+#if NET
+namespace Rock.Enums.Group
+#else
 namespace Rock.Model
+#endif
 {
     /// <summary>
     /// Represents how a Group meets: in person, online, or a combination of the two.
     /// </summary>
+#if !NET
     [Enums.EnumDomain( "Group" )]
+#endif
     public enum MeetingStyle
     {
         /// <summary>

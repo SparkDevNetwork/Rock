@@ -136,10 +136,10 @@ namespace Rock.Model
         public int? ContentChannelId { get; set; }
 
         /// <summary>
-        /// Gets or sets the <see cref="Rock.Model.ContentChannelItemStatus"/> Content channel Item status.
+        /// Gets or sets the <see cref="ContentChannelItemStatus"/> Content channel Item status.
         /// </summary>
         /// <value>
-        /// A <see cref="Rock.Model.ContentChannelItemStatus"/> enumeration value that represents the status of the ContentItem.
+        /// A <see cref="ContentChannelItemStatus"/> enumeration value that represents the status of the ContentItem.
         /// </value>
         [DataMember]
         public ContentChannelItemStatus? ContentChannelItemStatus { get; set; }

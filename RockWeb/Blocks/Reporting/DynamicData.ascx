@@ -37,7 +37,7 @@
                             <div class="row">
                                 <div class="col-md-12">
                                     <Rock:CodeEditor ID="ceQuery" EditorHeight="212" EditorMode="Sql" runat="server" Label="Query"
-                                        Help="The SQL query or stored procedure name to execute.  If parameters are included they will also need to be in the Parameters field below.
+                                        Help="The SQL query or stored procedure name to execute. To filter by a page parameter, write @Name in the SQL (for example WHERE [Id] = @GroupId) and add Name= to the Parameters field below (for example GroupId=). Rock passes the page's value as a SQL parameter, for plain queries as well as stored procedures. Never print page parameters into the SQL with Lava, because that is not safe; always use @Name parameters. A page parameter value printed into the SQL with Lava is replaced with blank when it contains a single quote ('), a semicolon (;), two hyphens in a row or a slash followed by an asterisk (/*).
                                             By default, a grid will be displayed showing all the rows and columns returned by the query.  However, if a 'Formatted Output' value is included below, the results will be formatted
                                             according to the 'Formatted Output' value." />
                                 </div>
@@ -60,7 +60,7 @@
                                 <div class="col-md-6">
                                     <Rock:RockTextBox ID="tbParams" runat="server" Label="Parameters" TextMode="MultiLine" Rows="1" CssClass="input-xlarge"
                                         Help="The parameters that the query expects in the format of 'param1=value;param2=value'. The equals sign must be provided for each parameter, but you don't have to provide a default value if you want it to default to blank.  Any parameter with the same name as a page parameter (i.e. querystring,
-                                            form, or page route) will have its value replaced with the page's current value.  A parameter with the name of 'CurrentPersonId' will have its value replaced with the currently logged in person's id." />
+                                            form, or page route) will have its value replaced with the page's current value.  A parameter with the name of 'CurrentPersonId' will have its value replaced with the currently logged in person's id. This works for plain SQL queries as well as stored procedures. To filter by a page parameter, add its name here (for example GroupId=) and use @GroupId in the query." />
                                 </div>
                             </div>
 

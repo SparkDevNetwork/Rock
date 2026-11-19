@@ -38,7 +38,7 @@ namespace Rock.Blocks.Event
     [Category( "Event" )]
     [Description( "Provides the navigation for the tabs navigation section of the Registration Instance Page/Layout." )]
     [IconCssClass( "ti ti-list" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     [LinkedPage(
         "Wait List Page",

@@ -18,9 +18,9 @@ import { Component } from "vue";
 import { defineAsyncComponent } from "@Obsidian/Utility/component";
 import { ComparisonType } from "@Obsidian/Enums/Reporting/comparisonType";
 import { stringComparisonTypes } from "@Obsidian/Core/Reporting/comparisonType";
-import { asBoolean } from "@Obsidian/Utility/booleanUtils";
 import { FieldTypeBase } from "./fieldType";
 import { escapeHtml } from "@Obsidian/Utility/stringUtils";
+import { isUrlSchemeSafe } from "@Obsidian/Utility/url";
 
 export const enum ConfigurationKey {
     ShouldRequireTrailingForwardSlash = "ShouldRequireTrailingForwardSlash",
@@ -41,17 +41,11 @@ const configurationComponent = defineAsyncComponent(async () => {
  */
 export class UrlLinkFieldType extends FieldTypeBase {
     public override getHtmlValue(value: string, configurationValues: Record<string, string>, isEscaped: boolean = false): string {
-        const shouldAlwaysShowCondensed = asBoolean(configurationValues[ConfigurationKey.ShouldAlwaysShowCondensed]);
         const textValue = this.getTextValue(value, configurationValues);
 
         let htmlValue = "";
         if (textValue) {
-            if (!shouldAlwaysShowCondensed) {
-                htmlValue = `<a href="${textValue}">${textValue}</a>`;
-            }
-            else {
-                htmlValue = textValue;
-            }
+            htmlValue = this.getLinkHtml(textValue);
         }
 
         if (isEscaped) {
@@ -61,13 +55,34 @@ export class UrlLinkFieldType extends FieldTypeBase {
         return htmlValue;
     }
 
-    public override getTextValue(value: string, configurationValues: Record<string, string>): string {
-        const shouldAlwaysShowCondensed = asBoolean(configurationValues[ConfigurationKey.ShouldAlwaysShowCondensed]);
-        if (shouldAlwaysShowCondensed) {
-            return `<a href="${value}">${value}</a>`;
+    /**
+     * Gets the HTML link for the URL. A URL that does not use a safe scheme
+     * is returned as encoded text with no link.
+     *
+     * @param value The URL to be displayed.
+     *
+     * @returns The HTML to display the URL.
+     */
+    private getLinkHtml(value: string): string {
+        /*
+            10/16/2026 - MSE
+
+            The stored value can come from public forms (such as Workflow
+            Entry) that do not check its format, and it is displayed with
+            v-html. It is always encoded, and only an http or https (or
+            relative) URL becomes an href.
+
+            Reason: Stored values were rendered as raw HTML.
+        */
+        if (!value) {
+            return "";
         }
 
-        return value;
+        if (isUrlSchemeSafe(value)) {
+            return `<a href="${escapeHtml(value)}">${escapeHtml(value)}</a>`;
+        }
+
+        return escapeHtml(value);
     }
 
     public override getEditComponent(): Component {

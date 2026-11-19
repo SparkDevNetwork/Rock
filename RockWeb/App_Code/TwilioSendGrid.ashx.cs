@@ -64,6 +64,11 @@ internal class SendGridResponseAsync : IAsyncResult
     private readonly HttpContext _context;
     private readonly ILogger _logger;
 
+    /// <summary>
+    /// <c>true</c> when this request's SendGrid signature was verified.
+    /// </summary>
+    private bool _isSignatureVerified;
+
     bool IAsyncResult.IsCompleted { get { return _completed; } }
     WaitHandle IAsyncResult.AsyncWaitHandle { get { return null; } }
     Object IAsyncResult.AsyncState { get { return _state; } }
@@ -128,14 +133,46 @@ internal class SendGridResponseAsync : IAsyncResult
 
     private void ProcessJsonContent( HttpRequest request, HttpResponse response )
     {
-        string payload = string.Empty;
+        /*
+            10/21/2026 - MSE
+
+            Read the raw body bytes first so the SendGrid signature can be checked
+            against exactly what SendGrid signed, and reject the request before any
+            event is processed. The bytes are then decoded with the same StreamReader
+            (UTF-8 with byte order mark detection) as before, so the JSON that is
+            deserialized is unchanged.
+
+            Reason: The SendGrid event webhook accepted unsigned events.
+        */
+        byte[] body;
 
         using ( Stream s = request.InputStream )
         {
-            using ( StreamReader readStream = new StreamReader( s, Encoding.UTF8 ) )
+            using ( var memoryStream = new MemoryStream() )
             {
-                payload = readStream.ReadToEnd();
+                s.CopyTo( memoryStream );
+                body = memoryStream.ToArray();
             }
+        }
+
+        string errorMessage;
+        if ( !Rock.Communication.Transport.SendGridHttp.IsEventWebhookRequestAllowed(
+            body,
+            request.Headers["X-Twilio-Email-Event-Webhook-Signature"],
+            request.Headers["X-Twilio-Email-Event-Webhook-Timestamp"],
+            out _isSignatureVerified,
+            out errorMessage ) )
+        {
+            response.Write( errorMessage );
+            response.StatusCode = ( int ) System.Net.HttpStatusCode.Forbidden;
+            return;
+        }
+
+        string payload = string.Empty;
+
+        using ( StreamReader readStream = new StreamReader( new MemoryStream( body ), Encoding.UTF8 ) )
+        {
+            payload = readStream.ReadToEnd();
         }
 
         var eventList = JsonConvert.DeserializeObject<List<SendGridEvent>>( payload );
@@ -147,20 +184,75 @@ internal class SendGridResponseAsync : IAsyncResult
             return;
         }
 
-        ProcessSendGridEventListAsync( eventList );
+        var failedEventCount = ProcessSendGridEventListAsync( eventList );
+
+        /*
+            10/30/2026 - MSE
+
+            Only answer with an error when the batch was non-empty and every event
+            failed (for example the database is down), because then nothing was saved
+            and a SendGrid retry cannot create duplicates. When at least one event was
+            handled, answer 200. A 500 makes SendGrid resend the whole batch, and there
+            is no check on sg_event_id, so the events that already succeeded would be
+            recorded a second time. The trade-off is that an event that failed is not
+            retried. Each failure is written to the Exception Log with the event type
+            and sg_event_id so it can be replayed by hand.
+
+            Reason: One bad event in a batch made SendGrid retry the whole batch.
+        */
+        if ( eventList.Count > 0 && failedEventCount == eventList.Count )
+        {
+            response.StatusCode = ( int ) System.Net.HttpStatusCode.InternalServerError;
+            return;
+        }
 
         response.StatusCode = ( int ) System.Net.HttpStatusCode.OK;
     }
 
-    private void ProcessSendGridEventListAsync( List<SendGridEvent> sendGridEvents )
+    /// <summary>
+    /// Processes each event in the batch on its own so one failing event does not
+    /// discard the rest of the batch.
+    /// </summary>
+    /// <param name="sendGridEvents">The events SendGrid posted.</param>
+    /// <returns>The number of events that threw an exception.</returns>
+    private int ProcessSendGridEventListAsync( List<SendGridEvent> sendGridEvents )
     {
         var rockContext = RockApp.Current.CreateRockContext();
+        var failedEventCount = 0;
 
         foreach ( var sendGridEvent in sendGridEvents )
         {
-            ProcessSendGridEvent( sendGridEvent, rockContext );
+            try
+            {
+                ProcessSendGridEvent( sendGridEvent, rockContext );
+            }
+            catch ( Exception ex )
+            {
+                failedEventCount++;
+
+                var message = string.Format(
+                    "Error processing SendGrid event '{0}' (sg_event_id '{1}').",
+                    sendGridEvent?.EventType,
+                    sendGridEvent?.SendGridEventId );
+
+                Rock.Model.ExceptionLogService.LogException( new Exception( message, ex ) );
+
+                /*
+                    10/30/2026 - MSE
+
+                    After a failed SaveChanges the entities that caused the failure stay
+                    tracked by the context, so every later SaveChanges on the same context
+                    would throw again and the rest of the batch would still be lost. Replace
+                    the context so the next event starts clean.
+
+                    Reason: A failed event must not poison the context for the remaining events.
+                */
+                rockContext.Dispose();
+                rockContext = new Rock.Data.RockContext();
+            }
         }
 
+        return failedEventCount;
     }
 
     private void ProcessSendGridEvent( SendGridEvent sendGridEvent, Rock.Data.RockContext rockContext )
@@ -260,11 +352,13 @@ internal class SendGridResponseAsync : IAsyncResult
                 case "open":
                     communicationRecipient.Status = CommunicationRecipientStatus.Opened;
                     communicationRecipient.OpenedDateTime = timeStamp;
+
+                    // OpenedClient is limited to 200 characters and the device family comes from the user agent.
                     communicationRecipient.OpenedClient = string.Format(
                         "{0} {1} ({2})",
                         payload.ClientOs ?? "unknown",
                         payload.ClientBrowser ?? "unknown",
-                        payload.ClientDeviceType ?? "unknown" );
+                        payload.ClientDeviceType ?? "unknown" ).Left( 200 );
 
                     if ( interactionComponent != null )
                     {
@@ -277,8 +371,8 @@ internal class SendGridResponseAsync : IAsyncResult
                             timeStamp,
                             payload.ClientBrowser,
                             payload.ClientOs,
+                            payload.ClientType,
                             payload.ClientDeviceType,
-                            payload.ClientDeviceBrand,
                             payload.IpAddress,
                             null );
                     }
@@ -297,8 +391,8 @@ internal class SendGridResponseAsync : IAsyncResult
                             timeStamp,
                             payload.ClientBrowser,
                             payload.ClientOs,
+                            payload.ClientType,
                             payload.ClientDeviceType,
-                            payload.ClientDeviceBrand,
                             payload.IpAddress,
                             null );
                     }
@@ -323,6 +417,26 @@ internal class SendGridResponseAsync : IAsyncResult
     private void ProcessForWorkflow( Guid? actionGuid, Rock.Data.RockContext rockContext, SendGridEvent payload )
     {
         _logger.LogDebug( "ProcessForWorkflow {@payload}", payload );
+
+        /*
+            10/21/2026 - MSE
+
+            Bounce processing below changes every person with the event's email address.
+            When the request was not signature verified (a site with no Event Webhook
+            Verification Key), only act on workflow events for a workflow action that
+            exists, so a made-up workflow_action_guid cannot deactivate any address. On
+            those sites a real bounce for a workflow action that no longer exists (deleted
+            or purged workflow) or never existed in the database (a workflow type that is
+            not persisted using Send Email With Events) is then ignored. Signed requests
+            come from SendGrid, so they skip this check and such bounces still deactivate
+            the address as before. The workflow does not need to be active.
+
+            Reason: Unsigned events could deactivate any email address.
+        */
+        if ( !_isSignatureVerified && new WorkflowActionService( rockContext ).GetId( actionGuid.Value ) == null )
+        {
+            return;
+        }
 
         string status = string.Empty;
         switch ( payload.EventType )

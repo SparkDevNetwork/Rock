@@ -75,12 +75,27 @@ namespace Rock.Lava.Fluid
         /// </summary>
         public override LavaDataDictionary GetInternalFields()
         {
+            /*
+                11/13/26 - CLAUDE
+
+                This used to read only the current scope. Inside a loop or an included
+                file the internal fields live in an outer scope, so nested renders that
+                copy them (cache, observe, shortcode bodies) lost the request context,
+                the database transaction and the culture. Read through every scope, with
+                the innermost value winning, the same way GetMergeFields() does.
+
+                Reason: Keep internal fields in nested renders started from a child scope.
+            */
             var values = new LavaDataDictionary();
 
-            var internalKeys = _context.ValueNames.Where( x => x.StartsWith( _InternalFieldKeyPrefix ) );
-            foreach ( var key in internalKeys )
+            var localScope = _contextScopeInternalField.GetValue( _context ) as Scope;
+            var aggregatedValues = GetScopeAggregatedValues( localScope, key => key.StartsWith( _InternalFieldKeyPrefix, StringComparison.Ordinal ) );
+
+            foreach ( var kvp in aggregatedValues )
             {
-                values.AddOrReplace( key, _context.GetValue( key ) );
+                var value = kvp.Value is FluidRawValueProxy wrapper ? wrapper.Value : kvp.Value;
+
+                values.AddOrReplace( kvp.Key, value );
             }
 
             return values;
@@ -126,7 +141,7 @@ namespace Rock.Lava.Fluid
         {
             var localScope = _contextScopeInternalField.GetValue( _context ) as Scope;
 
-            var dictionary = new LavaDataDictionary( GetScopeAggregatedValues( localScope, includeInternalFields: false ) );
+            var dictionary = new LavaDataDictionary( GetScopeAggregatedValues( localScope, key => !key.StartsWith( _InternalFieldKeyPrefix, StringComparison.Ordinal ) ) );
 
             // Remove fields that were added for internal use.
             dictionary.Remove( "Blank" );
@@ -275,9 +290,10 @@ namespace Rock.Lava.Fluid
         /// <summary>
         /// Gets an aggregated set of key/value pairs for variables in the current scope and outer scopes.
         /// </summary>
-        /// <param name="scope"></param>
-        /// <returns></returns>
-        private Dictionary<string, object> GetScopeAggregatedValues( Scope scope, bool includeInternalFields )
+        /// <param name="scope">The innermost scope to start from.</param>
+        /// <param name="includeKey">Returns <c>true</c> for each variable name that should be included.</param>
+        /// <returns>The included variables, with the innermost scope's value for each name.</returns>
+        private Dictionary<string, object> GetScopeAggregatedValues( Scope scope, Func<string, bool> includeKey )
         {
             var dictionary = new Dictionary<string, object>();
 
@@ -285,14 +301,15 @@ namespace Rock.Lava.Fluid
             {
                 foreach ( var key in scope.Properties )
                 {
-                    if ( !includeInternalFields && key.StartsWith( _InternalFieldKeyPrefix ) )
+                    // Skip the key before reading its value, so excluded variables and
+                    // values hidden by an inner scope are never converted. Inner scopes
+                    // are visited first, so the innermost value wins.
+                    if ( !includeKey( key ) || dictionary.ContainsKey( key ) )
                     {
                         continue;
                     }
 
-                    // TryAdd preserves the inner-most-scope-wins semantic: a key already added by a
-                    // child scope is not overwritten by an ancestor scope's value.
-                    dictionary.TryAdd( key, scope.GetValue( key ).ToRealObjectValue() );
+                    dictionary.Add( key, scope.GetValue( key ).ToRealObjectValue() );
                 }
 
                 scope = scope.Parent;

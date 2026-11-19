@@ -15,12 +15,18 @@
 // </copyright>
 //
 
+#if NET
+namespace Rock.Enums.Finance
+#else
 namespace Rock.Model
+#endif
 {
     /// <summary>
     /// The status of a Scheduled Transaction
     /// </summary>
+#if !NET
     [Enums.EnumDomain( "Finance" )]
+#endif
     public enum FinancialScheduledTransactionStatus
     {
         /// <summary>

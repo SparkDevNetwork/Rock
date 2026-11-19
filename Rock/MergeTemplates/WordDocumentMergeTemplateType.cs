@@ -142,6 +142,38 @@ namespace Rock.MergeTemplates
             }
         }
 
+        /// <inheritdoc/>
+        [Rock.Attribute.RockInternal( "17.12" )]
+        public override MergeTemplateDocument CreateDocumentForDownload( MergeTemplate mergeTemplate, List<object> mergeObjectList, Dictionary<string, object> globalMergeFields )
+        {
+            /*
+                10/21/2026 - MSE
+
+                Return the merged Word stream directly instead of saving it as a
+                temporary BinaryFile under the unsecured default file type, which
+                GetFile.ashx would serve to anyone by Id. The stream is not disposed
+                here because the caller sends it to the browser.
+
+                Reason: Merged documents must not be saved where they can be downloaded by Id.
+            */
+            var outputDocStream = GetMergedDocumentOutputStream( mergeTemplate, mergeObjectList, globalMergeFields );
+            if ( outputDocStream == null )
+            {
+                return null;
+            }
+
+            var templateBinaryFile = new BinaryFileService( RockApp.Current.CreateRockContext() ).Get( mergeTemplate.TemplateBinaryFileId );
+            if ( templateBinaryFile == null )
+            {
+                outputDocStream.Dispose();
+                return null;
+            }
+
+            return new MergeTemplateDocument( outputDocStream,
+                "MergeTemplateOutput" + Path.GetExtension( templateBinaryFile.FileName ),
+                templateBinaryFile.MimeType );
+        }
+
         /// <summary>
         /// Creates an Xml Document object containing the merged output.
         /// </summary>

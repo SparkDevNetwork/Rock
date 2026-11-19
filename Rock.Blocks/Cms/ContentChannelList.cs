@@ -41,7 +41,7 @@ namespace Rock.Blocks.Cms
     [Category( "CMS" )]
     [Description( "Displays a list of content channels." )]
     [IconCssClass( "ti ti-list" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     [LinkedPage( "Detail Page",
         Description = "The page that will show the content channel details.",
@@ -130,6 +130,15 @@ namespace Rock.Blocks.Cms
         protected override IQueryable<ContentChannelListBag> GetListQueryable( RockContext rockContext )
         {
             return GetGridDataQueryable( rockContext );
+        }
+
+        /// <inheritdoc/>
+        protected override GridEntityKeyOptions GetGridEntityKeyOptions()
+        {
+            return new GridEntityKeyOptions
+            {
+                EntityTypeId = EntityTypeCache.GetId<Rock.Model.ContentChannel>()
+            };
         }
 
         /// <inheritdoc/>

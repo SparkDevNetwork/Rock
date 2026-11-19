@@ -15,12 +15,18 @@
 // </copyright>
 //
 
+#if NET
+namespace Rock.Enums.Finance
+#else
 namespace Rock.Model
+#endif
 {
     /// <summary>
     /// For giving analysis reporting
     /// </summary>
+#if !NET
     [Enums.EnumDomain( "Finance" )]
+#endif
     public enum TransactionGraphBy
     {
         /// <summary>

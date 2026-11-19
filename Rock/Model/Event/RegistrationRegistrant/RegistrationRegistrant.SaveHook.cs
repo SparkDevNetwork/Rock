@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+using System;
 using System.Linq;
 
 using Rock.Data;
@@ -31,6 +32,10 @@ namespace Rock.Model
         internal class SaveHook : EntitySaveHook<RegistrationRegistrant>
         {
             private int? preSavePersonAliasId { get; set; }
+
+            private Guid? preSaveRegistrationInstanceGuid { get; set; }
+
+            private Guid? preSaveRegistrationTemplateGuid { get; set; }
 
             /// <summary>
             /// Called before the save operation is executed.
@@ -73,6 +78,23 @@ namespace Rock.Model
                 else if ( State == EntityContextState.Deleted )
                 {
                     preSavePersonAliasId = ( int? ) OriginalValues[nameof( registrationRegistrant.PersonAliasId )];
+
+                    if ( RockContext.IsRealTimeEnabled )
+                    {
+                        var registrationId = ( int ) OriginalValues[nameof( registrationRegistrant.RegistrationId )];
+                        var registrationGuids = new RegistrationService( ( RockContext ) this.RockContext )
+                            .Queryable()
+                            .Where( r => r.Id == registrationId )
+                            .Select( r => new
+                            {
+                                RegistrationInstanceGuid = ( Guid? ) r.RegistrationInstance.Guid,
+                                RegistrationTemplateGuid = ( Guid? ) r.RegistrationTemplate.Guid
+                            } )
+                            .FirstOrDefault();
+
+                        preSaveRegistrationInstanceGuid = registrationGuids?.RegistrationInstanceGuid;
+                        preSaveRegistrationTemplateGuid = registrationGuids?.RegistrationTemplateGuid;
+                    }
                 }
 
                 base.PreSave();
@@ -90,7 +112,9 @@ namespace Rock.Model
                         ? preSavePersonAliasId
                         : Entity.PersonAliasId;
 
-                    var registrantState = new RegistrationRegistrantService.RegistrationRegistrantUpdatedState( Entity, personAliasId.Value, State );
+                    var registrantState = State == EntityContextState.Deleted
+                        ? new RegistrationRegistrantService.RegistrationRegistrantUpdatedState( Entity, personAliasId.Value, State, preSaveRegistrationInstanceGuid, preSaveRegistrationTemplateGuid )
+                        : new RegistrationRegistrantService.RegistrationRegistrantUpdatedState( Entity, personAliasId.Value, State );
 
                     new SendRegistrantRealTimeNotificationsTransaction( registrantState ).Enqueue( true );
                 }

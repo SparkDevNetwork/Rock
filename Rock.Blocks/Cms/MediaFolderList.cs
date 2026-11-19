@@ -49,7 +49,7 @@ namespace Rock.Blocks.Cms
     [Category( "CMS" )]
     [Description( "Displays a list of media folders." )]
     [IconCssClass( "ti ti-list" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     [LinkedPage( "Detail Page",
         Description = "The page that will show the media folder details.",
@@ -248,6 +248,15 @@ namespace Rock.Blocks.Cms
         protected override IQueryable<MediaFolderData> GetOrderedListQueryable( IQueryable<MediaFolderData> queryable, RockContext rockContext )
         {
             return queryable.OrderBy( a => a.MediaFolder.Name );
+        }
+
+        /// <inheritdoc/>
+        protected override GridEntityKeyOptions GetGridEntityKeyOptions()
+        {
+            return new GridEntityKeyOptions
+            {
+                EntityTypeId = EntityTypeCache.GetId<Rock.Model.MediaFolder>()
+            };
         }
 
         /// <inheritdoc/>

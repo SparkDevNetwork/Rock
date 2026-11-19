@@ -24,6 +24,7 @@ using System.Linq;
 using Google.Cloud.Storage.V1;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Model;
 using Rock.Security;
 using Rock.Storage.Common;
@@ -365,10 +366,10 @@ namespace Rock.Storage.AssetStorage
 
             // check if thumbnail exists
             var thumbDir = $"{ThumbnailRootPath}/{assetStorageProvider.Id}/{path}";
-            Directory.CreateDirectory( FileSystemComponentHttpContext.Server.MapPath( thumbDir ) );
+            Directory.CreateDirectory( RockApp.Current.MapPath( thumbDir ) );
 
             var virtualThumbPath = Path.Combine( thumbDir, name );
-            var physicalThumbPath = FileSystemComponentHttpContext.Server.MapPath( virtualThumbPath );
+            var physicalThumbPath = RockApp.Current.MapPath( virtualThumbPath );
 
             // Encode the name thumb path since it can contain special characters
             virtualThumbPath = virtualThumbPath.EncodeHtml();

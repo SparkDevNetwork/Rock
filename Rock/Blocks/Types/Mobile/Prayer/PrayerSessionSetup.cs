@@ -22,6 +22,7 @@ using System.Text;
 
 using Rock.Attribute;
 using Rock.Common.Mobile.Blocks.Content;
+using Rock.Model;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.Types.Mobile.Events
@@ -35,7 +36,7 @@ namespace Rock.Blocks.Types.Mobile.Events
     [Category( "Mobile > Prayer" )]
     [Description( "Displays a page to configure and prepare a prayer session." )]
     [IconCssClass( "ti ti-pray" )]
-    [SupportedSiteTypes( Model.SiteType.Mobile )]
+    [SupportedSiteTypes( SiteType.Mobile )]
 
     #region Block Attributes
 

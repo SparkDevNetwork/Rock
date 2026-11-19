@@ -41,7 +41,7 @@ namespace Rock.Blocks.Core
     [Category( "Core" )]
     [Description( "Displays the details of a given signature document." )]
     [IconCssClass( "ti ti-question-mark" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 
@@ -187,7 +187,17 @@ namespace Rock.Blocks.Core
                 SignedByPersonAlias = entity.SignedByPersonAlias.ToListItemBag(),
                 SignedByPersonAliasId = entity.SignedByPersonAliasId,
                 SignedClientIp = entity.SignedClientIp,
-                SignedClientUserAgent = entity.GetFormattedUserAgent().ConvertCrLfToHtmlBr(),
+
+                /*
+                    10/16/2026 - MSE
+
+                    The user agent comes from the signer's request and is shown as HTML by the
+                    view panel. Encode it before converting the line breaks to br tags. The IP
+                    address is escaped by the view panel instead.
+
+                    Reason: Prevent a signer's user agent from rendering as HTML for staff.
+                */
+                SignedClientUserAgent = entity.GetFormattedUserAgent().EncodeHtml().ConvertCrLfToHtmlBr(),
                 SignedDateTime = entity.SignedDateTime,
                 SignedDocumentText = entity.SignedDocumentText,
                 SignedName = entity.SignedName,
@@ -291,16 +301,21 @@ namespace Rock.Blocks.Core
 
             // The signature evidence (SignatureDataEncrypted, SignatureVerificationHash,
             // SignedClientIp, SignedClientUserAgent, SignedDateTime, SignedDocumentText
-            // and SignedName) is not editable and is never updated from the box.
+            // and SignedName) is not editable and is never updated from the box. The signer
+            // (SignedByPersonAlias and SignedByPersonAliasId) is also evidence and is not
+            // editable once the document is signed (the verification hash is set).
 
             box.IfValidProperty( nameof( box.Bag.SignedByEmail ),
                 () => entity.SignedByEmail = box.Bag.SignedByEmail );
 
-            box.IfValidProperty( nameof( box.Bag.SignedByPersonAlias ),
-                () => entity.SignedByPersonAliasId = box.Bag.SignedByPersonAlias.GetEntityId<PersonAlias>( RockContext ) );
+            if ( entity.SignatureVerificationHash.IsNullOrWhiteSpace() )
+            {
+                box.IfValidProperty( nameof( box.Bag.SignedByPersonAlias ),
+                    () => entity.SignedByPersonAliasId = box.Bag.SignedByPersonAlias.GetEntityId<PersonAlias>( RockContext ) );
 
-            box.IfValidProperty( nameof( box.Bag.SignedByPersonAliasId ),
-                () => entity.SignedByPersonAliasId = box.Bag.SignedByPersonAliasId );
+                box.IfValidProperty( nameof( box.Bag.SignedByPersonAliasId ),
+                    () => entity.SignedByPersonAliasId = box.Bag.SignedByPersonAliasId );
+            }
 
             box.IfValidProperty( nameof( box.Bag.Status ),
                 () => entity.Status = box.Bag.Status );

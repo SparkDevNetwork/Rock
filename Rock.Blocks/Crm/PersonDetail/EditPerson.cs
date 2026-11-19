@@ -26,6 +26,7 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Utility.Enums;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Crm.PersonDetail.EditPerson;
 using Rock.ViewModels.Controls;
@@ -43,7 +44,7 @@ namespace Rock.Blocks.Crm.PersonDetail
     [Category( "CRM > Person Detail" )]
     [Description( "Allows you to edit a person." )]
     [IconCssClass( "ti ti-user" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Security Actions
 
@@ -1201,7 +1202,7 @@ namespace Rock.Blocks.Crm.PersonDetail
                 return;
             }
 
-            if ( person.AccountProtectionProfile <= Rock.Utility.Enums.AccountProtectionProfile.Low )
+            if ( person.AccountProtectionProfile <= AccountProtectionProfile.Low )
             {
                 return;
             }
@@ -1210,17 +1211,17 @@ namespace Rock.Blocks.Crm.PersonDetail
 
             switch ( person.AccountProtectionProfile )
             {
-                case Rock.Utility.Enums.AccountProtectionProfile.Medium:
+                case AccountProtectionProfile.Medium:
                     options.AccountProtectionProfileMessage = $"Use care when editing this record as the individual has a login. {messageSuffix}";
                     options.AccountProtectionProfileAlertType = "Warning";
                     break;
 
-                case Rock.Utility.Enums.AccountProtectionProfile.High:
+                case AccountProtectionProfile.High:
                     options.AccountProtectionProfileMessage = $"Use care when editing this record as the individual has financial account information stored in Rock or is a member of a sensitive security role. {messageSuffix}";
                     options.AccountProtectionProfileAlertType = "Danger";
                     break;
 
-                case Rock.Utility.Enums.AccountProtectionProfile.Extreme:
+                case AccountProtectionProfile.Extreme:
                     options.AccountProtectionProfileMessage = $"Use care when editing this record as the individual is in a sensitive security role. {messageSuffix}";
                     options.AccountProtectionProfileAlertType = "Danger";
                     break;

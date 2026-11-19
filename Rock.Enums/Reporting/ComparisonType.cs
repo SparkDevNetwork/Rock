@@ -18,13 +18,19 @@ using System;
 
 using Rock.Enums;
 
+#if NET
+namespace Rock.Enums.Reporting
+#else
 namespace Rock.Model
+#endif
 {
     /// <summary>
     /// Reporting Field Comparison Types
     /// </summary>
     [Flags]
+#if !NET
     [EnumDomain( "Reporting" )]
+#endif
     public enum ComparisonType
     {
         /// <summary>

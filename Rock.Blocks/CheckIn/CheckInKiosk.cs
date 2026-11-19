@@ -51,7 +51,7 @@ namespace Rock.Blocks.CheckIn
     [Category( "Check-in" )]
     [Description( "The standard Rock block for performing check-in at a kiosk." )]
     [IconCssClass( "ti ti-clipboard-check" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 
@@ -435,11 +435,13 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
         /// Gets the groups and related location identifiers for the set of areas.
         /// </summary>
         /// <param name="areaIds">The area identifiers whose groups and locations are retrieved.</param>
+        /// <param name="locationIds">The location identifiers the groups must be attached to. Groups with no matching location are excluded.</param>
         /// <returns>A collection of <see cref="GroupOpportunityBag"/> objects that represent the groups and locations.</returns>
-        private List<GroupOpportunityBag> GetGroupsAndLocationsForAreas( List<int> areaIds )
+        private List<GroupOpportunityBag> GetGroupsAndLocationsForAreas( List<int> areaIds, List<int> locationIds )
         {
             var groupLocationQry = new GroupLocationService( RockContext ).Queryable()
-                .Where( gl => gl.Schedules.Any( s => s.IsActive ) )
+                .Where( gl => locationIds.Contains( gl.LocationId )
+                    && gl.Schedules.Any( s => s.IsActive ) )
                 .Select( gl => new
                 {
                     gl.LocationId,
@@ -1156,8 +1158,6 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
                 await topicChannels.AddToChannelAsync( connectionId, channel );
             }
 
-            await topicChannels.AddToChannelAsync( connectionId, EntityUpdatedTopic.GetAttendanceDeletedChannel() );
-
             return ActionOk( new SubscribeToRealTimeResponseBag
             {
                 LocationMap = locationMap,
@@ -1246,7 +1246,16 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
                 .Select( id => id.Value )
                 .ToList();
 
-            var groups = GetGroupsAndLocationsForAreas( areaIdNumbers );
+            /*
+                10/29/2026 - MSE
+
+                Only include groups that are attached to one of this kiosk's
+                locations. Otherwise groups from other campuses that share the
+                same area show up in the counts with no rooms.
+
+                Reason: Supervisor counts showed groups not in the kiosk configuration.
+            */
+            var groups = GetGroupsAndLocationsForAreas( areaIdNumbers, kioskLocationIds );
 
             // Translate all the locations into bags the client will be able
             // to use.

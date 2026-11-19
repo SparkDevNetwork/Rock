@@ -18,6 +18,8 @@ using System;
 using System.Linq.Expressions;
 using System.Reflection;
 
+using Rock.Model;
+
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
@@ -49,7 +51,7 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The comparison operation to use when building the expression.
         /// </value>
-        public Model.ComparisonType Comparison { get; set; }
+        public ComparisonType Comparison { get; set; }
 
         #endregion
 
@@ -61,7 +63,7 @@ namespace Rock.Web.UI.Controls
         public ComparisonFilterExpression()
         {
             Value = string.Empty;
-            Comparison = Model.ComparisonType.Contains;
+            Comparison = ComparisonType.Contains;
         }
 
         /// <summary>
@@ -72,7 +74,7 @@ namespace Rock.Web.UI.Controls
             : this()
         {
             Value = jobject.Value<string>( "Value" );
-            Comparison = ( Model.ComparisonType ) jobject.Value<int>( "Comparison" );
+            Comparison = ( ComparisonType ) jobject.Value<int>( "Comparison" );
         }
 
         #endregion
@@ -102,7 +104,7 @@ namespace Rock.Web.UI.Controls
             // Handle processing of Regular Expressions since they are not supported
             // by the ComparisonHelper.
             //
-            if ( Comparison == Model.ComparisonType.RegularExpression )
+            if ( Comparison == ComparisonType.RegularExpression )
             {
                 Expression valueExpression;
 
@@ -150,46 +152,46 @@ namespace Rock.Web.UI.Controls
         {
             switch ( Comparison )
             {
-                case Model.ComparisonType.Between:
+                case ComparisonType.Between:
                     return string.Empty;
 
-                case Model.ComparisonType.Contains:
+                case ComparisonType.Contains:
                     return $"Contains '{ Value }'";
 
-                case Model.ComparisonType.DoesNotContain:
+                case ComparisonType.DoesNotContain:
                     return $"Does Not contain '{ Value }'";
 
-                case Model.ComparisonType.EndsWith:
+                case ComparisonType.EndsWith:
                     return $"Ends With '{ Value }'";
 
-                case Model.ComparisonType.EqualTo:
+                case ComparisonType.EqualTo:
                     return $"Equal To '{ Value }'";
 
-                case Model.ComparisonType.GreaterThan:
+                case ComparisonType.GreaterThan:
                     return $"Greater Than '{ Value }'";
 
-                case Model.ComparisonType.GreaterThanOrEqualTo:
+                case ComparisonType.GreaterThanOrEqualTo:
                     return $"Greater Than Or Equal To '{ Value }'";
 
-                case Model.ComparisonType.IsBlank:
+                case ComparisonType.IsBlank:
                     return "Is Blank";
 
-                case Model.ComparisonType.IsNotBlank:
+                case ComparisonType.IsNotBlank:
                     return "Is Not Blank";
 
-                case Model.ComparisonType.LessThan:
+                case ComparisonType.LessThan:
                     return $"Less Than '{ Value }'";
 
-                case Model.ComparisonType.LessThanOrEqualTo:
+                case ComparisonType.LessThanOrEqualTo:
                     return $"Less Than Or Equal To '{ Value }'";
 
-                case Model.ComparisonType.NotEqualTo:
+                case ComparisonType.NotEqualTo:
                     return $"Not Equal To";
 
-                case Model.ComparisonType.RegularExpression:
+                case ComparisonType.RegularExpression:
                     return $"Matches Expression '{ Value }'";
 
-                case Model.ComparisonType.StartsWith:
+                case ComparisonType.StartsWith:
                     return $"Starts With '{ Value }'";
 
                 default:

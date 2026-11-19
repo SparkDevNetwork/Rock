@@ -871,7 +871,17 @@ $@"Rock.controls.itemPicker.initialize({{
                     pickerLabelHtmlFormat += @"
                         <span id='selectedItemLabel_{0}' class='selected-names'>{1}</span>";
 
-                    writer.Write( pickerLabelHtmlFormat, this.ClientID, selectedText );
+                    /*
+                        10/18/2026 - MSE
+
+                        The selected item name is a stored entity name (for example a group name) that
+                        someone other than the viewer may have edited. Encode it so it shows as text
+                        instead of being rendered as HTML. The client script already writes this label
+                        as text, so this keeps the server and client rendering the same.
+
+                        Reason: Prevent stored cross-site scripting in the picker label.
+                    */
+                    writer.Write( pickerLabelHtmlFormat, this.ClientID, selectedText.EncodeHtml() );
 
                     writer.WriteLine();
 
@@ -956,7 +966,15 @@ $@"Rock.controls.itemPicker.initialize({{
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 LinkButton linkButton = new LinkButton();
                 linkButton.CssClass = "picker-label";
-                linkButton.Text = string.Format( "<i class='{1}'></i><span>{0}</span>", selectedText, this.IconCssClass );
+                /*
+                    10/18/2026 - MSE
+
+                    The selected item name is a stored entity name, so encode it in the read-only
+                    label the same way as in the enabled label above.
+
+                    Reason: Prevent stored cross-site scripting in the read-only picker label.
+                */
+                linkButton.Text = string.Format( "<i class='{1}'></i><span>{0}</span>", selectedText.EncodeHtml(), this.IconCssClass );
                 linkButton.Enabled = false;
                 linkButton.RenderControl( writer );
                 writer.WriteLine();

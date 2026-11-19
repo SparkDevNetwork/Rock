@@ -19,9 +19,12 @@ using System;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.AI.Agent.Classes.Common;
+using Rock.AI.Agent.Classes.Skills.CoreAdministrationSkill;
 using Rock.Configuration;
 using Rock.Enums.AI.Agent;
 using Rock.Model;
+using Rock.Security;
 using Rock.Tests.Shared.TestAccess.AI.Agent;
 using Rock.Tests.Shared.TestFramework;
 using Rock.Utility;
@@ -101,6 +104,27 @@ public partial class CoreAdministrationSkillTests
         var result = skill.ListGlobalAttributes( categoryIdKey: IdHasher.Instance.GetHash( category.Id ) );
 
         Assert.AreEqual( ToolStatus.NoData, result.GetStatus() );
+    }
+
+    [TestMethod]
+    public void ListGlobalAttributes_WithoutViewAuthorization_ExcludesAttribute()
+    {
+        using var scope = TestHelper.CreateScopedRockApp();
+        var rockContext = scope.App.CreateRockContext();
+
+        var visibleAttribute = MockData.CreateAttribute( rockContext, "OrganizationName", "Organization Name" );
+        var hiddenAttribute = MockData.CreateAttribute( rockContext, "SecretSetting", "Secret Setting" );
+        MockAuthorizationHelper.DenyAllUsers<Rock.Model.Attribute>( rockContext, Authorization.VIEW, hiddenAttribute.Id );
+
+        var skill = CreateSkill( scope.App, CreateRequestContext( rockContext ) );
+
+        var result = skill.ListGlobalAttributes();
+        var page = result.GetContent() as PaginatedResult<GlobalAttributeResult>;
+
+        Assert.AreEqual( ToolStatus.Success, result.GetStatus() );
+        Assert.IsNotNull( page, "Expected a page of global attribute results." );
+        Assert.HasCount( 1, page.Items );
+        Assert.AreEqual( visibleAttribute.Id, page.Items[0].Id );
     }
 
     #endregion

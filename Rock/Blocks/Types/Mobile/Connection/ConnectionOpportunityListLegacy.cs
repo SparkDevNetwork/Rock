@@ -40,7 +40,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
     [Category( "Mobile > Connection" )]
     [Description( "Displays the list of connection opportunities for a single connection type." )]
     [IconCssClass( "ti ti-list" )]
-    [SupportedSiteTypes( Model.SiteType.Mobile )]
+    [SupportedSiteTypes( SiteType.Mobile )]
 
     #region Block Attributes
 

@@ -39,6 +39,11 @@ using Rock.ViewModels.Controls;
 using Rock.Web.Cache;
 
 using Authorization = Rock.Security.Authorization;
+#if NET
+using DisplayInNavWhen = Rock.Enums.Cms.DisplayInNavWhen;
+#else
+using DisplayInNavWhen = Rock.Model.DisplayInNavWhen;
+#endif
 
 namespace Rock.Mobile
 {
@@ -875,7 +880,7 @@ namespace Rock.Mobile
                     // This property was obsoleted for the DisplayInNavWhen property,
                     // but we set it just in case someone is still on an old version of the shell.
 #pragma warning disable CS0618 // Type or member is obsolete
-                    DisplayInNav = page.DisplayInNavWhen == Rock.Model.DisplayInNavWhen.WhenAllowed,
+                    DisplayInNav = page.DisplayInNavWhen == DisplayInNavWhen.WhenAllowed,
 #pragma warning restore CS0618 // Type or member is obsolete
 
                     DisplayInNavWhen = page.DisplayInNavWhen.ToMobile(),
@@ -1107,11 +1112,34 @@ namespace Rock.Mobile
                 else
                 {
                     var fieldName = $"attribute_{attribute.Id}";
-                    var configurationValues = attribute.QualifierValues
-                        .ToDictionary( a => a.Key, a => a.Value.Value )
-                        .ToJson();
+                    var privateValue = entity.GetAttributeValue( attribute.Key );
 
-                    sb.AppendLine( GetSingleFieldXaml( $"<Rock:AttributeValueEditor x:Name=\"{fieldName}\" Label=\"{label}\" IsRequired=\"{attribute.IsRequired}\" FieldType=\"{attribute.FieldType.Class}\" ConfigurationValues=\"{{}}{configurationValues.EncodeXml( true )}\" Value=\"{entity.GetAttributeValue( attribute.Key ).EncodeXml( true )}\" />" ) );
+                    /*
+                        11/13/2026 - CLAUDE
+
+                        The mobile shell field types read public configuration values and
+                        public edit values (for example, Defined Value reads the "values" list
+                        and a ClientValue JSON object). Sending the private qualifiers and the
+                        raw stored value left Defined Value pickers with no options. This
+                        mirrors the mobile Attribute Values block. UpdateEditAttributeValues
+                        converts the posted public value back to the private value.
+
+                        Public values are often JSON, so Value uses the same "{}" escape as
+                        ConfigurationValues. Without it, XAML reads a value that starts with
+                        "{" as a markup extension and the page fails to load.
+
+                        FieldType is sent as the field type Guid. The shell registers every
+                        field type by Guid, but its Defined Value field type has no class
+                        name registration, so the class name found no editor for it.
+
+                        Reason: Send the shell the public values its field types expect.
+                    */
+                    var configurationValues = ( attribute.FieldType.Field?.GetPublicConfigurationValues( attribute.ConfigurationValues, Field.ConfigurationValueUsage.Edit, privateValue )
+                        ?? attribute.QualifierValues.ToDictionary( a => a.Key, a => a.Value.Value ) )
+                        .ToJson();
+                    var value = attribute.FieldType.Field?.GetPublicEditValue( privateValue, attribute.ConfigurationValues ) ?? privateValue;
+
+                    sb.AppendLine( GetSingleFieldXaml( $"<Rock:AttributeValueEditor x:Name=\"{fieldName}\" Label=\"{label}\" IsRequired=\"{attribute.IsRequired}\" FieldType=\"{attribute.FieldType.Guid}\" ConfigurationValues=\"{{}}{configurationValues.EncodeXml( true )}\" Value=\"{{}}{value.EncodeXml( true )}\" />" ) );
                     postbackParameters.Add( fieldName, "Value" );
                 }
             }
@@ -1149,7 +1177,10 @@ namespace Rock.Mobile
                 var keyName = $"attribute_{attribute.Id}";
                 if ( postbackData.ContainsKey( keyName ) )
                 {
-                    entity.SetAttributeValue( attribute.Key, postbackData[keyName].ToStringSafe() );
+                    var publicValue = postbackData[keyName].ToStringSafe();
+                    var privateValue = attribute.FieldType.Field?.GetPrivateEditValue( publicValue, attribute.ConfigurationValues ) ?? publicValue;
+
+                    entity.SetAttributeValue( attribute.Key, privateValue );
                 }
             }
         }

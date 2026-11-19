@@ -2099,6 +2099,7 @@ namespace Rock.Lava
                             return "## Lava Error: Recursive reference ##";
                         }
 
+                        mergeFields.AddInternalFieldsFrom( context );
                         rawValue = theValue.ResolveMergeFields( mergeFields );
                     }
                     else
@@ -2130,6 +2131,7 @@ namespace Rock.Lava
                         return "## Lava Error: Recursive reference ##";
                     }
 
+                    mergeFields.AddInternalFieldsFrom( context );
                     rawValue = theValue.ResolveMergeFields( mergeFields );
                 }
                 else
@@ -2574,7 +2576,8 @@ namespace Rock.Lava
                 return input;
             }
 
-            return string.Format( "<![CDATA[{0}]]>", input );
+            // Split any CDATA end sequence across two sections so the text always stays inside CDATA.
+            return string.Format( "<![CDATA[{0}]]>", input.Replace( "]]>", "]]]]><![CDATA[>" ) );
         }
 
         /// <summary>
@@ -4495,7 +4498,20 @@ namespace Rock.Lava
                  * without doing anything.
                  */
 
-                input = input.EscapeQuotes();
+                /*
+                    10/19/2026 - MSE
+
+                    The input and type name are placed inside single quoted JavaScript strings
+                    in an inline script. Escaping only quotes let a backslash before a quote, a
+                    line break or a closing script tag in a stored name (workflow, report, data
+                    view, group, person) end the string or the script and run code for the staff
+                    member viewing the page. Both values are now JavaScript string encoded, so
+                    callers must pass the raw value and must not encode it first.
+
+                    Reason: Prevent script injection through quick return names.
+                */
+                input = HttpUtility.JavaScriptStringEncode( input );
+                typeName = HttpUtility.JavaScriptStringEncode( typeName ?? string.Empty );
 
                 if ( ScriptManager.GetCurrent( rockPage ).IsInAsyncPostBack )
                 {
@@ -5245,6 +5261,7 @@ namespace Rock.Lava
             var notes = new NoteService( LavaHelper.GetRockContextFromLavaContext( context ) )
                 .Queryable().AsNoTracking()
                 .Include( n => n.CreatedByPersonAlias )
+                .AreViewableBy( GetCurrentPerson( context )?.Id )
                 .Where( n => n.EntityId == entityId );
 
             if ( noteTypeIds.Count > 0 )
@@ -5574,7 +5591,8 @@ namespace Rock.Lava
             }
 
             // Next check the RockRequestContext in the lava context.
-            if ( context.GetInternalField( "RockRequestContext" ) is RockRequestContext currentRequest )
+            var currentRequest = context.GetRockRequestContext();
+            if ( currentRequest != null )
             {
                 return currentRequest.CurrentPerson;
             }

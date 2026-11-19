@@ -25,6 +25,7 @@ using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 using Rock;
@@ -209,7 +210,7 @@ namespace RockWeb.Blocks.Crm
                     var rockContext = RockApp.Current.CreateRockContext();
                     var entitySetService = new EntitySetService( rockContext );
                     var entitySet = entitySetService.Get( setId.Value );
-                    if ( entitySet != null )
+                    if ( IsMergeRequestOfCurrentPerson( entitySet ) )
                     {
                         if ( entitySet.AdditionalSettingsJson != null )
                         {
@@ -222,6 +223,7 @@ namespace RockWeb.Blocks.Crm
                         if ( definedValuePurpose != null )
                         {
                             nbNotAuthorized.Visible = false;
+                            cbShouldNotifyAfterMerge.Visible = true;
                             tbEntitySetNote.Visible = true;
                             btnSaveRequestNote.Visible = true;
 
@@ -373,6 +375,11 @@ namespace RockWeb.Blocks.Crm
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void ppAdd_SelectPerson( object sender, EventArgs e )
         {
+            if ( !IsUserAuthorized( Authorization.EDIT ) )
+            {
+                return;
+            }
+
             int? personId = ppAdd.PersonId;
             if ( personId.HasValue && ( MergeData == null || !MergeData.People.Any( p => p.Id == personId.Value ) ) )
             {
@@ -409,6 +416,11 @@ namespace RockWeb.Blocks.Crm
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void personCol_OnDelete( object sender, EventArgs e )
         {
+            if ( !IsUserAuthorized( Authorization.EDIT ) )
+            {
+                return;
+            }
+
             var personMergeField = sender as MergePersonField;
             if ( personMergeField != null )
             {
@@ -471,9 +483,19 @@ namespace RockWeb.Blocks.Crm
             if ( valuesRowPersonPersonProperty.PersonPropertyValue.LastModifiedDateTime != null )
             {
                 var pPropValue = valuesRowPersonPersonProperty.PersonPropertyValue;
+
+                /*
+                    10/18/2026 - MSE
+
+                    The modified by name belongs to whoever last changed the value, which can be
+                    the person themselves, and it is written into the selection label HTML, so
+                    the nick name and last name are HTML encoded.
+
+                    Reason: Prevent stored XSS through a person name in Person Merge.
+                */
                 personMergeFieldRowEventArgs.ContentHTML = pPropValue.FormattedValue
                     + $"<br><small class=\"text-muted\">Last Modified {pPropValue.LastModifiedDateTime.Value.ToShortDateString()} at " +
-                    $"{pPropValue.LastModifiedDateTime.Value.ToShortTimeString()} by {pPropValue.ModifiedByNickName} {pPropValue.ModifiedByLastName}</small>";
+                    $"{pPropValue.LastModifiedDateTime.Value.ToShortTimeString()} by {pPropValue.ModifiedByNickName.EncodeHtml()} {pPropValue.ModifiedByLastName.EncodeHtml()}</small>";
             }
             else
             {
@@ -515,6 +537,11 @@ namespace RockWeb.Blocks.Crm
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbMerge_Click( object sender, EventArgs e )
         {
+            if ( !IsUserAuthorized( Authorization.EDIT ) )
+            {
+                return;
+            }
+
             if ( !CanMerge().IsAllowedToMerge )
             {
                 nbError.Heading = "Merge Error";
@@ -561,7 +588,7 @@ namespace RockWeb.Blocks.Crm
 
             var logger = new RockProcessLogger( Logger );
             var rockContext = RockApp.Current.CreateRockContext();
-            rockContext.Database.CommandTimeout = 90;
+            rockContext.Database.SetCommandTimeout( 90 );
 
             try
             {
@@ -1314,6 +1341,15 @@ namespace RockWeb.Blocks.Crm
             {
                 var rockContext = RockApp.Current.CreateRockContext();
                 var entitySet = new EntitySetService( rockContext ).Get( setId.Value );
+                if ( !IsMergeRequestOfCurrentPerson( entitySet ) )
+                {
+                    nbNotAuthorized.Visible = true;
+                    cbShouldNotifyAfterMerge.Visible = false;
+                    tbEntitySetNote.Visible = false;
+                    btnSaveRequestNote.Visible = false;
+                    return;
+                }
+
                 entitySet.Note = tbEntitySetNote.Text;
 
                 var entitySetAdditionalSettings = entitySet.GetAdditionalSettings<EntitySetAdditionalSettings>();
@@ -1362,7 +1398,16 @@ namespace RockWeb.Blocks.Crm
                     personCol.ID = "person_" + person.Id;
                     personCol.HeaderContent = GetValuesColumnHeader( person.Id, person.IsBusiness, person.IsNameless );
                     personCol.ModifiedDateTime = person.ModifiedDateTime;
-                    personCol.ModifiedBy = person.ModifiedBy;
+                    /*
+                        10/18/2026 - MSE
+
+                        ModifiedBy is the full name of the person who last changed the record, which
+                        can be the person themselves. It is written into the column header HTML, so
+                        it is HTML encoded.
+
+                        Reason: Prevent stored XSS through a person name in Person Merge.
+                    */
+                    personCol.ModifiedBy = person.ModifiedBy.EncodeHtml();
                     personCol.OnDelete += personCol_OnDelete;
                     gValues.Columns.Add( personCol );
                 }
@@ -1418,13 +1463,22 @@ namespace RockWeb.Blocks.Crm
                     .ToList();
                 }
 
+                /*
+                    10/18/2026 - MSE
+
+                    The family name, nick names and address are plain text that anyone can set
+                    (for example through Family Pre-Registration). The header is written as HTML,
+                    so they are HTML encoded.
+
+                    Reason: Prevent stored XSS through family data in Person Merge.
+                */
                 if ( nickNames.Any() )
                 {
-                    sbHeaderData.AppendFormat( "{0} ({1})", family.Name, nickNames.AsDelimited( ", " ) );
+                    sbHeaderData.AppendFormat( "{0} ({1})", family.Name.EncodeHtml(), nickNames.Select( n => n.EncodeHtml() ).ToList().AsDelimited( ", " ) );
                 }
                 else
                 {
-                    sbHeaderData.Append( family.Name );
+                    sbHeaderData.Append( family.Name.EncodeHtml() );
                 }
 
                 bool showType = family.GroupLocations.Count() > 1;
@@ -1432,7 +1486,7 @@ namespace RockWeb.Blocks.Crm
                 {
                     sbHeaderData.AppendFormat(
                         " <br><span>{0}{1}</span>",
-                        loc.Location.ToStringSafe(),
+                        loc.Location.ToStringSafe().EncodeHtml(),
                         showType ? " (" + loc.GroupLocationTypeValue.Value + ")" : string.Empty );
                 }
 
@@ -1453,6 +1507,29 @@ namespace RockWeb.Blocks.Crm
             public RoleCache RequiredSecurityRole { get; set; }
 
             public ElevatedSecurityLevel MaxElevatedSecurityLevel { get; internal set; }
+        }
+
+        /// <summary>
+        /// Determines whether the entity set is a set of people created by the current person.
+        /// </summary>
+        /// <param name="entitySet">The entity set named by the Set page parameter, or <c>null</c> when none was found.</param>
+        /// <returns><c>true</c> when the current person created the set and it holds people; otherwise <c>false</c>.</returns>
+        private bool IsMergeRequestOfCurrentPerson( EntitySet entitySet )
+        {
+            /*
+                11/09/26 - JMH
+
+                A person with VIEW but not EDIT on this block can only submit a merge request.
+                The person grid saves the merge set as the requester, so the creator is the only
+                legitimate view-only visitor. Person ids are compared instead of alias ids so the
+                check still holds after the requester's own record has been merged.
+
+                Reason: Stop view-only visitors from reading or changing other people's sets by id.
+            */
+            return entitySet != null
+                && CurrentPersonId.HasValue
+                && entitySet.EntityTypeId == EntityTypeCache.Get<Rock.Model.Person>().Id
+                && entitySet.CreatedByPersonId == CurrentPersonId.Value;
         }
 
         private CanMergeResult CanMerge()
@@ -1747,7 +1824,15 @@ namespace RockWeb.Blocks.Crm
                 var sb = new StringBuilder();
                 sb.Append( "<p>There are group member attributes that have conflicting values. Proceeding will use the value from the primary merge candidate. If you are unsure that this is the correct value then please update those attribute values before proceeding with the merge. </p>" );
                 sb.Append( "<p>Conflicting values for:<br>" );
-                var links = conflictingGroupMemberProperties.Select( p => $"<a target='_blank' rel='noopener noreferrer' href='/group/{p.GroupId}'>{p.GroupName}</a>" ).Distinct();
+                /*
+                    10/18/2026 - MSE
+
+                    Group names can be set by group leaders who can edit a group, and they are
+                    written into the notification HTML, so they are HTML encoded.
+
+                    Reason: Prevent stored XSS through a group name in Person Merge.
+                */
+                var links = conflictingGroupMemberProperties.Select( p => $"<a target='_blank' rel='noopener noreferrer' href='/group/{p.GroupId}'>{p.GroupName.EncodeHtml()}</a>" ).Distinct();
                 sb.Append( string.Join( ", ", links ) );
                 sb.Append( "</p>" );
 
@@ -2132,7 +2217,16 @@ namespace RockWeb.Blocks.Crm
                                 addressKey = addressKey + "_" + address.Id;
                             }
 
-                            AddProperty( addressKey, addressType.Value, person.Id, address.Id.ToString(), address.Location.GetFullStreetAddress() + iconHtml );
+                            /*
+                                10/18/2026 - MSE
+
+                                The street address is plain text that anyone can set (for example through
+                                Family Pre-Registration), and the formatted value is rendered as HTML, so the
+                                address is HTML encoded before the icon HTML is added.
+
+                                Reason: Prevent stored XSS through an address in Person Merge.
+                            */
+                            AddProperty( addressKey, addressType.Value, person.Id, address.Id.ToString(), address.Location.GetFullStreetAddress().EncodeHtml() + iconHtml );
                         }
                     }
                     else
@@ -2157,8 +2251,16 @@ namespace RockWeb.Blocks.Crm
                 foreach ( var attribute in person.Attributes.OrderBy( a => a.Value.Order ) )
                 {
                     var value = person.GetAttributeValue( attribute.Key );
-                    var condensed = attribute.Value.FieldType.Guid == Rock.SystemGuid.FieldType.IMAGE.AsGuid();
-                    var formattedValue = attribute.Value.FieldType.Field.FormatValue( null, attribute.Value.EntityTypeId, person.Id, value, attribute.Value.QualifierValues, condensed );
+                    /*
+                        10/18/2026 - MSE
+
+                        The formatted value is rendered as HTML, but FormatValue returns plain text
+                        (for example a Text or Memo attribute value as entered on a public form), so
+                        the HTML version of the value is used instead.
+
+                        Reason: Prevent stored XSS through a person attribute value in Person Merge.
+                    */
+                    var formattedValue = GetAttributeHtmlValue( attribute.Value, person.Id, value );
 
                     var hasViewPermission = attribute.Value.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson )
                                             || grantPermissionForAllAttributes;
@@ -2219,8 +2321,15 @@ namespace RockWeb.Blocks.Crm
                     foreach ( var attribute in family.Attributes.OrderBy( a => a.Value.Order ) )
                     {
                         string value = family.GetAttributeValue( attribute.Key );
-                        bool condensed = attribute.Value.FieldType.Guid == Rock.SystemGuid.FieldType.IMAGE.AsGuid();
-                        string formattedValue = attribute.Value.FieldType.Field.FormatValue( null, attribute.Value.EntityTypeId, person.Id, value, attribute.Value.QualifierValues, condensed );
+                        /*
+                            10/18/2026 - MSE
+
+                            The formatted value is rendered as HTML, but FormatValue returns plain text,
+                            so the HTML version of the value is used instead.
+
+                            Reason: Prevent stored XSS through a family attribute value in Person Merge.
+                        */
+                        string formattedValue = GetAttributeHtmlValue( attribute.Value, person.Id, value );
 
                         var hasViewPermission = attribute.Value.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson )
                                                 || grantPermissionForAllAttributes;
@@ -2560,6 +2669,54 @@ namespace RockWeb.Blocks.Crm
             }
         }
 
+        /// <summary>
+        /// Gets the attribute value formatted as HTML that is safe to display.
+        /// </summary>
+        /// <param name="attribute">The attribute.</param>
+        /// <param name="entityId">The entity identifier.</param>
+        /// <param name="value">The raw attribute value.</param>
+        /// <returns>The value formatted as HTML.</returns>
+        private static string GetAttributeHtmlValue( AttributeCache attribute, int entityId, string value )
+        {
+            /*
+                10/18/2026 - MSE
+
+                The base FieldType.FormatValueAsHtml returns FormatValue, which is plain text
+                (not encoded) for field types such as Memo, Value List, Key Value List, Address
+                and Phone Number. Only field types that override neither the entity aware
+                FormatValueAsHtml nor GetHtmlValue use the base GetHtmlValue, which encodes
+                the text value. Field types that override FormatValueAsHtml (Text, Email,
+                Url Link, Code Editor, Lava and others) or GetHtmlValue (Image, Html, Matrix,
+                Markdown, Media Selector and others) keep using FormatValueAsHtml, so their
+                markup is unchanged. Some GetHtmlValue overrides are less safe than their
+                FormatValue (Markdown is not sanitized, Media Selector is not encoded), so
+                they must not be used here.
+
+                Reason: Prevent stored XSS through an attribute value in Person Merge.
+            */
+            var field = attribute.FieldType.Field;
+            var fieldClrType = field.GetType();
+            var condensed = attribute.FieldType.Guid == Rock.SystemGuid.FieldType.IMAGE.AsGuid();
+            var formatValueAsHtmlMethod = fieldClrType.GetMethod(
+                nameof( Rock.Field.FieldType.FormatValueAsHtml ),
+                new[] { typeof( Control ), typeof( int? ), typeof( int? ), typeof( string ), typeof( Dictionary<string, Rock.Field.ConfigurationValue> ), typeof( bool ) } );
+            var getHtmlValueMethod = fieldClrType.GetMethod(
+                nameof( Rock.Field.FieldType.GetHtmlValue ),
+                new[] { typeof( string ), typeof( Dictionary<string, string> ) } );
+
+            var overridesFormatValueAsHtml = formatValueAsHtmlMethod != null && formatValueAsHtmlMethod.DeclaringType != typeof( Rock.Field.FieldType );
+            var overridesGetHtmlValue = getHtmlValueMethod != null && getHtmlValueMethod.DeclaringType != typeof( Rock.Field.FieldType );
+
+            if ( overridesFormatValueAsHtml || overridesGetHtmlValue )
+            {
+                return field.FormatValueAsHtml( null, attribute.EntityTypeId, entityId, value, attribute.QualifierValues, condensed );
+            }
+
+            return condensed
+                ? field.GetCondensedHtmlValue( value, attribute.ConfigurationValues )
+                : field.GetHtmlValue( value, attribute.ConfigurationValues );
+        }
+
         private void AddPerson( Person person, bool isBusiness )
         {
             string personPhotoTag = string.Format( "<img src='{0}' style='max-width:65px;max-height:65px'>", Person.GetPersonPhotoUrl( person ) + "&width=65" );
@@ -2607,12 +2764,21 @@ namespace RockWeb.Blocks.Crm
 
         private void AddProperty( string key, int personId, string value, bool hasViewPermission = true, bool selected = false )
         {
-            AddProperty( key, key.SplitCase(), personId, value, value, hasViewPermission, selected: selected );
+            /*
+                10/18/2026 - MSE
+
+                These overloads take plain text values (names, email, notes and so on) that
+                people can set, but the formatted value is rendered as HTML, so it is HTML
+                encoded. The raw value is still what gets merged.
+
+                Reason: Prevent stored XSS through person values in Person Merge.
+            */
+            AddProperty( key, key.SplitCase(), personId, value, value.EncodeHtml(), hasViewPermission, selected: selected );
         }
 
         private void AddProperty( string key, string label, int personId, string value, bool hasViewPermission = true, bool selected = false )
         {
-            AddProperty( key, label, personId, value, value, hasViewPermission, selected: selected );
+            AddProperty( key, label, personId, value, value.EncodeHtml(), hasViewPermission, selected: selected );
         }
 
         /// <summary>

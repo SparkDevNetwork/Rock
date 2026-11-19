@@ -20,6 +20,7 @@ using System.ComponentModel;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Model;
 using Rock.Security;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Event.CalendarTypes;
@@ -35,7 +36,7 @@ namespace Rock.Blocks.Event
     [Category( "Event" )]
     [Description( "Displays the calendars that user is authorized to view." )]
     [IconCssClass( "ti ti-border-all" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 

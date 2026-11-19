@@ -620,5 +620,10 @@ namespace Rock.SystemGuid
         /// The job to run Post v17.11 Data Migrations to fix the mime type of person photos uploaded through the profile photo REST API.
         /// </summary>
         public const string DATA_MIGRATIONS_1711_FIX_PERSON_IMAGE_MIME_TYPES = "A7ABFE1B-8160-4507-BAE2-505A3DB96217";
+
+        /// <summary>
+        /// The job to run Post v20.1 Data Migrations to add an index that keeps claiming the next communication recipient fast during large sends.
+        /// </summary>
+        public const string DATA_MIGRATIONS_201_ADD_COMMUNICATION_RECIPIENT_CLAIM_INDEX = "FF688372-43D4-4E47-914B-C538188FDA55";
     }
 }

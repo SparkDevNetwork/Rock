@@ -197,7 +197,7 @@
                         <div class="messages-outer-container">
                             <div class="messages-scroll-container">
                                 <div class="conversation">
-                                    <template v-for="message in selectedConversation.messages">
+                                    <template v-for="message in selectedConversationMessages">
                                         <div :class="messageClasses(message)">
                                             <div class="bubble" v-if="!isNullOrWhiteSpace(message.smsMessage)">
                                                 {{ message.smsMessage }}
@@ -215,8 +215,8 @@
                                                 <span class="sender-name">
                                                     {{ message.outboundSenderFullName }}
                                                 </span>
-                                                <RockLabel class="date cursor-text" :title="formattedLongDate(message.createdDateTime)">
-                                                    {{ humanizedDateTime(message.createdDateTime) }}
+                                                <RockLabel class="date cursor-text" :title="formattedLongDate(getMessageDateTime(message))">
+                                                    {{ getMessageDateTimeText(message) }}
                                                 </RockLabel>
                                             </div>
                                         </div>
@@ -455,13 +455,57 @@
         });
     });
 
+    /**
+     * The messages of the selected conversation, ordered by the time shown on each message so a
+     * scheduled message appears where it was sent, not where it was written. This is a sorted copy so
+     * the conversation list keeps using the original order of the messages.
+     */
+    const selectedConversationMessages = computed((): MessageBag[] => {
+        return [...(selectedConversation.value?.messages ?? [])].sort((a, b) => getMessageMilliseconds(a) - getMessageMilliseconds(b));
+    });
+
     // #endregion
 
     // #region Functions
 
     /**
+     * Gets the date and time to show for a message as a number that can be used to sort the messages.
+     * @param message the message to get the date and time for.
+     * @returns the number of milliseconds, or 0 if the message does not have a date and time.
+     */
+    function getMessageMilliseconds(message: MessageBag): number {
+        return RockDateTime.parseISO(getMessageDateTime(message) ?? "")?.toMilliseconds() ?? 0;
+    }
+
+    /**
+     * Gets the date and time to show for a message. A sent message uses the time it was sent. Every other
+     * message uses the time it was created, which is also when a reply was received and all a real-time
+     * message has.
+     * @param message the message to get the date and time for.
+     * @returns the date and time to show for the message.
+     */
+    function getMessageDateTime(message: MessageBag): string | null | undefined {
+        if (message.isPending) {
+            return message.createdDateTime;
+        }
+
+        return message.sendDateTime ?? message.createdDateTime;
+    }
+
+    /**
+     * Gets the text that describes when a message was sent or received.
+     * @param message the message to describe.
+     * @returns the text to show under the message.
+     */
+    function getMessageDateTimeText(message: MessageBag): string {
+        const messageDateTimeText = humanizedDateTime(getMessageDateTime(message));
+
+        return message.isPending ? `${messageDateTimeText} (Pending)` : messageDateTimeText;
+    }
+
+    /**
      * Formats the long date to be shown as a tooltip under messages.
-     * @param dateTime the datetime the message was created at.
+     * @param dateTime the datetime to show for the message.
      * @returns the formatted long date string.
      */
     const formattedLongDate = (dateTime: string | null | undefined): string => {

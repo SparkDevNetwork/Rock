@@ -15,6 +15,7 @@
 // </copyright>
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
@@ -25,6 +26,7 @@ using Rock.AI.Agent.Classes.Entity;
 using Rock.AI.Agent.Classes.Skills.WorkflowSkill;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.SystemGuid;
 using Rock.Web.Cache;
 
@@ -41,7 +43,10 @@ internal partial class WorkflowSkill
     /// A live instance can hold a very large number of workflows, so at least one
     /// filter is required to narrow the set and the results are cursor paged.
     /// Workflows derive from Model&lt;T&gt; and are secured per row, so this uses
-    /// CursorPaginator to filter by view permission while paging. The "assigned to"
+    /// CursorPaginator to filter by view permission while paging. Only workflows
+    /// whose type the person can edit or view the list of, workflows they
+    /// started, and (when they filter on themselves) workflows with an active
+    /// activity assigned to them are returned. The "assigned to"
     /// filter follows the My Workflows block: a workflow matches when one of its
     /// activities is assigned to the person directly or through an active group
     /// membership.
@@ -92,6 +97,9 @@ internal partial class WorkflowSkill
         // assigned group. This mirrors the My Workflows block. The subquery is
         // left unexecuted so EF generates a single WHERE ... IN (SELECT ...)
         // rather than materializing a potentially large id list.
+        var currentPersonId = currentPerson?.Id ?? 0;
+        IQueryable<int> ownActiveWorkflowIdQuery = null;
+
         if ( assignedToPersonIdKey.IsNotNullOrWhiteSpace() )
         {
             var assignedPerson = helper.GetRequiredEntity<Rock.Model.Person>( assignedToPersonIdKey, checkSecurity: false );
@@ -104,13 +112,26 @@ internal partial class WorkflowSkill
 
             var assignedPersonId = assignedPerson.Id;
 
-            var assignedWorkflowIdQuery = new WorkflowActivityService( rockContext ).Queryable()
+            var assignedActivityQuery = new WorkflowActivityService( rockContext ).Queryable()
                 .Where( a =>
                     ( a.AssignedPersonAlias != null && a.AssignedPersonAlias.PersonId == assignedPersonId )
-                    || ( a.AssignedGroup != null && a.AssignedGroup.Members.Any( m => m.PersonId == assignedPersonId && m.GroupMemberStatus != GroupMemberStatus.Inactive ) ) )
-                .Select( a => a.WorkflowId );
+                    || ( a.AssignedGroup != null && a.AssignedGroup.Members.Any( m => m.PersonId == assignedPersonId && m.GroupMemberStatus != GroupMemberStatus.Inactive ) ) );
+
+            var assignedWorkflowIdQuery = assignedActivityQuery.Select( a => a.WorkflowId );
 
             query = query.Where( w => assignedWorkflowIdQuery.Contains( w.Id ) );
+
+            // When people filter on themselves they also see workflows that
+            // have an active activity assigned to them, like My Workflows.
+            if ( currentPerson != null && assignedPersonId == currentPersonId )
+            {
+                ownActiveWorkflowIdQuery = assignedActivityQuery
+                    .Where( a => a.ActivatedDateTime.HasValue
+                        && !a.CompletedDateTime.HasValue
+                        && a.Workflow.ActivatedDateTime.HasValue
+                        && !a.Workflow.CompletedDateTime.HasValue )
+                    .Select( a => a.WorkflowId );
+            }
         }
 
         // isActive true limits to activated, not-yet-completed workflows; false
@@ -133,6 +154,50 @@ internal partial class WorkflowSkill
             .OrderByDescending( w => w.ActivatedDateTime.HasValue )
             .ThenByDescending( w => w.ActivatedDateTime )
             .ThenBy( w => w.Id ) );
+
+        /*
+            10/16/2026 - MSE
+
+            Workflow VIEW is the workflow type's launch right, so the paginator
+            alone lets anyone who can launch a type list every instance of it.
+            Reading instances needs EDIT or VIEW_LIST, like Workflow List and
+            Workflow Detail. People can still see workflows they started, and
+            the ones with an active activity assigned to them when they filter
+            on themselves, like the My Workflows block.
+
+            The main filter runs in SQL so the paginator, which stops after a
+            fixed number of batches, does not hide the person's own workflows
+            behind rows it would drop. The paginator predicate below repeats the
+            check per workflow so rules on a single workflow are still applied.
+
+            Reason: Do not list workflows the person is not allowed to view.
+        */
+        var listableWorkflowTypeIds = WorkflowTypeCache.All( rockContext )
+            .Where( t => t.IsAuthorized( Authorization.EDIT, currentPerson )
+                || t.IsAuthorized( Authorization.VIEW_LIST, currentPerson ) )
+            .Select( t => t.Id )
+            .ToList();
+
+        var ownActiveWorkflowIds = new HashSet<int>();
+
+        if ( ownActiveWorkflowIdQuery != null )
+        {
+            query = query.Where( w => listableWorkflowTypeIds.Contains( w.WorkflowTypeId )
+                || ( w.InitiatorPersonAliasId.HasValue && w.InitiatorPersonAlias.PersonId == currentPersonId )
+                || ownActiveWorkflowIdQuery.Contains( w.Id ) );
+
+            ownActiveWorkflowIds = new HashSet<int>( ownActiveWorkflowIdQuery.Distinct().ToList() );
+        }
+        else
+        {
+            query = query.Where( w => listableWorkflowTypeIds.Contains( w.WorkflowTypeId )
+                || ( w.InitiatorPersonAliasId.HasValue && w.InitiatorPersonAlias.PersonId == currentPersonId ) );
+        }
+
+        paginator.AddPredicate( w => w.IsAuthorized( Authorization.EDIT, currentPerson )
+            || w.IsAuthorized( Authorization.VIEW_LIST, currentPerson )
+            || ( currentPerson != null && w.InitiatorPersonAlias?.PersonId == currentPerson.Id )
+            || ownActiveWorkflowIds.Contains( w.Id ) );
 
         var cursorPage = helper.GetCursorPaginatedItems( query, paginator, cursor );
 

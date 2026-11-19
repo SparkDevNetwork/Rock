@@ -13,7 +13,7 @@
           :gridSettingsActive="hasSettingsFilters"
           @gridSettingsClick="showFilterModal = true"
           :onAddItem="config?.isAddEnabled ? onAddAttribute : undefined"
-          :onSelectItem="config?.options?.allowSettingOfValues ? onEditAttributeValue : undefined">
+          :onSelectItem="config?.options?.canEditAttributeValues ? onEditAttributeValue : undefined">
 
         <template #gridHeaderPrepend v-if="showEntityTypePicker">
             <div class="form-inline d-flex justify-content-end p-3">
@@ -27,7 +27,7 @@
 
         </template>
 
-        <ReorderColumn v-if="!(config?.options?.hideColumns ?? []).includes('Ordering')" @orderChanged="onOrderChanged" />
+        <ReorderColumn v-if="!(config?.options?.hideColumns ?? []).includes('Ordering') && config?.options?.canEditAttributes" @orderChanged="onOrderChanged" />
 
         <TextColumn v-if="!(config?.options?.hideColumns ?? []).includes('Id')" name="id" title="Id" field="id" width="80" />
 
@@ -43,9 +43,9 @@
             </template>
         </Column>
 
-        <EditColumn @click="onEditAttribute" />
+        <EditColumn v-if="config?.options?.canEditAttributes" @click="onEditAttribute" />
         <SecurityColumn />
-        <DeleteColumn @click="onDeleteAttribute" :rowDisabled="(row) => !row.isDeleteEnabled" />
+        <DeleteColumn v-if="config?.options?.canEditAttributes" @click="onDeleteAttribute" :rowDisabled="(row) => !row.isDeleteEnabled" />
     </Grid>
 
     <Modal v-model="showEditAttributeValueModal" :title="editAttributeValueModalTitle" saveText="Save" @save="saveEditAttributeValue">

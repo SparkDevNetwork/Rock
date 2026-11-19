@@ -28,6 +28,9 @@ export const enum ConfigurationKey {
     FilePath = "filePath"
 }
 
+/** Matches a plain audio MIME type, such as audio/mpeg, with no parameters. */
+const audioMimeTypePattern = /^audio\/[a-z0-9][a-z0-9.+-]{0,126}$/i;
+
 // The edit component can be quite large, so load it only as needed.
 const editComponent = defineAsyncComponent(async () => {
     return (await import("./audioFileFieldComponents")).EditComponent;
@@ -70,11 +73,22 @@ export class AudioFileFieldType extends FieldTypeBase {
         const filePath = configurationValues[ConfigurationKey.FilePath];
         const mimeType = configurationValues[ConfigurationKey.MimeType];
 
+        /*
+            10/16/2026 - MSE
+
+            The MIME type comes from the Content-Type the client sent with the
+            upload, and this HTML is displayed with v-html. Only a plain audio
+            type is placed in the type attribute, and every value is encoded.
+
+            Reason: The stored MimeType was rendered as raw HTML.
+        */
+        const safeMimeType = mimeType && audioMimeTypePattern.test(mimeType) ? mimeType : "";
+
         const html = `
 <audio
-    src='${filePath}?guid=${binaryFile.value}'
+    src='${escapeHtml(filePath ?? "")}?guid=${escapeHtml(binaryFile.value ?? "")}'
     class='js-media-audio'
-    type='${mimeType}'
+    type='${escapeHtml(safeMimeType)}'
     controls>
 </audio>
 

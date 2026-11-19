@@ -48,7 +48,7 @@ namespace Rock.Blocks.Lms
     [Category( "LMS" )]
     [Description( "Displays the details of a particular learning class activity completion." )]
     [IconCssClass( "ti ti-question-mark" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     [Rock.SystemGuid.EntityTypeGuid( "19474eb0-eeda-4fcb-b1ea-a35e23e6f691" )]
     [Rock.SystemGuid.BlockTypeGuid( "4569f28d-1efb-4b95-a506-0d9043c24775" )]

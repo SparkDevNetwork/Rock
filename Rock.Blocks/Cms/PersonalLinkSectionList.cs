@@ -40,7 +40,7 @@ namespace Rock.Blocks.Cms
     [Category( "CMS" )]
     [Description( "Lists personal link section in the system." )]
     [IconCssClass( "ti ti-list" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     [LinkedPage( "Detail Page",
         Description = "The page that will show the personal link section details.",
@@ -144,6 +144,15 @@ namespace Rock.Blocks.Cms
         {
             return queryable.OrderBy( a => a.PersonalLinkSectionOrder == null ? 0 : a.PersonalLinkSectionOrder.Order )
                 .ThenBy( a => a.Name );
+        }
+
+        /// <inheritdoc/>
+        protected override GridEntityKeyOptions GetGridEntityKeyOptions()
+        {
+            return new GridEntityKeyOptions
+            {
+                EntityTypeId = EntityTypeCache.GetId<Rock.Model.PersonalLinkSection>()
+            };
         }
 
         /// <inheritdoc/>

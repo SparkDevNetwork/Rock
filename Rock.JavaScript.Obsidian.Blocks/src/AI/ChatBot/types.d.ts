@@ -36,6 +36,8 @@ export type SendMessageResponseBag = {
     tool?: string | null;
 
     logs?: ChatLogBag[] | null;
+
+    errorMessage?: string | null;
 };
 
 export type ChatMessageBag = {

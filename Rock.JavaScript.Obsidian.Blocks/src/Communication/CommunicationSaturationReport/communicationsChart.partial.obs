@@ -10,7 +10,7 @@
             <Chart v-if="hasData" type="bar" :data="data" :options="options" />
 
             <div v-else>
-                <NothingToShow />
+                <EmptyState type="noResults" />
             </div>
 
         </Loading>
@@ -21,7 +21,7 @@
     import Panel from "@Obsidian/Controls/panel.obs";
     import Chart from "@Obsidian/Controls/chart.obs";
     import Loading from "@Obsidian/Controls/loading.obs";
-    import NothingToShow from "./nothingToShow.partial.obs";
+    import EmptyState from "@Obsidian/Controls/emptyState.obs";
     import { computed, PropType, ref } from "vue";
     import { ChartData, ChartOptions } from "@Obsidian/Libs/chart";
     import { CommunicationSaturationReportChartDataBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationSaturationReport/communicationSaturationReportChartDataBag";

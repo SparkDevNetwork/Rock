@@ -22,6 +22,7 @@ using System.Web.UI;
 #endif
 
 using Rock.Attribute;
+using Rock.Model;
 using Rock.Reporting;
 
 namespace Rock.Field.Types
@@ -49,6 +50,24 @@ namespace Rock.Field.Types
             string videoUrl = privateValue;
             if ( !string.IsNullOrEmpty( videoUrl ) )
             {
+                /*
+                    10/16/2026 - MSE
+
+                    The stored value can come from public forms that do not
+                    check its format. Only an http or https (or relative) URL
+                    is placed in the player's src, and it is encoded so a quote
+                    can't end the attribute. Anything else is shown as plain
+                    encoded text with no player.
+
+                    Reason: Stored values were rendered as raw HTML.
+                */
+                var safeUrl = SocialMediaAccountFieldType.GetSafeUrl( videoUrl );
+
+                if ( safeUrl.IsNullOrWhiteSpace() )
+                {
+                    return videoUrl.EncodeHtml();
+                }
+
                 string htmlFormat = @"
 <audio
     src='{0}'
@@ -61,7 +80,7 @@ namespace Rock.Field.Types
     Rock.controls.mediaPlayer.initialize();
 </script>
 ";
-                var html = string.Format( htmlFormat, videoUrl );
+                var html = string.Format( htmlFormat, safeUrl.EncodeHtml() );
                 return html;
             }
 
@@ -77,7 +96,24 @@ namespace Rock.Field.Types
                 return string.Empty;
             }
 
-            return $"<a href=\"{privateValue.EncodeXml( true )}\">{privateValue.Truncate( CondensedTruncateLength ).EncodeHtml()}</a>";
+            var encodedText = privateValue.Truncate( CondensedTruncateLength ).EncodeHtml();
+
+            /*
+                10/16/2026 - MSE
+
+                Only an http or https (or relative) URL becomes a link, so a
+                value with the javascript scheme can't be clicked in a grid.
+
+                Reason: Any URL scheme was allowed in the href.
+            */
+            var safeUrl = SocialMediaAccountFieldType.GetSafeUrl( privateValue );
+
+            if ( safeUrl == null )
+            {
+                return encodedText;
+            }
+
+            return $"<a href=\"{safeUrl.EncodeXml( true )}\">{encodedText}</a>";
         }
 
         #endregion
@@ -90,7 +126,7 @@ namespace Rock.Field.Types
         /// <value>
         /// The type of the filter comparison.
         /// </value>
-        public override Model.ComparisonType FilterComparisonType
+        public override ComparisonType FilterComparisonType
         {
             get
             {
@@ -108,7 +144,7 @@ namespace Rock.Field.Types
             return new FieldTypeHints
             {
                 IsCompleteList = false,
-                ValueFormat = "A url pointing at an audio file, stored as supplied. It is a link rather than the audio itself, and nothing checks what the url returns, so a url that is not audio saves cleanly and then fails to play."
+                ValueFormat = "A url pointing at an audio file, stored as supplied. It is a link rather than the audio itself, and nothing checks what the url returns, so a url that is not audio saves cleanly and then fails to play. Only an http, https or relative url is given a player; any other scheme is stored but displayed as plain text."
             };
         }
 

@@ -105,7 +105,7 @@ When the WebForms grid shows a primary name with a secondary line below it (desc
 ```
 
 **When converting, also remove now-redundant props:**
-- Custom `sortValue`, `filterValue`, `quickFilterValue` that just concatenated `row.name + " " + row.description`. `HighlightDetailColumn` now overrides BOTH `quickFilterValue` AND `filterValue` to return `${field} ${detailField}` (or the rendered `#detailFormat` text), so the grid-wide quick filter and the per-column filter both search title + detail automatically. See `getCombinedFilterValue` in `Rock.JavaScript.Obsidian/Framework/Controls/Grid/Columns/highlightDetailColumn.partial.ts`.
+- Custom `sortValue`, `filterValue`, `quickFilterValue` that just concatenated `row.name + " " + row.description`. `HighlightDetailColumn` overrides both `quickFilterValue` and `filterValue` to return `${field} ${detailField}` (or the rendered `#detailFormat` text), so the grid-wide quick filter and the per-column filter both search title + detail automatically. See `getCombinedFilterValue` in `Rock.JavaScript.Obsidian/Framework/Controls/Grid/Columns/highlightDetailColumn.partial.ts`.
 - Per-block two-line `<template #skeleton>` markup. The column's default skeleton already renders the two-line shape.
 - `<template #export>` that just emits the title field. `HighlightDetailColumn` exports `field` by default.
 - Inline annotations like `<span class="text-muted text-xs">{{ row.id }}</span>` unless the block has an explicit, documented reason for them.
@@ -151,7 +151,7 @@ When the WebForms grid has a column bound to a person (e.g., `CreatedByPersonAli
 - `:showAsLink="true"` — link the name to the person detail page.
 - `detailField="someField"` — render a second line under the name (same semantics as `HighlightDetailColumn`'s `detailField`).
 
-See the *Name + Subtext* section below for when to prefer `PersonColumn` over `HighlightDetailColumn`.
+See the *Name + Subtext* section above for when to prefer `PersonColumn` over `HighlightDetailColumn`.
 
 ---
 

@@ -44,7 +44,7 @@ namespace Rock.Blocks.Connection
     [DisplayName( "Connection Type Navigation" )]
     [Category( "Connection" )]
     [Description( "Displays connection types that the user is authorized to view and provides easy navigation into each type's connection opportunities and requests." )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
     [ContextAware( typeof( Campus ) )]
 
     #region Block Attributes

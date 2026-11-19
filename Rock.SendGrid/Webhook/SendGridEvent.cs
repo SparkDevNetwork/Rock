@@ -18,6 +18,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 using Newtonsoft.Json;
 
+using Rock.Attribute;
 using Rock.Configuration;
 using Rock.Net;
 
@@ -231,6 +232,16 @@ namespace Rock.SendGrid.Webhook
         /// The type of the client device.
         /// </value>
         public string ClientDeviceType => GetBrowserInfo()?.DeviceFamily ?? string.Empty;
+
+        /// <summary>
+        /// Gets the client type bucket (for example Mobile, Desktop or Tablet) of the
+        /// user agent. Unlike <see cref="ClientDeviceType"/> this is always short.
+        /// </summary>
+        /// <value>
+        /// The client type bucket.
+        /// </value>
+        [RockInternal( "20.1", true )]
+        public string ClientType => GetBrowserInfo()?.ClientType ?? string.Empty;
 
         /// <summary>
         /// Gets the client device brand.

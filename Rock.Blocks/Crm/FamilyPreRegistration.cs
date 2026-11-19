@@ -37,12 +37,14 @@ using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
+using CommunicationType = Rock.Model.CommunicationType;
+
 namespace Rock.Blocks.Crm
 {
     [DisplayName( "Family Pre Registration" )]
     [Category( "CRM" )]
     [Description( "Provides a way to allow people to pre-register their families for weekend check-in." )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 
@@ -1303,21 +1305,25 @@ namespace Rock.Blocks.Crm
                     // Save the mobile phone number but do not allow deletes.
                     if ( showChildMobilePhone && child.MobilePhone.IsNotNullOrWhiteSpace() )
                     {
-                        var isSmsNumber = false;
+                        // A null value leaves the stored messaging setting unchanged.
+                        bool? isMessagingEnabled = null;
                         var displaySmsOptInSetting = GetSmsOptInFieldBag();
 
-                        if ( displaySmsOptInSetting.IsHidden && isChildCommunicationPreferenceShown )
+                        if ( displaySmsOptInSetting.IsHidden )
                         {
-                            // If the SMS Opt-In is not shown then use the communication preference to indicate if SMS should be enabled for the phone number.
+                            // If the SMS Opt-In is not shown then choosing SMS as the communication preference enables SMS for the phone number.
                             // Since person.CommunicationPreference has already been updated use that instead of the child bag and doing the cast again.
-                            isSmsNumber = person.CommunicationPreference == CommunicationType.SMS;
+                            if ( isChildCommunicationPreferenceShown && person.CommunicationPreference == CommunicationType.SMS )
+                            {
+                                isMessagingEnabled = true;
+                            }
                         }
                         else if ( displaySmsOptInSetting.IsShowChildren )
                         {
-                            isSmsNumber = child.IsMessagingEnabled;
+                            isMessagingEnabled = child.IsMessagingEnabled;
                         }
 
-                        SavePhoneNumber( rockContext, person.Id, child.MobilePhoneCountryCode, child.MobilePhone, isSmsNumber );
+                        SavePhoneNumber( rockContext, person.Id, child.MobilePhoneCountryCode, child.MobilePhone, isMessagingEnabled );
                     }
 
                     // Save the attributes for the child.
@@ -1593,7 +1599,7 @@ namespace Rock.Blocks.Crm
             var user = UserLoginService.Create(
                 rockContext,
                 person,
-                Rock.Model.AuthenticationServiceType.Internal,
+                AuthenticationServiceType.Internal,
                 EntityTypeCache.Get( Rock.SystemGuid.EntityType.AUTHENTICATION_DATABASE.AsGuid() ).Id,
                 username,
                 password,
@@ -2984,22 +2990,26 @@ namespace Rock.Blocks.Crm
             // Save the mobile phone number.
             if ( GetFieldBag( AttributeKey.AdultMobilePhone ).IsShown )
             {
-                var isSmsNumber = false;
+                // A null value leaves the stored messaging setting unchanged.
+                bool? isMessagingEnabled = null;
                 var displaySmsOptInSetting = GetSmsOptInFieldBag();
                 var showCommunicationPreference = !GetFieldBag( AttributeKey.AdultDisplayCommunicationPreference ).IsHidden;
 
-                if ( displaySmsOptInSetting.IsHidden && showCommunicationPreference )
+                if ( displaySmsOptInSetting.IsHidden )
                 {
-                    // If the SMS Opt-In is not shown then use the communication preference to indicate if SMS should be enabled for the phone number.
-                    isSmsNumber = adult.CommunicationPreference == CommunicationType.SMS;
+                    // If the SMS Opt-In is not shown then choosing SMS as the communication preference enables SMS for the phone number.
+                    if ( showCommunicationPreference && adult.CommunicationPreference == CommunicationType.SMS )
+                    {
+                        isMessagingEnabled = true;
+                    }
                 }
                 else if ( isFirstAdult || displaySmsOptInSetting.IsShowAllAdults )
                 {
-                    // If the control is not hidden and this the first adult or the sms display is set to show for all adulsts then use use it to set the SMS number
-                    isSmsNumber = bag.IsMessagingEnabled;
+                    // The SMS Opt-In is shown for this adult, so use its value.
+                    isMessagingEnabled = bag.IsMessagingEnabled;
                 }
 
-                SavePhoneNumber( rockContext, adult.Id, bag.MobilePhoneCountryCode, bag.MobilePhone, isSmsNumber );
+                SavePhoneNumber( rockContext, adult.Id, bag.MobilePhoneCountryCode, bag.MobilePhone, isMessagingEnabled );
             }
 
             // Save any attribute values
@@ -3022,7 +3032,8 @@ namespace Rock.Blocks.Crm
         /// <param name="personId">The person identifier.</param>
         /// <param name="number">The number.</param>
         /// <param name="countryCode">The country code.</param>
-        private void SavePhoneNumber( RockContext rockContext, int personId, string countryCode, string number, bool isSmsNumber )
+        /// <param name="isMessagingEnabled">Whether SMS is enabled for the number, or <c>null</c> to keep the stored value when the number is unchanged (new or changed numbers have SMS disabled).</param>
+        private void SavePhoneNumber( RockContext rockContext, int personId, string countryCode, string number, bool? isMessagingEnabled )
         {
             var mobilePhoneDefinedValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid() );
 
@@ -3056,9 +3067,18 @@ namespace Rock.Blocks.Crm
                     phoneNumberService.Add( mobilePhoneNumber );
                 }
 
-                mobilePhoneNumber.CountryCode = PhoneNumber.CleanNumber( countryCode );
-                mobilePhoneNumber.Number = number;
-                mobilePhoneNumber.IsMessagingEnabled = isSmsNumber;
+                /*
+                    11/17/2026 - KH
+
+                    Only change the messaging setting when the person made a choice on the form.
+                    When the SMS Opt-In is hidden for this person (and SMS was not chosen as the
+                    communication preference), keep whatever is already stored so a pre-registration
+                    does not silently turn off SMS for an existing number. If the number itself
+                    changed, the stored consent belonged to the old number, so SMS is turned off.
+
+                    Reason: Saving the form was turning off SMS Enabled for people. (Fixes #7169)
+                */
+                mobilePhoneNumber.SetNumberAndMessagingEnabled( countryCode, number, isMessagingEnabled );
             }
             else
             {

@@ -14,12 +14,18 @@
 // limitations under the License.
 // </copyright>
 //
+#if NET
+namespace Rock.Enums.Engagement
+#else
 namespace Rock.Model
+#endif
 {
     /// <summary>
     /// Represents the timespan represented by each of the StreakType bits.
     /// </summary>
+#if !NET
     [Enums.EnumDomain( "Engagement" )]
+#endif
     public enum StreakOccurrenceFrequency
     {
         /// <summary>

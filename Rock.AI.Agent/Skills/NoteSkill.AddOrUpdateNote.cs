@@ -129,7 +129,7 @@ internal sealed partial class NoteSkill
             return helper.ErrorResult;
         }
 
-        return Success( GetNoteResult( noteEntity, rockContext ) )
+        return Success( GetNoteResult( noteEntity, rockContext, currentPerson ) )
             .WithHistoryContent( new
             {
                 noteEntity.IdKey,

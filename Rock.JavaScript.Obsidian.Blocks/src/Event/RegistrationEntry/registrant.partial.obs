@@ -51,7 +51,8 @@
             <div v-if="isSignatureForm" class="registrant-signature-document styled-scroll">
                 <h2 class="signature-header">Please Sign the {{ registrationEntryTerms.signatureDocumentSingularTitleCase }} for {{ firstName }}</h2>
                 <div class="signaturedocument-container">
-                    <iframe src="javascript: window.frameElement.getAttribute('srcdoc');" onload="this.style.height = this.contentWindow.document.body.scrollHeight + 'px'" class="signaturedocument-iframe" border="0" frameborder="0" :srcdoc="signatureSource"></iframe>
+                    <!-- The frame holds merged person data, so it must never get allow-scripts: a same-origin frame that can run script can remove its own sandbox. -->
+                    <iframe sandbox="allow-same-origin allow-popups allow-popups-to-escape-sandbox" onload="this.style.height = this.contentWindow.document.body.scrollHeight + 'px'" class="signaturedocument-iframe" border="0" frameborder="0" :srcdoc="signatureSource"></iframe>
                 </div>
 
                 <div class="well">

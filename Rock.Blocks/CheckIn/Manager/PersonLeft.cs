@@ -42,7 +42,7 @@ namespace Rock.Blocks.CheckIn.Manager
     [Category( "Check-in > Manager" )]
     [Description( "Displays person details for a checked-in person." )]
     [IconCssClass( "ti ti-user" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 

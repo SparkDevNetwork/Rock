@@ -21,12 +21,11 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Web.Hosting;
 
 using CsvHelper;
 
 using Rock.Attribute;
-using Rock.Data;
+using Rock.Configuration;
 using Rock.Model;
 using Rock.RealTime;
 using Rock.RealTime.Topics;
@@ -47,7 +46,7 @@ namespace Rock.Blocks.BulkImport
     [Category( "CSV Import" )]
     [Description( "Block to import data into Rock using CSV files." )]
     [IconCssClass( "ti ti-file-type-csv" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
     [Rock.SystemGuid.BlockTypeGuid( "362C679C-9A7F-4A2B-9BB0-8683824BE892" )]
     [Rock.SystemGuid.EntityTypeGuid( "3E6B0AB8-182B-4C16-9E32-BAC0E02F1A43" )]
     public class CsvImport : RockBlockType
@@ -140,7 +139,7 @@ namespace Rock.Blocks.BulkImport
         private string GetSlingshotRootFolder()
         {
             string virtualPath = "~/App_Data/SlingshotFiles";
-            string physicalPath = HostingEnvironment.MapPath( virtualPath );
+            string physicalPath = RockApp.Current.MapPath( virtualPath );
 
             if ( !Directory.Exists( physicalPath ) )
             {
@@ -156,7 +155,7 @@ namespace Rock.Blocks.BulkImport
         /// <returns>The physical path to the slingshot files directory.</returns>
         private string GetSlingshotPhysicalRootFolder()
         {
-            return HostingEnvironment.MapPath( GetSlingshotRootFolder() );
+            return RockApp.Current.MapPath( GetSlingshotRootFolder() );
         }
 
         /// <inheritdoc/>

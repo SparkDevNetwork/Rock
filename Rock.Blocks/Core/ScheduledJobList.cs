@@ -41,7 +41,7 @@ namespace Rock.Blocks.Core
     [Category( "Core" )]
     [Description( "Lists all scheduled jobs." )]
     [IconCssClass( "ti ti-list" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     [LinkedPage( "Detail Page",
         Description = "The page that will show the service job details.",
@@ -200,6 +200,7 @@ namespace Rock.Blocks.Core
                 .AddTextField( "lastRunDate", a => a.LastRunDateTime?.ToShortDateString() )
                 .AddTextField( "lastRunTime", a => a.LastRunDateTime?.ToShortTimeString() )
                 .AddTextField( "lastRunDurationSeconds", a => FormatDuration( a.LastRunDurationSeconds ) )
+                .AddField( "lastRunDurationSecondsValue", a => a.LastRunDurationSeconds )
                 .AddTextField( "lastStatus", a => a.LastStatus )
                 .AddTextField( "lastStatusMessage", a => a.LastStatusMessage )
                 .AddTextField( "lastStatusMessageAsHtml", a => a.LastStatusMessageAsHtml )

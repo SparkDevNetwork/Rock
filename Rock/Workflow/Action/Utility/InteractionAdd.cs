@@ -317,7 +317,7 @@ namespace Rock.Workflow.Action
                             .Queryable()
                             .AsNoTracking()
                             .Where( c => c.InteractionChannelId == channel.Id )
-                            .Where( c => c.Name.Equals( identifier, StringComparison.OrdinalIgnoreCase ) )
+                            .Where( c => c.Name == identifier )
                             .Select( c => c.Id )
                             .Cast<int?>()
                             .FirstOrDefault();

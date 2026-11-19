@@ -35,6 +35,7 @@
                     </div>
                     <iframe v-if="isPreviewMode"
                             :srcdoc="previewHtml"
+                            sandbox="allow-popups allow-popups-to-escape-sandbox"
                             class="email-preview-frame" />
                     <CodeEditor v-else
                                 v-model="messageBody"
@@ -96,12 +97,19 @@
                                 visiblePriority="xs" />
             </Grid>
 
-            <RockButton btnType="primary"
+            <RockButton v-if="!config.isSendDisabled"
+                        btnType="primary"
                         class="margin-t-md"
                         :isLoading="isSending"
                         type="submit">
                 Send Reminders
             </RockButton>
+
+            <NotificationBox v-else
+                             alertType="info"
+                             class="margin-t-md">
+                You are not authorized to send payment reminders for this registration instance.
+            </NotificationBox>
         </RockForm>
     </Block>
 </template>
@@ -144,6 +152,18 @@
     const fromEmail = ref(config.fromEmail ?? "");
     const subject = ref(config.subject ?? "");
     const messageBody = ref(config.messageBody ?? "");
+
+    /*
+        10/16/2026 - MSE
+
+        The email preview iframe in the template holds the email merged with registrant data,
+        which an anonymous registrant can fill with HTML. It is sandboxed with
+        "allow-popups allow-popups-to-escape-sandbox" so that HTML cannot run script in Rock's
+        origin; nothing reads the frame and its height is fixed, so no other token is needed.
+        Never add allow-scripts: a same-origin frame that may run script can remove its own sandbox.
+
+        Reason: Stop stored XSS through the payment reminder email preview.
+    */
     const previewHtml = ref(config.previewHtml ?? "");
 
     const isPreviewMode = ref(true);
@@ -277,7 +297,8 @@
      * can avoid re-scanning the outstanding-balance list on every toggle.
      */
     watch(isPreviewMode, async (newValue) => {
-        if (!newValue) {
+        // The server only renders previews for people who can send, so the initial preview stays as is.
+        if (!newValue || config.isSendDisabled) {
             return;
         }
 

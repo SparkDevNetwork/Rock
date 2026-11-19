@@ -38,6 +38,8 @@ using Rock.ViewModels.Blocks.Lms.PublicLearningClassWorkspace;
 using Rock.ViewModels.Utility;
 using Rock.Web.UI.Controls;
 
+using CommunicationType = Rock.Model.CommunicationType;
+
 namespace Rock.Blocks.Lms
 {
     /// <summary>
@@ -47,7 +49,7 @@ namespace Rock.Blocks.Lms
     [Category( "LMS" )]
     [Description( "The main block for interacting with enrolled classes." )]
     [IconCssClass( "ti ti-question-mark" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 

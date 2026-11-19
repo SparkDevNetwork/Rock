@@ -171,10 +171,10 @@ namespace Rock.Web.Cache
 
         /// <summary>
         /// Gets or sets the logging level.
-        /// Gets or sets the <see cref="Rock.Model.WorkflowLoggingLevel"/> indicating the level of detail that should be logged when instances of this WorkflowType are executed.
+        /// Gets or sets the <see cref="WorkflowLoggingLevel"/> indicating the level of detail that should be logged when instances of this WorkflowType are executed.
         /// </summary>
         /// <value>
-        /// A <see cref="Rock.Model.WorkflowLoggingLevel"/> value indicating the level of detail that should be logged when instances of this WorkflowType are executed.
+        /// A <see cref="WorkflowLoggingLevel"/> value indicating the level of detail that should be logged when instances of this WorkflowType are executed.
         /// When <c>WorkflowLoggingLevel.None</c> no details of the Workflow instance's execution will be logged.
         /// When <c>WorkflowLoggingLevel.Workflow</c> only workflow events will be logged (i.e. begin and end).
         /// When <c>WorkflowLoggingLevel.Activity</c> workflow and activity events will be logged.

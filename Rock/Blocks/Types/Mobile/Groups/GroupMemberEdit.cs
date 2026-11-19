@@ -31,6 +31,8 @@ using Rock.Model;
 using Rock.Security;
 using Rock.Web.Cache;
 
+using CommunicationType = Rock.Model.CommunicationType;
+
 namespace Rock.Blocks.Types.Mobile.Groups
 {
     /// <summary>
@@ -42,7 +44,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
     [Category( "Mobile > Groups" )]
     [Description( "Edits a member of a group." )]
     [IconCssClass( "ti ti-user-cog" )]
-    [SupportedSiteTypes( Model.SiteType.Mobile )]
+    [SupportedSiteTypes( SiteType.Mobile )]
 
     #region Block Attributes
 

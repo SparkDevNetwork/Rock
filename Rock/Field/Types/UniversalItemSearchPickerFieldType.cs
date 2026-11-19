@@ -96,7 +96,7 @@ namespace Rock.Field.Types
                     FieldTypeGuid = fieldTypeGuid.Value
                 };
 
-                return Encryption.EncryptString( data.ToJson() );
+                return EncryptContextData( data );
             }
 
             return GetContext( privateConfigurationValues );
@@ -281,6 +281,32 @@ namespace Rock.Field.Types
         #endregion
 
 #endif
+
+        /// <summary>
+        /// The purpose that binds the encrypted context to this field type so a
+        /// tampered or foreign context fails verification.
+        /// </summary>
+        private const string ContextEncryptionPurpose = "Rock.Field.Types.UniversalItemSearchPickerFieldType.Context";
+
+        /// <summary>
+        /// Encrypts the context data with an integrity check for sending to the client.
+        /// </summary>
+        /// <param name="data">The context data to encrypt.</param>
+        /// <returns>An encrypted, integrity-protected string.</returns>
+        internal static string EncryptContextData( ContextData data )
+        {
+            return Encryption.EncryptStringForPurpose( data.ToJson(), ContextEncryptionPurpose );
+        }
+
+        /// <summary>
+        /// Decrypts and verifies context data created by <see cref="EncryptContextData(ContextData)"/>.
+        /// </summary>
+        /// <param name="context">The encrypted context string from the client.</param>
+        /// <returns>The context data, or <c>null</c> if it is missing or fails verification.</returns>
+        internal static ContextData DecryptContextData( string context )
+        {
+            return Encryption.DecryptStringForPurpose( context, ContextEncryptionPurpose )?.FromJsonOrNull<ContextData>();
+        }
 
         internal class ContextData
         {

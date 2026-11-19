@@ -186,6 +186,11 @@ namespace Rock.ViewModels.Blocks.Event.RegistrationInstanceDetail
         public string RegistrationTemplateIdKey { get; set; }
 
         /// <summary>
+        /// Gets or sets the identifier key of the registration instance that this new registration instance was copied from.
+        /// </summary>
+        public string CopiedFromRegistrationInstanceIdKey { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether the template allows payment plans. Drives visibility of the payment deadline field.
         /// </summary>
         public bool IsPaymentPlanAllowed { get; set; }

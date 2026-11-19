@@ -178,6 +178,11 @@
                                             help="When an Auth0 login creates a person, this record status will be used."
                                             :definedTypeGuid="recordStatusDefinedTypeGuid" />
                     </div>
+                    <div class="col-md-6">
+                        <CheckBox v-model="auth0RequireVerifiedEmail"
+                                  label="Require Verified Email"
+                                  help="When enabled, a first Auth0 sign-in from the app is matched to an existing person only if Auth0 reports the email address as verified. Otherwise a new person is created. Disable this only if every email address in your Auth0 tenant is verified by other means." />
+                    </div>
                 </div>
             </ContentStack>
 
@@ -419,6 +424,7 @@
     const auth0Domain = propertyRef(props.modelValue?.bag?.auth0Domain ?? "", "Auth0Domain");
     const auth0ConnectionStatus = propertyRef<ListItemBag | null | undefined>(props.modelValue?.bag?.auth0ConnectionStatus, "Auth0ConnectionStatus");
     const auth0RecordStatus = propertyRef<ListItemBag | null | undefined>(props.modelValue?.bag?.auth0RecordStatus, "Auth0RecordStatus");
+    const auth0RequireVerifiedEmail = propertyRef(props.modelValue?.bag?.auth0RequireVerifiedEmail ?? true, "Auth0RequireVerifiedEmail");
     const entraClientId = propertyRef(props.modelValue?.bag?.entraClientId ?? "", "EntraClientId");
     const entraTenantId = propertyRef(props.modelValue?.bag?.entraTenantId ?? "", "EntraTenantId");
     const entraAuthenticationComponent = propertyRef<ListItemBag | null | undefined>(props.modelValue?.bag?.entraAuthenticationComponent, "EntraAuthenticationComponent");
@@ -443,7 +449,7 @@
     const propRefs = [
         name, isActive, description, applicationType, androidTabLocation, lockPhoneOrientation, lockTabletOrientation,
         loginPage, profilePage, interactiveExperiencePage, communicationViewPage, smsConversationPage, chatPage, outreachToolboxTouchpointPage,
-        apiKey, campusFilterDataView, personAttributeCategories, auth0ClientId, auth0Domain, auth0ConnectionStatus, auth0RecordStatus,
+        apiKey, campusFilterDataView, personAttributeCategories, auth0ClientId, auth0Domain, auth0ConnectionStatus, auth0RecordStatus, auth0RequireVerifiedEmail,
         entraClientId, entraTenantId, entraAuthenticationComponent, enableNotificationsAutomatically, flyoutXaml, navigationBarActionXaml, homepageRoutingLogic,
         previewThumbnailBinaryFile, pushTokenUpdateValue, compressUpdatePackages, pageViewRetentionPeriodDays,
         isDeepLinkingEnabled, deepLinkPathPrefix, deepLinkDomains, bundleIdentifier, teamIdentifier, packageName, certificateFingerprint
@@ -532,6 +538,7 @@
         updateRefValue(auth0Domain, bag.auth0Domain ?? "");
         updateRefValue(auth0ConnectionStatus, bag.auth0ConnectionStatus);
         updateRefValue(auth0RecordStatus, bag.auth0RecordStatus);
+        updateRefValue(auth0RequireVerifiedEmail, bag.auth0RequireVerifiedEmail ?? true);
         updateRefValue(entraClientId, bag.entraClientId ?? "");
         updateRefValue(entraTenantId, bag.entraTenantId ?? "");
         updateRefValue(entraAuthenticationComponent, bag.entraAuthenticationComponent);
@@ -583,6 +590,7 @@
         setPropertiesBoxValue(newValue, "auth0Domain", auth0Domain.value);
         setPropertiesBoxValue(newValue, "auth0ConnectionStatus", auth0ConnectionStatus.value ?? null);
         setPropertiesBoxValue(newValue, "auth0RecordStatus", auth0RecordStatus.value ?? null);
+        setPropertiesBoxValue(newValue, "auth0RequireVerifiedEmail", auth0RequireVerifiedEmail.value);
         setPropertiesBoxValue(newValue, "entraClientId", entraClientId.value);
         setPropertiesBoxValue(newValue, "entraTenantId", entraTenantId.value);
         setPropertiesBoxValue(newValue, "entraAuthenticationComponent", entraAuthenticationComponent.value ?? null);

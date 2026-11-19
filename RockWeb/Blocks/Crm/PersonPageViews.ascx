@@ -24,7 +24,7 @@
                                                 Duration: <asp:Literal ID="lSessionDuration" runat="server" />
                                             </small>
                                         </h4>
-                                        <span class="label label-info"><%# Eval("Site") %></span>
+                                        <span class="label label-info"><%#: Eval("Site") %></span>
                                     </div>
                                     <asp:Literal ID="lClientIcon" runat="server" />
                                 </header>
@@ -32,7 +32,7 @@
                                     <ol>
                                         <asp:Repeater ID="rptPageViews" runat="server" DataSource='<%# Eval("PageViews") %>'>
                                             <ItemTemplate>
-                                                <li><a href='<%# Eval("InteractionData") %>'><%# Eval("InteractionSummary") %></a> <asp:Literal ID="lPageViewDuration" runat="server" /></li>
+                                                <li><a href="<%# GetSafePageViewUrl( Eval("InteractionData") ) %>"><%#: System.Web.HttpUtility.HtmlDecode( Eval("InteractionSummary") as string ) %></a> <asp:Literal ID="lPageViewDuration" runat="server" /></li>
                                             </ItemTemplate>
                                         </asp:Repeater>
                                     </ol>

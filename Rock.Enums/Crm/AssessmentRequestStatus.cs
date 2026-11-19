@@ -14,13 +14,19 @@
 // limitations under the License.
 // </copyright>
 //
+#if NET
+namespace Rock.Enums.Crm
+#else
 namespace Rock.Model
+#endif
 {
     /// <summary>
     /// Gets the status of the Assessment  (i.e. Pending, Complete)
     /// Complete should only be used if the Assessment was actually completed, everything else is pending.
     /// </summary>
+#if !NET
     [Enums.EnumDomain( "CRM" )]
+#endif
     public enum AssessmentRequestStatus
     {
         /// <summary>

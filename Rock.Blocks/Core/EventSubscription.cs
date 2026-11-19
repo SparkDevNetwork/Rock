@@ -37,7 +37,7 @@ namespace Rock.Blocks.Core
     [Category( "Follow" )]
     [Description( "Block for users to select which following events they would like to subscribe to." )]
     [IconCssClass( "ti ti-flag" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     [Rock.SystemGuid.EntityTypeGuid( "2E52E258-373F-48AE-9FA8-7DF0F2CBAB65" )]
     // was [Rock.SystemGuid.BlockTypeGuid( "49F69ACD-0F77-4604-ACED-5E476EDEEFC3" )]

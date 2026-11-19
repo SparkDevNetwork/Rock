@@ -42,7 +42,7 @@ namespace Rock.Blocks.Event
     [Category( "Event" )]
     [Description( "Displays the details of the given Event Calendar." )]
     [IconCssClass( "ti ti-question-mark" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 
@@ -443,7 +443,7 @@ namespace Rock.Blocks.Event
         {
             return new AttributeService( RockContext ).GetByEntityTypeId( new EventCalendarItem().TypeId, true ).AsQueryable()
                 .Where( a =>
-                    a.EntityTypeQualifierColumn.Equals( "EventCalendarId", StringComparison.OrdinalIgnoreCase ) &&
+                    a.EntityTypeQualifierColumn == "EventCalendarId" &&
                     a.EntityTypeQualifierValue.Equals( eventIdQualifierValue ) )
                 .OrderBy( a => a.Order )
                 .ThenBy( a => a.Name )

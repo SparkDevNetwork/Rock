@@ -96,6 +96,38 @@ namespace Rock.Model
         public virtual History.HistoryChangeList HistoryChangeList { get; set; }
 
         #endregion
+
+        #region Public Methods
+
+        /// <inheritdoc/>
+        public override bool IsAuthorized( string action, Person person )
+        {
+            /*
+                11/10/2026 - MSE
+
+                An image is only available to people who are allowed the same action on its
+                transaction. The image's own rules still apply too, so this can only narrow
+                access. FinancialTransaction has no ParentAuthority or IsAuthorized override,
+                so a copy with only the Id is authorized exactly like the stored transaction,
+                without a database read or a lazy load on a disposed context. If one is ever
+                added, load the transaction instead of using a copy.
+
+                Reason: Transaction security must also protect the transaction's images.
+            */
+            if ( !base.IsAuthorized( action, person ) )
+            {
+                return false;
+            }
+
+            if ( TransactionId == 0 )
+            {
+                return true;
+            }
+
+            return new FinancialTransaction { Id = TransactionId }.IsAuthorized( action, person );
+        }
+
+        #endregion
     }
 
     #region Entity Configuration

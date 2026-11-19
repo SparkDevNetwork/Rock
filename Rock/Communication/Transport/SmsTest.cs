@@ -28,6 +28,8 @@ using Rock.Model;
 using Rock.Utility;
 using Rock.Web.Cache;
 
+using CommunicationType = Rock.Model.CommunicationType;
+
 namespace Rock.Communication.Transport
 {
     /// <summary>
@@ -78,14 +80,14 @@ namespace Rock.Communication.Transport
                 communication = new CommunicationService( rockContext ).Get( communication.Id );
 
                 if ( communication != null &&
-                    communication.Status == Model.CommunicationStatus.Approved &&
+                    communication.Status == CommunicationStatus.Approved &&
                     ( !communication.FutureSendDateTime.HasValue || communication.FutureSendDateTime.Value.CompareTo( RockDateTime.Now ) <= 0 ) )
                 {
                     var qryRecipients = new CommunicationRecipientService( rockContext ).Queryable();
                     unprocessedRecipientCount = qryRecipients
                         .Where( r =>
                             r.CommunicationId == communication.Id &&
-                            r.Status == Model.CommunicationRecipientStatus.Pending &&
+                            r.Status == CommunicationRecipientStatus.Pending &&
                             r.MediumEntityTypeId.HasValue &&
                             r.MediumEntityTypeId.Value == mediumEntityTypeId )
                         .Count();

@@ -585,6 +585,16 @@ namespace Rock.Workflow.Action
                 personBag.PersonGender = person.Gender;
             }
 
+            if ( formSettings.RaceEntry != WorkflowActionFormPersonEntryOption.Hidden )
+            {
+                personBag.PersonRace = DefinedValueCache.Get( person.RaceValueId ?? 0, rockContext ).ToListItemBag();
+            }
+
+            if ( formSettings.EthnicityEntry != WorkflowActionFormPersonEntryOption.Hidden )
+            {
+                personBag.PersonEthnicity = DefinedValueCache.Get( person.EthnicityValueId ?? 0, rockContext ).ToListItemBag();
+            }
+
             return personBag;
         }
 
@@ -1145,7 +1155,7 @@ namespace Rock.Workflow.Action
 
             FormCompletionActionSettings completionActionSettings;
 
-            if ( workflowType.FormBuilderTemplate != null )
+            if ( workflowType.FormBuilderTemplate?.CompletionActionSettings != null )
             {
                 completionActionSettings = workflowType.FormBuilderTemplate.CompletionActionSettings;
             }

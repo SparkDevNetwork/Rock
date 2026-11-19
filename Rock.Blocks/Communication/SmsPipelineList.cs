@@ -40,7 +40,7 @@ namespace Rock.Blocks.Communication
     [Category( "Communication" )]
     [Description( "Lists the SMS Pipelines currently in the system." )]
     [IconCssClass( "ti ti-list" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     [LinkedPage( "Detail Page",
         Description = "The page that will show the sms pipeline details.",

@@ -37,7 +37,7 @@ namespace Rock.Blocks.Cms
     [Category( "CMS" )]
     [Description( "Lists clicks for a particular short link." )]
     [IconCssClass( "ti ti-question-mark" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Secondary )]
     [Rock.SystemGuid.EntityTypeGuid( "aa860dc7-d590-4d0e-bbb3-16990f2cd680" )]
@@ -94,6 +94,15 @@ namespace Rock.Blocks.Cms
                    i.InteractionComponent.EntityId == shortLinkId );
 
             return interactions;
+        }
+
+        /// <inheritdoc/>
+        protected override GridEntityKeyOptions GetGridEntityKeyOptions()
+        {
+            return new GridEntityKeyOptions
+            {
+                EntityTypeId = EntityTypeCache.GetId<Rock.Model.Interaction>()
+            };
         }
 
         /// <inheritdoc/>

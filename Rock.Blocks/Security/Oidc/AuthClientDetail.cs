@@ -39,7 +39,7 @@ namespace Rock.Blocks.Security.Oidc
     [Category( "Security > OIDC" )]
     [Description( "Displays the details of the given OpenID Connect Client." )]
     [IconCssClass( "ti ti-question-mark" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     [Rock.SystemGuid.EntityTypeGuid( "d7b56608-70a9-42d2-9542-3301ddbec48b" )]
     [Rock.SystemGuid.BlockTypeGuid( "8246ef8b-27e9-449e-9cab-1c267b31dbc2" )]
@@ -103,6 +103,12 @@ namespace Rock.Blocks.Security.Oidc
             if ( !authClient.IsValid )
             {
                 errorMessage = authClient.ValidationResults.Select( x => x.ErrorMessage ).JoinStrings( "," );
+                return false;
+            }
+
+            if ( !AuthClientService.AreRedirectUrisValid( authClient ) )
+            {
+                errorMessage = "One or more redirect URIs are invalid. Separate them with commas, and use https, http or an app scheme in reverse domain form, such as com.example.app.";
                 return false;
             }
 

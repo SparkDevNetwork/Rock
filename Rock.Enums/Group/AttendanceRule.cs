@@ -17,12 +17,18 @@
 
 using System;
 
+#if NET
+namespace Rock.Enums.Group
+#else
 namespace Rock.Model
+#endif
 {
     /// <summary>
     /// Represents and indicates the  attendance rule to use when a Rock.Model.Person checks in to a Rock.Model.Group of this Rock.Model.GroupType
     /// </summary>
+#if !NET
     [Enums.EnumDomain( "Group" )]
+#endif
     public enum AttendanceRule
     {
         /// <summary>

@@ -45,7 +45,7 @@ namespace Rock.Blocks.Fundraising
     [Category( "Fundraising" )]
     [Description( "Public facing block that shows a fundraising opportunity participant" )]
     [IconCssClass( "ti ti-user" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 
@@ -728,10 +728,7 @@ namespace Rock.Blocks.Fundraising
                 return null;
             }
 
-            var contentChannelItems = new ContentChannelItemService( RockContext ).Queryable()
-                .Where( a => a.ContentChannelId == contentChannel.Id )
-                .AsNoTracking()
-                .ToList();
+            var contentChannelItems = FundraisingUpdateItems.GetViewableItems( RockContext, contentChannel.Id, RequestContext.CurrentPerson );
 
             itemCount = contentChannelItems.Count;
 

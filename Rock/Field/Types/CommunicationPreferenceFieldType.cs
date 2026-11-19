@@ -17,6 +17,8 @@
 using Rock.Attribute;
 using Rock.Model;
 
+using CommunicationType = Rock.Model.CommunicationType;
+
 namespace Rock.Field.Types
 {
     /// <summary>

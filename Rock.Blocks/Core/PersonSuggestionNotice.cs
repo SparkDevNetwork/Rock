@@ -35,7 +35,7 @@ namespace Rock.Blocks.Core
     [Category( "Follow" )]
     [Description( "Block for displaying a button and count of suggested people that can be used to navigate to person suggestion list block." )]
     [IconCssClass( "ti ti-user-plus" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     [LinkedPage( "Suggestion Page",
         Key = AttributeKey.ListPage,

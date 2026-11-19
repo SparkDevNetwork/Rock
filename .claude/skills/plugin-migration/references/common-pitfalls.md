@@ -40,20 +40,11 @@ Sql( $@"UPDATE [Attribute] SET [DefaultValue] = '{{""key"": ""value""}}'" );
 
 ---
 
-## Pitfall 3: Missing `using Rock.Model;`
+## Pitfall 3: Job Type Names
 
-If the migration uses `typeof()` for job types or entity types (e.g., in `AddPostUpdateServiceJob()`), the `using Rock.Model;` statement is required. Without it, the code compiles but the type reference is wrong.
+Pass `typeof( <fully qualified type> ).FullName` as the `jobType` of `AddPostUpdateServiceJob()`, as migration 278 does. A fully qualified name resolves without any extra `using` statement.
 
-```csharp
-// WRONG — missing using statement, typeof may not resolve correctly
-RockMigrationHelper.AddPostUpdateServiceJob(
-    jobType: typeof( Rock.Jobs.PostUpdateJobs.PostV183UpdateAchievementTypes ).FullName,
-    ...
-);
-
-// CORRECT — add using at top of file
-using Rock.Model;
-```
+`using Rock.Model;` is needed only when calling helpers that take the `Rock.Model.SpecialRole` enum (`AddSecurityAuthForBlock`, `BinaryFileType`, `GroupType`, `Calendar`, `RestController`, `RestAction` and `ContentChannel`). The EntityType, Page, Site, Attribute, Category, NoteType and AI helpers take an `int` instead.
 
 ---
 
@@ -111,7 +102,7 @@ Run through this before presenting the migration:
 5. All GUIDs are proper format (uppercase, hyphenated)
 6. SQL follows Rock conventions (UPPERCASE keywords, brackets, JOIN syntax)
 7. IF NOT EXISTS guards used where appropriate for idempotency
-8. `using` statements are correct (System always, Rock.Model if using typeof())
+8. `using` statements cover every type referenced by its short name
 9. Copyright header is complete
 10. XML doc comments describe the migration's purpose
 11. Block type methods match the block type (entity-based vs path-based)

@@ -24,6 +24,7 @@ using System.Linq;
 using Rock.Attribute;
 using Rock.Lava;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web;
 using Rock.Web.Cache;
 
@@ -35,7 +36,7 @@ namespace Rock.Blocks.Finance
     [DisplayName( "Contribution Statement List Lava" )]
     [Category( "Finance" )]
     [Description( "Block for displaying a listing of years where contribution statements are available." )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
     [ConfigurationChangedReload( Rock.Enums.Cms.BlockReloadMode.Page )]
 
     #region Block Attributes
@@ -126,12 +127,34 @@ namespace Rock.Blocks.Finance
         #region Private Methods
 
         /// <summary>
+        /// The message shown when the context person is someone the current person may not view.
+        /// </summary>
+        private static readonly string NotAuthorizedMessage = "You are not authorized to view this person's contribution statements.";
+
+        /// <summary>
+        /// Determines whether the block uses person context and there is a context person
+        /// the current person is not allowed to view.
+        /// </summary>
+        /// <returns><c>true</c> if the context person is not allowed; otherwise, <c>false</c>.</returns>
+        private bool IsContextPersonUnauthorized()
+        {
+            return GetAttributeValue( AttributeKey.UsePersonContext ).AsBoolean()
+                && RequestContext.GetContextEntity<Person>() != null
+                && GetAuthorizedContextPerson() == null;
+        }
+
+        /// <summary>
         /// Resolves the configured Lava template against the years for which the target person's
         /// giving unit has contributions.
         /// </summary>
         /// <returns>The rendered HTML, or an empty string when the person has no qualifying transactions.</returns>
         private string GetStatementsHtml()
         {
+            if ( IsContextPersonUnauthorized() )
+            {
+                return $"<div class='alert alert-warning'>{NotAuthorizedMessage}</div>";
+            }
+
             var statementYears = GetStatementYears();
 
             // Render nothing when the person has no qualifying transactions.
@@ -217,10 +240,44 @@ namespace Rock.Blocks.Finance
         {
             if ( GetAttributeValue( AttributeKey.UsePersonContext ).AsBoolean() )
             {
-                return RequestContext.GetContextEntity<Person>();
+                return GetAuthorizedContextPerson();
             }
 
             return RequestContext.CurrentPerson;
+        }
+
+        /// <summary>
+        /// Gets the person context, but only if the current person is allowed to view that
+        /// person's contribution statements. This is allowed if the person is the current person,
+        /// shares the same giving unit, is one of the current person's businesses, or the current
+        /// person is authorized to view financial transactions.
+        /// </summary>
+        /// <returns>The context person, or <c>null</c> if there is none or it is not allowed.</returns>
+        private Person GetAuthorizedContextPerson()
+        {
+            var contextPerson = RequestContext.GetContextEntity<Person>();
+            var currentPerson = RequestContext.CurrentPerson;
+
+            if ( contextPerson == null || currentPerson == null )
+            {
+                return null;
+            }
+
+            var isCurrentPerson = contextPerson.Id == currentPerson.Id;
+            var isInGivingUnit = contextPerson.GivingId.IsNotNullOrWhiteSpace()
+                && contextPerson.GivingId == currentPerson.GivingId;
+
+            if ( isCurrentPerson || isInGivingUnit || currentPerson.GetBusinesses( RockContext ).Any( b => b.Id == contextPerson.Id ) )
+            {
+                return contextPerson;
+            }
+
+            if ( new FinancialTransaction().IsAuthorized( Authorization.VIEW, currentPerson ) )
+            {
+                return contextPerson;
+            }
+
+            return null;
         }
 
         #endregion Private Methods

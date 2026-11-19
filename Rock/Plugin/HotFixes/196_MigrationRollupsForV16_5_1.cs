@@ -16,6 +16,7 @@
 
 using System;
 
+using Rock.Model;
 using Rock.SystemGuid;
 
 namespace Rock.Plugin.HotFixes
@@ -346,7 +347,7 @@ FROM
             );
 
             // Hide the Volunteer Generosity page from navigation
-            Sql( $"UPDATE [Page] SET [DisplayInNavWhen] = {( int ) Model.DisplayInNavWhen.Never} WHERE [Guid] = '16DD0891-E3D4-4FF3-9857-0869A6CCBA39';" );
+            Sql( $"UPDATE [Page] SET [DisplayInNavWhen] = {( int ) DisplayInNavWhen.Never} WHERE [Guid] = '16DD0891-E3D4-4FF3-9857-0869A6CCBA39';" );
         }
 
         /// <summary>

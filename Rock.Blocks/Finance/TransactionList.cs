@@ -50,7 +50,7 @@ namespace Rock.Blocks.Finance
     [Category( "Finance" )]
     [Description( "Builds a list of all financial transactions which can be filtered by date, account, transaction type, etc." )]
     [IconCssClass( "ti ti-credit-card" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     [SecurityAction( SecurityActionKey.FilterByPerson, "The roles and/or users that can filter transactions by person." )]
 
@@ -1342,7 +1342,17 @@ namespace Rock.Blocks.Finance
             var attributes = isAccountsMode ? _accountGridAttributes.Value : _transactionGridAttributes.Value;
             var fields = new List<AttributeFieldDefinitionBag>();
 
-            foreach ( var attribute in attributes )
+            /*
+                11/16/2026 - MSE
+
+                The grid only sends values for attributes the person can view, but these
+                options also list every grid attribute's key and name for the column
+                chooser. Skip the ones the person cannot view so the options match the
+                grid.
+
+                Reason: Do not show attribute columns the person is denied VIEW on.
+            */
+            foreach ( var attribute in attributes.Where( a => a.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) ) )
             {
                 fields.Add( new AttributeFieldDefinitionBag
                 {

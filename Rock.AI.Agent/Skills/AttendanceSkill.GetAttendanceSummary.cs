@@ -22,6 +22,7 @@ using System.Linq;
 using Rock.AI.Agent.Annotations;
 using Rock.AI.Agent.Classes.Common;
 using Rock.Model;
+using Rock.Security;
 using Rock.SystemGuid;
 using Rock.Web.Cache;
 
@@ -72,6 +73,18 @@ internal partial class AttendanceSkill
         query = helper.WhereOptionalIdKey( query, a => a.CampusId, campusIdKey );
         query = helper.WhereOptionalIdKey( query, a => a.Occurrence.LocationId, locationIdKey );
         query = helper.WhereOptionalPropertyBetween( query, a => a.StartDateTime, startDate, endDate );
+
+        /*
+            10/19/2026 - MSE
+
+            A requested group must be one the current person can view. The
+            helper records "The groupIdKey is not valid." when the group is
+            missing or the person is not authorized, so HasErrors below
+            returns that error instead of the group's counts.
+
+            Reason: Prevent summarizing attendance for a secured group by IdKey.
+        */
+        helper.GetOptionalEntity<Model.Group>( groupIdKey );
 
         helper.RequireAtLeastOneFilter( [
             personIdKey,
@@ -132,6 +145,29 @@ internal partial class AttendanceSkill
                 LocationId = a.Key.LocationId,
                 Count = a.Count(),
             } )
+            .ToList();
+
+        /*
+            10/19/2026 - MSE
+
+            Drop the counts for groups the current person cannot view, and
+            for attendance with no group. Every dimension, name and total
+            is built from groupCounts, so this removes a secured group's
+            name and attendance from the whole summary.
+
+            Reason: Prevent secured group names and counts from being returned.
+        */
+        var countedGroupIds = groupCounts
+            .Where( gc => gc.GroupId.HasValue )
+            .Select( gc => gc.GroupId.Value )
+            .Distinct()
+            .ToList();
+        var viewableGroupIds = new HashSet<int>( GroupCache.GetMany( countedGroupIds, AgentRequestContext.RockContext )
+            .Where( g => g.IsAuthorized( Authorization.VIEW, AgentRequestContext.CurrentPerson ) )
+            .Select( g => g.Id ) );
+
+        groupCounts = groupCounts
+            .Where( gc => gc.GroupId.HasValue && viewableGroupIds.Contains( gc.GroupId.Value ) )
             .ToList();
 
         var summary = GetSummaryResult( helper, dimensions, groupCounts );

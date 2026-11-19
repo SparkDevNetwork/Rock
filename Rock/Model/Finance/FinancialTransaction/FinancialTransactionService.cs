@@ -46,7 +46,7 @@ namespace Rock.Model
             if ( !string.IsNullOrWhiteSpace( transactionCode ) )
             {
                 var qry = Queryable()
-                    .Where( t => t.TransactionCode.Equals( transactionCode.Trim(), StringComparison.OrdinalIgnoreCase ) );
+                    .Where( t => t.TransactionCode == transactionCode.Trim() );
 
                 if ( financialGatewayId.HasValue )
                 {

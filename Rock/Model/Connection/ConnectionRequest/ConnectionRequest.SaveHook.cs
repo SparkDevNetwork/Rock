@@ -108,7 +108,7 @@ namespace Rock.Model
                             }
                             else if ( connectionTypeCache.DueDateCalculationMode == DueDateCalculationMode.FixedDaysFromStartOpportunityLevel )
                             {
-                                dueOffsetDays = connectionOpportunity.RequestDueSoonOffsetInDays ?? 0;
+                                dueOffsetDays = connectionOpportunity.RequestDueDateOffsetInDays ?? 0;
                                 dueSoonOffsetDays = connectionOpportunity.RequestDueSoonOffsetInDays ?? 0;
                             }
                             else

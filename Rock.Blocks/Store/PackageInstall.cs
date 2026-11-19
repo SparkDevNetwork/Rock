@@ -30,6 +30,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Configuration;
 using Rock.Data;
+using Rock.Model;
 using Rock.Store;
 using Rock.Utility;
 using Rock.ViewModels.Blocks.Store.PackageInstall;
@@ -46,7 +47,7 @@ namespace Rock.Blocks.Store
     [Category( "Store" )]
     [Description( "Installs a package." )]
     [IconCssClass( "ti ti-gift" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 

@@ -6,7 +6,7 @@ These cause real failures in production. Check for all of them before finalizing
 
 ## 1. Adding NOT NULL Columns to Tables with Existing Data
 
-`AddColumn("dbo.Table", "Col", c => c.Boolean(nullable: false))` will FAIL if the table already has rows. You must provide a default:
+`AddColumn` with `nullable: false` and no default fills existing rows with the CLR default (for example `false` or `0`), as the shipped `AddRegistrationTemplateAreDuplicateRegistrantsPreventedColumn` migration relies on. When existing rows need a different value, pass it explicitly:
 
 ```csharp
 AddColumn("dbo.Table", "Col", c => c.Boolean(nullable: false, defaultValue: false));

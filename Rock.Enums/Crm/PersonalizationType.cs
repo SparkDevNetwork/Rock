@@ -15,12 +15,18 @@
 // </copyright>
 //
 
+#if NET
+namespace Rock.Enums.Crm
+#else
 namespace Rock.Model
+#endif
 {
     /// <summary>
     /// Represents the personalization type
     /// </summary>
+#if !NET
     [Enums.EnumDomain( "CRM" )]
+#endif
     public enum PersonalizationType
     {
         /// <summary>

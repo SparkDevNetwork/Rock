@@ -38,7 +38,7 @@ namespace Rock.Blocks.Communication
     [Category( "Communication" )]
     [Description( "Lists the snippets currently in the system." )]
     [IconCssClass( "fa fa-list" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     [LinkedPage( "Snippet Detail",
         Description = "The page that will show the snippet details.",
@@ -179,6 +179,36 @@ namespace Rock.Blocks.Communication
         protected override IQueryable<Snippet> GetOrderedListQueryable( IQueryable<Snippet> queryable, RockContext rockContext )
         {
             return queryable.OrderBy( s => s.Name ).ThenBy( s => s.Id );
+        }
+
+        /// <inheritdoc/>
+        protected override List<Snippet> GetListItems( IQueryable<Snippet> queryable, RockContext rockContext )
+        {
+            var currentPerson = RequestContext.CurrentPerson;
+            var currentPersonId = currentPerson?.Id;
+
+            /*
+                10/23/2026 - MSE
+
+                Personal snippets require an identified owner. The model's
+                owner override does not exclude an anonymous person.
+
+                Reason: Keep personal snippets visible only to their owner.
+            */
+            queryable = queryable.Where( s => !s.OwnerPersonAliasId.HasValue
+                || ( currentPersonId.HasValue && s.OwnerPersonAlias.PersonId == currentPersonId ) );
+
+            /*
+                10/23/2026 - MSE
+
+                Check each snippet before exposing its fields in a grid row.
+                Page and block access do not grant access to every snippet.
+
+                Reason: Respect snippet View authorization.
+            */
+            return base.GetListItems( queryable, rockContext )
+                .Where( s => s.IsAuthorized( Authorization.VIEW, currentPerson ) )
+                .ToList();
         }
 
         /// <inheritdoc/>

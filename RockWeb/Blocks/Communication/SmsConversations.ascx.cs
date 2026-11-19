@@ -23,6 +23,8 @@ using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
+using Microsoft.EntityFrameworkCore;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Configuration;
@@ -339,7 +341,7 @@ namespace RockWeb.Blocks.Communication
             {
                 using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
-                    rockContext.Database.CommandTimeout = GetAttributeValue( AttributeKey.DatabaseTimeoutSeconds ).AsIntegerOrNull() ?? 180;
+                    rockContext.Database.SetCommandTimeout( GetAttributeValue( AttributeKey.DatabaseTimeoutSeconds ).AsIntegerOrNull() ?? 180 );
 
                     var communicationResponseService = new CommunicationResponseService( rockContext );
 
@@ -400,7 +402,7 @@ namespace RockWeb.Blocks.Communication
             try
             {
                 var rockContext = RockApp.Current.CreateRockContext();
-                rockContext.Database.CommandTimeout = GetAttributeValue( AttributeKey.DatabaseTimeoutSeconds ).AsIntegerOrNull() ?? 180;
+                rockContext.Database.SetCommandTimeout( GetAttributeValue( AttributeKey.DatabaseTimeoutSeconds ).AsIntegerOrNull() ?? 180 );
                 var communicationResponseService = new CommunicationResponseService( rockContext );
                 List<CommunicationRecipientResponse> responses = communicationResponseService.GetCommunicationConversationForPerson( recipientPersonId, smsSystemPhoneNumber );
 
@@ -450,8 +452,58 @@ namespace RockWeb.Blocks.Communication
         private void BindConversationRepeater( List<CommunicationRecipientResponse> responses )
         {
             rptConversation.Visible = true;
-            rptConversation.DataSource = responses;
+
+            // Order by the time shown on each message so a scheduled message
+            // appears where it was sent, not where it was written.
+            rptConversation.DataSource = responses
+                .OrderBy( r => GetMessageDateTime( r ) )
+                .ToList();
             rptConversation.DataBind();
+        }
+
+        /// <summary>
+        /// Gets the date and time to show for a message in the conversation. A sent
+        /// message uses the time it was sent. Every other message uses the time it was
+        /// created, which is also when a reply was received.
+        /// </summary>
+        /// <param name="response">The message in the conversation.</param>
+        /// <returns>The date and time to show for the message.</returns>
+        private static DateTime? GetMessageDateTime( CommunicationRecipientResponse response )
+        {
+            if ( response.MessageStatus == CommunicationRecipientStatus.Pending )
+            {
+                return response.CreatedDateTime;
+            }
+
+            return response.SendDateTime ?? response.CreatedDateTime;
+        }
+
+        /// <summary>
+        /// Gets the text that describes when a message in the conversation was sent
+        /// or received, in the same format as <see cref="CommunicationRecipientResponse.HumanizedCreatedDateTime"/>.
+        /// </summary>
+        /// <param name="response">The message in the conversation.</param>
+        /// <returns>The text to show under the message.</returns>
+        private static string GetMessageDateTimeText( CommunicationRecipientResponse response )
+        {
+            var messageDateTime = GetMessageDateTime( response );
+
+            if ( !messageDateTime.HasValue )
+            {
+                return string.Empty;
+            }
+
+            var now = RockDateTime.Now;
+            var messageDateTimeText = now.Date == messageDateTime.Value.Date
+                ? messageDateTime.Value.ToShortTimeString()
+                : Humanizer.DateHumanizeExtensions.Humanize( messageDateTime, true, now, null );
+
+            if ( response.MessageStatus == CommunicationRecipientStatus.Pending )
+            {
+                messageDateTimeText += " (Pending)";
+            }
+
+            return messageDateTimeText;
         }
 
         /// <summary>
@@ -484,7 +536,16 @@ namespace RockWeb.Blocks.Communication
                     var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( RockPage, CurrentPerson );
                     mergeFields.Add( "Person", recipientPerson );
 
-                    html = lava.ResolveMergeFields( mergeFields );
+                    /*
+                        10/16/2026 - MSE
+
+                        The person's name and other values in the template can be set by anonymous
+                        visitors and the result is rendered as HTML. Encode every {{ }} output value
+                        as HTML while keeping the template's own markup.
+
+                        Reason: Prevent stored person text from rendering as HTML in the conversation header.
+                    */
+                    html = lava.ResolveMergeFields( mergeFields, true );
                 }
             }
 
@@ -596,7 +657,14 @@ namespace RockWeb.Blocks.Communication
                     }
                     else
                     {
-                        literal.Text = message;
+                        /*
+                            10/16/2026 - MSE
+
+                            The message is plain SMS text and the Literal renders HTML, so encode it.
+
+                            Reason: Prevent SMS text from rendering as HTML in the conversation list.
+                        */
+                        literal.Text = message.EncodeHtml();
                     }
 
                     break;
@@ -705,10 +773,43 @@ namespace RockWeb.Blocks.Communication
                 return;
             }
 
+            // With sending disabled, replies in an existing conversation are still
+            // allowed. A message to anyone else would start a new conversation.
+            if ( !GetAttributeValue( AttributeKey.EnableSmsSend ).AsBoolean() && !HasConversationWithRecipient( toPersonId.Value, GetSelectedSmsNumberId() ) )
+            {
+                return;
+            }
+
             SendMessageToPerson( toPersonId.Value, message, false );
             tbNewMessage.Text = string.Empty;
             LoadResponsesForRecipientPerson( toPersonId.Value );
             UpdateMessagePart( message );
+        }
+
+        /// <summary>
+        /// Determines whether the person has a conversation on the system phone number.
+        /// </summary>
+        /// <param name="personId">The identifier of the person.</param>
+        /// <param name="smsSystemPhoneNumberId">The identifier of the system phone number.</param>
+        /// <returns><c>true</c> if the person has sent a message to the number or been sent one from it; otherwise <c>false</c>.</returns>
+        /// <remarks>Outbound messages count when they are SMS, pending or delivered, and on an approved communication.</remarks>
+        private static bool HasConversationWithRecipient( int personId, int smsSystemPhoneNumberId )
+        {
+            var smsMediumEntityTypeId = EntityTypeCache.GetId( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS.AsGuid() );
+
+            using ( var rockContext = new RockContext() )
+            {
+                return new CommunicationResponseService( rockContext )
+                        .Queryable()
+                        .Any( r => r.FromPersonAlias.PersonId == personId && r.RelatedSmsFromSystemPhoneNumberId == smsSystemPhoneNumberId )
+                    || new CommunicationRecipientService( rockContext )
+                        .Queryable()
+                        .Any( r => r.PersonAlias.PersonId == personId
+                            && r.MediumEntityTypeId == smsMediumEntityTypeId
+                            && r.Communication.SmsFromSystemPhoneNumberId == smsSystemPhoneNumberId
+                            && r.Communication.Status == CommunicationStatus.Approved
+                            && ( r.Status == CommunicationRecipientStatus.Delivered || r.Status == CommunicationRecipientStatus.Pending ) );
+            }
         }
 
         /// <summary>
@@ -718,6 +819,12 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void mdNewMessage_SaveClick( object sender, EventArgs e )
         {
+            if ( !GetAttributeValue( AttributeKey.EnableSmsSend ).AsBoolean() )
+            {
+                mdNewMessage.Hide();
+                return;
+            }
+
             string message = tbSMSTextMessage.Text.Trim();
             if ( message.IsNullOrWhiteSpace() )
             {
@@ -815,7 +922,15 @@ namespace RockWeb.Blocks.Communication
             }
             else
             {
-                litMessagePart.Text = messagePart;
+                /*
+                    10/16/2026 - MSE
+
+                    The latest message can be an inbound SMS from anyone who texts the church
+                    and the Literal renders HTML, so encode it.
+
+                    Reason: Prevent inbound SMS text from rendering as HTML in the conversation list.
+                */
+                litMessagePart.Text = messagePart.EncodeHtml();
             }
 
             var smsSystemPhoneNumberId = GetSelectedSmsNumberId();
@@ -883,17 +998,25 @@ namespace RockWeb.Blocks.Communication
             hfRecipientPersonAliasId.Value = responseListItem.RecipientPersonAliasId.ToString();
             hfConversationKey.Value = responseListItem.ConversationKey;
             hfPhoneNumber.Value = responseListItem.ContactKey;
+            /*
+                10/16/2026 - MSE
+
+                The name can be set by anonymous visitors and the message can be an inbound SMS
+                from anyone who texts the church. The Label and Literal render HTML, so encode both.
+
+                Reason: Prevent names and inbound SMS text from rendering as HTML in the conversation list.
+            */
             if ( responseListItem.IsNamelessPerson )
             {
                 lblName.Text = PhoneNumber.FormattedNumber( null, responseListItem.ContactKey );
             }
             else
             {
-                lblName.Text = responseListItem.FullName;
+                lblName.Text = responseListItem.FullName.EncodeHtml();
             }
 
             litDateTime.Text = responseListItem.HumanizedCreatedDateTime;
-            litMessagePart.Text = responseListItem.SMSMessage;
+            litMessagePart.Text = responseListItem.SMSMessage.EncodeHtml();
 
             if ( responseListItem.SMSMessage.IsNullOrWhiteSpace() && responseListItem.HasAttachments( RockApp.Current.CreateRockContext() ) )
             {
@@ -932,7 +1055,15 @@ namespace RockWeb.Blocks.Communication
                 }
                 else
                 {
-                    lSMSMessage.Text = communicationRecipientResponse.SMSMessage;
+                    /*
+                        10/16/2026 - MSE
+
+                        The message can be an inbound SMS from anyone who texts the church and
+                        the Literal renders HTML, so encode it.
+
+                        Reason: Prevent inbound SMS text from rendering as HTML in the conversation.
+                    */
+                    lSMSMessage.Text = communicationRecipientResponse.SMSMessage.EncodeHtml();
                 }
 
                 var rockContext = RockApp.Current.CreateRockContext();
@@ -971,16 +1102,18 @@ namespace RockWeb.Blocks.Communication
                 }
 
                 var lSenderName = ( Literal ) e.Item.FindControl( "lSenderName" );
-                lSenderName.Text = communicationRecipientResponse.OutboundSenderFullName;
+                /*
+                    10/16/2026 - MSE
+
+                    The sender name is person text and the Literal renders HTML, so encode it.
+
+                    Reason: Prevent stored names from rendering as HTML in the conversation.
+                */
+                lSenderName.Text = communicationRecipientResponse.OutboundSenderFullName.EncodeHtml();
 
                 var lblMessageDateTime = ( Label ) e.Item.FindControl( "lblMessageDateTime" );
-                lblMessageDateTime.ToolTip = communicationRecipientResponse.CreatedDateTime.ToString();
-                lblMessageDateTime.Text = communicationRecipientResponse.HumanizedCreatedDateTime.ToString();
-
-                if ( communicationRecipientResponse.MessageStatus == CommunicationRecipientStatus.Pending )
-                {
-                    lblMessageDateTime.Text += " (Pending)";
-                }
+                lblMessageDateTime.ToolTip = GetMessageDateTime( communicationRecipientResponse ).ToString();
+                lblMessageDateTime.Text = GetMessageDateTimeText( communicationRecipientResponse );
 
                 var divCommunication = ( HtmlGenericControl ) e.Item.FindControl( "divCommunication" );
 

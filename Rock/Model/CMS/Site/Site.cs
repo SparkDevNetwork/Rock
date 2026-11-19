@@ -88,6 +88,7 @@ namespace Rock.Model
         /// The configuration mobile phone binary file identifier.
         /// </value>
         [DataMember]
+        [UploadedBinaryFileOnly]
         public int? ConfigurationMobilePhoneBinaryFileId { get; set; }
 
         /// <summary>
@@ -97,6 +98,7 @@ namespace Rock.Model
         /// The configuration tablet binary file identifier.
         /// </value>
         [DataMember]
+        [UploadedBinaryFileOnly]
         public int? ConfigurationMobileTabletBinaryFileId { get; set; }
 
         /// <summary>
@@ -125,6 +127,7 @@ namespace Rock.Model
         /// The thumbnail  file identifier.
         /// </value>
         [DataMember]
+        [UploadedBinaryFileOnly]
         public int? ThumbnailBinaryFileId { get; set; }
 
         /// <summary>
@@ -434,6 +437,7 @@ namespace Rock.Model
         /// The favicon binary file identifier.
         /// </value>
         [DataMember]
+        [UploadedBinaryFileOnly]
         public int? FavIconBinaryFileId { get; set; }
 
         /// <summary>
@@ -443,6 +447,7 @@ namespace Rock.Model
         /// The site logo binary file identifier.
         /// </value>
         [DataMember]
+        [UploadedBinaryFileOnly]
         public int? SiteLogoBinaryFileId { get; set; }
 
         /// <summary>

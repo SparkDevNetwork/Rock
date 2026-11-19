@@ -408,7 +408,7 @@ namespace RockWeb.Blocks.CheckIn
                 () => CurrentCheckInState.CheckIn.CurrentPerson.GroupTypes
                     .Where( t => !t.ExcludedByFilter ) 
                     .Count() <= 0,
-                string.Format( "<p>{0}</p>", string.Format( GetAttributeValue( AttributeKey.SelectionNoOption ), CurrentCheckInState.CheckIn.CurrentPerson.Person.NickName ) ),
+                string.Format( "<p>{0}</p>", string.Format( GetAttributeValue( AttributeKey.SelectionNoOption ), CurrentCheckInState.CheckIn.CurrentPerson.Person.NickName.EncodeHtml() ) ),
                 true ) ) 
             {
                 // Clear any filtered items so that user can select another option

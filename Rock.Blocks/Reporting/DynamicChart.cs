@@ -36,7 +36,7 @@ namespace Rock.Blocks.Reporting
     [DisplayName( "Dynamic Chart" )]
     [Category( "Reporting" )]
     [Description( "Block to display a chart using SQL as the chart datasource" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 
@@ -210,7 +210,22 @@ ORDER BY d.[Date];",
             DataTable dataTable;
             try
             {
-                sql = sql.ResolveMergeFields( GetMergeFields() );
+                var mergeFields = GetMergeFields();
+
+                /*
+                    10/21/2026 - MSE
+
+                    Page parameters are request values, and the SQL is text rendered with
+                    Lava. The PageParameter merge field gets values that are blank when they
+                    contain SQL quoting or comment characters, the same rule as the Dynamic
+                    Data block. Query Params (@Name) are the supported way to pass page values
+                    to the SQL.
+
+                    Reason: Keep page parameters from changing the Dynamic Chart SQL text.
+                */
+                mergeFields.AddOrReplace( "PageParameter", Rock.Reporting.ReportingHelper.GetSqlSafePageParameters( this.RequestContext.GetPageParameters() ) );
+
+                sql = sql.ResolveMergeFields( mergeFields );
 
                 var parameters = GetSqlParameters( GetAttributeValue( AttributeKey.QueryParams ).SplitDelimitedValues() );
 
@@ -539,15 +554,22 @@ ORDER BY d.[Date];",
                     queryParamName = queryParamName.Substring( 1 );
                 }
 
-                // If a page parameter (query or form) value matches, use its value instead.
-                var pageValue = PageParameter( queryParamName );
-                if ( pageValue.IsNotNullOrWhiteSpace() )
+                // CurrentPersonId only ever comes from the signed-in person, never from a page parameter.
+                if ( queryParamName.Equals( "CurrentPersonId", StringComparison.OrdinalIgnoreCase ) )
                 {
-                    queryParamValue = pageValue;
+                    if ( this.RequestContext.CurrentPerson != null )
+                    {
+                        queryParamValue = this.RequestContext.CurrentPerson.Id.ToString();
+                    }
                 }
-                else if ( queryParamName.ToLower() == "currentpersonid" && this.RequestContext.CurrentPerson != null )
+                else
                 {
-                    queryParamValue = this.RequestContext.CurrentPerson.Id.ToString();
+                    // If a page parameter (query or form) value matches, use its value instead.
+                    var pageValue = PageParameter( queryParamName );
+                    if ( pageValue.IsNotNullOrWhiteSpace() )
+                    {
+                        queryParamValue = pageValue;
+                    }
                 }
 
                 parameters.Add( queryParamName, queryParamValue );

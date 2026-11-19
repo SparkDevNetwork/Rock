@@ -48,7 +48,7 @@ namespace Rock.Blocks.Mobile.Connection
     [Category( "Mobile > Connection" )]
     [Description( "Displays the opportunities of a connection type with request count summaries and type metrics." )]
     [IconCssClass( "ti ti-list" )]
-    [SupportedSiteTypes( Model.SiteType.Mobile )]
+    [SupportedSiteTypes( SiteType.Mobile )]
 
     #region Block Attributes
 

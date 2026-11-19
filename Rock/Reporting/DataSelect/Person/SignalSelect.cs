@@ -21,6 +21,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI.WebControls;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Net;
@@ -144,7 +145,7 @@ namespace Rock.Reporting.DataSelect.Person
             var personQry = new PersonService( context ).Queryable();
             IQueryable<string> personLinkQuery;
 
-            string basePersonUrl = System.Web.VirtualPathUtility.ToAbsolute( "~/Person/" );
+            string basePersonUrl = RockApp.Current.ResolveRockUrl( "~/Person/" );
 
             personLinkQuery = personQry.Select( p =>
                 ( p.TopSignalColor != null && p.TopSignalColor != "" ) ?

@@ -25,6 +25,7 @@ using Rock.Attribute;
 using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
+using Rock.Reporting;
 using Rock.ViewModels.Rest.Controls;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
@@ -382,7 +383,7 @@ namespace Rock.Field.Types
         /// <param name="required">if set to <c>true</c> [required].</param>
         /// <param name="filterMode">The filter mode.</param>
         /// <returns></returns>
-        public override Control FilterControl( System.Collections.Generic.Dictionary<string, ConfigurationValue> configurationValues, string id, bool required, Rock.Reporting.FilterMode filterMode )
+        public override Control FilterControl( System.Collections.Generic.Dictionary<string, ConfigurationValue> configurationValues, string id, bool required, FilterMode filterMode )
         {
             // This field type does not support filtering
             return null;

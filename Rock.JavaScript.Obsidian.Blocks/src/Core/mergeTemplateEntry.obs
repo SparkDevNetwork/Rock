@@ -96,7 +96,10 @@
     import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { MergeTemplateOwnership } from "@Obsidian/Enums/Controls/mergeTemplateOwnership";
-    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { useStore } from "@Obsidian/PageState";
+    import { onConfigurationValuesChanged, useBlockActionUrl, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { downloadFile } from "@Obsidian/Utility/file";
+    import { postForBlob } from "@Obsidian/Utility/http";
     import { CustomBlockBox } from "@Obsidian/ViewModels/Blocks/customBlockBox";
     import { MergeTemplateEntryBag } from "@Obsidian/ViewModels/Blocks/Core/MergeTemplateEntry/mergeTemplateEntryBag";
     import { MergeTemplateEntryDataPreviewBag } from "@Obsidian/ViewModels/Blocks/Core/MergeTemplateEntry/mergeTemplateEntryDataPreviewBag";
@@ -108,6 +111,8 @@
 
     const config = useConfigurationValues<CustomBlockBox<MergeTemplateEntryBag, MergeTemplateEntryOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
+    const blockActionUrl = useBlockActionUrl();
+    const store = useStore();
 
     // #region Values
 
@@ -201,7 +206,7 @@
     }
 
     /**
-     * Generates the merge document and navigates to the download URL it returns.
+     * Generates the merge document and saves the file it returns.
      */
     async function onMerge(): Promise<void> {
         mergeErrorMessage.value = "";
@@ -210,7 +215,26 @@
         isMerging.value = true;
 
         try {
-            const result = await invokeBlockAction<MergeTemplateEntryMergeResponseBag>("Merge", {
+            /*
+                10/21/2026 - MSE
+
+                Merge now returns the merged document itself instead of a GetFile.ashx
+                link to a saved file. Only a JSON response is the error bag; anything
+                else is the file. The file name is not used to tell them apart because
+                a non-ASCII name may not be parseable from Content-Disposition, or a
+                proxy may strip the header, and the document would be lost. postForBlob does
+                not send page parameters, so the same __context that invokeBlockAction
+                sends is included here; the server needs the Set page parameter to
+                load the records to merge.
+
+                Reason: Merged documents must not be downloadable by Id.
+            */
+            const result = await postForBlob(blockActionUrl("Merge"), {
+                __context: {
+                    pageParameters: store.state.pageParameters,
+                    sessionGuid: store.state.sessionGuid,
+                    interactionGuid: store.state.interactionGuid
+                },
                 bag: {
                     mergeTemplateGuid: mergeTemplate.value?.value,
                     isCombineFamilyMembers: isCombineFamilyMembers.value
@@ -222,14 +246,23 @@
                 return;
             }
 
-            if (result.data.downloadUrl) {
-                window.location.href = result.data.downloadUrl;
+            if (!result.data.type.startsWith("application/json")) {
+                await downloadFile(result.data, result.fileName ?? "MergeTemplateOutput");
                 return;
             }
 
-            mergeErrorMessage.value = result.data.errorMessage || "An error occurred while merging";
-            mergeErrorDetails.value = result.data.errorDetails || "";
-            isMergeErrorDanger.value = result.data.isErrorDanger ?? false;
+            let response: MergeTemplateEntryMergeResponseBag | null = null;
+
+            try {
+                response = JSON.parse(await result.data.text()) as MergeTemplateEntryMergeResponseBag;
+            }
+            catch {
+                response = null;
+            }
+
+            mergeErrorMessage.value = response?.errorMessage || "An error occurred while merging";
+            mergeErrorDetails.value = response?.errorDetails || "";
+            isMergeErrorDanger.value = response?.isErrorDanger ?? false;
         }
         finally {
             isMerging.value = false;

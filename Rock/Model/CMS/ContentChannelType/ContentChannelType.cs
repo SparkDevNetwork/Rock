@@ -66,7 +66,7 @@ namespace Rock.Model
         /// Gets or sets an <see cref="ContentChannelDateType"/> enumeration that represents the type of date range that this DateRangeTypeEnum supports.
         /// </summary>
         /// <value>
-        /// A <see cref="Rock.Model.ContentChannelDateType"/> that represents the type of DateRangeTypeEnum is supported. When <c>DateRangeTypeEnum.SingleDate</c> a single date 
+        /// A <see cref="ContentChannelDateType"/> that represents the type of DateRangeTypeEnum is supported. When <c>DateRangeTypeEnum.SingleDate</c> a single date 
         /// will be supported; when <c>DateRangeTypeEnum.DateRange</c> a date range will be supported.
         /// </value>
         [DataMember]

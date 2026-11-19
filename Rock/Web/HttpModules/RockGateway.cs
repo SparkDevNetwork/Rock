@@ -401,7 +401,16 @@ namespace Rock.Web.HttpModules
         /// <returns><c>true</c> if tracing was enabled; otherwise <c>false</c>.</returns>
         private bool EnableDebugTracing( HttpContext context )
         {
-            var showDebugTimingsKey = context.Request.QueryString["ShowDebugTimings"]?.Split( '_' );
+            /*
+                10/29/2026 - MSE
+
+                This runs on every request in BeginRequest. The validated Request.QueryString throws
+                HttpRequestValidationException when this value contains markup, so read it unvalidated.
+                The value is only used after its HMAC is checked and is never rendered.
+
+                Reason: Debug tracing detection must not be able to fail a request.
+            */
+            var showDebugTimingsKey = context.Request.Unvalidated.QueryString["ShowDebugTimings"]?.Split( '_' );
 
             if ( showDebugTimingsKey == null || showDebugTimingsKey.Length != 3 )
             {
@@ -521,6 +530,19 @@ namespace Rock.Web.HttpModules
                 username = "<ImpersonationToken>";
             }
 
+            /*
+                10/29/2026 - MSE
+
+                This runs in BeginRequest, before the pipeline. Reading Request.QueryString triggers
+                lazy request validation and throws HttpRequestValidationException for any value that
+                contains markup, which turned every such request into an unlogged HTTP 500 while this
+                logger was enabled. The log is written to a file and is never rendered as HTML, so it
+                reads the unvalidated collection. The pipeline still validates whatever it reads.
+
+                Reason: Request logging must never be able to fail a request.
+            */
+            var queryString = context.Request.Unvalidated.QueryString;
+
             var request = new RequestDetail
             {
                 DateTime = DateTime.Now,
@@ -530,7 +552,7 @@ namespace Rock.Web.HttpModules
                 Username = username.IfEmpty( "-" ),
                 Method = context.Request.HttpMethod,
                 Path = context.Request.Path,
-                Query = context.Request.QueryString.ToQueryString( false ).IfEmpty( "-" ),
+                Query = queryString.ToQueryString( false ).IfEmpty( "-" ),
                 ServerIp = context.Request.ServerVariables["LOCAL_ADDR"],
                 ServerPort = context.Request.ServerVariables["SERVER_PORT"].AsIntegerOrNull() ?? 0,
             };

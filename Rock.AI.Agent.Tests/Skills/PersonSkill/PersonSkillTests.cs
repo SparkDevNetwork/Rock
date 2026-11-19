@@ -37,6 +37,13 @@ namespace Rock.AI.Agent.Tests.Skills.PersonSkill;
 [TestClass]
 public partial class PersonSkillTests
 {
+    private const string OriginalEmail = "p9v2h-original@example.invalid";
+    private const string NewEmail = "p9v2h-new@example.invalid";
+    private const string OriginalNumber = "6235550201";
+    private const string NewNumber = "6235550299";
+    private const string NotAuthorizedMessage = "You are not authorized to edit this person.";
+    private const string LookupsRequiredMessage = "Lookups Required";
+
     #region GetPersonAvailableAttributes
 
     [TestMethod]
@@ -88,6 +95,26 @@ public partial class PersonSkillTests
     private static AgentRequestContext CreateRequestContext( RockContext rockContext, Rock.Model.Person currentPerson = null, AudienceType audienceType = AudienceType.Internal )
     {
         return new TestAgentRequestContext( rockContext, currentPerson, audienceType: audienceType );
+    }
+
+    /// <summary>
+    /// Seeds a person with an active email address and returns it.
+    /// </summary>
+    private static Rock.Model.Person CreatePersonWithEmail( RockContext rockContext, string firstName )
+    {
+        var person = MockData.CreatePerson( rockContext, firstName, "Person" );
+
+        person.NickName = firstName;
+        person.Email = OriginalEmail;
+        person.IsEmailActive = true;
+
+        return person;
+    }
+
+    private static void AssertNotAuthorized( AgentToolResult result )
+    {
+        Assert.AreEqual( ToolStatus.Error, result.GetStatus() );
+        CollectionAssert.Contains( result.GetErrorMessages(), NotAuthorizedMessage );
     }
 
     #endregion

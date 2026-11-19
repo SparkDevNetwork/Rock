@@ -21,6 +21,7 @@ import { stringComparisonTypes } from "@Obsidian/Core/Reporting/comparisonType";
 import { FieldTypeBase } from "./fieldType";
 import { getStandardFilterComponent } from "./utils";
 import { escapeHtml } from "@Obsidian/Utility/stringUtils";
+import { isEmail } from "@Obsidian/Utility/email";
 
 // The edit component can be quite large, so load it only as needed.
 const editComponent = defineAsyncComponent(async () => {
@@ -41,16 +42,30 @@ const configurationComponent = defineAsyncComponent(async () => {
  * The field type handler for the Email field.
  */
 export class EmailFieldType extends FieldTypeBase {
-    public override getHtmlValue(value: string, configurationValues: Record<string, string>, isEscaped: boolean = false): string {
+    public override getHtmlValue(value: string, configurationValues: Record<string, string>, _isEscaped: boolean = false): string {
         const textValue = this.getTextValue(value, configurationValues);
 
-        const html = textValue ? `<a href="mailto:${textValue}">${textValue}</a>` : "";
-
-        if (isEscaped) {
-            escapeHtml(html);
+        if (!textValue) {
+            return "";
         }
 
-        return html;
+        /*
+            10/16/2026 - MSE
+
+            The stored value can come from public forms (such as Registration
+            Entry and Workflow Entry) that do not check its format, and it is
+            displayed with v-html. It is always encoded, and only a valid
+            address becomes a mailto link.
+
+            Reason: Stored values were rendered as raw HTML.
+        */
+        const encodedValue = escapeHtml(textValue);
+
+        if (isEmail(textValue)) {
+            return `<a href="mailto:${encodedValue}">${encodedValue}</a>`;
+        }
+
+        return encodedValue;
     }
 
     public override getEditComponent(): Component {

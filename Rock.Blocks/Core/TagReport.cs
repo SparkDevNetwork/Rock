@@ -40,7 +40,7 @@ namespace Rock.Blocks.Core
     [DisplayName( "Tag Report" )]
     [Category( "Core" )]
     [Description( "Block for viewing entities with a selected tag" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Secondary )]
     [Rock.SystemGuid.EntityTypeGuid( "a9017995-c914-4ee4-b1ba-a852d162bdd7" )]
@@ -134,6 +134,18 @@ namespace Rock.Blocks.Core
                 .AddTextField( "entityName", a => GetItemName( a.EntityTypeId, a.EntityGuid ) )
                 .AddTextField( "entityGuid", a => a.EntityGuid.ToString() )
                 .AddField( "entityId", a => a.EntityId.ToString() );
+        }
+
+        /// <inheritdoc/>
+        protected override GridEntityKeyOptions GetGridEntityKeyOptions()
+        {
+            var tag = new TagService( RockContext ).Get( PageParameter( PageParameterKey.TagId ) );
+
+            return new GridEntityKeyOptions
+            {
+                EntityTypeId = tag?.EntityTypeId,
+                RowKeyFieldPaths = new[] { "entityId" }
+            };
         }
 
         #endregion

@@ -20,13 +20,19 @@ using System.ComponentModel;
 
 using Rock.Enums;
 
+#if NET
+namespace Rock.Enums.Group
+#else
 namespace Rock.Model
+#endif
 {
     /// <summary>
     /// The types of notifications a group schedule coordinator can receive about changes to scheduled individuals.
     /// </summary>
     [Flags]
+#if !NET
     [EnumDomain( "Group" )]
+#endif
     public enum ScheduleCoordinatorNotificationType
     {
         /// <summary>

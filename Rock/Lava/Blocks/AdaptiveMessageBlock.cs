@@ -354,6 +354,7 @@ namespace Rock.Lava.Blocks
         private void AddLavaMergeFieldsToContext( ILavaRenderContext context, List<AdaptiveMessageAdaptationCache> adaptations, Person person )
         {
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
+            mergeFields.AddInternalFieldsFrom( context );
             mergeFields.Add( "Person", person );
 
             var resolvedAdaptations = adaptations.Select( a => new AdaptiveMessageAdaptation

@@ -17,13 +17,19 @@
 
 using System;
 
+#if NET
+namespace Rock.Enums.Group
+#else
 namespace Rock.Model
+#endif
 {
     /// <summary>
     /// Represents and indicates the type of location picker to use when setting a location for a group and/or when searching for group(s)
     /// </summary>
     [Flags]
+#if !NET
     [Enums.EnumDomain( "Group" )]
+#endif
     public enum GroupLocationPickerMode
     {
         /// <summary>

@@ -146,6 +146,15 @@ namespace Rock.Blocks.Communication
                     } )
                     .FirstOrDefault();
 
+            if ( communicationFlowCommunication != null )
+            {
+                var communicationFlow = new CommunicationFlowService( RockContext ).Get( communicationFlowCommunication.CommunicationFlowId );
+                if ( communicationFlow == null || !communicationFlow.IsAuthorized( Rock.Security.Authorization.VIEW, GetCurrentPerson() ) )
+                {
+                    communicationFlowCommunication = null;
+                }
+            }
+
             this.ResponseContext.SetPageTitle( communicationFlowCommunication?.Name.ToStringOrDefault( "Communication Flow Instance Message Metrics" ) );
             
             var box = new InitializationBox();

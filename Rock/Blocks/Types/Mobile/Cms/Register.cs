@@ -38,7 +38,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
     [Category( "Mobile > Cms" )]
     [Description( "Allows the user to register a new account on a mobile application." )]
     [IconCssClass( "ti ti-user-plus" )]
-    [SupportedSiteTypes( Model.SiteType.Mobile )]
+    [SupportedSiteTypes( SiteType.Mobile )]
 
     #region Block Attributes
 

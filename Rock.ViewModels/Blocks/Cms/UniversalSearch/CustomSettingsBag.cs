@@ -83,5 +83,12 @@ namespace Rock.ViewModels.Blocks.Cms.UniversalSearch
         /// Gets or sets the Lava that should be rendered after the search input.
         /// </summary>
         public string PostHtml { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether a request with the SmartSearch page
+        /// parameter uses the global Smart Search entities and field criteria instead of
+        /// the block's Enabled Models and Base Field Filters.
+        /// </summary>
+        public bool AllowSmartSearchRequests { get; set; }
     }
 }

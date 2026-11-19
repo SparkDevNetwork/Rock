@@ -17,13 +17,19 @@
 
 using System;
 
+#if NET
+namespace Rock.Enums.Cms
+#else
 namespace Rock.Model
+#endif
 {
     /// <summary>
     /// The location where the Block is implemented
     /// </summary>
     [Serializable]
+#if !NET
     [Enums.EnumDomain( "Cms" )]
+#endif
     public enum BlockLocation
     {
         /// <summary>

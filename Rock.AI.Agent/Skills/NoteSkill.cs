@@ -65,8 +65,9 @@ internal sealed partial class NoteSkill : AgentSkillComponent
     /// </summary>
     /// <param name="note">The note object.</param>
     /// <param name="rockContext">The Rock context.</param>
+    /// <param name="currentPerson">The person the result is for, the entity name is only included if they can view the entity.</param>
     /// <returns>A <see cref="NoteResult"/> object containing the note details.</returns>
-    private static NoteResult GetNoteResult( Rock.Model.Note note, RockContext rockContext )
+    private static NoteResult GetNoteResult( Rock.Model.Note note, RockContext rockContext, Rock.Model.Person currentPerson )
     {
         if ( note == null )
         {
@@ -84,7 +85,17 @@ internal sealed partial class NoteSkill : AgentSkillComponent
         {
             var entity = new EntityTypeService( rockContext ).GetEntity( noteType.EntityTypeId.Value, note.EntityId.Value );
 
-            if ( entity != null )
+            /*
+                10/16/2026 - MSE
+
+                The note result includes the name of the entity the note is
+                attached to. Only include it when the entity is not secured or
+                the person can view it, the same rule ValidateNoteTargetEntity
+                uses when adding a note.
+
+                Reason: Do not reveal the name of an entity the person cannot view.
+            */
+            if ( entity != null && ( !( entity is Rock.Security.ISecured securedEntity ) || securedEntity.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson ) ) )
             {
                 entityName = entity?.ToString();
             }

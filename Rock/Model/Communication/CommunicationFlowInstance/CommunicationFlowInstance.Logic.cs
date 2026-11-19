@@ -15,10 +15,19 @@
 // </copyright>
 //
 
+using Rock.Security;
+
 namespace Rock.Model
 {
     public partial class CommunicationFlowInstance
     {
+        #region ISecured
+
+        /// <inheritdoc/>
+        public override ISecured ParentAuthority => this.CommunicationFlow ?? base.ParentAuthority;
+
+        #endregion ISecured
+
         /// <summary>
         /// Determines if there are more communications to send or schedule for this Communication Flow Instance.
         /// </summary>

@@ -357,7 +357,7 @@ namespace RockWeb.Blocks.CheckIn
     </div>
 </div>
 
-", person.Person.FullName, options.AsDelimited( "<br/>" ) );
+", person.Person.FullName.EncodeHtml(), options.AsDelimited( "<br/>" ) );
                     }
                     else if ( !person.AnyPossibleSchedules && noOptionMessage.IsNotNullOrWhiteSpace() )
                     {
@@ -368,13 +368,13 @@ namespace RockWeb.Blocks.CheckIn
         <div class='no-option-caption'>{1}</div>
     </div>
 </div>"
-, person.Person.FullName, noOptionMessage );
+, person.Person.FullName.EncodeHtml(), noOptionMessage );
                     }
                     else
                     {
                         lPersonButton.Text = string.Format( @"
 <div class='family-personselect'>{0}</div>
-", person.Person.FullName );
+", person.Person.FullName.EncodeHtml() );
                     }
                 }
 
@@ -625,13 +625,13 @@ namespace RockWeb.Blocks.CheckIn
     <div class='col-md-5 family-personselect'>{0}</div>
     <div class='col-md-7 auto-select family-auto-select'><div class='auto-select-caption'>Current Selection</div><div class='auto-select-details'>{1}</div></div>
 </div>
-", person.Person.FullName, options.AsDelimited( "<br/>" ) );
+", person.Person.FullName.EncodeHtml(), options.AsDelimited( "<br/>" ) );
                 }
                 else
                 {
                     return string.Format( @"
 <div class='family-personselect'>{0}</div>
-", person.Person.FullName );
+", person.Person.FullName.EncodeHtml() );
                 }
             }
 
@@ -661,8 +661,8 @@ namespace RockWeb.Blocks.CheckIn
             if ( person != null )
             {
                 hfPersonId.Value = person.Person.Id.ToString();
-                lOptionTitle.Text = string.Format( GetAttributeValue( AttributeKey.OptionTitle ), person.Person.FullName );
-                lOptionSubTitle.Text = string.Format( GetAttributeValue( AttributeKey.OptionSubTitle ), person.Person.NickName );
+                lOptionTitle.Text = string.Format( GetAttributeValue( AttributeKey.OptionTitle ), person.Person.FullName.EncodeHtml() );
+                lOptionSubTitle.Text = string.Format( GetAttributeValue( AttributeKey.OptionSubTitle ), person.Person.NickName.EncodeHtml() );
 
                 BindOptions();
 

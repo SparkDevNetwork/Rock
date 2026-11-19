@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 
+using System;
 using System.ComponentModel;
 using System.Linq;
 
@@ -80,19 +81,34 @@ namespace Rock.Blocks.Types.Mobile.Engagement
         {
             var contactService = new ContactService( RockContext );
 
-            int? photoId = null;
-            if ( saveContactBag.PhotoGuid != null )
-            {
-                var binaryFileService = new BinaryFileService( RockContext );
-                photoId = binaryFileService.GetId( saveContactBag.PhotoGuid.Value );
-            }
-
             var currentPerson = GetCurrentPerson();
 
             var personAlias = currentPerson?.PrimaryAliasId;
             if ( personAlias == null )
             {
                 return ActionBadRequest( "You must be logged in to add contact." );
+            }
+
+            /*
+                10/18/2026 - MSE
+
+                The photo guid comes from the client. Only a file uploaded by the
+                current person is accepted, otherwise any file in the system could
+                be attached to the contact (and later deleted by the Contact Profile
+                block when the photo is changed).
+
+                Reason: Prevent attaching other people's files to a contact.
+            */
+            int? photoId = null;
+            if ( saveContactBag.PhotoGuid.HasValue && saveContactBag.PhotoGuid.Value != Guid.Empty )
+            {
+                var photo = OutreachContactHelper.GetUploadedContactPhoto( RockContext, saveContactBag.PhotoGuid.Value, currentPerson );
+                if ( photo == null )
+                {
+                    return ActionBadRequest( "The photo is not valid." );
+                }
+
+                photoId = photo.Id;
             }
 
             if ( saveContactBag.Email.IsNotNullOrWhiteSpace() && !EmailAddressFieldValidator.IsValid( saveContactBag.Email ) )

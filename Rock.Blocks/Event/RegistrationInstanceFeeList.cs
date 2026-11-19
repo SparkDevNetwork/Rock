@@ -39,7 +39,7 @@ namespace Rock.Blocks.Event
     [Category( "Event" )]
     [Description( "Displays the fees related to an event registration instance." )]
     [IconCssClass( "ti ti-list" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Secondary )]
     [Rock.SystemGuid.EntityTypeGuid( "10f4d211-fc60-40d5-b96b-6b9fcbdbefac" )]
@@ -163,6 +163,23 @@ namespace Rock.Blocks.Event
 
             _registrationInstance = new RegistrationInstanceService( RockContext )
                 .Get( registrationInstanceKey, !PageCache.Layout.Site.DisablePredictableIds );
+
+            /*
+                10/16/2026 - MSE
+
+                The instance can come from the page parameter, so a person could
+                swap in the IdKey of an instance they are not allowed to see and
+                get every fee row for it. VIEW on the instance falls back to the
+                template and its category. The instance is loaded with tracking,
+                so the template and category lazy load for the check. The context
+                entity path above is already VIEW filtered by RockRequestContext.
+
+                Reason: Fee List skipped VIEW on the registration instance.
+            */
+            if ( _registrationInstance != null && !_registrationInstance.IsAuthorized( Rock.Security.Authorization.VIEW, RequestContext.CurrentPerson ) )
+            {
+                _registrationInstance = null;
+            }
 
             return _registrationInstance;
         }

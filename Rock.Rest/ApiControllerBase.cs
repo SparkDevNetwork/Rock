@@ -15,6 +15,10 @@
 // </copyright>
 //
 using System;
+using System.Collections;
+using System.Collections.Concurrent;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Reflection;
@@ -205,6 +209,286 @@ namespace Rock.Rest
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// Determines whether the person may launch workflows of the workflow type.
+        /// VIEW on the workflow type (or its category) is the launch right, the same
+        /// rule used by the Workflow Entry and Workflow Launch blocks.
+        /// </summary>
+        /// <param name="workflowType">The workflow type to be launched.</param>
+        /// <param name="person">The person launching the workflow, or <c>null</c> for an anonymous caller.</param>
+        /// <returns><c>true</c> if the person may launch the workflow type; otherwise, <c>false</c>.</returns>
+        protected static bool CanLaunchWorkflowType( Rock.Security.ISecured workflowType, Rock.Model.Person person )
+        {
+            return workflowType != null && workflowType.IsAuthorized( Rock.Security.Authorization.VIEW, person );
+        }
+
+        /// <summary>
+        /// The navigation properties of each entity type that can carry related records, cached
+        /// because they are read on every POST.
+        /// </summary>
+        private static readonly ConcurrentDictionary<Type, PropertyInfo[]> _relatedRecordPropertiesByType = new ConcurrentDictionary<Type, PropertyInfo[]>();
+
+        /// <summary>
+        /// Gets the name of the first navigation property on the entity that holds a related
+        /// record which is not tracked by the context. Adding the entity to the context would
+        /// insert that related record too, without any authorization check of its own.
+        /// </summary>
+        /// <param name="entity">The posted entity that is about to be added.</param>
+        /// <param name="context">The context the entity will be added to, or <c>null</c> if it will be added to a new context.</param>
+        /// <param name="isCollectionAllowed">Returns <c>true</c> if the related records in the named collection may be inserted with the entity. May be <c>null</c>.</param>
+        /// <returns>The property name, or <c>null</c> if no untracked related records were found.</returns>
+        internal static string GetUntrackedRelatedEntityPropertyName( object entity, DbContext context, Func<string, bool> isCollectionAllowed )
+        {
+            // Only a top level collection may be allowed, and nothing below it.
+            return GetUntrackedRelatedEntityPath( entity, context, ( path, isCollection ) => isCollection
+                && !path.Contains( "." )
+                && isCollectionAllowed?.Invoke( path ) == true );
+        }
+
+        /// <summary>
+        /// Gets the path of the first navigation property in the entity's graph that holds a
+        /// related record which is not tracked by the context. Adding the entity to the context
+        /// would insert that related record too, without any authorization check of its own.
+        /// </summary>
+        /// <param name="entity">The posted entity that is about to be added.</param>
+        /// <param name="context">The context the entity will be added to, or <c>null</c> if it will be added to a new context.</param>
+        /// <param name="isRelatedEntityAllowed">
+        /// Returns <c>true</c> if the related records at the path (such as <c>FinancialTransaction.TransactionDetails</c>)
+        /// may be inserted with the entity. The second argument is <c>true</c> if the property is a collection.
+        /// Allowed records are checked the same way with this predicate. May be <c>null</c>.
+        /// </param>
+        /// <returns>The property path, or <c>null</c> if no untracked related records were found.</returns>
+        internal static string GetUntrackedRelatedEntityPath( object entity, DbContext context, Func<string, bool, bool> isRelatedEntityAllowed )
+        {
+            return GetUntrackedRelatedEntityPath( entity, context, isRelatedEntityAllowed, string.Empty );
+        }
+
+        /// <summary>
+        /// Gets the path of the first navigation property in the entity's graph that holds a
+        /// related record which is not tracked by the context.
+        /// </summary>
+        /// <param name="entity">The entity to check.</param>
+        /// <param name="context">The context the entity will be added to, or <c>null</c> if it will be added to a new context.</param>
+        /// <param name="isRelatedEntityAllowed">Returns <c>true</c> if the related records at the path may be inserted. May be <c>null</c>.</param>
+        /// <param name="pathPrefix">The path of the entity from the posted entity, ending with a period, or empty for the posted entity.</param>
+        /// <returns>The property path, or <c>null</c> if no untracked related records were found.</returns>
+        private static string GetUntrackedRelatedEntityPath( object entity, DbContext context, Func<string, bool, bool> isRelatedEntityAllowed, string pathPrefix )
+        {
+            if ( entity == null )
+            {
+                return null;
+            }
+
+            foreach ( var property in GetRelatedRecordProperties( entity.GetType() ) )
+            {
+                var value = property.GetValue( entity );
+
+                if ( value == null )
+                {
+                    continue;
+                }
+
+                var path = pathPrefix + property.Name;
+
+                if ( IsMappedEntityType( property.PropertyType ) )
+                {
+                    if ( IsTrackedEntity( value, context ) )
+                    {
+                        continue;
+                    }
+
+                    if ( isRelatedEntityAllowed?.Invoke( path, false ) != true )
+                    {
+                        return path;
+                    }
+
+                    // An allowed record may still not carry related records of its own.
+                    var childPath = GetUntrackedRelatedEntityPath( value, context, isRelatedEntityAllowed, path + "." );
+                    if ( childPath != null )
+                    {
+                        return childPath;
+                    }
+
+                    continue;
+                }
+
+                var isAllowed = isRelatedEntityAllowed?.Invoke( path, true ) == true;
+
+                foreach ( var relatedItem in ( ( IEnumerable ) value ).Cast<object>() )
+                {
+                    if ( relatedItem == null || IsTrackedEntity( relatedItem, context ) )
+                    {
+                        continue;
+                    }
+
+                    if ( !isAllowed )
+                    {
+                        return path;
+                    }
+
+                    // An allowed child may still not carry related records of its own.
+                    var childPath = GetUntrackedRelatedEntityPath( relatedItem, context, isRelatedEntityAllowed, path + "." );
+                    if ( childPath != null )
+                    {
+                        return childPath;
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Clears the created and modified person and date values, and the already updated flag,
+        /// on a posted entity and on every related record posted with it that is not tracked by
+        /// the context. Rock then sets them from the signed-in person when the records are saved.
+        /// Call this after the related records have been checked, so only allowed records remain.
+        /// </summary>
+        /// <param name="entity">The posted entity that is about to be added.</param>
+        /// <param name="context">The context the entity will be added to, or <c>null</c> if it will be added to a new context.</param>
+        protected static void ClearAuditValues( object entity, DbContext context )
+        {
+            /*
+                11/16/2026 - MSE
+
+                Rock keeps the created and modified values a client posted, for the posted record
+                and for every related record inserted with it (such as TransactionDetails or
+                PhoneNumbers). This walks the posted graph the same way the related record check
+                does. Records already tracked by the context are not inserted, so they are left alone.
+
+                Reason: Clients must not choose who authored or modified a record, or when.
+            */
+            if ( entity == null )
+            {
+                return;
+            }
+
+            if ( entity is IModel model )
+            {
+                model.CreatedByPersonAliasId = null;
+                model.ModifiedByPersonAliasId = null;
+                model.CreatedDateTime = null;
+                model.ModifiedDateTime = null;
+                model.ModifiedAuditValuesAlreadyUpdated = false;
+            }
+
+            foreach ( var property in GetRelatedRecordProperties( entity.GetType() ) )
+            {
+                var value = property.GetValue( entity );
+
+                if ( value == null )
+                {
+                    continue;
+                }
+
+                if ( IsMappedEntityType( property.PropertyType ) )
+                {
+                    if ( !IsTrackedEntity( value, context ) )
+                    {
+                        ClearAuditValues( value, context );
+                    }
+
+                    continue;
+                }
+
+                foreach ( var relatedItem in ( ( IEnumerable ) value ).Cast<object>() )
+                {
+                    if ( relatedItem != null && !IsTrackedEntity( relatedItem, context ) )
+                    {
+                        ClearAuditValues( relatedItem, context );
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Determines whether the property is a navigation property that holds a related
+        /// record or a collection of related records.
+        /// </summary>
+        /// <remarks>
+        /// This is broader than <see cref="Utility.ExcludeNavigationPropertiesContractResolver.IsNavigationPropertyType(Type)"/>,
+        /// which only looks for <see cref="IEntity"/> and cache types.
+        /// </remarks>
+        /// <param name="property">The property.</param>
+        /// <returns><c>true</c> if the property is a navigation property; otherwise <c>false</c>.</returns>
+        internal static bool IsNavigationProperty( PropertyInfo property )
+        {
+            if ( property == null || !property.CanWrite || property.GetIndexParameters().Length != 0 )
+            {
+                return false;
+            }
+
+            return IsMappedEntityType( property.PropertyType )
+                || IsMappedEntityType( GetCollectionItemType( property.PropertyType ) );
+        }
+
+        /// <summary>
+        /// Determines whether the type is a database entity, which EF inserts when it is
+        /// reachable from an entity being added.
+        /// </summary>
+        /// <param name="type">The type.</param>
+        /// <returns><c>true</c> if the type is a database entity; otherwise <c>false</c>.</returns>
+        internal static bool IsMappedEntityType( Type type )
+        {
+            /*
+                10/15/2026 - MSE
+
+                Some mapped tables (such as GroupLocationScheduleConfig and AnalyticsSourceDate)
+                do not implement IEntity, so any class with a [Table] attribute is also treated
+                as an entity. EF metadata is not used because the v2 API has no context at this
+                point and the check must stay cheap.
+
+                Reason: Catch every related record that EF would insert.
+            */
+            return type != null
+                && type.IsClass
+                && ( typeof( IEntity ).IsAssignableFrom( type ) || System.Attribute.IsDefined( type, typeof( TableAttribute ), true ) );
+        }
+
+        /// <summary>
+        /// Gets the navigation properties of the entity type that are saved to the database.
+        /// </summary>
+        /// <param name="type">The entity type.</param>
+        /// <returns>The navigation properties.</returns>
+        private static PropertyInfo[] GetRelatedRecordProperties( Type type )
+        {
+            return _relatedRecordPropertiesByType.GetOrAdd( type, t => t.GetProperties( BindingFlags.Public | BindingFlags.Instance )
+                .Where( p => IsNavigationProperty( p ) && !System.Attribute.IsDefined( p, typeof( NotMappedAttribute ), true ) )
+                .ToArray() );
+        }
+
+        /// <summary>
+        /// Gets the item type of a generic collection or array type.
+        /// </summary>
+        /// <param name="type">The type.</param>
+        /// <returns>The item type, or <c>null</c> if the type is not a collection.</returns>
+        private static Type GetCollectionItemType( Type type )
+        {
+            if ( type.IsArray )
+            {
+                return type.GetElementType();
+            }
+
+            if ( type.IsGenericType && typeof( IEnumerable ).IsAssignableFrom( type ) && type.GetGenericArguments().Length == 1 )
+            {
+                return type.GetGenericArguments()[0];
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Determines whether the entity is tracked by the context, which means adding a
+        /// related entity will not insert it.
+        /// </summary>
+        /// <param name="entity">The entity.</param>
+        /// <param name="context">The context, or <c>null</c>.</param>
+        /// <returns><c>true</c> if the entity is tracked by the context; otherwise <c>false</c>.</returns>
+        private static bool IsTrackedEntity( object entity, DbContext context )
+        {
+            return context != null && context.Entry( entity ).State != System.Data.Entity.EntityState.Detached;
         }
 
         #region .NET Core compatible methods

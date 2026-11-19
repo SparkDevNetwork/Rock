@@ -44,7 +44,7 @@ namespace Rock.Blocks.Finance
     [Description( "Displays the details of the given business." )]
     [IconCssClass( "ti ti-question-mark" )]
     [Rock.Web.UI.ContextAware]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 
@@ -337,7 +337,15 @@ Because the contents of this setting will be rendered inside a menu element, it 
 
                 if ( location != null )
                 {
-                    bag.AddressAsHtml = location.GetFullStreetAddress().ConvertCrLfToHtmlBr();
+                    /*
+                        10/19/2026 - MSE
+
+                        AddressAsHtml is rendered as HTML by the view panel, so the address text is
+                        encoded before the line breaks become <br>.
+
+                        Reason: Stored address text must not render as HTML.
+                    */
+                    bag.AddressAsHtml = location.GetFullStreetAddress().EncodeHtml().ConvertCrLfToHtmlBr();
                 }
 
                 // Get Previous Addresses (stored as GroupLocation rows with Previous location type)
@@ -352,7 +360,7 @@ Because the contents of this setting will be rendered inside a menu element, it 
                     if ( previousLocations.Any() )
                     {
                         bag.PreviousAddress = previousLocations
-                            .Select( a => a.GetFullStreetAddress().ConvertCrLfToHtmlBr() )
+                            .Select( a => a.GetFullStreetAddress().EncodeHtml().ConvertCrLfToHtmlBr() )
                             .JoinStrings( "<br><br>" );
                     }
                 }
@@ -362,7 +370,7 @@ Because the contents of this setting will be rendered inside a menu element, it 
 
             if ( attributeGuidList.Any() )
             {
-                bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson, enforceSecurity: false, attributeFilter: a => attributeGuidList.Any( ag => a.Guid == ag  )  );
+                bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson, enforceSecurity: false, attributeFilter: a => attributeGuidList.Any( ag => a.Guid == ag ) && IsAttributeViewable( a ) );
             }
 
             return bag;
@@ -435,6 +443,14 @@ Because the contents of this setting will be rendered inside a menu element, it 
                 // Get Previous Addresses (stored as GroupLocation rows with Previous location type)
                 if ( previousLocationType != null )
                 {
+                    /*
+                        10/19/2026 - MSE
+
+                        PreviousAddress is HTML like AddressAsHtml (rendered with addHtmlValue in later
+                        versions), so the address text is encoded before the line breaks become <br>.
+
+                        Reason: Stored address text must not render as HTML.
+                    */
                     var previousLocations = entity.GivingGroup.GroupLocations
                         .Where( gl => gl.GroupLocationTypeValueId == previousLocationType.Id && gl.Location != null )
                         .OrderByDescending( gl => gl.CreatedDateTime )
@@ -444,7 +460,7 @@ Because the contents of this setting will be rendered inside a menu element, it 
                     if ( previousLocations.Any() )
                     {
                         bag.PreviousAddress = previousLocations
-                            .Select( a => a.GetFullStreetAddress().ConvertCrLfToHtmlBr() )
+                            .Select( a => a.GetFullStreetAddress().EncodeHtml().ConvertCrLfToHtmlBr() )
                             .JoinStrings( "<br><br>" );
                     }
                 }
@@ -454,7 +470,7 @@ Because the contents of this setting will be rendered inside a menu element, it 
 
             if ( attributeGuidList.Any() )
             {
-                bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson, enforceSecurity: false, attributeFilter: a => attributeGuidList.Any( ag => a.Guid == ag ) );
+                bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson, enforceSecurity: false, attributeFilter: a => attributeGuidList.Any( ag => a.Guid == ag ) && IsAttributeEditable( a ) );
             }
 
             return bag;
@@ -485,7 +501,9 @@ Because the contents of this setting will be rendered inside a menu element, it 
                 {
                     entity.LoadAttributes( RockContext );
 
-                    entity.SetPublicAttributeValues( box.Bag.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: false );
+                    var attributeGuidList = GetAttributeValue( AttributeKey.BusinessAttributes ).SplitDelimitedValues().AsGuidList();
+
+                    entity.SetPublicAttributeValues( box.Bag.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: false, attributeFilter: a => attributeGuidList.Contains( a.Guid ) && IsAttributeEditable( a ) );
                 } );
 
             return true;
@@ -699,6 +717,54 @@ Because the contents of this setting will be rendered inside a menu element, it 
             }
 
             return hasCustomActions || hasWorkflowActions ? sbActions.ToString() : null;
+        }
+
+        /*
+            11/10/2026 - MSE
+
+            This block is secured by block security, not entity security, so the
+            attribute helpers are called with enforceSecurity: false. Turning it on
+            would fall back to Person entity and Global Default security when
+            an attribute has no rule of its own, and Global Default Edit only allows
+            Rock Administration, so every attribute would disappear for people who
+            have access to this block. Instead these filters apply only the rules
+            set explicitly on the attribute itself (AuthorizedForEntity without the
+            parent authority walk). When the attribute has no rule for the action
+            the block security that was already checked decides. Attributes that
+            are viewable but not editable are left out of the edit form, and their
+            stored values are kept on save.
+
+            Reason: Honor attribute-level View and Edit security.
+        */
+
+        /// <summary>
+        /// Determines if the current person is allowed to view the attribute
+        /// on this block. Only security rules defined directly on the attribute
+        /// are considered; otherwise the block security applies.
+        /// </summary>
+        /// <param name="attribute">The attribute to check.</param>
+        /// <returns><c>true</c> if the attribute can be viewed; otherwise <c>false</c>.</returns>
+        private bool IsAttributeViewable( AttributeCache attribute )
+        {
+            return Rock.Security.Authorization.AuthorizedForEntity( attribute, Rock.Security.Authorization.VIEW, RequestContext.CurrentPerson ) ?? true;
+        }
+
+        /// <summary>
+        /// Determines if the current person is allowed to edit the attribute
+        /// on this block. The attribute must also be viewable. Only security
+        /// rules defined directly on the attribute are considered; otherwise
+        /// the block security applies.
+        /// </summary>
+        /// <param name="attribute">The attribute to check.</param>
+        /// <returns><c>true</c> if the attribute can be edited; otherwise <c>false</c>.</returns>
+        private bool IsAttributeEditable( AttributeCache attribute )
+        {
+            if ( !IsAttributeViewable( attribute ) )
+            {
+                return false;
+            }
+
+            return Rock.Security.Authorization.AuthorizedForEntity( attribute, Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson ) ?? true;
         }
 
         #endregion

@@ -37,7 +37,7 @@ namespace Rock.Blocks.Communication
     [Category( "Communication" )]
     [Description( "Lists the status of all communications." )]
     [IconCssClass( "ti ti-messages" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     [LinkedPage(
         "Detail Page",

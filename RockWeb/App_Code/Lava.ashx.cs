@@ -25,6 +25,7 @@ using System.Web;
 using System.Xml;
 
 using Rock;
+using Rock.Configuration;
 using Rock.Web.Cache;
 using Newtonsoft.Json;
 using Rock.Utility;
@@ -319,7 +320,7 @@ public class LavaHandler : IHttpHandler
     /// <param name="message">The message to be logged.</param>
     protected void WriteToLog( string message )
     {
-        string logFile = HttpContext.Current.Server.MapPath( "~/App_Data/Logs/Lava.txt" );
+        string logFile = RockApp.Current.MapPath( "~/App_Data/Logs/Lava.txt" );
 
         // Write to the log, but if an ioexception occurs wait a couple seconds and then try again (up to 3 times).
         var maxRetry = 3;

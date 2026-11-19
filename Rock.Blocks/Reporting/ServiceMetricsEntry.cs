@@ -39,7 +39,7 @@ namespace Rock.Blocks.Reporting
     [DisplayName( "Service Metrics Entry" )]
     [Category( "Reporting" )]
     [Description( "Block for easily adding/editing metric values for any metric that has partitions of campus and service time." )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 

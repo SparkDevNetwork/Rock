@@ -43,7 +43,7 @@ namespace Rock.Blocks.Cms
     [Category( "CMS" )]
     [Description( "Block to display a menu of content channels/items that user is authorized to view." )]
     [IconCssClass( "ti ti-speakerphone" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 
@@ -320,6 +320,16 @@ namespace Rock.Blocks.Cms
         {
             int entityTypeId = EntityTypeCache.Get( typeof( Rock.Model.ContentChannelItem ) ).Id;
 
+            /*
+                11/16/2026 - MSE
+
+                Keep only the attributes the current person can view. This list
+                drives the grid columns, the attribute filter definitions and the
+                attribute filters applied to the item query, so filtering it here
+                keeps a denied attribute out of all three.
+
+                Reason: Grid attribute values must honor attribute VIEW security.
+            */
             return AttributeCache.All().AsQueryable()
                 .Where( a =>
                     a.EntityTypeId == entityTypeId &&
@@ -332,6 +342,7 @@ namespace Rock.Blocks.Cms
                     ) ) )
                 .OrderBy( a => a.Order )
                 .ThenBy( a => a.Name )
+                .Where( a => a.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
                 .ToList();
         }
 

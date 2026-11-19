@@ -15,12 +15,18 @@
 // </copyright>
 //
 
+#if NET
+namespace Rock.Enums.Finance
+#else
 namespace Rock.Model
+#endif
 {
     /// <summary>
     /// The MICR Status
     /// </summary>
+#if !NET
     [Enums.EnumDomain( "Finance" )]
+#endif
     public enum MICRStatus
     {
         /// <summary>

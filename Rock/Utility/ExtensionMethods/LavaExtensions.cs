@@ -53,6 +53,16 @@ namespace Rock
         /// <returns></returns>
         public static string lavaDebugInfo( this object lavaObject, RockContext rockContext = null, string preText = "", string postText = "" )
         {
+            // Internal merge fields (such as the request context) are not
+            // visible to templates, so they are not listed either.
+            if ( lavaObject is IDictionary<string, object> mergeFields
+                && mergeFields.Keys.Any( k => k.StartsWith( LavaRenderContextBase.InternalMergeFieldPrefix, StringComparison.Ordinal ) ) )
+            {
+                lavaObject = mergeFields
+                    .Where( kvp => !kvp.Key.StartsWith( LavaRenderContextBase.InternalMergeFieldPrefix, StringComparison.Ordinal ) )
+                    .ToDictionary( kvp => kvp.Key, kvp => kvp.Value );
+            }
+
             //return liquidObject.LiquidizeChildren( 0, rockContext ).ToJson();
             StringBuilder lavaDebugPanel = new StringBuilder();
             lavaDebugPanel.Append( "<div class='alert alert-info lava-debug'><h4>Lava Debug Info</h4>" );
@@ -813,9 +823,28 @@ namespace Rock
                 return null;
             }
 
-            var rockRequestContext = renderContext.GetInternalField( "RockRequestContext" ) as RockRequestContext;
+            var rockRequestContext = renderContext.GetInternalField( RockRequestContext.LavaInternalFieldKey ) as RockRequestContext;
 
             return rockRequestContext;
+        }
+
+        /// <summary>
+        /// Adds the <see cref="RockRequestContext"/> to a Lava merge field
+        /// dictionary as an internal field. Templates cannot see it, but Lava
+        /// filters and commands can read it with
+        /// <see cref="GetRockRequestContext(ILavaRenderContext)"/>. Nothing is
+        /// added when <paramref name="requestContext"/> is <c>null</c>.
+        /// </summary>
+        /// <param name="mergeFields">The merge field dictionary.</param>
+        /// <param name="requestContext">The request context to add.</param>
+        internal static void AddRockRequestContext( this IDictionary<string, object> mergeFields, RockRequestContext requestContext )
+        {
+            if ( mergeFields == null || requestContext == null )
+            {
+                return;
+            }
+
+            mergeFields[$"{LavaRenderContextBase.InternalMergeFieldPrefix}{RockRequestContext.LavaInternalFieldKey}"] = requestContext;
         }
 
         #endregion Lava Extensions

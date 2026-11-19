@@ -97,7 +97,7 @@ There is no screen for a service method, so tests go through the features that c
 
 ## Dependencies (`Needs:`)
 
-Every test is written to be run by an agent. In the pilot plan agents completed every test; a few needed a human to approve a step (such as creating a page for a block), never to do the test. So do not plan tests as "for a human".
+Every test is written to be run by an agent. Agents can run nearly every test; at most a human approves a step (such as creating a page for a block). So do not plan tests as "for a human".
 
 Add a `Needs:` line only when a test depends on something outside the standard environment that a runner cannot create:
 

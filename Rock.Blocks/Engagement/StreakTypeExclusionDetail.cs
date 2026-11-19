@@ -40,7 +40,7 @@ namespace Rock.Blocks.Engagement
     [Category( "Streaks" )]
     [Description( "Displays the details of the given Exclusion for editing." )]
     [IconCssClass( "ti ti-question-mark" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 

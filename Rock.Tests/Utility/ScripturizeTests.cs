@@ -32,7 +32,45 @@ namespace Rock.Tests.Utility
             Assert.AreEqual( expected, output );
 
             output = Scripturize.Parse( "John 3" );
-            expected = "<a href=\"https://www.bible.com/bible/116/JHN.3..NLT\"  title=\"YouVersion\">John 3</a>";
+            expected = "<a href=\"https://www.bible.com/bible/116/JHN.3.NLT\"  title=\"YouVersion\">John 3</a>";
+            Assert.AreEqual( expected, output );
+        }
+
+        /// <summary>
+        /// Scripturizes for YouVersion format with chapter-only references, which
+        /// must not include an empty verse segment in the link.
+        /// </summary>
+        /// <remarks>
+        /// Fixes Issue #7160. (refer https://github.com/SparkDevNetwork/Rock/issues/7160)
+        /// </remarks>
+        [TestMethod]
+        public void Scripturize_YouVersion_ChapterOnly()
+        {
+            var output = Scripturize.Parse( "Genesis 2", "NIV" );
+            var expected = "<a href=\"https://www.bible.com/bible/111/GEN.2.NIV\"  title=\"YouVersion\">Genesis 2</a>";
+            Assert.AreEqual( expected, output );
+
+            output = Scripturize.Parse( "1 John 2 (ESV)" );
+            expected = "<a href=\"https://www.bible.com/bible/59/1JN.2.ESV\"  title=\"YouVersion\">1 John 2 (ESV)</a>";
+            Assert.AreEqual( expected, output );
+
+            output = Scripturize.Parse( "Genesis 2:4", "NIV" );
+            expected = "<a href=\"https://www.bible.com/bible/111/GEN.2.4.NIV\"  title=\"YouVersion\">Genesis 2:4</a>";
+            Assert.AreEqual( expected, output );
+        }
+
+        /// <summary>
+        /// Scripturizes for Bible Gateway format with chapter-only and verse references.
+        /// </summary>
+        [TestMethod]
+        public void Scripturize_BibleGateway_ChapterOnlyAndVerses()
+        {
+            var output = Scripturize.Parse( "Genesis 2", "NIV", LandingSite.BibleGateway );
+            var expected = "<a href=\"http://biblegateway.com/bible?version=NIV&passage=Genesis+2\"  title=\"Bible Gateway\">Genesis 2</a>";
+            Assert.AreEqual( expected, output );
+
+            output = Scripturize.Parse( "Genesis 2:4-7", "NIV", LandingSite.BibleGateway );
+            expected = "<a href=\"http://biblegateway.com/bible?version=NIV&passage=Genesis+2:4-7\"  title=\"Bible Gateway\">Genesis 2:4-7</a>";
             Assert.AreEqual( expected, output );
         }
 

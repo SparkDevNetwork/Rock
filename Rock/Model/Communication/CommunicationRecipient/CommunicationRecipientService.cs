@@ -18,8 +18,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Web;
 
+using Rock.Configuration;
 using Rock.Utility;
 using Rock.ViewModels.Communication;
 using Rock.Web.Cache;
@@ -32,11 +32,11 @@ namespace Rock.Model
     public partial class CommunicationRecipientService 
     {
         /// <summary>
-        /// Returns a queryable collection of <see cref="Rock.Model.CommunicationRecipient">CommunicationRecipients</see> by <see cref="Rock.Model.Communication"/> and <see cref="Rock.Model.CommunicationRecipientStatus"/>
+        /// Returns a queryable collection of <see cref="Rock.Model.CommunicationRecipient">CommunicationRecipients</see> by <see cref="Rock.Model.Communication"/> and <see cref="CommunicationRecipientStatus"/>
         /// </summary>
         /// <param name="communicationId">A <see cref="System.Int32"/> representing the CommunicationId of the <see cref="Rock.Model.Communication"/> to search by.</param>
-        /// <param name="status">A <see cref="Rock.Model.CommunicationRecipientStatus"/> Enum value representing the status of the communication submission.</param>
-        /// <returns>A queryable collection of <see cref="Rock.Model.CommunicationRecipient">CommunicationRecipients</see> for the specified <see cref="Rock.Model.Communication"/> and <see cref="Rock.Model.CommunicationRecipientStatus"/></returns>
+        /// <param name="status">A <see cref="CommunicationRecipientStatus"/> Enum value representing the status of the communication submission.</param>
+        /// <returns>A queryable collection of <see cref="Rock.Model.CommunicationRecipient">CommunicationRecipients</see> for the specified <see cref="Rock.Model.Communication"/> and <see cref="CommunicationRecipientStatus"/></returns>
         public IQueryable<Rock.Model.CommunicationRecipient> Get( int communicationId, CommunicationRecipientStatus status )
         {
             return Queryable( "Communication,PersonAlias.Person" )
@@ -96,7 +96,7 @@ namespace Rock.Model
 
             if ( !Uri.IsWellFormedUriString( photoUrl, UriKind.Absolute ) )
             {
-                photoUrl = VirtualPathUtility.ToAbsolute( photoUrl );
+                photoUrl = RockApp.Current.ResolveRockUrl( photoUrl );
             }
 
             bag.PhotoUrl = publicUrl.IsNotNullOrWhiteSpace() ? publicUrl + photoUrl : photoUrl;

@@ -40,7 +40,7 @@ namespace Rock.Blocks.Core
     [Category( "Follow" )]
     [Description( "Block for viewing list of following events." )]
     [IconCssClass( "ti ti-list" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     [LinkedPage( "Detail Page",
         Description = "The page that will show the following suggestion type details.",

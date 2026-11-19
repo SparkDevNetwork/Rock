@@ -19,12 +19,18 @@ using System.ComponentModel;
 
 using Rock.Enums;
 
+#if NET
+namespace Rock.Enums.Connection
+#else
 namespace Rock.Model
+#endif
 {
     /// <summary>
     /// Type of workflow trigger
     /// </summary>
+#if !NET
     [Enums.EnumDomain( "Connection" )]
+#endif
     public enum ConnectionWorkflowTriggerType
     {
         /// <summary>

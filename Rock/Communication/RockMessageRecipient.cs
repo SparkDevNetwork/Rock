@@ -62,6 +62,14 @@ namespace Rock.Communication
         public string Name { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether <see cref="To"/> is an admin-authored Lava template that the transport should render.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> only when <see cref="To"/> came from a System Communication or System Email To field; when <c>false</c> the transport sends <see cref="To"/> as plain data.
+        /// </value>
+        internal bool IsToLavaTemplate { get; set; }
+
+        /// <summary>
         /// Gets or sets the communication recipient identifier.
         /// </summary>
         /// <value>

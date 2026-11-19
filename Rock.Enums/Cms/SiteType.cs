@@ -15,12 +15,18 @@
 // </copyright>
 //
 
+#if NET
+namespace Rock.Enums.Cms
+#else
 namespace Rock.Model
+#endif
 {
     /// <summary>
     /// Types Web, Mobile
     /// </summary>
+#if !NET
     [Enums.EnumDomain( "Cms" )]
+#endif
     public enum SiteType
     {
         /// <summary>

@@ -20,8 +20,6 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 
-using OfficeOpenXml.FormulaParsing.Excel.Functions.Text;
-
 using Rock.ClientService.Core.Category.Options;
 using Rock.Configuration;
 using Rock.Data;

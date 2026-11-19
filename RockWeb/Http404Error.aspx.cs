@@ -22,6 +22,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock;
+using Rock.Configuration;
 using Rock.Model;
 using Rock.Utility;
 using Rock.Web;
@@ -64,7 +65,16 @@ public partial class Http404Error : System.Web.UI.Page
         // Check to see if exception should be logged
         if ( GlobalAttributesCache.Get().GetValue( "Log404AsException" ).AsBoolean(true) )
         {
-            ExceptionLogService.LogException( new Exception( string.Format( "404 Error: {0} - Referred from: {1}", proxySafeUri.AbsoluteUri, Request.UrlReferrer != null ? Request.UrlReferrer.ToString() : "Direct Link" ) ), Context );
+            /*
+                10/19/2026 - MSE
+
+                The 404 URL and referrer are stored in the exception Description, which
+                staff can read. Hide rckipid tokens and sensitive query values first.
+                AbsoluteUri keeps %26 encoded, so a value is never cut short.
+
+                Reason: Exception log must not store impersonation tokens or REST keys.
+            */
+            ExceptionLogService.LogException( new Exception( string.Format( "404 Error: {0} - Referred from: {1}", ExceptionLogService.RedactUrl( proxySafeUri.AbsoluteUri ), Request.UrlReferrer != null ? ExceptionLogService.RedactUrl( Request.UrlReferrer.AbsoluteUri ) : "Direct Link" ) ), Context );
         }
 
         // If this is an API call, set status code and exit
@@ -99,13 +109,13 @@ public partial class Http404Error : System.Web.UI.Page
             else
             {
                 Response.StatusCode = 404;
-                lLogoSvg.Text = System.IO.File.ReadAllText( HttpContext.Current.Request.MapPath( "~/Assets/Images/rock-logo-sm.svg" ) );
+                lLogoSvg.Text = System.IO.File.ReadAllText( RockApp.Current.MapPath( "~/Assets/Images/rock-logo-sm.svg" ) );
             }
         }
         catch 
         {
             Response.StatusCode = 404;
-            lLogoSvg.Text = System.IO.File.ReadAllText( HttpContext.Current.Request.MapPath( "~/Assets/Images/rock-logo-sm.svg" ) );
+            lLogoSvg.Text = System.IO.File.ReadAllText( RockApp.Current.MapPath( "~/Assets/Images/rock-logo-sm.svg" ) );
         }
         finally
         {

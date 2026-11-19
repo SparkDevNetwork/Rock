@@ -44,7 +44,7 @@ namespace Rock.Blocks.Engagement
     [Category( "Achievements" )]
     [Description( "Lists all the people that have made an attempt at earning an achievement." )]
     [IconCssClass( "ti ti-list" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     [LinkedPage( "Detail Page",
         Description = "The page that will show the achievement attempt details.",
@@ -326,6 +326,15 @@ namespace Rock.Blocks.Engagement
             return queryable.OrderBy( a => a.AchievementAttempt.IsClosed )
                     .ThenByDescending( a => a.AchievementAttempt.AchievementAttemptStartDateTime )
                     .ThenBy( a => a.AchieverName );
+        }
+
+        /// <inheritdoc/>
+        protected override GridEntityKeyOptions GetGridEntityKeyOptions()
+        {
+            return new GridEntityKeyOptions
+            {
+                EntityTypeId = EntityTypeCache.GetId<Rock.Model.AchievementAttempt>()
+            };
         }
 
         /// <inheritdoc/>

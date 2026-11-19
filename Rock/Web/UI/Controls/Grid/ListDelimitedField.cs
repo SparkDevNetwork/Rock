@@ -49,7 +49,7 @@ namespace Rock.Web.UI.Controls
             if (dataValue is IEnumerable<object>)
             {
                 var list = ( dataValue as IEnumerable<object> );
-                return list.ToList().AsDelimited( Delimiter ?? ", " );
+                return list.ToList().AsDelimited( Delimiter ?? ", ", null, encode );
             }
             else
             {

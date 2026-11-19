@@ -13,6 +13,7 @@
 //  + Legacy Email Editor
 //  + Communication History
 //  + Communication Template Detail
+//  + System Communication Detail
 //  + Communication Flow Performance & Flow Instance Message Metrics
 //  + Communication Saturation Report
 // =============================================================
@@ -67,21 +68,6 @@ iframe.email-body {
 
 .communication-detail-analytics.contentsection-list { // Override default contentstack-list to remove overflow
     overflow-y: unset;
-}
-
-// Empty State Messages
-.communication-detail-no-metrics {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    color: var(--color-interface-medium);
-}
-
-.communication-detail-no-metrics-message {
-    font-size: var(--font-size-xsmall);
-    margin-top: var(--spacing-tiny);
-    text-align: center;
 }
 
 // KPI Cards
@@ -755,21 +741,110 @@ iframe.email-body {
 
 }
 
+// ======================== SYSTEM COMMUNICATION DETAIL ========================
+// From systemCommunicationDetail.obs and SystemCommunicationDetail/emailPreviewIframe.partial.obs
+.system-communication-detail-preview-window {
+  position: relative;
+  display: block;
+  width: 100%;
+  margin: 0 auto;
+  border: 2px solid var(--color-interface-soft);
+  border-top-width: 48px;
+  border-radius: var(--rounded-medium) var(--rounded-medium) 0 0;
+  background: #fff; // An email is always previewed on a white page, regardless of theme.
+  line-height: 0;
+
+  // The three decorative window control dots in the title bar.
+  &::before {
+    position: absolute;
+    top: -30px;
+    left: 12px;
+    display: block;
+    width: 12px;
+    height: 12px;
+    content: "";
+    background-color: #f36;
+    border-radius: 12px;
+    box-shadow: 0 0 0 0 #f36, 24px 0 0 0 #fc9, 48px 0 0 0 #3f6;
+  }
+}
+
+.system-communication-detail-preview-iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+.system-communication-detail-preview-device {
+  position: relative;
+  display: block;
+  width: 435px;
+  height: 693px;
+  margin: 0 auto;
+  border-color: var(--color-interface-soft);
+  border-style: solid;
+  border-width: 18px;
+  border-top-width: 36px;
+  border-bottom-width: 72px;
+  border-radius: 18px;
+
+  // The side buttons.
+  &::before {
+    position: absolute;
+    top: 18px;
+    left: -21px;
+    display: block;
+    width: 3px;
+    height: 18px;
+    content: "";
+    background-color: var(--color-interface-medium);
+    border-radius: 3px 0 0 3px;
+    box-shadow: 0 0 0 0 var(--color-interface-medium), 0 36px 0 0 var(--color-interface-medium);
+  }
+
+  // The home button.
+  &::after {
+    position: absolute;
+    bottom: -54px;
+    left: 50%;
+    display: block;
+    width: 36px;
+    height: 36px;
+    margin-left: -18px;
+    content: "";
+    background-color: var(--color-interface-medium);
+    border-radius: 18px;
+  }
+}
+// ======================== END SYSTEM COMMUNICATION DETAIL ========================
+
 // ======================== COMMUNICATION FLOW PERFORMANCE & FLOW INSTANCE MESSAGE METRICS ========================
-// From CommunicationFlowPerformance/nothingToShow.partial.obs and CommunicationFlowInstanceMessageMetrics/nothingToShow.partial.obs
-// Matches the height of the charts the empty state stands in for.
-.panel .communication-flow-empty-state-panel-body {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 268px;
-  padding: var(--spacing-medium) var(--spacing-large);
+// From communicationFlowPerformance.obs and communicationFlowInstanceMessageMetrics.obs
+// Lets the panels in a row (used with row-eq-height-md) fill the height of the tallest panel beside them, so a panel
+// holding an empty state or a short chart lines up with its neighbor. The first div in each column is the Panel
+// control's fullscreen wrapper. Flex is used instead of a 100% height so the panel's bottom margin keeps the gap below the row.
+.communication-flow-panel-row {
+  > [class*="col-"] {
+    display: flex;
+    flex-direction: column;
+
+    > div {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+
+      > .panel {
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+
+        > .panel-body {
+          display: flex;
+          flex-direction: column;
+          flex: 1;
+        }
+      }
+    }
+  }
 }
 // ====================== END COMMUNICATION FLOW PERFORMANCE & FLOW INSTANCE MESSAGE METRICS ======================
-
-// ======================== COMMUNICATION SATURATION REPORT ========================
-// From CommunicationSaturationReport/nothingToShow.partial.obs
-.communication-saturation-report-empty-state {
-  padding: var(--spacing-xlarge) 0;
-}
-// ====================== END COMMUNICATION SATURATION REPORT ======================

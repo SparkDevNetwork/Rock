@@ -15,12 +15,18 @@
 // </copyright>
 //
 
+#if NET
+namespace Rock.Enums.Connection
+#else
 namespace Rock.Model
+#endif
 {
     /// <summary>
     /// Represents the view mode of a ConnectionType.
     /// </summary>
+#if !NET
     [Enums.EnumDomain( "Connection" )]
+#endif
     public enum ConnectionTypeViewMode
     {
         /// <summary>

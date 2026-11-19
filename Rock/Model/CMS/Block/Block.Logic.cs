@@ -38,7 +38,7 @@ namespace Rock.Model
         /// Gets the location where this Block is being implemented on (Page, Layout, or Site) 
         /// </summary>
         /// <value>
-        /// The <see cref="Rock.Model.BlockLocation"/> where this Block is being implemented on.
+        /// The <see cref="BlockLocation"/> where this Block is being implemented on.
         /// </value>
         /// <example>
         /// <c>BlockLocation.Page</c>

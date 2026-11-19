@@ -40,7 +40,7 @@ namespace Rock.Blocks.Engagement
     [Category( "Streaks" )]
     [Description( "Lists all the people enrolled in a streak type." )]
     [IconCssClass( "ti ti-list" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     [LinkedPage( "Detail Page",
         Description = "The page that will show the streak details.",
@@ -118,12 +118,13 @@ namespace Rock.Blocks.Engagement
         private StreakListOptionsBag GetBoxOptions()
         {
             var streakType = GetStreakType();
+            var canView = GetCanView();
 
             var options = new StreakListOptionsBag()
             {
-                StreakTypeName = streakType?.Name,
-                StreakTypeIdKey = streakType?.IdKey,
-                IsBlockVisible = GetCanView()
+                StreakTypeName = canView ? streakType?.Name : null,
+                StreakTypeIdKey = canView ? streakType?.IdKey : null,
+                IsBlockVisible = canView
             };
 
             return options;
@@ -182,7 +183,17 @@ namespace Rock.Blocks.Engagement
         {
             var streakType = GetStreakType();
 
-            if ( streakType != null )
+            /*
+                10/16/2026 - MSE
+
+                The streak type comes from the page parameter, so a person could
+                swap in the IdKey of a streak type they are not allowed to see and
+                get every enrollment for it. Rows are only returned when the person
+                passes the same VIEW check that shows the block.
+
+                Reason: Streak List skipped VIEW on the streak type.
+            */
+            if ( streakType != null && GetCanView() )
             {
                 var query = new StreakService( RockContext ).Queryable()
                     .Include( se => se.PersonAlias.Person )
@@ -219,6 +230,16 @@ namespace Rock.Blocks.Engagement
                 .AddTextField( "signalMarkup", a => a.PersonAlias.Person.GetSignalMarkup() )
                 .AddTextField( "engagementMap", a => GetEngagementGraph( a ) )
                 .AddPersonField( "person", a => a.PersonAlias?.Person );
+        }
+
+        /// <inheritdoc/>
+        protected override GridEntityKeyOptions GetGridEntityKeyOptions()
+        {
+            var options = base.GetGridEntityKeyOptions();
+
+            options.PersonKeyFieldPaths = new[] { "personIdKey" };
+
+            return options;
         }
 
         /// <summary>

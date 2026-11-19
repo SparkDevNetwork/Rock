@@ -475,6 +475,12 @@ namespace Rock
 
                 var value = PublicAttributeHelper.GetPrivateValue( attribute, kvp.Value );
 
+                // Skip binary file values that reference a file other than the current or a new temporary file.
+                if ( !PublicAttributeHelper.IsPostedBinaryFileAllowed( attribute, value, entity.GetAttributeValue( kvp.Key ) ) )
+                {
+                    continue;
+                }
+
                 entity.SetAttributeValue( kvp.Key, value );
             }
         }
@@ -516,6 +522,12 @@ namespace Rock
             }
 
             var databaseValue = PublicAttributeHelper.GetPrivateValue( attribute, value );
+
+            // Skip binary file values that reference a file other than the current or a new temporary file.
+            if ( !PublicAttributeHelper.IsPostedBinaryFileAllowed( attribute, databaseValue, entity.GetAttributeValue( key ) ) )
+            {
+                return;
+            }
 
             entity.SetAttributeValue( key, databaseValue );
         }
@@ -733,7 +745,7 @@ namespace Rock
             {
                 if ( entity is IEntity fullEntity )
                 {
-                    return entityContextField.GetTextValue( rawValue, fullEntity, attributeCache.ConfigurationValues );
+                    return entityContextField.GetHtmlValue( rawValue, fullEntity, attributeCache.ConfigurationValues );
                 }
                 else if ( entity is IEntityCache entityCache )
                 {
@@ -853,7 +865,7 @@ namespace Rock
             {
                 if ( entity is IEntity fullEntity )
                 {
-                    return entityContextField.GetTextValue( rawValue, fullEntity, attributeCache.ConfigurationValues );
+                    return entityContextField.GetCondensedHtmlValue( rawValue, fullEntity, attributeCache.ConfigurationValues );
                 }
                 else if ( entity is IEntityCache entityCache )
                 {
@@ -861,7 +873,7 @@ namespace Rock
                 }
             }
 
-            return field?.GetTextValue( rawValue, attributeCache.ConfigurationValues );
+            return field?.GetCondensedHtmlValue( rawValue, attributeCache.ConfigurationValues );
         }
 
         /// <summary>

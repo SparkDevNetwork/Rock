@@ -161,6 +161,42 @@ namespace Rock.Model
             return this.Amount.ToStringSafe();
         }
 
+        /// <summary>
+        /// A parent authority.  If a user is not specifically allowed or denied access to
+        /// this object, Rock will check the authorization on the scheduled transaction this
+        /// detail belongs to.
+        /// </summary>
+        public override ISecured ParentAuthority
+        {
+            get
+            {
+                /*
+                    11/2/2026 - MSE
+
+                    A detail is one account split of its scheduled transaction, so it takes its
+                    permissions from that schedule, the same way FinancialTransactionDetail takes
+                    them from its transaction. The REST API relies on this to let a new schedule
+                    be posted with its ScheduledTransactionDetails: the schedule's permission
+                    check then covers the details saved with it.
+
+                    Reason: Details follow their scheduled transaction's security.
+                */
+                if ( this.ScheduledTransactionId == 0 )
+                {
+                    return base.ParentAuthority;
+                }
+
+                var parentScheduledTransaction = this.ScheduledTransaction;
+                if ( parentScheduledTransaction == null )
+                {
+                    // Only the Id is needed to authorize a FinancialScheduledTransaction.
+                    parentScheduledTransaction = new FinancialScheduledTransaction { Id = this.ScheduledTransactionId };
+                }
+
+                return parentScheduledTransaction;
+            }
+        }
+
         #endregion Public Methods
     }
 

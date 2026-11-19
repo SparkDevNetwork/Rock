@@ -211,7 +211,7 @@
 
                 <div class="form-group">
                     <InlineCheckBox label="Show in Group Navigation" v-model="showInNavigation"
-                                    help="When enabled, groups of this type appear in the GroupTreeView block's navigation panel." />
+                                    help="When enabled, groups of this type appear in the GroupTreeView block's navigation panel. Group Detail blocks with 'Navigation Group Types Only' enabled can only add or save groups whose group type has this option enabled." />
                 </div>
 
                 <div class="form-group">

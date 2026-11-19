@@ -32,7 +32,7 @@ namespace Rock.Update.Helpers
         /// </summary>
         public static void RemoveOfflinePage()
         {
-            var file = Path.Combine( FileManagementHelper.ROOT_PATH, OFFLINE_FILE_NAME );
+            var file = Path.Combine( FileManagementHelper.RootPath, OFFLINE_FILE_NAME );
             if ( File.Exists( file ) )
             {
                 File.Delete( file );
@@ -45,8 +45,8 @@ namespace Rock.Update.Helpers
         /// </summary>
         public static void CreateOfflinePage()
         {
-            var templateFile = Path.Combine( FileManagementHelper.ROOT_PATH, OFFLINE_TEMPLATE_NAME );
-            var offlineFile = Path.Combine( FileManagementHelper.ROOT_PATH, OFFLINE_FILE_NAME );
+            var templateFile = Path.Combine( FileManagementHelper.RootPath, OFFLINE_TEMPLATE_NAME );
+            var offlineFile = Path.Combine( FileManagementHelper.RootPath, OFFLINE_FILE_NAME );
 
             try
             {

@@ -18,6 +18,8 @@ using System;
 using System.ComponentModel;
 using System.Linq;
 
+using Microsoft.EntityFrameworkCore;
+
 using Rock.Attribute;
 using Rock.Configuration;
 using Rock.Data;
@@ -152,6 +154,7 @@ namespace Rock.Jobs
                 return new PersonAliasService( rockContext )
                     .Queryable()
                     .Where( a => a.PersonId == anonymousVisitorId.Value
+                        && ( !a.AliasPersonId.HasValue || a.AliasPersonId.Value != a.PersonId )
                         && string.IsNullOrEmpty( a.InternalMessage )
                         && a.LastVisitDateTime < cutoffDateTime
                         && !referencedPersonAliasIdQuery.Contains( a.Id ) )
@@ -168,7 +171,7 @@ namespace Rock.Jobs
         {
             var rockContext = RockApp.Current.CreateRockContext();
 
-            rockContext.Database.CommandTimeout = _commandTimeout;
+            rockContext.Database.SetCommandTimeout( _commandTimeout );
 
             return rockContext;
         }

@@ -29,6 +29,12 @@ using Rock.Model;
 using Rock.Security;
 using Rock.Web.Cache;
 
+#if NET
+using Gender = Rock.Enums.Crm.Gender;
+#else
+using Gender = Rock.Model.Gender;
+#endif
+
 namespace Rock.Blocks.Types.Mobile.Cms
 {
     /// <summary>
@@ -39,7 +45,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
     [Category( "Mobile > Cms" )]
     [Description( "Allows the user to edit their account on a mobile application." )]
     [IconCssClass( "ti ti-user-cog" )]
-    [SupportedSiteTypes( Model.SiteType.Mobile )]
+    [SupportedSiteTypes( SiteType.Mobile )]
 
     #region Block Attributes
 
@@ -338,6 +344,20 @@ namespace Rock.Blocks.Types.Mobile.Cms
                     return ActionNotFound();
                 }
 
+                /*
+                    10/16/2026 - MSE
+
+                    Only the person themselves, or someone allowed to edit people through this
+                    block, may load a person's profile. This is the same rule UpdatePersonProfile
+                    already applies when saving, so a person with only View permission on the block
+                    can no longer read another person's contact details by Guid.
+
+                    Reason: Prevent loading another person's profile details by Guid.
+                */
+                if ( RequestContext.CurrentPerson?.Guid != personGuid && !IsAuthorizedToEditPerson( person ) )
+                {
+                    return ActionStatusCode( System.Net.HttpStatusCode.Unauthorized );
+                }
 
                 return ActionOk( MobileHelper.GetMobilePerson( person, site ) );
             }
@@ -361,7 +381,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
             person.FirstName = profile.FirstName;
             person.LastName = profile.LastName;
 
-            var gender = ( Model.Gender ) profile.Gender;
+            var gender = ( Gender ) profile.Gender;
 
             if ( GenderVisibility != VisibilityTriState.Hidden )
             {

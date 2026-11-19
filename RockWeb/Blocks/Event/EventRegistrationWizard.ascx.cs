@@ -413,7 +413,7 @@ namespace RockWeb.Blocks.Event
                     pnlCheckinOptions.Visible = GroupTypeIsCheckinGroup( registrationTemplate.GroupTypeId.Value, rockContext );
                 }
 
-                lTemplateDescription.Text = registrationTemplate.Description;
+                lTemplateDescription.Text = registrationTemplate.Description.EncodeHtml();
                 dpPaymentDeadline.Required = registrationTemplate.IsPaymentPlanAllowed == true;
                 dpPaymentDeadline.Visible = registrationTemplate.IsPaymentPlanAllowed == true;
             }
@@ -951,10 +951,54 @@ namespace RockWeb.Blocks.Event
             return registrationTemplate.GroupTypeId.HasValue;
         }
 
+        /// <summary>
+        /// Validates that the current person can add an occurrence to the selected existing event.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns><c>true</c> if no existing event is selected or the event is on a calendar the person can edit; otherwise, <c>false</c>.</returns>
+        private bool ValidateExistingEventSelection( RockContext rockContext )
+        {
+            nbNotAuthorizedEvent.Visible = false;
+
+            var eventItemId = eipSelectedEvent.SelectedValueAsId();
+            if ( tglEventSelection.Checked || !eventItemId.HasValue )
+            {
+                return true;
+            }
+
+            var eventItem = new EventItemService( rockContext ).Get( eventItemId.Value );
+            var canEditEvent = eventItem != null
+                && eventItem.EventCalendarItems.Any( ci => EventCalendarCache.Get( ci.EventCalendarId )?.IsAuthorized( Authorization.EDIT, CurrentPerson ) == true );
+
+            if ( !canEditEvent )
+            {
+                nbNotAuthorizedEvent.Visible = true;
+                return false;
+            }
+
+            return true;
+        }
+
         private bool ValidateParentGroupSelection( RockContext rockContext )
         {
             nbNotAuthorized.Visible = false;
             nbNotPermitted.Visible = false;
+
+            if ( gpExistingGroup.SelectedIds.Length > 0 )
+            {
+                var existingGroup = new GroupService( rockContext ).Get( gpExistingGroup.SelectedValueAsId() ?? 0 );
+                var canModifyExistingGroup = existingGroup != null
+                    && ( existingGroup.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson )
+                        || existingGroup.IsAuthorized( Authorization.MANAGE_MEMBERS, CurrentPerson )
+                        || existingGroup.IsAuthorized( Authorization.EDIT, CurrentPerson ) );
+
+                if ( !canModifyExistingGroup )
+                {
+                    nbNotAuthorized.Text = "You are not authorized to modify the selected group. Please choose another group.";
+                    nbNotAuthorized.Visible = true;
+                    return false;
+                }
+            }
 
             if ( tbGroupName.Text == string.Empty )
             {
@@ -984,6 +1028,7 @@ namespace RockWeb.Blocks.Event
                     parentGroup.IsAuthorized( Authorization.MANAGE_MEMBERS, CurrentPerson );
                 if ( !isAuthorized )
                 {
+                    nbNotAuthorized.Text = "You are not authorized to modify the selected group.  Please choose another parent group.";
                     nbNotAuthorized.Visible = true;
                     return false;
                 }
@@ -1291,6 +1336,22 @@ namespace RockWeb.Blocks.Event
             }
             else if ( step == ActiveWizardStep.Finished )
             {
+                // CommitChanges saves the instance before it reaches the group and event, so check them before the transaction starts.
+                using ( var rockContext = new RockContext() )
+                {
+                    if ( !ValidateParentGroupSelection( rockContext ) )
+                    {
+                        SetActiveWizardStep( ActiveWizardStep.Group );
+                        return;
+                    }
+
+                    if ( !ValidateExistingEventSelection( rockContext ) )
+                    {
+                        SetActiveWizardStep( ActiveWizardStep.Event );
+                        return;
+                    }
+                }
+
                 CommitResult result = null;
                 using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
@@ -1638,6 +1699,16 @@ namespace RockWeb.Blocks.Event
         protected void lbNext_Event_Click( object sender, EventArgs e )
         {
             bool requireEvent = GetAttributeValue( AttributeKey.RequireCalendarEvents ).AsBoolean();
+
+            using ( var rockContext = new RockContext() )
+            {
+                if ( !ValidateExistingEventSelection( rockContext ) )
+                {
+                    SetActiveWizardStep( ActiveWizardStep.Event );
+                    return;
+                }
+            }
+
             if ( ( tglEventSelection.Checked ) || ( eipSelectedEvent.SelectedValueAsId() != null ) )
             {
                 SetActiveWizardStep( ActiveWizardStep.EventOccurrence );

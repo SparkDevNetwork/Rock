@@ -110,7 +110,7 @@ namespace Rock.Lava
                 return virtualPath;
             }
 
-            var path = System.Web.VirtualPathUtility.ToAbsolute( virtualPath );
+            var path = RockApp.Current.ResolveRockUrl( virtualPath );
             return path;
         }
 

@@ -26,6 +26,8 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 
+using CommunicationType = Rock.Model.CommunicationType;
+
 namespace Rock.Jobs
 {
     /// <summary>

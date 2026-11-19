@@ -27,6 +27,11 @@ namespace Rock.Web.Cache
     public class RateLimiterCache : ItemCache<RateLimiterCache>, IHasLifespan
     {
         /// <summary>
+        /// The lock used to check and count actions in one step.
+        /// </summary>
+        private static readonly object _actionLock = new object();
+
+        /// <summary>
         /// Gets or sets the actions per period.
         /// </summary>
         /// <value>
@@ -110,6 +115,84 @@ namespace Rock.Web.Cache
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// Checks whether another action is allowed for the key and client IP
+        /// address and, if it is, counts it in the same step. Counts are kept
+        /// in memory on each web node and the period is a fixed window that
+        /// starts with the first counted action.
+        /// </summary>
+        /// <param name="key">The key that identifies the object to be rate limited.</param>
+        /// <param name="clientIpAddress">The client ip address.</param>
+        /// <param name="period">The period.</param>
+        /// <param name="maxActionsInPeriod">The maximum actions in period.</param>
+        /// <returns><c>true</c> if the action was allowed and counted; <c>false</c> if the limit has been reached.</returns>
+        internal static bool TryRecordAction( string key, string clientIpAddress, TimeSpan period, int maxActionsInPeriod )
+        {
+            /*
+                10/15/2026 - MSE
+
+                The check and the count happen under one lock so that a burst of
+                parallel requests cannot all pass the check before any of them is
+                counted. CanProcessPage checks and counts in two separate steps,
+                which is fine for page throttling but not for a credential guess
+                limit.
+
+                Reason: Prevent parallel requests from going over the limit.
+            */
+            lock ( _actionLock )
+            {
+                var limiter = GetRateLimiter( key, clientIpAddress, period, maxActionsInPeriod );
+
+                if ( limiter.ActionsPerPeriod >= limiter.MaxActionsPerPeriod )
+                {
+                    return false;
+                }
+
+                limiter.UpdateActionsPerPeriod();
+                return true;
+            }
+        }
+
+        /// <summary>
+        /// Gives back one action that was counted by <see cref="TryRecordAction(string, string, TimeSpan, int)"/>
+        /// when it turned out it should not count against the limit. Counts are
+        /// kept per web node.
+        /// </summary>
+        /// <param name="key">The key that identifies the object to be rate limited.</param>
+        /// <param name="clientIpAddress">The client ip address.</param>
+        internal static void ReleaseAction( string key, string clientIpAddress )
+        {
+            lock ( _actionLock )
+            {
+                if ( TryGet( GetClientRateLimiterCacheKey( key, clientIpAddress ), out var limiter ) && limiter.ActionsPerPeriod > 0 )
+                {
+                    limiter.ActionsPerPeriod -= 1;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Clears all counted actions for the key and client IP address. Counts
+        /// are kept per web node. The entry is kept and still expires at the end
+        /// of its original period.
+        /// </summary>
+        /// <param name="key">The key that identifies the object to be rate limited.</param>
+        /// <param name="clientIpAddress">The client ip address.</param>
+        internal static void ResetAction( string key, string clientIpAddress )
+        {
+            lock ( _actionLock )
+            {
+                // Clear the count in place instead of removing the entry. Removing
+                // it would send a cache message to the other web nodes and clear
+                // their counts, and the next attempt would add it back with
+                // another message.
+                if ( TryGet( GetClientRateLimiterCacheKey( key, clientIpAddress ), out var limiter ) )
+                {
+                    limiter.ActionsPerPeriod = 0;
+                }
+            }
         }
 
         /// <summary>

@@ -48,7 +48,7 @@ namespace Rock.Field.Types
         public sealed override Type AttributeValueFieldType => base.AttributeValueFieldType;
 
         /// <inheritdoc/>
-        public sealed override Model.ComparisonType FilterComparisonType
+        public sealed override ComparisonType FilterComparisonType
         {
             get => IsMultipleSelection
                 ? ComparisonHelper.ContainsFilterComparisonTypes
@@ -180,7 +180,7 @@ namespace Rock.Field.Types
                 else if ( selectedValues.Count == 1 )
                 {
                     // only one value, so do an Equal instead of Contains which might compile a little bit faster
-                    return ComparisonHelper.ComparisonExpression( Rock.Model.ComparisonType.EqualTo, propertyExpression, AttributeConstantExpression( selectedValues[0] ) );
+                    return ComparisonHelper.ComparisonExpression( ComparisonType.EqualTo, propertyExpression, AttributeConstantExpression( selectedValues[0] ) );
                 }
                 else
                 {

@@ -20,7 +20,8 @@ using System.Drawing;
 using System.IO;
 using System.Net;
 using System.Text.RegularExpressions;
-using System.Web;
+
+using Rock.Configuration;
 
 namespace Rock.Communication.VideoEmbed
 {
@@ -70,7 +71,7 @@ namespace Rock.Communication.VideoEmbed
                 {
                     using ( var thumbnail = Image.FromStream( mem ) )
                     {
-                        return OverlayImage( thumbnail, "YouTube_" + videoId, HttpContext.Current.Server.MapPath( "~/Assets/Images/youtube-overlay.png" ) );
+                        return OverlayImage( thumbnail, "YouTube_" + videoId, RockApp.Current.MapPath( "~/Assets/Images/youtube-overlay.png" ) );
                     }
                 }
             }

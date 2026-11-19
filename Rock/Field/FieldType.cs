@@ -683,7 +683,7 @@ namespace Rock.Field
         }
 
         /// <summary>
-        /// Gets the filter compare value (int or string version of <seealso cref="Rock.Model.ComparisonType"/> as a string)
+        /// Gets the filter compare value (int or string version of <seealso cref="ComparisonType"/> as a string)
         /// </summary>
         /// <param name="control">The control that has the comparison options (or null if this fieldtype doesn't have one).</param>
         /// <param name="filterMode">The filter mode.</param>
@@ -1001,7 +1001,7 @@ namespace Rock.Field
         /// <param name="serviceInstance"></param>
         /// <param name="filterMode">The filter mode.</param>
         /// <returns></returns>
-        public virtual IQueryable<T> ApplyAttributeQueryFilter<T>( IQueryable<T> qry, Control filterControl, Rock.Web.Cache.AttributeCache attribute, IService serviceInstance, Rock.Reporting.FilterMode filterMode ) where T : Rock.Data.Entity<T>, new()
+        public virtual IQueryable<T> ApplyAttributeQueryFilter<T>( IQueryable<T> qry, Control filterControl, Rock.Web.Cache.AttributeCache attribute, IService serviceInstance, FilterMode filterMode ) where T : Rock.Data.Entity<T>, new()
         {
             if ( filterControl == null )
             {

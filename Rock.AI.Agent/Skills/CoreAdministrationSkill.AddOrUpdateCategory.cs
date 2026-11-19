@@ -66,6 +66,7 @@ internal sealed partial class CoreAdministrationSkill
 
         Rock.Model.Category category;
         var isNew = categoryIdKey.IsNullOrWhiteSpace();
+        int? originalParentCategoryId = null;
 
         if ( !isNew )
         {
@@ -75,6 +76,25 @@ internal sealed partial class CoreAdministrationSkill
             {
                 return helper.ErrorResult
                     .WithInstructions( $"Call the {nameof( ListCategories )} function to determine the available categories." );
+            }
+
+            /*
+                10/16/2026 - MSE
+
+                A category with no rules of its own inherits its security from its
+                parent, and the parent can be changed further down. Checking only
+                after that change would evaluate the parent the caller picked, so a
+                person who can edit one category could move another category under
+                it and gain edit rights to it. Check the category as it is stored,
+                before anything changes, as the Category Detail block does.
+
+                Reason: Prevent gaining edit rights to a category by moving it.
+            */
+            originalParentCategoryId = category.ParentCategoryId;
+
+            if ( !category.IsAuthorized( Authorization.EDIT, AgentRequestContext.CurrentPerson ) )
+            {
+                return Error( "You are not authorized to edit that category." );
             }
 
             // The entity type is fixed. A supplied type that disagrees is a mistake
@@ -155,6 +175,29 @@ internal sealed partial class CoreAdministrationSkill
             {
                 return Error( "The parent category belongs to a different entity type." )
                     .WithInstructions( $"Call the {nameof( ListCategories )} function with this category's entity type to determine a valid parent." );
+            }
+        }
+
+        /*
+            10/16/2026 - MSE
+
+            Moving an existing category under a different parent places it in that
+            parent's tree, so the caller must be able to edit or administrate the new
+            parent, as the Category Detail block requires. Moving to the root is
+            allowed, since the caller can already edit the category itself.
+
+            Reason: Prevent moving a category under a parent the caller cannot edit.
+        */
+        if ( !isNew && category.ParentCategoryId.HasValue && category.ParentCategoryId != originalParentCategoryId )
+        {
+            var newParentCategory = category.ParentCategory ?? categoryService.Get( category.ParentCategoryId.Value );
+            var canEditNewParent = newParentCategory != null
+                && ( newParentCategory.IsAuthorized( Authorization.EDIT, AgentRequestContext.CurrentPerson )
+                    || newParentCategory.IsAuthorized( Authorization.ADMINISTRATE, AgentRequestContext.CurrentPerson ) );
+
+            if ( !canEditNewParent )
+            {
+                return Error( "You are not authorized to add a category to the selected parent category." );
             }
         }
 
