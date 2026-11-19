@@ -205,13 +205,13 @@
 
     watch(() => props.modelValue, (isOpen) => {
         if (isOpen) {
-            document.addEventListener("click", onDocumentClick);
+            document.addEventListener("click", onDocumentClick, true);
             window.addEventListener("scroll", updatePosition, true);
             window.addEventListener("resize", updatePosition);
             nextTick(() => updatePosition());
         }
         else {
-            document.removeEventListener("click", onDocumentClick);
+            document.removeEventListener("click", onDocumentClick, true);
             window.removeEventListener("scroll", updatePosition, true);
             window.removeEventListener("resize", updatePosition);
         }
@@ -236,7 +236,7 @@
     });
 
     onBeforeUnmount(() => {
-        document.removeEventListener("click", onDocumentClick);
+        document.removeEventListener("click", onDocumentClick, true);
         window.removeEventListener("scroll", updatePosition, true);
         window.removeEventListener("resize", updatePosition);
         document.removeEventListener("fullscreenchange", onFullscreenChange);
