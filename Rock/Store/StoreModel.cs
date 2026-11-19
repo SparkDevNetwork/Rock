@@ -30,6 +30,17 @@ namespace Rock.Store
         /// </summary>
         public StoreModel() { }
 
+        /// <summary>
+        /// Gets the URL if it is an absolute http or https address, otherwise
+        /// an empty string.
+        /// </summary>
+        /// <param name="url">The URL provided by the store.</param>
+        /// <returns>The URL if it uses the http or https scheme; otherwise an empty string.</returns>
+        protected static string GetHttpUrlOrEmpty( string url )
+        {
+            return url.IsValidUrl() ? url : string.Empty;
+        }
+
         ILavaDataDictionary ILavaDataDictionarySource.GetLavaDataDictionary()
         {
             var dictionary = this.ToLiquid( false ) as Dictionary<string, object>;
