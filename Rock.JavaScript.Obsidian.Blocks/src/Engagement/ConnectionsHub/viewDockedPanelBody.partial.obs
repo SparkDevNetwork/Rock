@@ -93,342 +93,344 @@
             </div>
         </div>
 
-        <ContentSection title="Connection Request"
-                        icon="ti ti-mail"
-                        :disableCollapse="true">
-            <template #headerActions>
-                <div class="connection-request-header-actions">
-                    <div v-if="requestDetails?.connectionState === ConnectionState.FutureFollowUp" class="connection-request-state-label connection-request-state-label--future-follow-up">
-                        {{ ConnectionStateDescription[ConnectionState.FutureFollowUp] }} - {{ asLocaleString(requestDetails.followUpDate) }}
-                    </div>
-                    <div v-else-if="requestDetails?.connectionState === ConnectionState.Inactive" class="connection-request-state-label text-slate">
-                        {{ ConnectionStateDescription[ConnectionState.Inactive] }}
-                    </div>
-                    <div v-else-if="requestDetails?.connectionState === ConnectionState.Connected" class="connection-request-state-label text-emerald">
-                        {{ ConnectionStateDescription[ConnectionState.Connected] }}
-                    </div>
-                    <template v-if="options?.areCelebrationsEnabled">
-                        <i v-if="isNullOrWhiteSpace(requestDetails?.celebrationText)"
-                           class="ti ti-confetti cursor-pointer connection-request-header-actions-icon"
-                           :ref="(el) => addTooltip(el as Element)"
-                           data-toggle="tooltip"
-                           data-placement="auto"
-                           data-container="body"
-                           data-original-title="Add Celebration"
-                           @click="emit('onCelebrationClick')">
-                        </i>
-                        <i v-else
-                           class="ti ti-confetti-filled cursor-pointer connection-request-header-actions-icon--active"
-                           :ref="(el) => addTooltip(el as Element)"
-                           data-toggle="tooltip"
-                           data-placement="auto"
-                           data-container="body"
-                           data-original-title="Has Celebration"
-                           @click="emit('onCelebrationClick')">
-                        </i>
-                    </template>
-                    <template v-if="options?.areRemindersEnabled">
-                        <i v-if="requestDetails?.reminderCount && requestDetails.reminderCount > 0"
-                           class="ti ti-bell-filled cursor-pointer connection-request-header-actions-icon--active"
-                           :ref="(el) => addTooltip(el as Element)"
-                           data-toggle="tooltip"
-                           data-placement="auto"
-                           data-container="body"
-                           :data-original-title="`${requestDetails?.reminderCount} ${pluralize('Reminder', requestDetails?.reminderCount)}`"
-                           @click="emit('onReminderClick')">
-                        </i>
-                        <i v-else
-                           class="ti ti-bell cursor-pointer connection-request-header-actions-icon"
-                           :ref="(el) => addTooltip(el as Element)"
-                           data-toggle="tooltip"
-                           data-placement="auto"
-                           data-container="body"
-                           data-original-title="Add Reminder"
-                           @click="emit('onReminderClick')">
-                        </i>
-                    </template>
-                </div>
-            </template>
-            <template #preBody v-if="!isNullOrWhiteSpace(options?.lavaBadgeBar)">
-                <div class="connection-request-badge-bar">
-                    <div v-html="options?.lavaBadgeBar"></div>
-                </div>
-            </template>
-            <ContentStack>
-                <div class="connection-request-detail-stack">
-
-                    <RockLabel>Request Detail</RockLabel>
-                    <DisplayCard :iconCssClass="requestDetails?.connectionOpportunityIcon"
-                                 iconLabelType="info"
-                                 :title="requestDetails?.connectionOpportunityName"
-                                 :description="requestDetails?.campus">
-                        <template #middleSection>
-                            <div class="connection-request-connector">
-                                <RockLabel class="static-control-label">Connector</RockLabel>
-                                <DropDownContent v-model="isConnectorDropdownOpen"
-                                                 enableFlip>
-                                    <template #anchor>
-                                        <div class="connection-request-connector-anchor"
-                                             :class="{ 'connection-request-connector-anchor--editable': canEditConnectionRequest }"
-                                             @click.prevent.stop="onConnectorDropdownClick">
-                                            <PersonAvatar :photoUrl="selectedConnectorBag?.photoUrl ?? ''"
-                                                          :photoSize="30"
-                                                          marginRight="0" />
-                                            <div class="connection-request-connector-anchor-label">
-                                                <div style="font-size: var(--font-size-small); color: var(--color-interface-strong); font-weight: var(--font-weight-semibold);">{{ selectedConnectorBag?.listItemBag?.text }}</div>
-                                                <i class="ti ti-chevron-down"></i>
-                                            </div>
-                                        </div>
-                                    </template>
-                                    <template #default>
-                                        <div class="person-dropdown">
-                                            <template v-for="connectorItem in connectorItems">
-                                                <div v-if="connectorItem"
-                                                     class="dropdown-content-item dropdown-content-item--connector"
-                                                     :class="{ 'selected': connectorItem.listItemBag?.value === selectedConnector }"
-                                                     @click="updateConnector(connectorItem.listItemBag?.value)">
-                                                    <PersonAvatar :photoUrl="connectorItem.photoUrl ?? ''"
-                                                                  :photoSize="30"
-                                                                  marginRight="0" />
-                                                    <div>{{ connectorItem?.listItemBag?.text }}</div>
-                                                </div>
-                                            </template>
-                                        </div>
-                                    </template>
-                                </DropDownContent>
-                            </div>
-                        </template>
-                        <template #actions>
-                            <div class="connection-request-detail-meta">
-                                <div v-if="!isNullOrWhiteSpace(requestDetails?.createdDateTime)" class="connection-request-detail-meta-item">
-                                    <i class="ti ti-calendar-plus"></i>
-                                    Created {{ createdDateTimeElapsed }}
-                                </div>
-                                <div v-if="!isNullOrWhiteSpace(requestDetails?.dueDate) && requestDetails?.connectionState !== ConnectionState.Inactive"
-                                     :class="getDueDateColor(requestDetails?.dueStatus, requestDetails?.connectionState === ConnectionState.Connected)">
-                                    <i class="ti ti-clock"></i>
-                                    {{ elapsedDueDate }}
-                                </div>
-                            </div>
-                        </template>
-                    </DisplayCard>
-
-                    <div v-if="requestDetails?.actionItems && requestDetails.actionItems.length > 0">
-                        <RockLabel>Available Actions</RockLabel>
-                        <ActionItems :actionItems="requestDetails.actionItems ?? []" @onActionClick="onActionItemClick" />
-                    </div>
-                    <div v-if="!isNullOrWhiteSpace(requestDetails?.comments)">
-                        <StaticFormControl label="Comments"
-                                           :modelValue="requestDetails?.comments ?? ''">
-                            <template #default="{ value }">
-                                <div class="static-control-value" v-html="value"></div>
-                            </template>
-                        </StaticFormControl>
-                    </div>
-                    <div v-if="!isNullOrWhiteSpace(requestDetails?.connectionTypeSource)">
-                        <StaticFormControl label="Request Source"
-                                           :modelValue="requestDetails?.connectionTypeSource ?? ''">
-                            <template #default="{ value }">
-                                <div class="static-control-value">{{ value }}</div>
-                            </template>
-                        </StaticFormControl>
-                    </div>
-                </div>
-            </ContentStack>
-            <ContentStack v-if="options?.areGroupPlacementsEnabled">
-                <RockLabel>Placement Group Details</RockLabel>
-                <div class="placement-group-detail">
-                    <div class="form-group static-control">
-                        <RockLabel>Group</RockLabel>
-                        <div class="control-wrapper">
-                            <div class="form-control-static">
-                                <HighlightLabel v-if="requestDetails?.placementGroup?.groupId"
-                                                :iconCssClass="isNullOrWhiteSpace(requestDetails?.placementGroup?.iconCssClass) ? 'ti ti-users' : requestDetails?.placementGroup?.iconCssClass!"
-                                                labelType="info"
-                                                @click="emit('navigateToGroup', requestDetails.placementGroup.groupId ?? '')">
-                                    {{ placementGroupName }}
-                                </HighlightLabel>
-                                <HighlightLabel v-else
-                                                iconCssClass="ti ti-alert-circle"
-                                                labelType="type">
-                                    None Assigned
-                                </HighlightLabel>
-                            </div>
+        <ContentSectionContainer :sidebar="false">
+            <ContentSection title="Connection Request"
+                            icon="ti ti-mail"
+                            :disableCollapse="true">
+                <template #headerActions>
+                    <div class="connection-request-header-actions">
+                        <div v-if="requestDetails?.connectionState === ConnectionState.FutureFollowUp" class="connection-request-state-label connection-request-state-label--future-follow-up">
+                            {{ ConnectionStateDescription[ConnectionState.FutureFollowUp] }} - {{ asLocaleString(requestDetails.followUpDate) }}
                         </div>
+                        <div v-else-if="requestDetails?.connectionState === ConnectionState.Inactive" class="connection-request-state-label text-slate">
+                            {{ ConnectionStateDescription[ConnectionState.Inactive] }}
+                        </div>
+                        <div v-else-if="requestDetails?.connectionState === ConnectionState.Connected" class="connection-request-state-label text-emerald">
+                            {{ ConnectionStateDescription[ConnectionState.Connected] }}
+                        </div>
+                        <template v-if="options?.areCelebrationsEnabled">
+                            <i v-if="isNullOrWhiteSpace(requestDetails?.celebrationText)"
+                               class="ti ti-confetti cursor-pointer connection-request-header-actions-icon"
+                               :ref="(el) => addTooltip(el as Element)"
+                               data-toggle="tooltip"
+                               data-placement="auto"
+                               data-container="body"
+                               data-original-title="Add Celebration"
+                               @click="emit('onCelebrationClick')">
+                            </i>
+                            <i v-else
+                               class="ti ti-confetti-filled cursor-pointer connection-request-header-actions-icon--active"
+                               :ref="(el) => addTooltip(el as Element)"
+                               data-toggle="tooltip"
+                               data-placement="auto"
+                               data-container="body"
+                               data-original-title="Has Celebration"
+                               @click="emit('onCelebrationClick')">
+                            </i>
+                        </template>
+                        <template v-if="options?.areRemindersEnabled">
+                            <i v-if="requestDetails?.reminderCount && requestDetails.reminderCount > 0"
+                               class="ti ti-bell-filled cursor-pointer connection-request-header-actions-icon--active"
+                               :ref="(el) => addTooltip(el as Element)"
+                               data-toggle="tooltip"
+                               data-placement="auto"
+                               data-container="body"
+                               :data-original-title="`${requestDetails?.reminderCount} ${pluralize('Reminder', requestDetails?.reminderCount)}`"
+                               @click="emit('onReminderClick')">
+                            </i>
+                            <i v-else
+                               class="ti ti-bell cursor-pointer connection-request-header-actions-icon"
+                               :ref="(el) => addTooltip(el as Element)"
+                               data-toggle="tooltip"
+                               data-placement="auto"
+                               data-container="body"
+                               data-original-title="Add Reminder"
+                               @click="emit('onReminderClick')">
+                            </i>
+                        </template>
                     </div>
-                    <AttributeValuesContainer v-if="requestDetails?.placementGroup?.groupMemberAttributeValues && Object.values(requestDetails.placementGroup.groupMemberAttributeValues).some(v => !!v)"
-                                              :modelValue="requestDetails.placementGroup.groupMemberAttributeValues"
-                                              :attributes="requestDetails?.placementGroup?.groupMemberAttributes ?? {}"
-                                              :numberOfColumns="2"
-                                              :showCategoryLabel="false" />
-                    <div v-if="automatedGroupMemberRequirements && automatedGroupMemberRequirements.length > 0">
-                        <StaticFormControl label="Requirements"
-                                           modelValue="">
-                            <template #default>
-                                <div class="placement-group-detail-requirements">
-                                    <HighlightLabel v-for="groupMemberRequirement in automatedGroupMemberRequirements"
-                                                    :iconCssClass="groupMemberRequirement.groupMemberRequirementState === MeetsGroupRequirement.Meets ? 'ti ti-circle-check-filled' : ''"
-                                                    :labelType="getRequirementLabelType(groupMemberRequirement)">
-                                        {{ groupMemberRequirement.requirementName }}
-                                    </HighlightLabel>
+                </template>
+                <template #preBody v-if="!isNullOrWhiteSpace(options?.lavaBadgeBar)">
+                    <div class="connection-request-badge-bar">
+                        <div v-html="options?.lavaBadgeBar"></div>
+                    </div>
+                </template>
+                <ContentStack>
+                    <div class="connection-request-detail-stack">
+
+                        <RockLabel>Request Detail</RockLabel>
+                        <DisplayCard :iconCssClass="requestDetails?.connectionOpportunityIcon"
+                                     iconLabelType="info"
+                                     :title="requestDetails?.connectionOpportunityName"
+                                     :description="requestDetails?.campus">
+                            <template #middleSection>
+                                <div class="connection-request-connector">
+                                    <RockLabel class="static-control-label">Connector</RockLabel>
+                                    <DropDownContent v-model="isConnectorDropdownOpen"
+                                                     enableFlip>
+                                        <template #anchor>
+                                            <div class="connection-request-connector-anchor"
+                                                 :class="{ 'connection-request-connector-anchor--editable': canEditConnectionRequest }"
+                                                 @click.prevent.stop="onConnectorDropdownClick">
+                                                <PersonAvatar :photoUrl="selectedConnectorBag?.photoUrl ?? ''"
+                                                              :photoSize="30"
+                                                              marginRight="0" />
+                                                <div class="connection-request-connector-anchor-label">
+                                                    <div style="font-size: var(--font-size-small); color: var(--color-interface-strong); font-weight: var(--font-weight-semibold);">{{ selectedConnectorBag?.listItemBag?.text }}</div>
+                                                    <i class="ti ti-chevron-down"></i>
+                                                </div>
+                                            </div>
+                                        </template>
+                                        <template #default>
+                                            <div class="person-dropdown">
+                                                <template v-for="connectorItem in connectorItems">
+                                                    <div v-if="connectorItem"
+                                                         class="dropdown-content-item dropdown-content-item--connector"
+                                                         :class="{ 'selected': connectorItem.listItemBag?.value === selectedConnector }"
+                                                         @click="updateConnector(connectorItem.listItemBag?.value)">
+                                                        <PersonAvatar :photoUrl="connectorItem.photoUrl ?? ''"
+                                                                      :photoSize="30"
+                                                                      marginRight="0" />
+                                                        <div>{{ connectorItem?.listItemBag?.text }}</div>
+                                                    </div>
+                                                </template>
+                                            </div>
+                                        </template>
+                                    </DropDownContent>
                                 </div>
                             </template>
-                        </StaticFormControl>
-                    </div>
-                    <div v-if="manualGroupMemberRequirements && manualGroupMemberRequirements.length > 0">
-                        <RockLabel class="static-control-label">Manual Requirements</RockLabel>
-                        <div class="placement-group-detail-row">
-                            <template v-for="manualRequirement in manualGroupMemberRequirements">
-                                <div v-if="manualRequirement.groupRequirementIdKey" class="placement-group-detail-requirement">
-                                    <CheckBox :modelValue="manualRequirement.groupMemberRequirementState === MeetsGroupRequirement.Meets"
-                                              label=""
-                                              :text="manualRequirement.requirementName ?? ''"
-                                              :disabled="!canEditConnectionRequest"
-                                              @update:modelValue="(isChecked) => updateManualRequirement(manualRequirement, isChecked)" />
-                                    <Loading :isLoading="isManualRequirementLoadingRecord[manualRequirement.groupRequirementIdKey]"
-                                             isSmall />
-                                    <NotificationBox v-if="!isManualRequirementLoadingRecord[manualRequirement.groupRequirementIdKey] && isManualRequirementErrorVisibleRecord[manualRequirement.groupRequirementIdKey]"
-                                                     alertType="danger"
-                                                     dismissible
-                                                     @dismiss="onRequirementErrorDismissed(manualRequirement.groupRequirementIdKey)">
-                                        {{ manualRequirementErrorRecord[manualRequirement.groupRequirementIdKey] }}
-                                    </NotificationBox>
-                                    <div v-else-if="!isManualRequirementLoadingRecord[manualRequirement.groupRequirementIdKey] && isManualRequirementSavedRecord[manualRequirement.groupRequirementIdKey]"
-                                         class="placement-group-detail-requirement-saved">
-                                        <i class="ti ti-circle-check-filled"></i>
-                                        Saved
+                            <template #actions>
+                                <div class="connection-request-detail-meta">
+                                    <div v-if="!isNullOrWhiteSpace(requestDetails?.createdDateTime)" class="connection-request-detail-meta-item">
+                                        <i class="ti ti-calendar-plus"></i>
+                                        Created {{ createdDateTimeElapsed }}
+                                    </div>
+                                    <div v-if="!isNullOrWhiteSpace(requestDetails?.dueDate) && requestDetails?.connectionState !== ConnectionState.Inactive"
+                                         :class="getDueDateColor(requestDetails?.dueStatus, requestDetails?.connectionState === ConnectionState.Connected)">
+                                        <i class="ti ti-clock"></i>
+                                        {{ elapsedDueDate }}
                                     </div>
                                 </div>
                             </template>
+                        </DisplayCard>
+
+                        <div v-if="requestDetails?.actionItems && requestDetails.actionItems.length > 0">
+                            <RockLabel>Available Actions</RockLabel>
+                            <ActionItems :actionItems="requestDetails.actionItems ?? []" @onActionClick="onActionItemClick" />
+                        </div>
+                        <div v-if="!isNullOrWhiteSpace(requestDetails?.comments)">
+                            <StaticFormControl label="Comments"
+                                               :modelValue="requestDetails?.comments ?? ''">
+                                <template #default="{ value }">
+                                    <div class="static-control-value" v-html="value"></div>
+                                </template>
+                            </StaticFormControl>
+                        </div>
+                        <div v-if="!isNullOrWhiteSpace(requestDetails?.connectionTypeSource)">
+                            <StaticFormControl label="Request Source"
+                                               :modelValue="requestDetails?.connectionTypeSource ?? ''">
+                                <template #default="{ value }">
+                                    <div class="static-control-value">{{ value }}</div>
+                                </template>
+                            </StaticFormControl>
                         </div>
                     </div>
-                </div>
-            </ContentStack>
-            <ContentStack v-if="hasNonEmptyRequestAttributeValue">
-                <AttributeValuesContainer :modelValue="requestDetails?.attributeValues ?? {}"
-                                          :attributes="requestDetails?.attributes ?? {}"
-                                          :numberOfColumns="2"
-                                          displayAsCategoryDropdown
-                                          globalCategoryNameOverride="General Attributes" />
-            </ContentStack>
-        </ContentSection>
-        <ContentSection title="Activity Feed"
-                        icon="ti ti-activity"
-                        :disableCollapse="true">
-            <template #headerActions>
-                <DropDownContent v-model="isActivityFilterDropdownOpen"
-                                 enableFlip
-                                 placement="bottom-end">
-                    <template #anchor>
-                        <div class="activity-filter-anchor">
-                            Show {{ selectedActivityFilter.text }}
-                            <i class="ti ti-chevron-down"></i>
-                        </div>
-                    </template>
-                    <template #default>
-                        <div class="dropdown-content">
-                            <div v-for="activityFilter in activityFilterOptions"
-                                 class="dropdown-content-item dropdown-content-item--activity-filter"
-                                 @click.stop="updateActivityFilter(activityFilter)">
-                                {{ activityFilter.text }}
-                            </div>
-                        </div>
-                    </template>
-                </DropDownContent>
-            </template>
-            <template #default>
-                <NotificationBox v-if="!isNullOrWhiteSpace(activityErrorMessage)"
-                                 alertType="danger">
-                    {{ activityErrorMessage }}
-                </NotificationBox>
-
-                <template v-if="canEditConnectionRequestNote">
-                    <RockForm @submit="onAddRequestNote">
-                        <div class="activity-add-note-form">
-                            <NotificationBox v-if="isAddRequestNoteErrorMessageVisible"
-                                             alertType="danger"
-                                             style="margin-bottom: 0;"
-                                             dismissible
-                                             @dismiss="onAddRequestNoteErrorDismissed">
-                                {{ addRequestNoteErrorMessage }}
-                            </NotificationBox>
-                            <TextBox v-model="connectionRequestNoteText"
-                                     textMode="multiline"
-                                     placeholder="Write a note..."
-                                     validationTitle="Note"
-                                     rules="required" />
-                            <div class="row">
-                                <div class="col-md-3">
-                                    <RockButton :btnType="BtnType.Primary"
-                                                :btnSize="BtnSize.Small"
-                                                type="submit">
-                                        Save Note
-                                    </RockButton>
+                </ContentStack>
+                <ContentStack v-if="options?.areGroupPlacementsEnabled">
+                    <RockLabel>Placement Group Details</RockLabel>
+                    <div class="placement-group-detail">
+                        <div class="form-group static-control">
+                            <RockLabel>Group</RockLabel>
+                            <div class="control-wrapper">
+                                <div class="form-control-static">
+                                    <HighlightLabel v-if="requestDetails?.placementGroup?.groupId"
+                                                    :iconCssClass="isNullOrWhiteSpace(requestDetails?.placementGroup?.iconCssClass) ? 'ti ti-users' : requestDetails?.placementGroup?.iconCssClass!"
+                                                    labelType="info"
+                                                    @click="emit('navigateToGroup', requestDetails.placementGroup.groupId ?? '')">
+                                        {{ placementGroupName }}
+                                    </HighlightLabel>
+                                    <HighlightLabel v-else
+                                                    iconCssClass="ti ti-alert-circle"
+                                                    labelType="type">
+                                        None Assigned
+                                    </HighlightLabel>
                                 </div>
                             </div>
                         </div>
-                    </RockForm>
-                </template>
-                <template v-for="activityEntry in filteredAndSortedActivityEntries">
-                    <div v-if="activityEntry.entryType === ActivityEntryType.SystemUpdate && activityEntry.systemUpdate" class="activity-system-update">
-                        <Badge :isCircle="true" class="activity-system-update-icon h-fit">
-                            <i :class="systemUpdateIconClass(activityEntry.systemUpdate.systemUpdateType)"></i>
-                        </Badge>
-                        <div>
-                            <span v-html="systemUpdateMessage(activityEntry)"></span>
-                            <span> • {{ getElapsedDate(activityEntry.entryDateTime) }}</span>
+                        <AttributeValuesContainer v-if="requestDetails?.placementGroup?.groupMemberAttributeValues && Object.values(requestDetails.placementGroup.groupMemberAttributeValues).some(v => !!v)"
+                                                  :modelValue="requestDetails.placementGroup.groupMemberAttributeValues"
+                                                  :attributes="requestDetails?.placementGroup?.groupMemberAttributes ?? {}"
+                                                  :numberOfColumns="2"
+                                                  :showCategoryLabel="false" />
+                        <div v-if="automatedGroupMemberRequirements && automatedGroupMemberRequirements.length > 0">
+                            <StaticFormControl label="Requirements"
+                                               modelValue="">
+                                <template #default>
+                                    <div class="placement-group-detail-requirements">
+                                        <HighlightLabel v-for="groupMemberRequirement in automatedGroupMemberRequirements"
+                                                        :iconCssClass="groupMemberRequirement.groupMemberRequirementState === MeetsGroupRequirement.Meets ? 'ti ti-circle-check-filled' : ''"
+                                                        :labelType="getRequirementLabelType(groupMemberRequirement)">
+                                            {{ groupMemberRequirement.requirementName }}
+                                        </HighlightLabel>
+                                    </div>
+                                </template>
+                            </StaticFormControl>
+                        </div>
+                        <div v-if="manualGroupMemberRequirements && manualGroupMemberRequirements.length > 0">
+                            <RockLabel class="static-control-label">Manual Requirements</RockLabel>
+                            <div class="placement-group-detail-row">
+                                <template v-for="manualRequirement in manualGroupMemberRequirements">
+                                    <div v-if="manualRequirement.groupRequirementIdKey" class="placement-group-detail-requirement">
+                                        <CheckBox :modelValue="manualRequirement.groupMemberRequirementState === MeetsGroupRequirement.Meets"
+                                                  label=""
+                                                  :text="manualRequirement.requirementName ?? ''"
+                                                  :disabled="!canEditConnectionRequest"
+                                                  @update:modelValue="(isChecked) => updateManualRequirement(manualRequirement, isChecked)" />
+                                        <Loading :isLoading="isManualRequirementLoadingRecord[manualRequirement.groupRequirementIdKey]"
+                                                 isSmall />
+                                        <NotificationBox v-if="!isManualRequirementLoadingRecord[manualRequirement.groupRequirementIdKey] && isManualRequirementErrorVisibleRecord[manualRequirement.groupRequirementIdKey]"
+                                                         alertType="danger"
+                                                         dismissible
+                                                         @dismiss="onRequirementErrorDismissed(manualRequirement.groupRequirementIdKey)">
+                                            {{ manualRequirementErrorRecord[manualRequirement.groupRequirementIdKey] }}
+                                        </NotificationBox>
+                                        <div v-else-if="!isManualRequirementLoadingRecord[manualRequirement.groupRequirementIdKey] && isManualRequirementSavedRecord[manualRequirement.groupRequirementIdKey]"
+                                             class="placement-group-detail-requirement-saved">
+                                            <i class="ti ti-circle-check-filled"></i>
+                                            Saved
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
                         </div>
                     </div>
-                    <ActivityCard v-else
-                                  :connectionRequestIdKey="requestDetails?.connectionRequestIdKey ?? ''"
-                                  :activityEntry="activityEntry"
-                                  :ref="(el) => setActivityCardRef(activityEntry.key, el)"
-                                  :canEditActivity="activityEntry.cardEntry?.canEdit ?? false"
-                                  :canEditNote="canEditConnectionRequestNote"
-                                  @editNote="(bag) => onEditRequestNote(bag, activityEntry.key)"
-                                  @deleteNote="deleteNote"
-                                  @editActivity="(entry) => emit('editActivity', entry)"
-                                  @deleteActivity="deleteActivity"
-                                  @saveStatusHistoryNote="(bag) => onSaveStatusHistoryNote(bag, activityEntry.key)" />
+                </ContentStack>
+                <ContentStack v-if="hasNonEmptyRequestAttributeValue">
+                    <AttributeValuesContainer :modelValue="requestDetails?.attributeValues ?? {}"
+                                              :attributes="requestDetails?.attributes ?? {}"
+                                              :numberOfColumns="2"
+                                              displayAsCategoryDropdown
+                                              globalCategoryNameOverride="General Attributes" />
+                </ContentStack>
+            </ContentSection>
+            <ContentSection title="Activity Feed"
+                            icon="ti ti-activity"
+                            :disableCollapse="true">
+                <template #headerActions>
+                    <DropDownContent v-model="isActivityFilterDropdownOpen"
+                                     enableFlip
+                                     placement="bottom-end">
+                        <template #anchor>
+                            <div class="activity-filter-anchor">
+                                Show {{ selectedActivityFilter.text }}
+                                <i class="ti ti-chevron-down"></i>
+                            </div>
+                        </template>
+                        <template #default>
+                            <div class="dropdown-content">
+                                <div v-for="activityFilter in activityFilterOptions"
+                                     class="dropdown-content-item dropdown-content-item--activity-filter"
+                                     @click.stop="updateActivityFilter(activityFilter)">
+                                    {{ activityFilter.text }}
+                                </div>
+                            </div>
+                        </template>
+                    </DropDownContent>
                 </template>
-            </template>
-        </ContentSection>
-        <ContentSection v-if="workflowRows.length > 0"
-                        icon="ti ti-settings-cog"
-                        :isCollapsed="true">
-            <template #title>
-                <span class="pr-spacing-xs">Workflows</span>
-                <Badge badgeType="info">{{ workflowRows.length }}</Badge>
-            </template>
-            <Grid :data="workflowGridData"
-                  keyField="idKey"
-                  itemTerm="Workflow"
-                  light
-                  :onSelectItem="onWorkflowSelected">
-                <TextColumn name="workflowTypeName"
-                            title="Workflow Type"
-                            field="workflowTypeName"
-                            visiblePriority="xs" />
-                <TextColumn name="trigger"
-                            title="Trigger"
-                            field="trigger"
-                            visiblePriority="sm" />
-                <TextColumn name="currentActivity"
-                            title="Current Activity"
-                            field="currentActivity"
-                            visiblePriority="sm" />
-                <DateColumn name="activatedDateTime"
-                            title="Start Date"
-                            field="activatedDateTime"
-                            visiblePriority="xs" />
-                <LabelColumn name="status"
-                             title="Status"
-                             field="status"
-                             :classSource="workflowStatusClassSource"
-                             defaultLabelClass="success"
-                             visiblePriority="xs" />
-            </Grid>
-        </ContentSection>
+                <template #default>
+                    <NotificationBox v-if="!isNullOrWhiteSpace(activityErrorMessage)"
+                                     alertType="danger">
+                        {{ activityErrorMessage }}
+                    </NotificationBox>
+
+                    <template v-if="canEditConnectionRequestNote">
+                        <RockForm @submit="onAddRequestNote">
+                            <div class="activity-add-note-form">
+                                <NotificationBox v-if="isAddRequestNoteErrorMessageVisible"
+                                                 alertType="danger"
+                                                 style="margin-bottom: 0;"
+                                                 dismissible
+                                                 @dismiss="onAddRequestNoteErrorDismissed">
+                                    {{ addRequestNoteErrorMessage }}
+                                </NotificationBox>
+                                <TextBox v-model="connectionRequestNoteText"
+                                         textMode="multiline"
+                                         placeholder="Write a note..."
+                                         validationTitle="Note"
+                                         rules="required" />
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <RockButton :btnType="BtnType.Primary"
+                                                    :btnSize="BtnSize.Small"
+                                                    type="submit">
+                                            Save Note
+                                        </RockButton>
+                                    </div>
+                                </div>
+                            </div>
+                        </RockForm>
+                    </template>
+                    <template v-for="activityEntry in filteredAndSortedActivityEntries">
+                        <div v-if="activityEntry.entryType === ActivityEntryType.SystemUpdate && activityEntry.systemUpdate" class="activity-system-update">
+                            <Badge :isCircle="true" class="activity-system-update-icon h-fit">
+                                <i :class="systemUpdateIconClass(activityEntry.systemUpdate.systemUpdateType)"></i>
+                            </Badge>
+                            <div>
+                                <span v-html="systemUpdateMessage(activityEntry)"></span>
+                                <span> • {{ getElapsedDate(activityEntry.entryDateTime) }}</span>
+                            </div>
+                        </div>
+                        <ActivityCard v-else
+                                      :connectionRequestIdKey="requestDetails?.connectionRequestIdKey ?? ''"
+                                      :activityEntry="activityEntry"
+                                      :ref="(el) => setActivityCardRef(activityEntry.key, el)"
+                                      :canEditActivity="activityEntry.cardEntry?.canEdit ?? false"
+                                      :canEditNote="canEditConnectionRequestNote"
+                                      @editNote="(bag) => onEditRequestNote(bag, activityEntry.key)"
+                                      @deleteNote="deleteNote"
+                                      @editActivity="(entry) => emit('editActivity', entry)"
+                                      @deleteActivity="deleteActivity"
+                                      @saveStatusHistoryNote="(bag) => onSaveStatusHistoryNote(bag, activityEntry.key)" />
+                    </template>
+                </template>
+            </ContentSection>
+            <ContentSection v-if="workflowRows.length > 0"
+                            icon="ti ti-settings-cog"
+                            :isCollapsed="true">
+                <template #title>
+                    <span class="pr-spacing-xs">Workflows</span>
+                    <Badge badgeType="info">{{ workflowRows.length }}</Badge>
+                </template>
+                <Grid :data="workflowGridData"
+                      keyField="idKey"
+                      itemTerm="Workflow"
+                      light
+                      :onSelectItem="onWorkflowSelected">
+                    <TextColumn name="workflowTypeName"
+                                title="Workflow Type"
+                                field="workflowTypeName"
+                                visiblePriority="xs" />
+                    <TextColumn name="trigger"
+                                title="Trigger"
+                                field="trigger"
+                                visiblePriority="sm" />
+                    <TextColumn name="currentActivity"
+                                title="Current Activity"
+                                field="currentActivity"
+                                visiblePriority="sm" />
+                    <DateColumn name="activatedDateTime"
+                                title="Start Date"
+                                field="activatedDateTime"
+                                visiblePriority="xs" />
+                    <LabelColumn name="status"
+                                 title="Status"
+                                 field="status"
+                                 :classSource="workflowStatusClassSource"
+                                 defaultLabelClass="success"
+                                 visiblePriority="xs" />
+                </Grid>
+            </ContentSection>
+        </ContentSectionContainer>
     </div>
 </template>
 
@@ -442,6 +444,7 @@
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
     import { AdditionalRequestBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/additionalRequestBag";
     import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import ContentSectionContainer from "@Obsidian/Controls/contentSectionContainer.obs";
     import ContentStack from "@Obsidian/Controls/contentStack.obs";
     import RockLabel from "@Obsidian/Controls/rockLabel.obs";
     import Loading from "@Obsidian/Controls/loading.obs";
