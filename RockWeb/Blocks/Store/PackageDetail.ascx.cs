@@ -148,9 +148,9 @@ namespace RockWeb.Blocks.Store
             // check for errors
             ErrorCheck( errorResponse );
 
-            lPackageName.Text = package.Name;
-            lPackageDescription.Text = package.Description;
-            lVendorName.Text = package.Vendor.Name;
+            lPackageName.Text = package.Name.EncodeHtml();
+            lPackageDescription.Text = package.Description.SanitizeHtml( strict: false );
+            lVendorName.Text = package.Vendor.Name.EncodeHtml();
             imgPackageImage.ImageUrl = package.PackageIconBinaryFile.ImageUrl;
             hlPackageLink.NavigateUrl = package.SupportUrl;
 
@@ -171,7 +171,7 @@ namespace RockWeb.Blocks.Store
 
             lRatingSummary.Text = starMarkup.ToString();
 
-            lAuthorInfo.Text = string.Format( "<a href='{0}'>{1}</a>", package.Vendor.Url, package.Vendor.Name );
+            lAuthorInfo.Text = string.Format( "<a href='{0}'>{1}</a>", package.Vendor.Url.EncodeHtml(), package.Vendor.Name.EncodeHtml() );
 
             lCost.Text = string.Empty;
             lbInstall.Visible = true;
@@ -265,7 +265,7 @@ namespace RockWeb.Blocks.Store
 
                 lLatestVersionLabel.Text = latestVersion.VersionLabel;
                 lLatestVersionDate.Text = latestVersion.AddedDate.ToString( "MMMM d, yyyy" );
-                lLatestVersionDescription.Text = latestVersion.Description;
+                lLatestVersionDescription.Text = latestVersion.Description.SanitizeHtml( strict: false );
 
                 var versionReviews = new PackageVersionRatingService().GetPackageVersionRatings( latestVersion.Id );
                 rptLatestVersionRatings.DataSource = versionReviews;
@@ -296,9 +296,9 @@ namespace RockWeb.Blocks.Store
                     ? $"v{latestSemVer.Minor}.{latestSemVer.Patch}"  // old style
                     : $"v{latestSemVer.Major}.{latestSemVer.Minor}"; // new style
 
-                lDocumenationLink.Text = string.Format( "<a href='{0}' target='_blank' rel='noopener noreferrer'>Documentation Link</a>", latestVersion.DocumentationUrl );
+                lDocumenationLink.Text = string.Format( "<a href='{0}' target='_blank' rel='noopener noreferrer'>Documentation Link</a>", latestVersion.DocumentationUrl.EncodeHtml() );
 
-                lSupportLink.Text = string.Format( "<a href='{0}'>Support Link</a>", package.SupportUrl );
+                lSupportLink.Text = string.Format( "<a href='{0}'>Support Link</a>", package.SupportUrl.EncodeHtml() );
 
                 // fill in previous version info
                 rptAdditionalVersions.DataSource = package.Versions.Where( v => v.Id < latestVersion.Id ).OrderByDescending( v => v.AddedDate );
