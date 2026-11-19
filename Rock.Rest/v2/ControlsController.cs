@@ -754,8 +754,6 @@ namespace Rock.Rest.v2
             editedLocation.County = options.Locality;
             editedLocation.Country = options.Country.IsNotNullOrWhiteSpace() ? options.Country : defaultCountryCode;
 
-            var locationService = new LocationService( new RockContext() );
-
             string validationMessage;
 
             var isValid = LocationService.ValidateLocationAddressRequirements( editedLocation, out validationMessage );
@@ -766,16 +764,18 @@ namespace Rock.Rest.v2
             }
             else
             {
-                editedLocation = locationService.Get( editedLocation.Street1, editedLocation.Street2, editedLocation.City, editedLocation.State, editedLocation.County, editedLocation.PostalCode, editedLocation.Country, null );
+                editedLocation.Street1 = editedLocation.Street1.FixCase();
+                editedLocation.Street2 = editedLocation.Street2.FixCase();
+                editedLocation.City = editedLocation.City.FixCase();
 
                 /*
                     10/19/2026 - MSE
 
-                    The address picker renders this string as HTML and the lookup can return an
-                    existing stored location, so the address text is encoded before the line
-                    breaks become <br>. The Address bag fields stay raw; they fill text inputs.
+                    The address picker renders this string as HTML, so the address text is
+                    encoded before the line breaks become <br>. The Address bag fields stay raw;
+                    they fill text inputs.
 
-                    Reason: Stored address text must not render as HTML.
+                    Reason: Address text must not render as HTML.
                 */
                 addressString = editedLocation.GetFullStreetAddress().EncodeHtml().ConvertCrLfToHtmlBr();
             }
@@ -811,27 +811,20 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "9258BA75-F922-4607-A2C0-036141621F0E" )]
         public IActionResult AddressControlGetStreetAddressString( [FromBody] AddressControlBag address )
         {
-            Location editedLocation;
             var globalAttributesCache = GlobalAttributesCache.Get();
             var orgCountryCode = globalAttributesCache.OrganizationCountry;
             var defaultCountryCode = string.IsNullOrWhiteSpace( orgCountryCode ) ? "US" : orgCountryCode;
 
-            var locationService = new LocationService( new RockContext() );
-            editedLocation = locationService.Get( address.Street1, address.Street2, address.City, address.State, address.Locality, address.PostalCode, address.Country.IsNotNullOrWhiteSpace() ? address.Country : defaultCountryCode, null );
-
-            if ( editedLocation == null )
+            var editedLocation = new Location
             {
-                editedLocation = new Location
-                {
-                    Street1 = address.Street1.FixCase(),
-                    Street2 = address.Street2.FixCase(),
-                    City = address.City.FixCase(),
-                    State = address.State,
-                    County = address.Locality,
-                    PostalCode = address.PostalCode,
-                    Country = address.Country
-                };
-            }
+                Street1 = address.Street1.FixCase(),
+                Street2 = address.Street2.FixCase(),
+                City = address.City.FixCase(),
+                State = address.State,
+                County = address.Locality,
+                PostalCode = address.PostalCode,
+                Country = address.Country.IsNotNullOrWhiteSpace() ? address.Country : defaultCountryCode
+            };
 
             /*
                 10/19/2026 - MSE
