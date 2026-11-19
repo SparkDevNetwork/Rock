@@ -140,7 +140,7 @@ namespace Rock.Blocks.Store
                 return;
             }
 
-            var pageTitle = $"Items for {categoryName}";
+            var pageTitle = $"Items for {categoryName.EncodeHtml()}";
             var siteName = PageCache?.Layout?.Site?.Name;
 
             RequestContext.Response.SetPageTitle( pageTitle );
