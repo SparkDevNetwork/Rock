@@ -25,7 +25,7 @@ import { DueDateType } from "@Obsidian/Enums/Group/dueDateType";
 
 /**
  * A group requirement type option for the Group Requirement modal. Carries the type's
- * Rock.Model.DueDateType so the modal's Due Date well can react to the
+ * Rock.ViewModels.Blocks.Group.GroupDetail.GroupRequirementTypeBag.DueDateType so the modal's Due Date well can react to the
  * selection without an extra round-trip.
  */
 export type GroupRequirementTypeBag = {
@@ -35,7 +35,7 @@ export type GroupRequirementTypeBag = {
     /** Gets or sets disabled for this item. */
     disabled?: boolean | null;
 
-    /** Gets or sets the Rock.Model.DueDateType associated with the requirement. */
+    /** Gets or sets the Rock.ViewModels.Blocks.Group.GroupDetail.GroupRequirementTypeBag.DueDateType associated with the requirement. */
     dueDateType: DueDateType;
 
     /** Gets or sets the text. */

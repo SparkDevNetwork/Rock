@@ -25,7 +25,7 @@ import { DueDateType } from "@Obsidian/Enums/Group/dueDateType";
 
 /** Represents a group requirement type option. */
 export type GroupRequirementTypeBag = {
-    /** Gets or sets the Rock.Model.DueDateType associated with the requirement. */
+    /** Gets or sets the Rock.ViewModels.Blocks.Group.GroupTypeDetail.GroupRequirementTypeBag.DueDateType associated with the requirement. */
     dueDateType: DueDateType;
 
     /** Gets or sets the name of group requirement type. */

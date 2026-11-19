@@ -33,14 +33,14 @@ export type SampleDataInstallerPackageBag = {
     /** Gets or sets the number of campuses the dataset creates. */
     campuses: number;
 
-    /** Gets or sets the key of the dataset in the package, such as "core-1". */
-    dataset?: string | null;
-
     /**
      * Gets or sets the database space, in whole megabytes, that a
      * typical install of every part uses.
      */
     databaseSpaceMegabytes: number;
+
+    /** Gets or sets the key of the dataset in the package, such as "core-1". */
+    dataset?: string | null;
 
     /** Gets or sets a few short phrases that set the dataset apart. */
     highlights?: string[] | null;
