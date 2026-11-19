@@ -124,8 +124,8 @@ namespace RockWeb.Blocks.Event
                 RockContext rockContext = new RockContext();
 
                 // get event occurrences
-                var qry = new EventItemOccurrenceService( rockContext ).Queryable()
-                                            .Where(e => e.EventItem.EventItemAudiences.Any(a => a.DefinedValue.Guid == audienceGuid) && e.EventItem.IsActive);
+                var qry = new EventItemOccurrenceService( rockContext ).Queryable( "EventItem.EventCalendarItems" )
+                                            .Where(e => e.EventItem.EventItemAudiences.Any(a => a.DefinedValue.Guid == audienceGuid) && e.EventItem.IsActive && e.EventItem.IsApproved);
 
                 var campusFilter = new List<CampusCache>();
 
@@ -200,6 +200,8 @@ namespace RockWeb.Blocks.Event
                     itemOccurrences.RemoveAll( o => o.GetStartTimes( RockDateTime.Now, RockDateTime.Now.AddDays( 365 ) ).Count() == 0 );
                 }
 
+                itemOccurrences.RemoveAll( o => !CanViewEventItem( o.EventItem ) );
+
                 // limit results
                 int maxOccurrencesPerEventItem = GetAttributeValue( "MaxOccurrencesPerEventItem" ).AsInteger();
                 int maxItems = GetAttributeValue( "MaxOccurrences" ).AsInteger();
@@ -252,6 +254,47 @@ namespace RockWeb.Blocks.Event
             {
                 lMessages.Text = "<div class='alert alert-warning'>No audience is configured for this block.</div>";
             }
+        }
+
+        /// <summary>
+        /// Determines whether the current person may see the event item.
+        /// </summary>
+        /// <param name="eventItem">The event item to check.</param>
+        /// <returns><c>true</c> if the event item can be shown to the current person; otherwise <c>false</c>.</returns>
+        private bool CanViewEventItem( EventItem eventItem )
+        {
+            if ( eventItem == null )
+            {
+                return false;
+            }
+
+            var isPublished = eventItem.IsActive && eventItem.IsApproved;
+
+            if ( !isPublished && !eventItem.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
+            {
+                return false;
+            }
+
+            /*
+                11/18/26 - JMH
+
+                The event's calendars are checked directly rather than through EventItem.IsAuthorized,
+                which falls back to the default security chain when no calendar allows the action.
+                An event that is not on any calendar uses its own security.
+
+                Reason: Calendar security decides who can see an event.
+            */
+            var calendarIds = eventItem.EventCalendarItems.Select( c => c.EventCalendarId ).ToList();
+
+            if ( !calendarIds.Any() )
+            {
+                return eventItem.IsAuthorized( Authorization.VIEW, CurrentPerson );
+            }
+
+            return calendarIds
+                .Select( id => EventCalendarCache.Get( id ) )
+                .Any( c => c != null
+                    && ( c.IsAuthorized( Authorization.VIEW, CurrentPerson ) || c.IsAuthorized( Authorization.EDIT, CurrentPerson ) ) );
         }
 
         #endregion
