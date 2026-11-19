@@ -84,7 +84,13 @@ namespace Rock.Store
         /// <value>
         /// A <see cref="System.String"/> representing URL to the version's documentation.
         /// </value>
-        public string DocumentationUrl { get; set; }
+        public string DocumentationUrl
+        {
+            get => _documentationUrl;
+            set => _documentationUrl = GetHttpUrlOrEmpty( value );
+        }
+
+        private string _documentationUrl;
 
         /// <summary>
         /// Gets or sets the date added. 
