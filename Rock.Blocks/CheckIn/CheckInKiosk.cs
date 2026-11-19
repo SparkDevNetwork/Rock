@@ -564,6 +564,28 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
         }
 
         /// <summary>
+        /// Gets the group type identifiers whose group locations a kiosk may schedule: the check-in areas and all their
+        /// check-in descendants. Group types that are not check-in areas are ignored.
+        /// </summary>
+        /// <param name="areaIdNumbers">The identifiers of the areas the kiosk is configured for.</param>
+        /// <returns>The group type identifiers that may be scheduled.</returns>
+        private List<int> GetSchedulableGroupTypeIds( List<int> areaIdNumbers )
+        {
+            var groupTypeService = new GroupTypeService( RockContext );
+            var groupTypeIds = new List<int>();
+            var checkInAreas = GroupTypeCache.GetMany( areaIdNumbers )
+                .Where( gt => gt.GetCheckInConfigurationType() != null );
+
+            foreach ( var groupType in checkInAreas )
+            {
+                groupTypeIds.Add( groupType.Id );
+                groupTypeIds.AddRange( groupTypeService.GetCheckinAreaDescendants( groupType.Id ).Select( a => a.Id ) );
+            }
+
+            return groupTypeIds;
+        }
+
+        /// <summary>
         /// Populates the person attribute definitions in <paramref name="responseBag"/>
         /// with the configured values.
         /// </summary>
@@ -1189,10 +1211,31 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
                 return ActionBadRequest( "Invalid person or family specified." );
             }
 
+            var family = new GroupService( RockContext ).Get( familyId, false );
+
+            if ( family == null || family.GroupTypeId != GroupTypeCache.GetFamilyGroupType( RockContext ).Id )
+            {
+                return ActionBadRequest( "Family not found." );
+            }
+
+            // Only people the kiosk lists as able to check in with this
+            // family may be removed.
+            var canCheckInPersonIds = new CheckInDirector( RockContext )
+                .CreateSession( configuration )
+                .SearchProvider
+                .GetCanCheckInFamilyMembersQuery( family.IdKey )
+                .Select( gm => gm.PersonId )
+                .ToList();
+
+            if ( !canCheckInPersonIds.Contains( attendeeIdNumber.Value ) )
+            {
+                return ActionBadRequest( "Invalid person." );
+            }
+
             var groupMemberService = new GroupMemberService( RockContext );
             var familyMemberPersonIds = groupMemberService
                 .Queryable()
-                .Where( fm => fm.GroupId == familyIdNumber.Value )
+                .Where( fm => fm.GroupId == family.Id )
                 .Select( fm => fm.PersonId )
                 .ToList();
 
@@ -1455,7 +1498,6 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
             var locationIds = kiosk.GetAllLocationIds().ToList();
 
             var templateGroupPaths = new Dictionary<int, List<CheckinAreaPath>>();
-            var currentAndDescendantGroupTypeIds = new List<int>();
             foreach ( var groupType in GroupTypeCache.GetMany( areaIdNumbers ) )
             {
                 foreach ( var parentGroupType in groupType.ParentGroupTypes )
@@ -1465,11 +1507,9 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
                         templateGroupPaths.Add( parentGroupType.Id, groupTypeService.GetCheckinAreaDescendantsPath( parentGroupType.Id ).ToList() );
                     }
                 }
-
-                currentAndDescendantGroupTypeIds.Add( groupType.Id );
-                currentAndDescendantGroupTypeIds.AddRange( groupTypeService.GetCheckinAreaDescendants( groupType.Id ).Select( a => a.Id ).ToList() );
             }
 
+            var currentAndDescendantGroupTypeIds = GetSchedulableGroupTypeIds( areaIdNumbers );
             var areaPaths = new List<CheckinAreaPath>( templateGroupPaths.Values.SelectMany( v => v ) );
 
             var groupLocations = groupLocationService.Queryable()
@@ -1538,10 +1578,12 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
         /// match the provided values.
         /// </summary>
         /// <param name="pinCode">The PIN code to authorize the request.</param>
+        /// <param name="kioskId">The encrypted identifier of the kiosk.</param>
+        /// <param name="areaIds">The encrypted identifiers of the areas the kiosk is configured for.</param>
         /// <param name="scheduledLocations">The group locations and selected schedules.</param>
         /// <returns>A 200-OK response that indicates everything was saved correctly.</returns>
         [BlockAction]
-        public BlockActionResult SaveScheduledLocations( string pinCode, List<ScheduledLocationBag> scheduledLocations )
+        public BlockActionResult SaveScheduledLocations( string pinCode, string kioskId, List<string> areaIds, List<ScheduledLocationBag> scheduledLocations )
         {
             var director = new CheckInDirector( RockContext );
 
@@ -1550,13 +1592,24 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
                 return ActionBadRequest( errorMessage );
             }
 
-            // Normally we would want to validate all the data to be sure it
-            // only specified valid locations and groups. But in the case of
-            // this block we have decided that we are trusting the client by
-            // way of the pinCode.
+            var kiosk = DeviceCache.GetByIdKey( kioskId, RockContext );
 
-            // Load all the group locations in a single query, along with the
-            // schedule information.
+            if ( kiosk == null )
+            {
+                return ActionBadRequest( "Invalid kiosk." );
+            }
+
+            var areaIdNumbers = ( areaIds ?? new List<string>() )
+                .Select( id => IdHasher.Instance.GetId( id ) )
+                .Where( id => id.HasValue )
+                .Select( id => id.Value )
+                .ToList();
+            var allowedGroupTypeIds = GetSchedulableGroupTypeIds( areaIdNumbers );
+            var allowedLocationIds = kiosk.GetAllLocationIds().ToList();
+
+            // Only group locations the kiosk is configured for may be changed,
+            // the same set GetScheduledLocations returns. Load them in a single
+            // query, along with the schedule information.
             var groupLocationIds = scheduledLocations
                 .Select( sl => IdHasher.Instance.GetId( sl.GroupLocationId ) )
                 .Where( id => id.HasValue )
@@ -1565,6 +1618,8 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
             var groupLocations = new GroupLocationService( RockContext )
                 .Queryable()
                 .Include( gl => gl.Schedules )
+                .Where( gl => allowedGroupTypeIds.Contains( gl.Group.GroupTypeId )
+                    && allowedLocationIds.Contains( gl.LocationId ) )
                 .Where( gl => groupLocationIds.Contains( gl.Id ) )
                 .ToList();
 
@@ -1588,6 +1643,14 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
                     var scheduleId = IdHasher.Instance.GetId( scheduleIdKey );
 
                     if ( !scheduleId.HasValue )
+                    {
+                        continue;
+                    }
+
+                    // Skip rather than reject, since the client posts back
+                    // every schedule already on the group location, including
+                    // ones that are no longer selectable.
+                    if ( !validScheduleIds.Contains( scheduleIdKey ) )
                     {
                         continue;
                     }
