@@ -25,6 +25,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -145,11 +146,59 @@ namespace RockWeb.Blocks.Event
             hfEventItemId.Value = eventItemId.ToString();
 
             var eventItem = new EventItemService( new RockContext() ).Get( eventItemId );
+
+            if ( !CanViewEventItem( eventItem ) )
+            {
+                lEventDetails.Text = "<div class='alert alert-warning'>We could not find that event.</div>";
+                return;
+            }
+
             string eventLavaTemplate = this.GetAttributeValue( "EventLavaTemplate" );
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new Rock.Lava.CommonMergeFieldsOptions() );
             mergeFields.Add( "Event", eventItem );
 
             lEventDetails.Text = eventLavaTemplate.ResolveMergeFields( mergeFields );
+        }
+
+        /// <summary>
+        /// Determines whether the current person may see the event item.
+        /// </summary>
+        /// <param name="eventItem">The event item to check.</param>
+        /// <returns><c>true</c> if the event item can be shown to the current person; otherwise <c>false</c>.</returns>
+        private bool CanViewEventItem( EventItem eventItem )
+        {
+            if ( eventItem == null )
+            {
+                return false;
+            }
+
+            var isPublished = eventItem.IsActive && eventItem.IsApproved;
+
+            if ( !isPublished && !eventItem.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
+            {
+                return false;
+            }
+
+            /*
+                11/18/26 - JMH
+
+                The event's calendars are checked directly rather than through EventItem.IsAuthorized,
+                which falls back to the default security chain when no calendar allows the action.
+                An event that is not on any calendar uses its own security.
+
+                Reason: Calendar security decides who can see an event.
+            */
+            var calendarIds = eventItem.EventCalendarItems.Select( c => c.EventCalendarId ).ToList();
+
+            if ( !calendarIds.Any() )
+            {
+                return eventItem.IsAuthorized( Authorization.VIEW, CurrentPerson );
+            }
+
+            return calendarIds
+                .Select( id => EventCalendarCache.Get( id ) )
+                .Any( c => c != null
+                    && ( c.IsAuthorized( Authorization.VIEW, CurrentPerson ) || c.IsAuthorized( Authorization.EDIT, CurrentPerson ) ) );
         }
 
         #endregion
@@ -200,6 +249,14 @@ namespace RockWeb.Blocks.Event
             RockContext rockContext = new RockContext();
 
             int eventItemId = hfEventItemId.Value.AsInteger();
+            var eventItem = new EventItemService( rockContext ).Get( eventItemId );
+
+            if ( !CanViewEventItem( eventItem ) )
+            {
+                lResults.Text = string.Empty;
+                return;
+            }
+
             var qry = new EventItemOccurrenceService( rockContext ).Queryable().Where( e => e.EventItem.IsActive && e.EventItemId == eventItemId );
 
             // filter by Campus (filter)
