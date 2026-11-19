@@ -24,6 +24,7 @@ using System.Web.Http.Filters;
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Jwt;
+using Rock.Web.Cache;
 
 namespace Rock.Rest.Filters
 {
@@ -77,7 +78,7 @@ namespace Rock.Rest.Filters
                         {
                             var authClientService = new AuthClientService( rockContext );
                             var authClient = authClientService.GetByClientId( clientId );
-                            if ( authClient.AllowUserApiAccess )
+                            if ( authClient != null && authClient.AllowUserApiAccess )
                             {
                                 var userName = claimIdentity.Claims.FirstOrDefault( c => c.Type == Claims.Username )?.Value;
 
@@ -88,7 +89,7 @@ namespace Rock.Rest.Filters
                                     var userLoginService = new UserLoginService( rockContext );
                                     userLogin = userLoginService.GetByUserName( userName );
 
-                                    if ( userLogin != null )
+                                    if ( IsUserLoginAllowed( userLogin ) )
                                     {
                                         var identity = new GenericIdentity( userLogin.UserName );
                                         principal = new GenericPrincipal( identity, null );
@@ -115,7 +116,7 @@ namespace Rock.Rest.Filters
             {
                 var userLoginService = new UserLoginService( new Rock.Data.RockContext() );
                 var userLogin = userLoginService.Queryable().Where( u => u.ApiKey == authToken ).FirstOrDefault();
-                if ( userLogin != null )
+                if ( IsUserLoginAllowed( userLogin ) && !IsRevokedRestKey( userLogin ) )
                 {
                     var identity = new GenericIdentity( userLogin.UserName );
                     principal = new GenericPrincipal( identity, null );
@@ -131,9 +132,13 @@ namespace Rock.Rest.Filters
                 var userLogin = JwtHelper.GetUserLoginByJSONWebToken( new RockContext(), jwtString );
                 if ( userLogin != null )
                 {
-                    var identity = new GenericIdentity( userLogin.UserName );
-                    principal = new GenericPrincipal( identity, null );
-                    actionContext.Request.SetUserPrincipal( principal );
+                    if ( IsUserLoginAllowed( userLogin ) )
+                    {
+                        var identity = new GenericIdentity( userLogin.UserName );
+                        principal = new GenericPrincipal( identity, null );
+                        actionContext.Request.SetUserPrincipal( principal );
+                    }
+
                     return;
                 }
 
@@ -146,6 +151,33 @@ namespace Rock.Rest.Filters
                     return;
                 }
             }
+        }
+
+        /// <summary>
+        /// Determines whether the login exists and is confirmed and not locked out.
+        /// </summary>
+        /// <param name="userLogin">The login to check.</param>
+        /// <returns><c>true</c> if the login may be used to authenticate; otherwise <c>false</c>.</returns>
+        private static bool IsUserLoginAllowed( UserLogin userLogin )
+        {
+            return userLogin != null
+                && ( userLogin.IsConfirmed ?? true )
+                && !( userLogin.IsLockedOut ?? false );
+        }
+
+        /// <summary>
+        /// Determines whether the login belongs to a REST key whose person record has been set to inactive, which is
+        /// what turning off the Active switch on the REST Key page does.
+        /// </summary>
+        /// <param name="userLogin">The login to check.</param>
+        /// <returns><c>true</c> if the login is an inactive REST key; otherwise <c>false</c>.</returns>
+        private static bool IsRevokedRestKey( UserLogin userLogin )
+        {
+            var person = userLogin.Person;
+
+            return person != null
+                && person.RecordTypeValueId == DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER.AsGuid() )
+                && person.RecordStatusValueId == DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid() );
         }
 
         /// <summary>

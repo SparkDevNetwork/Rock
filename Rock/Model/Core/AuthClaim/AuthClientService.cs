@@ -29,23 +29,23 @@ namespace Rock.Model
     public partial class AuthClientService
     {
         /// <summary>
-        /// Gets the by client identifier.
+        /// Gets the active client with the specified client identifier.
         /// </summary>
         /// <param name="clientId">The client identifier.</param>
         /// <returns></returns>
         public async Task<AuthClient> GetByClientIdAsync( string clientId )
         {
-            return await Queryable().AsNoTracking().FirstOrDefaultAsync( ac => ac.ClientId == clientId );
+            return await Queryable().AsNoTracking().FirstOrDefaultAsync( ac => ac.ClientId == clientId && ac.IsActive );
         }
 
         /// <summary>
-        /// Gets the by client identifier.
+        /// Gets the active client with the specified client identifier.
         /// </summary>
         /// <param name="clientId">The client identifier.</param>
         /// <returns></returns>
         public AuthClient GetByClientId( string clientId )
         {
-            return Queryable().AsNoTracking().FirstOrDefault( ac => ac.ClientId == clientId );
+            return Queryable().AsNoTracking().FirstOrDefault( ac => ac.ClientId == clientId && ac.IsActive );
         }
 
         /// <summary>
