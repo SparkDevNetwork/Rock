@@ -44,6 +44,7 @@ namespace Rock.Model
         /// A <see cref="System.Int32"/> representing the PersonId of the <see cref="Rock.Model.Person"/> who is being sent the <see cref="Rock.Model.Communication"/>.
         /// </value>
         [DataMember]
+        [UploadedBinaryFileOnly]
         public int BinaryFileId { get; set; }
 
         /// <summary>
