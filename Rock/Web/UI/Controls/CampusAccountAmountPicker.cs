@@ -181,6 +181,19 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the account Ids that were shown to the giver, so the posted
+        /// account Id of each row can be checked against them.
+        /// </summary>
+        /// <value>
+        /// The offered account ids.
+        /// </value>
+        private int[] OfferedAccountIds
+        {
+            get => ViewState["OfferedAccountIds"] as int[] ?? new int[0];
+            set => ViewState["OfferedAccountIds"] = value;
+        }
+
+        /// <summary>
         /// If enabled the Accounts will be ordered by the index of <see cref="SelectableAccountIds"/>,
         /// that is they will be rendered in the order in which the Account Ids were added to the <see cref="SelectableAccountIds"/>
         /// </summary>
@@ -787,6 +800,7 @@ namespace Rock.Web.UI.Controls
 
             _ddlAccountSingle.SetValue( accountsList.FirstOrDefault() );
 
+            OfferedAccountIds = accountsList.Select( a => a.Id ).ToArray();
             _rptPromptForAccountAmountsMulti.DataSource = accountsList;
             _rptPromptForAccountAmountsMulti.DataBind();
         }
@@ -816,6 +830,11 @@ namespace Rock.Web.UI.Controls
                     {
                         var hfAccountAmountMultiAccountId = item.FindControl( RepeaterControlIds.ID_hfAccountAmountMultiAccountId ) as HiddenField;
                         var displayedAccountId = hfAccountAmountMultiAccountId.Value.AsInteger();
+                        if ( !OfferedAccountIds.Contains( displayedAccountId ) )
+                        {
+                            continue;
+                        }
+
                         var displayedAccount = FinancialAccountCache.Get( displayedAccountId );
                         var returnedAccountId = this.GetBestMatchingAccountIdForCampusFromDisplayedAccount( selectedCampusId, displayedAccount );
                         var cbAccountAmountMulti = item.FindControl( RepeaterControlIds.ID_cbAccountAmountMulti ) as CurrencyBox;
