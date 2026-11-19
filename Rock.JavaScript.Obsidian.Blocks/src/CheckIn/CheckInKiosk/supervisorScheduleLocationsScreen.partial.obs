@@ -186,6 +186,8 @@
     async function onSaveClick(): Promise<void> {
         const data = {
             pinCode: props.supervisorData.pinCode,
+            kioskId: props.configuration.kiosk?.id,
+            areaIds: props.configuration.areas?.map(a => a.id) ?? [],
             scheduledLocations: scheduledLocations.value
         };
 
