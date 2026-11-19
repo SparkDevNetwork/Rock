@@ -30,11 +30,11 @@ namespace Rock.Data
     /// which a client may only point at a file it uploaded. The v1 and v2 REST
     /// write endpoints refuse the save when a marked property is set to a file
     /// other than the one already stored or a temporary file uploaded by the
-    /// current person. Clearing the value is always allowed. Server code can
+    /// current person. Clearing a nullable value is always allowed. Server code can
     /// still set the property.
     /// </summary>
     /// <remarks>
-    /// Only place this on <c>int?</c> properties that hold a binary file identifier.
+    /// Only place this on <c>int</c> or <c>int?</c> properties that hold a binary file identifier.
     /// </remarks>
     [AttributeUsage( AttributeTargets.Property, Inherited = true, AllowMultiple = false )]
     internal sealed class UploadedBinaryFileOnlyAttribute : System.Attribute
