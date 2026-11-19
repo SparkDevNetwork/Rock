@@ -1,4 +1,5 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="PackageDetail.ascx.cs" Inherits="RockWeb.Blocks.Store.PackageDetail" %>
+<%@ Import Namespace="Rock" %>
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
@@ -152,7 +153,7 @@
                                                 </div>
 
                                                 <p class="margin-b-lg">
-                                                    <%# Eval("Description")%>
+                                                    <%# Eval("Description").ToStringSafe().SanitizeHtml( strict: false ) %>
                                                 </p>
                                             </ItemTemplate>
                                         </asp:Repeater>
