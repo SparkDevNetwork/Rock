@@ -1192,6 +1192,24 @@
     }
 
     /**
+     * Prefixes text cells that begin with a formula character with a single
+     * quote so spreadsheet programs display them as text.
+     *
+     * @param workbook The workbook whose cells will be updated in place.
+     */
+    function neutralizeCsvFormulas(workbook: Workbook): void {
+        workbook.eachSheet(worksheet => {
+            worksheet.eachRow(row => {
+                row.eachCell(cell => {
+                    if (typeof cell.value === "string" && /^[=+\-@\t\r]/.test(cell.value)) {
+                        cell.value = `'${cell.value}`;
+                    }
+                });
+            });
+        });
+    }
+
+    /**
      * Triggers an automatic download of the workbook so it can be saved to
      * the filesystem.
      *
@@ -1201,9 +1219,15 @@
      */
     async function downloadWorkbook(workbook: Workbook, title: string, format: "csv" | "xlsx"): Promise<void> {
         // Get the export data.
-        const buffer = format === "xlsx"
-            ? await workbook.xlsx.writeBuffer()
-            : await workbook.csv.writeBuffer();
+        let buffer: ArrayBuffer;
+
+        if (format === "xlsx") {
+            buffer = await workbook.xlsx.writeBuffer();
+        }
+        else {
+            neutralizeCsvFormulas(workbook);
+            buffer = await workbook.csv.writeBuffer();
+        }
 
         const data = new Blob([buffer], {
             type: "application/octet-stream"
