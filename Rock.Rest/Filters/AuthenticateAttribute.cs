@@ -118,7 +118,7 @@ namespace Rock.Rest.Filters
                                 isScopeApproved = requiredScopes.Any( rs => scopes.Contains( rs ) );
                             }
 
-                            if ( authClient != null && authClient.AllowUserApiAccess || isScopeApproved )
+                            if ( authClient != null && ( authClient.AllowUserApiAccess || isScopeApproved ) )
                             {
                                 var userName = claimIdentity.Claims.FirstOrDefault( c => c.Type == Claims.Username )?.Value;
 
