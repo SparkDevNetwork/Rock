@@ -117,7 +117,8 @@
                 </div>
 
                 <div :class="previewDevice === 'desktop' ? 'device-browser' : 'device-mobile'">
-                    <iframe :srcdoc="previewHtml"></iframe>
+                    <iframe :srcdoc="previewHtml"
+                            sandbox="allow-same-origin allow-popups allow-popups-to-escape-sandbox"></iframe>
                 </div>
             </div>
         </Modal>
