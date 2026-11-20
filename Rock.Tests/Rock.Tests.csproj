@@ -360,6 +360,7 @@
     <Compile Include="Communication\EmailAddressFieldValidatorTests.cs" />
     <Compile Include="Communication\SendGridEventWebhookSignatureTests.cs" />
     <Compile Include="Communication\Chat\ChatHelperTests.cs" />
+    <Compile Include="Communication\Chat\ChatHelperUserAuthenticationTests.cs" />
     <Compile Include="Communication\Chat\StreamChatProviderTests.cs" />
     <Compile Include="Utility\ExtensionMethods\ICollectionExtensionTests.cs" />
     <Compile Include="Utility\ExtensionMethods\EnumUtilityExtensionTests.cs" />
