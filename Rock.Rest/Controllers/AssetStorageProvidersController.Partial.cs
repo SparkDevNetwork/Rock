@@ -38,20 +38,30 @@ namespace Rock.Rest.Controllers
         [Rock.SystemGuid.RestActionGuid( "4D7B4AE1-82F3-46B9-99E3-BAE03B2EDFAA" )]
         public IQueryable<TreeViewItem> GetChildren( string assetFolderId )
         {
-            return GetAssetFolderChildren( assetFolderId );
+            return GetAssetFolderChildren( assetFolderId, GetPerson() );
         }
 
         /// <summary>
         /// Gets the children.
         /// </summary>
         /// <param name="assetFolderId">The asset folder identifier.</param>
+        /// <param name="person">The person requesting the children, used to check VIEW on each provider.</param>
         /// <returns></returns>
-        internal static IQueryable<TreeViewItem> GetAssetFolderChildren( string assetFolderId )
+        internal static IQueryable<TreeViewItem> GetAssetFolderChildren( string assetFolderId, Rock.Model.Person person )
         {
             var treeViewItemList = new List<TreeViewItem>();
             if ( assetFolderId == "0" )
             {
-                foreach ( var assetStorageProviderCache in AssetStorageProviderCache.All().Where( a => a.IsActive ) )
+                /*
+                    11/20/2026 - MSE
+
+                    The REST action grant only says the person may use this endpoint. Each asset
+                    storage provider has its own VIEW rule, so only list the providers the person
+                    can view, and return nothing when a provider they cannot view is expanded.
+
+                    Reason: Anyone with the REST action could browse every provider's folders.
+                */
+                foreach ( var assetStorageProviderCache in AssetStorageProviderCache.All().Where( a => a.IsActive && a.IsAuthorized( Rock.Security.Authorization.VIEW, person ) ) )
                 {
                     var component = assetStorageProviderCache.AssetStorageComponent;
                     var rootFolder = component.GetRootFolder( assetStorageProviderCache.ToEntity() );
@@ -71,6 +81,10 @@ namespace Rock.Rest.Controllers
                 {
                     int assetStorageProviderId = assetFolderIdParts[0].AsInteger();
                     var assetStorageProviderCache = AssetStorageProviderCache.Get( assetStorageProviderId );
+                    if ( assetStorageProviderCache == null || !assetStorageProviderCache.IsAuthorized( Rock.Security.Authorization.VIEW, person ) )
+                    {
+                        return new List<TreeViewItem>().AsQueryable();
+                    }
 
                     Asset asset = new Asset { Key = string.Empty, Type = AssetType.Folder };
                     if ( assetFolderIdParts.Length > 1 && assetFolderIdParts[1].Length > 0 )
@@ -123,7 +137,7 @@ namespace Rock.Rest.Controllers
         [Rock.SystemGuid.RestActionGuid( "8A2E7EC6-2A38-41AC-9A83-B74FF4B7FD45" )]
         public List<Asset> GetFolders( int assetStorageProviderId, string path )
         {
-            var assetStorageProviderCache = AssetStorageProviderCache.Get( assetStorageProviderId );
+            var assetStorageProviderCache = GetViewableProvider( assetStorageProviderId, GetPerson() );
 
             var component = assetStorageProviderCache.AssetStorageComponent;
 
@@ -144,7 +158,7 @@ namespace Rock.Rest.Controllers
         [Rock.SystemGuid.RestActionGuid( "40DEFE35-2196-4A11-BD08-BCFFCE1C4240" )]
         public List<Asset> GetFiles( int assetStorageProviderId, string path )
         {
-            var assetStorageProviderCache = AssetStorageProviderCache.Get( assetStorageProviderId );
+            var assetStorageProviderCache = GetViewableProvider( assetStorageProviderId, GetPerson() );
 
             var component = assetStorageProviderCache.AssetStorageComponent;
 
@@ -152,6 +166,37 @@ namespace Rock.Rest.Controllers
 
 
             return assets;
+        }
+
+        /// <summary>
+        /// Gets the asset storage provider if the person is allowed to view it.
+        /// </summary>
+        /// <param name="assetStorageProviderId">The asset storage provider identifier.</param>
+        /// <param name="person">The person making the request.</param>
+        /// <returns>The asset storage provider.</returns>
+        /// <exception cref="HttpResponseException">Not found when the provider does not exist, forbidden when the person cannot view it.</exception>
+        private static AssetStorageProviderCache GetViewableProvider( int assetStorageProviderId, Rock.Model.Person person )
+        {
+            var provider = AssetStorageProviderCache.Get( assetStorageProviderId );
+            if ( provider == null )
+            {
+                throw new HttpResponseException( System.Net.HttpStatusCode.NotFound );
+            }
+
+            /*
+                11/20/2026 - MSE
+
+                The REST action grant only says the person may use this endpoint. The provider
+                has its own VIEW rule, which must be checked before listing its folders or files.
+
+                Reason: Anyone with the REST action could list any provider's folders and files.
+            */
+            if ( !provider.IsAuthorized( Rock.Security.Authorization.VIEW, person ) )
+            {
+                throw new HttpResponseException( System.Net.HttpStatusCode.Forbidden );
+            }
+
+            return provider;
         }
     }
 }
