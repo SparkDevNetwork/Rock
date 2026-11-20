@@ -262,6 +262,7 @@ namespace Rock.Model
             target.OpenedDate = source.OpenedDate;
             target.Order = source.Order;
             target.PhoneNumber = source.PhoneNumber;
+            target.PhotoId = source.PhotoId;
             #pragma warning disable 612, 618
             target.ServiceTimes = source.ServiceTimes;
             #pragma warning restore 612, 618
