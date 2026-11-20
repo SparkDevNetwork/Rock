@@ -24,6 +24,7 @@ using System.Web.Http.OData;
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
+using Rock.Web.Cache;
 
 namespace Rock.Rest.Controllers
 {
@@ -136,6 +137,13 @@ namespace Rock.Rest.Controllers
         [Rock.SystemGuid.RestActionGuid( "6E5F85FB-5D43-4C3A-96C0-0D94D347A6FE" )]
         public IEnumerable<GroupPlacementGroupMember> GetGroupPlacementGroupMembers( [FromBody] GetGroupPlacementGroupMembersParameters options )
         {
+            var person = this.GetPerson();
+            var group = options != null ? GroupCache.Get( options.GroupId ) : null;
+            if ( group == null || !( group.IsAuthorized( Rock.Security.Authorization.VIEW, person ) || group.IsAuthorized( Rock.Security.Authorization.EDIT, person ) ) )
+            {
+                return new List<GroupPlacementGroupMember>();
+            }
+
             var rockContext = new RockContext();
             var groupMemberService = new GroupMemberService( rockContext );
             return groupMemberService.GetGroupPlacementGroupMembers( options, this.GetPerson() );
