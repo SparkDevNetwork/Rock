@@ -501,7 +501,24 @@ namespace RockWeb.Blocks.Event
             hfOptionsDisplayRegistrantAttributes.Value = placementConfiguration.DisplayRegistrantAttributes.ToJavaScriptValue();
             hfOptionsApplyRegistrantFilters.Value = placementConfiguration.ApplyRegistrantFilters.ToJavaScriptValue();
             hfOptionsHideFullGroups.Value = placementConfiguration.HideFullGroups.ToJavaScriptValue();
-            hfRegistrationTemplateInstanceIds.Value = placementConfiguration.IncludedRegistrationInstanceIds.ToJson();
+            // Only pass along picked instances of this template that the person can view, matching the picker options.
+            var includedRegistrationInstanceIds = placementConfiguration.IncludedRegistrationInstanceIds.Any()
+                ? registrationInstanceService.GetByIds( placementConfiguration.IncludedRegistrationInstanceIds.ToList() )
+                    .Where( a => a.RegistrationTemplateId == registrationTemplateId )
+                    .ToList()
+                    .Where( a => a.IsAuthorized( Rock.Security.Authorization.VIEW, this.CurrentPerson ) )
+                    .Select( a => a.Id )
+                    .ToArray()
+                : placementConfiguration.IncludedRegistrationInstanceIds;
+
+            // An empty list means "all instances", so if none of the picked instances remain,
+            // keep the original picks and let the server return no registrants.
+            if ( !includedRegistrationInstanceIds.Any() )
+            {
+                includedRegistrationInstanceIds = placementConfiguration.IncludedRegistrationInstanceIds;
+            }
+
+            hfRegistrationTemplateInstanceIds.Value = includedRegistrationInstanceIds.ToJson();
             hfRegistrationTemplateShowInstanceName.Value = placementConfiguration.ShowRegistrationInstanceName.ToJavaScriptValue();
 
             hfOptionsFilterFeeId.Value = placementConfiguration.FilterFeeId.ToString();
@@ -1007,7 +1024,9 @@ namespace RockWeb.Blocks.Event
                 var registrationTemplateInstances = new RegistrationInstanceService( rockContext ).Queryable()
                     .Where( a => a.RegistrationTemplateId == registrationTemplateId )
                     .OrderBy( a => a.Name )
-                    .Select( a => new { a.Id, a.Name } ).ToList();
+                    .ToList()
+                    .Where( a => a.IsAuthorized( Rock.Security.Authorization.VIEW, this.CurrentPerson ) )
+                    .ToList();
 
                 foreach ( var registrationTemplateInstance in registrationTemplateInstances )
                 {

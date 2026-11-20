@@ -134,6 +134,8 @@ namespace Rock.Rest.Controllers
         [Rock.SystemGuid.RestActionGuid( "DDBDDBE0-7032-49B2-82E7-08DBA28F1FC1" )]
         public IEnumerable<SchedulerResource> GetSchedulerResources( [FromBody] SchedulerResourceParameters schedulerResourceParameters )
         {
+            EnsureCanReadSchedulerResources( schedulerResourceParameters );
+
             var rockContext = RockApp.Current.CreateRockContext();
             var attendanceService = new AttendanceService( rockContext );
             return attendanceService.GetSchedulerResources( schedulerResourceParameters );
@@ -151,6 +153,8 @@ namespace Rock.Rest.Controllers
         [Rock.SystemGuid.RestActionGuid( "082BC954-89CA-4D73-A971-72446B84E92C" )]
         public SchedulerResource GetSchedulerResource( [FromBody] SchedulerResourceParameters schedulerResourceParameters, int personId )
         {
+            EnsureCanReadSchedulerResources( schedulerResourceParameters );
+
             var rockContext = RockApp.Current.CreateRockContext();
             var attendanceService = new AttendanceService( rockContext );
             schedulerResourceParameters.LimitToPersonId = personId;
@@ -170,9 +174,101 @@ namespace Rock.Rest.Controllers
         public IEnumerable<SchedulerResourceAttend> GetAttendingSchedulerResources( int attendanceOccurrenceId )
         {
             var rockContext = RockApp.Current.CreateRockContext();
+            EnsureCanScheduleOccurrence( rockContext, attendanceOccurrenceId );
             var attendanceService = new AttendanceService( rockContext );
 
             return attendanceService.GetAttendingSchedulerResources( attendanceOccurrenceId );
+        }
+
+        /// <summary>
+        /// Determines whether the current person can edit or schedule the specified group.
+        /// </summary>
+        /// <param name="groupId">The group identifier.</param>
+        /// <returns><c>true</c> if the current person can edit or schedule the group; otherwise <c>false</c>.</returns>
+        private bool CanScheduleGroup( int groupId )
+        {
+            var group = GroupCache.Get( groupId );
+            var person = GetPerson();
+
+            return group != null
+                && person != null
+                && ( group.IsAuthorized( Rock.Security.Authorization.EDIT, person ) || group.IsAuthorized( Rock.Security.Authorization.SCHEDULE, person ) );
+        }
+
+        /// <summary>
+        /// Requires EDIT or SCHEDULE on the occurrence group, VIEW, EDIT or SCHEDULE
+        /// on any resource group, and VIEW on any data view named in the parameters.
+        /// A resource group or data view that does not resolve adds no people, so it
+        /// is not checked.
+        /// </summary>
+        /// <param name="parameters">The scheduler resource parameters.</param>
+        private void EnsureCanReadSchedulerResources( SchedulerResourceParameters parameters )
+        {
+            var person = GetPerson();
+            if ( parameters == null || !CanScheduleGroup( parameters.AttendanceOccurrenceGroupId ) )
+            {
+                throw new HttpResponseException( ControllerContext.Request.CreateErrorResponse( HttpStatusCode.Forbidden, "Not authorized to schedule this group." ) );
+            }
+
+            var canViewResourceGroup = true;
+            if ( parameters.ResourceGroupId.HasValue )
+            {
+                var resourceGroup = GroupCache.Get( parameters.ResourceGroupId.Value );
+                canViewResourceGroup = resourceGroup == null
+                    || resourceGroup.IsAuthorized( Rock.Security.Authorization.VIEW, person )
+                    || CanScheduleGroup( resourceGroup.Id );
+            }
+
+            if ( canViewResourceGroup && parameters.ResourceGroupGuid.HasValue )
+            {
+                var resourceGroup = GroupCache.Get( parameters.ResourceGroupGuid.Value );
+                canViewResourceGroup = resourceGroup == null
+                    || resourceGroup.IsAuthorized( Rock.Security.Authorization.VIEW, person )
+                    || CanScheduleGroup( resourceGroup.Id );
+            }
+
+            if ( !canViewResourceGroup )
+            {
+                throw new HttpResponseException( ControllerContext.Request.CreateErrorResponse( HttpStatusCode.Forbidden, "Not authorized to view the resource group." ) );
+            }
+
+            var canViewResourceDataView = true;
+            if ( parameters.ResourceDataViewId.HasValue )
+            {
+                var resourceDataView = DataViewCache.Get( parameters.ResourceDataViewId.Value );
+                canViewResourceDataView = resourceDataView == null || resourceDataView.IsAuthorized( Rock.Security.Authorization.VIEW, person );
+            }
+
+            if ( canViewResourceDataView && parameters.ResourceDataViewGuid.HasValue )
+            {
+                var resourceDataView = DataViewCache.Get( parameters.ResourceDataViewGuid.Value );
+                canViewResourceDataView = resourceDataView == null || resourceDataView.IsAuthorized( Rock.Security.Authorization.VIEW, person );
+            }
+
+            if ( !canViewResourceDataView )
+            {
+                throw new HttpResponseException( ControllerContext.Request.CreateErrorResponse( HttpStatusCode.Forbidden, "Not authorized to view the resource data view." ) );
+            }
+        }
+
+        /// <summary>
+        /// Requires EDIT or SCHEDULE on the group of the specified attendance occurrence.
+        /// An occurrence that does not exist has nothing to read, so it is not checked.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="attendanceOccurrenceId">The attendance occurrence identifier.</param>
+        private void EnsureCanScheduleOccurrence( RockContext rockContext, int attendanceOccurrenceId )
+        {
+            var occurrence = new AttendanceOccurrenceService( rockContext ).GetSelect( attendanceOccurrenceId, o => new { o.GroupId } );
+            if ( occurrence == null )
+            {
+                return;
+            }
+
+            if ( !occurrence.GroupId.HasValue || !CanScheduleGroup( occurrence.GroupId.Value ) )
+            {
+                throw new HttpResponseException( ControllerContext.Request.CreateErrorResponse( HttpStatusCode.Forbidden, "Not authorized to schedule this group." ) );
+            }
         }
 
         /// <summary>

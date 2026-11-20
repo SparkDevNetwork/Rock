@@ -931,6 +931,8 @@ namespace Rock.Model
         /// <returns></returns>
         public List<GroupPlacementGroupMember> GetGroupPlacementGroupMembers( GetGroupPlacementGroupMembersParameters options, Person currentPerson )
         {
+            options.DisplayedGroupMemberAttributeIds = ( options.DisplayedGroupMemberAttributeIds ?? new int[0] ).Where( id => AttributeCache.Get( id )?.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson ) == true ).ToArray();
+
             var rockContext = this.Context as RockContext;
 
             var groupMemberService = new GroupMemberService( rockContext );
