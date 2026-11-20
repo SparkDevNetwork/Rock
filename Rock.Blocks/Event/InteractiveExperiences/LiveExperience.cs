@@ -128,14 +128,11 @@ namespace Rock.Blocks.Event.InteractiveExperiences
 
                         Reason: Enforce the schedule group and data view requirement.
                     */
-                    var currentPerson = RequestContext.CurrentPerson;
+                    var requirementsErrorMessage = GetJoinRequirementsErrorMessage( occurrence, experienceCache );
 
-                    if ( !InteractiveExperienceScheduleService.AreRequirementsMetForPerson( occurrence.InteractiveExperienceScheduleId, currentPerson )
-                        && !experienceCache.IsAuthorized( Authorization.EDIT, currentPerson ) )
+                    if ( requirementsErrorMessage != null )
                     {
-                        box.ErrorMessage = currentPerson == null
-                            ? "You must be logged in to join this experience."
-                            : "You do not meet the requirements to join this experience.";
+                        box.ErrorMessage = requirementsErrorMessage;
                         return box;
                     }
 
@@ -171,6 +168,28 @@ namespace Rock.Blocks.Event.InteractiveExperiences
                         .GetInclude( experienceToken.OccurrenceId, o => o.InteractiveExperienceSchedule );
                     var experienceCache = InteractiveExperienceCache.Get( occurrence.InteractiveExperienceSchedule.InteractiveExperienceId );
 
+                    /*
+                        11/20/2026 - MSE
+
+                        A participant token is not tied to a person, so a token passed
+                        in the URL may have been issued to someone else. Check the
+                        same requirement as above before using it. Moderator and
+                        visualizer tokens are skipped because only secured blocks
+                        issue them.
+
+                        Reason: Enforce the schedule group and data view requirement.
+                    */
+                    if ( !experienceToken.IsModerator && !experienceToken.IsVisualizer )
+                    {
+                        var requirementsErrorMessage = GetJoinRequirementsErrorMessage( occurrence, experienceCache );
+
+                        if ( requirementsErrorMessage != null )
+                        {
+                            box.ErrorMessage = requirementsErrorMessage;
+                            return box;
+                        }
+                    }
+
                     box.ExperienceToken = token;
                     box.Style = experienceCache.GetExperienceStyleBag();
                     box.IsExperienceInactive = !occurrence.IsOccurrenceActive;
@@ -199,6 +218,28 @@ namespace Rock.Blocks.Event.InteractiveExperiences
                 .AsNoTracking()
                 .Include( o => o.InteractiveExperienceSchedule )
                 .SingleOrDefault();
+        }
+
+        /// <summary>
+        /// Checks if the current person may join the occurrence. They may join
+        /// if they meet the schedule requirements or can edit the experience.
+        /// </summary>
+        /// <param name="occurrence">The occurrence being joined.</param>
+        /// <param name="experienceCache">The experience the occurrence belongs to.</param>
+        /// <returns>The error message to display, or <c>null</c> if the person may join.</returns>
+        private string GetJoinRequirementsErrorMessage( InteractiveExperienceOccurrence occurrence, InteractiveExperienceCache experienceCache )
+        {
+            var currentPerson = RequestContext.CurrentPerson;
+
+            if ( InteractiveExperienceScheduleService.AreRequirementsMetForPerson( occurrence.InteractiveExperienceScheduleId, currentPerson )
+                || experienceCache.IsAuthorized( Authorization.EDIT, currentPerson ) )
+            {
+                return null;
+            }
+
+            return currentPerson == null
+                ? "You must be logged in to join this experience."
+                : "You do not meet the requirements to join this experience.";
         }
 
         /// <summary>
