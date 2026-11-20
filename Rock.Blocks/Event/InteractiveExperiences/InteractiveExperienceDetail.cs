@@ -254,7 +254,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
 
             var bag = GetCommonEntityBag( entity );
 
-            bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson, enforceSecurity: false );
+            bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson, enforceSecurity: false, attributeFilter: IsAttributeViewable );
 
             return bag;
         }
@@ -282,17 +282,17 @@ namespace Rock.Blocks.Event.InteractiveExperiences
                 {
                     var scheduleBag = GetScheduleBag( s );
 
-                    scheduleBag.AttributeValues = s.GetPublicAttributeValuesForEdit( RequestContext.CurrentPerson, enforceSecurity: false );
+                    scheduleBag.AttributeValues = s.GetPublicAttributeValuesForEdit( RequestContext.CurrentPerson, enforceSecurity: false, attributeFilter: IsAttributeEditable );
 
                     if ( bag.ScheduleAttributes == null )
                     {
-                        bag.ScheduleAttributes = s.GetPublicAttributesForEdit( RequestContext.CurrentPerson, enforceSecurity: false );
+                        bag.ScheduleAttributes = s.GetPublicAttributesForEdit( RequestContext.CurrentPerson, enforceSecurity: false, attributeFilter: IsAttributeEditable );
                     }
 
                     return scheduleBag;
                 } ).ToList();
 
-            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson, enforceSecurity: false );
+            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson, enforceSecurity: false, attributeFilter: IsAttributeEditable );
 
             // If we didn't have anys chedules to load attributes from, use a fake one.
             if ( bag.ScheduleAttributes == null )
@@ -304,7 +304,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
 
                 schedule.LoadAttributes( rockContext );
 
-                bag.ScheduleAttributes = entity.GetPublicAttributesForEdit( RequestContext.CurrentPerson, enforceSecurity: false );
+                bag.ScheduleAttributes = schedule.GetPublicAttributesForEdit( RequestContext.CurrentPerson, enforceSecurity: false, attributeFilter: IsAttributeEditable );
             }
 
             return bag;
@@ -442,7 +442,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
                 {
                     entity.LoadAttributes( rockContext );
 
-                    entity.SetPublicAttributeValues( box.Entity.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: false );
+                    entity.SetPublicAttributeValues( box.Entity.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: false, attributeFilter: IsAttributeEditable );
                 } );
 
             entity.ExperienceSettingsJson = settings.ToJson();
@@ -656,7 +656,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
                     schedule.Schedule.CheckInStartOffsetMinutes = scheduleBag.EnableMinutesBefore ?? 0;
                     schedule.DataViewId = scheduleBag.DataView.GetEntityId<DataView>( rockContext );
                     schedule.GroupId = scheduleBag.Group.GetEntityId<Rock.Model.Group>( rockContext );
-                    schedule.SetPublicAttributeValues( scheduleBag.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: false );
+                    schedule.SetPublicAttributeValues( scheduleBag.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: false, attributeFilter: IsAttributeEditable );
 
                     // Force the cache to refresh if the only thing that
                     // changed was the schedule content.
@@ -783,6 +783,45 @@ namespace Rock.Blocks.Event.InteractiveExperiences
         private static bool IsAttributeValueIncluded( AttributeCache attribute )
         {
             return IsActionAttributeIncluded( attribute ) || IsVisualizerAttributeIncluded( attribute );
+        }
+
+        /*
+            11/20/26 - JMH
+
+            This block is secured by block security, so the attribute helpers
+            are called with enforceSecurity: false. Turning it on would fall back
+            to entity and Global Default security when an attribute has no rule of
+            its own, which would hide every attribute from non-administrators.
+            These filters apply only the rules set directly on the attribute
+            (AuthorizedForEntity without the parent authority walk), and block
+            security decides when the attribute has no rule for the action.
+
+            Reason: Honor View and Edit security set on individual attributes.
+        */
+
+        /// <summary>
+        /// Determines whether the current person may view the attribute, based only on rules set on the attribute itself.
+        /// </summary>
+        /// <param name="attribute">The attribute to check.</param>
+        /// <returns><c>true</c> if the attribute can be viewed; otherwise, <c>false</c>.</returns>
+        private bool IsAttributeViewable( AttributeCache attribute )
+        {
+            return Authorization.AuthorizedForEntity( attribute, Authorization.VIEW, RequestContext.CurrentPerson ) ?? true;
+        }
+
+        /// <summary>
+        /// Determines whether the current person may edit the attribute, based only on rules set on the attribute itself.
+        /// </summary>
+        /// <param name="attribute">The attribute to check.</param>
+        /// <returns><c>true</c> if the attribute can be viewed and edited; otherwise, <c>false</c>.</returns>
+        private bool IsAttributeEditable( AttributeCache attribute )
+        {
+            if ( !IsAttributeViewable( attribute ) )
+            {
+                return false;
+            }
+
+            return Authorization.AuthorizedForEntity( attribute, Authorization.EDIT, RequestContext.CurrentPerson ) ?? true;
         }
 
         /// <summary>
