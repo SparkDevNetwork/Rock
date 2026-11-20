@@ -165,6 +165,11 @@ namespace Rock.Blocks.CheckIn.Configuration
                 return ActionBadRequest( $"Not authorized to delete {CheckInLabel.FriendlyTypeName}." );
             }
 
+            if ( entity.IsSystem )
+            {
+                return ActionBadRequest( $"Not allowed to delete system {CheckInLabel.FriendlyTypeName}." );
+            }
+
             if ( !entityService.CanDelete( entity, out var errorMessage ) )
             {
                 return ActionBadRequest( errorMessage );
