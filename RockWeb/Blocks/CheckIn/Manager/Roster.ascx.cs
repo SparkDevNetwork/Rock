@@ -665,7 +665,9 @@ namespace RockWeb.Blocks.CheckIn.Manager
             if ( checkInRosterAlertIconCategoryGuid.HasValue )
             {
                 var categoryId = CategoryCache.GetId( checkInRosterAlertIconCategoryGuid.Value ) ?? 0;
-                _attributesForAlertIcons = new AttributeService( rockContext ).GetByCategoryId( categoryId ).ToAttributeCacheList();
+                _attributesForAlertIcons = new AttributeService( rockContext ).GetByCategoryId( categoryId ).ToAttributeCacheList()
+                    .Where( a => Authorization.AuthorizedForEntity( a, Authorization.VIEW, CurrentPerson ) != false )
+                    .ToList();
             }
             else
             {
