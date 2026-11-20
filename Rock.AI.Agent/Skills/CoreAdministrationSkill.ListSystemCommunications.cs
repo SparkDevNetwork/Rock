@@ -35,8 +35,9 @@ internal sealed partial class CoreAdministrationSkill
     /// </summary>
     /// <remarks>
     /// <para>
-    /// This is the only tool in the skill that uses cursor paging, and the only
-    /// one that must. There is no SystemCommunicationCache, so it genuinely
+    /// This tool and ListLocations are the only tools in the skill that use
+    /// cursor paging, and the only ones that must. There is no
+    /// SystemCommunicationCache, so it genuinely
     /// queries the database, and SystemCommunication derives from Model&lt;T&gt;
     /// and is therefore secured per row.
     /// </para>
