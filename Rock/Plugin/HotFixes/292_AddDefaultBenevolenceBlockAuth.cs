@@ -36,6 +36,14 @@ namespace Rock.Plugin.HotFixes
                 Benevolence Request Detail block instance. The NOT EXISTS guard makes
                 this re-runnable and leaves any identical rule an admin already added
                 untouched.
+
+                11/19/26 - JPH
+
+                The rule goes at Order 0 only on a block with no Edit rules. Otherwise it
+                goes one past the block's highest Edit Order, so the Edit rules an
+                administrator already set are still read first.
+
+                Reason: Keep administrator Edit rules ahead of the default Benevolence rule.
             */
             Sql( @"
 DECLARE @BlockEntityTypeId  INT = ( SELECT [Id] FROM [EntityType] WHERE [Guid] = 'D89555CA-9AE4-4D62-8AF1-E5E463C1EF65' ); -- Rock.Model.Block
@@ -54,7 +62,13 @@ BEGIN
     SELECT
         @BlockEntityTypeId,
         [b].[Id],
-        0,
+        ISNULL( (
+            SELECT MAX( [e].[Order] ) + 1
+            FROM [Auth] AS [e]
+            WHERE [e].[EntityTypeId] = @BlockEntityTypeId
+              AND [e].[EntityId]     = [b].[Id]
+              AND [e].[Action]       = 'Edit'
+        ), 0 ),
         'Edit',
         'A',
         0,
