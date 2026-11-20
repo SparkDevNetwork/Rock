@@ -128,6 +128,15 @@ namespace RockWeb.Blocks.Communication
 
         #endregion Attribute Keys
 
+        #region Fields
+
+        /// <summary>
+        /// Whether the current person can edit at least one of the note types the note editor offers.
+        /// </summary>
+        private bool _hasEditableNoteType;
+
+        #endregion Fields
+
         #region Control Overrides
 
         /// <summary>
@@ -302,6 +311,39 @@ namespace RockWeb.Blocks.Communication
             }
 
             return smsSystemPhoneNumberId;
+        }
+
+        /// <summary>
+        /// Gets the selected conversation recipient when that person has a conversation on the selected SMS number.
+        /// </summary>
+        /// <returns>The <see cref="Person"/> identifier or <c>null</c> if there is no valid selection.</returns>
+        private int? TryGetSelectedRecipientPersonId()
+        {
+            // The browser posts the hidden field back, so it can name any person.
+            var recipientPersonAliasId = hfSelectedRecipientPersonAliasId.Value.AsIntegerOrNull();
+            if ( !recipientPersonAliasId.HasValue )
+            {
+                return null;
+            }
+
+            var smsSystemPhoneNumberId = GetSelectedSmsNumberId();
+            if ( smsSystemPhoneNumberId == 0 )
+            {
+                return null;
+            }
+
+            int? recipientPersonId;
+            using ( var rockContext = new RockContext() )
+            {
+                recipientPersonId = new PersonAliasService( rockContext ).GetPersonId( recipientPersonAliasId.Value );
+            }
+
+            if ( !recipientPersonId.HasValue || !HasConversationWithRecipient( recipientPersonId.Value, smsSystemPhoneNumberId ) )
+            {
+                return null;
+            }
+
+            return recipientPersonId;
         }
 
         private void LoadResponseListing()
@@ -855,8 +897,11 @@ namespace RockWeb.Blocks.Communication
                 recipientPerson = new PersonAliasService( rockContext ).GetPerson( recipientPersonAliasId.Value );
             }
 
-            if ( recipientPerson == null )
+            // The row's hidden field is posted back by the browser, so only accept
+            // a person who has a conversation on the selected SMS number.
+            if ( recipientPerson == null || !HasConversationWithRecipient( recipientPerson.Id, GetSelectedSmsNumberId() ) )
             {
+                hfSelectedRecipientPersonAliasId.Value = string.Empty;
                 return;
             }
 
@@ -892,7 +937,7 @@ namespace RockWeb.Blocks.Communication
 
             tbNewMessage.Visible = true;
             btnSend.Visible = true;
-            btnEditNote.Visible = true;
+            btnEditNote.Visible = _hasEditableNoteType;
             lbShowImagePicker.Visible = true;
 
             upConversation.Attributes.Add( "class", "conversation-panel has-focus" );
@@ -1095,13 +1140,12 @@ namespace RockWeb.Blocks.Communication
         {
             using ( var rockContext = new RockContext() )
             {
-                var personAliasService = new PersonAliasService( rockContext );
                 var personService = new PersonService( rockContext );
 
                 // Get the Person Record from the selected conversation. (It should be a 'NamelessPerson' record type)
-                int namelessPersonAliasId = hfSelectedRecipientPersonAliasId.Value.AsInteger();
+                var namelessPersonId = TryGetSelectedRecipientPersonId();
                 var phoneNumberService = new PhoneNumberService( rockContext );
-                Person namelessPerson = personAliasService.GetPerson( namelessPersonAliasId );
+                Person namelessPerson = namelessPersonId.HasValue ? personService.Get( namelessPersonId.Value ) : null;
 
                 if ( namelessPerson == null )
                 {
@@ -1184,12 +1228,16 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbViewMergeRequest_Click( object sender, EventArgs e )
         {
-            var namelessPersonAliasId = hfSelectedRecipientPersonAliasId.Value.AsInteger();
+            var namelessPersonId = TryGetSelectedRecipientPersonId();
+            if ( !namelessPersonId.HasValue )
+            {
+                return;
+            }
 
             using ( var rockContext = new RockContext() )
             {
-                var personAliasService = new PersonAliasService( rockContext );
-                var namelessPerson = personAliasService.GetPerson( namelessPersonAliasId );
+                var personService = new PersonService( rockContext );
+                var namelessPerson = personService.Get( namelessPersonId.Value );
 
                 // Same rule gRecipients_RowSelected uses to show the View Merge Request button.
                 if ( namelessPerson == null || !namelessPerson.IsNameless() || !namelessPerson.IsPartOfMergeRequest() )
@@ -1246,7 +1294,10 @@ namespace RockWeb.Blocks.Communication
             };
 
             noteEditor.SetNoteOptions( noteOptions );
-            noteEditor.NoteTypeId = noteTypes.FirstOrDefault()?.Id;
+
+            var editableNoteTypes = noteOptions.GetEditableNoteTypes( CurrentPerson );
+            _hasEditableNoteType = editableNoteTypes.Any();
+            noteEditor.NoteTypeId = editableNoteTypes.FirstOrDefault()?.Id;
         }
 
         /// <summary>
@@ -1256,11 +1307,17 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnEditNote_Click( object sender, EventArgs e )
         {
+            var selectedPersonId = TryGetSelectedRecipientPersonId();
+            if ( !selectedPersonId.HasValue || !_hasEditableNoteType )
+            {
+                noteEditor.Visible = false;
+                return;
+            }
+
             noteEditor.Style.Remove( "display" );
             noteEditor.Visible = true;
             noteEditor.ShowEditMode = true;
 
-            var selectedPersonId = new PersonAliasService( new RockContext() ).GetPersonId( hfSelectedRecipientPersonAliasId.Value.AsInteger() );
             var note = new Note
             {
                 EntityId = selectedPersonId,
