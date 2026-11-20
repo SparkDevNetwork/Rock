@@ -25,6 +25,7 @@ using Rock.Attribute;
 using Rock.CheckIn;
 using Rock.Enums.CheckIn;
 using Rock.Model;
+using Rock.Security;
 using Rock.Utility;
 using Rock.ViewModels.Blocks.CheckIn.Configuration.CheckInAreasAndGroups;
 using Rock.ViewModels.Utility;
@@ -545,7 +546,7 @@ namespace Rock.Blocks.CheckIn.Configuration
 
             if ( bag.Area.AttributeValues != null )
             {
-                area.SetPublicAttributeValues( bag.Area.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: false );
+                area.SetPublicAttributeValues( bag.Area.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: false, attributeFilter: IsAttributeEditable );
             }
 
             RockContext.WrapTransaction( () =>
@@ -952,7 +953,7 @@ namespace Rock.Blocks.CheckIn.Configuration
             group.LoadAttributes( RockContext );
             if ( bag.Group.AttributeValues != null )
             {
-                group.SetPublicAttributeValues( bag.Group.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: false );
+                group.SetPublicAttributeValues( bag.Group.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: false, attributeFilter: IsAttributeEditable );
             }
 
             RockContext.WrapTransaction( () =>
@@ -1125,7 +1126,7 @@ namespace Rock.Blocks.CheckIn.Configuration
                 AttendanceRule = area.AttendanceRule,
                 AlreadyEnrolledMatchingLogic = area.AlreadyEnrolledMatchingLogic,
                 AttendancePrintTo = area.AttendancePrintTo,
-                AttributeValues = area.GetPublicAttributeValuesForEdit( RequestContext.CurrentPerson, enforceSecurity: false ),
+                AttributeValues = area.GetPublicAttributeValuesForEdit( RequestContext.CurrentPerson, enforceSecurity: false, attributeFilter: IsAttributeEditable ),
                 CheckInLabels = GetAttachedCheckInLabels( area.Id ),
                 ClassicCheckInLabels = GetAttachedClassicCheckInLabels( area.Attributes )
             };
@@ -1185,7 +1186,7 @@ namespace Rock.Blocks.CheckIn.Configuration
                 OverflowLocations = overflowLocations,
                 Attributes = filterAttributes,
                 GroupAttributes = groupAttributes,
-                AttributeValues = group.GetPublicAttributeValuesForEdit( RequestContext.CurrentPerson, enforceSecurity: false )
+                AttributeValues = group.GetPublicAttributeValuesForEdit( RequestContext.CurrentPerson, enforceSecurity: false, attributeFilter: IsAttributeEditable )
             };
         }
 
@@ -1701,15 +1702,28 @@ namespace Rock.Blocks.CheckIn.Configuration
         }
 
         /// <summary>
+        /// Determines if the current person is allowed to view and edit the attribute in this editor. Only security
+        /// rules defined directly on the attribute are considered; otherwise the block security applies.
+        /// </summary>
+        /// <param name="attribute">The attribute to check.</param>
+        /// <returns><c>true</c> if the attribute can be viewed and edited; otherwise <c>false</c>.</returns>
+        private bool IsAttributeEditable( AttributeCache attribute )
+        {
+            return Authorization.AuthorizedForEntity( attribute, Authorization.VIEW, RequestContext.CurrentPerson ) != false
+                && Authorization.AuthorizedForEntity( attribute, Authorization.EDIT, RequestContext.CurrentPerson ) != false;
+        }
+
+        /// <summary>
         /// Projects a filtered and sorted source attribute cache dictionary into the edit-bag form expected by the
         /// attribute values container.
         /// </summary>
         /// <param name="attributes">The source attribute cache map.</param>
         /// <returns>The filtered and sorted edit-bag projection.</returns>
-        private static Dictionary<string, PublicAttributeBag> BuildOrderedAttributeSchema( IDictionary<string, AttributeCache> attributes )
+        private Dictionary<string, PublicAttributeBag> BuildOrderedAttributeSchema( IDictionary<string, AttributeCache> attributes )
         {
             return attributes
                 .Where( kvp => kvp.Value.IsActive )
+                .Where( kvp => IsAttributeEditable( kvp.Value ) )
                 .OrderBy( kvp => kvp.Value.EntityTypeQualifierValue )
                 .ThenBy( kvp => kvp.Value.Order )
                 .ThenBy( kvp => kvp.Value.Name )
@@ -1728,7 +1742,7 @@ namespace Rock.Blocks.CheckIn.Configuration
         /// <param name="attributes">The group's fully-resolved attribute cache (own plus inherited).</param>
         /// <param name="groupTypeId">The group's own group type identifier, used to tell own from inherited.</param>
         /// <returns>A tuple of the ordered filter schema and the ordered own-attribute schema.</returns>
-        private static (
+        private (
             Dictionary<string, PublicAttributeBag> filters,
             Dictionary<string, PublicAttributeBag> groupAttributes
         ) SplitGroupAttributeSchema( IDictionary<string, AttributeCache> attributes, int groupTypeId )
