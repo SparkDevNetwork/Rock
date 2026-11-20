@@ -28,6 +28,8 @@ using Rock.Configuration;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
+using Rock.Security;
+using Rock.Web.Cache;
 
 namespace Rock.Follow.Event
 {
@@ -46,7 +48,7 @@ namespace Rock.Follow.Event
         EntityTypeName = "Rock.Model.Person",
         Key = AttributeKey.NoteTypes )]
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.PERSON_NOTE_ADDED )]
-    public class PersonNoteAdded : EventComponent, IEventComponentAdditionalMergeFields
+    public class PersonNoteAdded : EventComponent, IEventComponentAdditionalMergeFields, IEventComponentPerRecipient
     {
         /// <summary>
         /// The Follow Event setting attribute keys for PersonNoteAdded.
@@ -101,6 +103,46 @@ namespace Rock.Follow.Event
             return string.Empty;
         }
 
+        /// <inheritdoc/>
+        string IEventComponentPerRecipient.FormatEntityNotificationForRecipient( FollowingEventType followingEvent, IEntity entity, Dictionary<string, List<object>> additionalMergeFields, Person recipient )
+        {
+            if ( recipient == null || additionalMergeFields == null )
+            {
+                return string.Empty;
+            }
+
+            // Keep only the notes whose note type the recipient is allowed to view.
+            var recipientMergeFields = new Dictionary<string, List<object>>();
+            foreach ( var mergeFieldPair in additionalMergeFields )
+            {
+                var viewableValues = mergeFieldPair.Value
+                    .Where( v =>
+                    {
+                        var noteData = v as NoteData;
+                        if ( noteData == null )
+                        {
+                            return false;
+                        }
+
+                        var noteType = NoteTypeCache.Get( noteData.NoteTypeId );
+                        return noteType != null && noteType.IsAuthorized( Authorization.VIEW, recipient );
+                    } )
+                    .ToList();
+
+                if ( viewableValues.Any() )
+                {
+                    recipientMergeFields.Add( mergeFieldPair.Key, viewableValues );
+                }
+            }
+
+            if ( !recipientMergeFields.Any() )
+            {
+                return string.Empty;
+            }
+
+            return FormatEntityNotification( followingEvent, entity, recipientMergeFields );
+        }
+
         /// <summary>
         /// Determines whether <see cref="PersonNoteAdded"/> has happened for <paramref name="entity"/> since <paramref name="lastNotified"/> date.
         /// This method will return a bool whether the aforementioned event(s) occurred.
@@ -127,17 +169,25 @@ namespace Rock.Follow.Event
             {
                 var person = personAlias.Person;
 
+                var personEntityTypeId = EntityTypeCache.Get<Rock.Model.Person>().Id;
+
+                // Notes that need approval are only picked up once approved, so
+                // they are compared by when they were approved, not created.
+                // Otherwise a note approved after a job run is never reported.
                 var newNotesForPersonSinceLastNotified = new NoteService( RockApp.Current.CreateRockContext() )
-                    .Queryable().AsNoTracking()
+                    .Queryable().AsNoTracking().AreViewableBy( null )
                     .Where( n =>
                         n.EntityId == personAlias.PersonId
+                        && n.NoteType.EntityTypeId == personEntityTypeId
                         && !n.IsPrivateNote
-                        && ( !lastNotified.HasValue || n.CreatedDateTime > lastNotified )
+                        && ( !lastNotified.HasValue
+                            || ( !n.NoteType.RequiresApprovals && n.CreatedDateTime > lastNotified )
+                            || ( n.NoteType.RequiresApprovals && ( n.ApprovedDateTime ?? n.CreatedDateTime ) > lastNotified ) )
                         && ( configuredNoteTypes.Count() == 0 || configuredNoteTypes.Contains( n.NoteType.Guid ) ) ).ToList();
 
                 if ( newNotesForPersonSinceLastNotified.Any() )
                 {
-                    followedEventObjects.Add( "NoteData", new List<object>( newNotesForPersonSinceLastNotified.Select( n => new NoteData { AddedBy = n.CreatedByPersonName, NoteType = n.NoteType.Name } ) ) );
+                    followedEventObjects.Add( "NoteData", new List<object>( newNotesForPersonSinceLastNotified.Select( n => new NoteData { AddedBy = n.CreatedByPersonName, NoteType = n.NoteType.Name, NoteTypeId = n.NoteTypeId } ) ) );
                     return true;
                 }
             }
@@ -172,6 +222,11 @@ namespace Rock.Follow.Event
             /// The name of the type of Note.
             /// </summary>
             public string NoteType { get; set; }
+
+            /// <summary>
+            /// The identifier of the type of Note.
+            /// </summary>
+            public int NoteTypeId { get; set; }
         }
     }
 }

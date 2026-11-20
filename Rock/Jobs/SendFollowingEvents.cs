@@ -123,6 +123,9 @@ namespace Rock.Jobs
                     // Key: following event type id Value: Dictionary of entity id and formatted event notice for the entity
                     var eventsThatHappened = new Dictionary<int, Dictionary<int, string>>();
 
+                    // Key: following event type id Value: Dictionary of entity id and the event data to format for each recipient
+                    var perRecipientEventData = new Dictionary<int, Dictionary<int, PerRecipientEventData>>();
+
                     // Get the subscriptions for each eligible person.
                     foreach ( int personId in eligiblePersonIds )
                     {
@@ -247,9 +250,25 @@ namespace Rock.Jobs
                                                                     // Store the event type id and the entity for later processing of notifications
                                                                     eventsThatHappened.TryAdd( eventType.Id, new Dictionary<int, string>() );
 
-                                                                    eventsThatHappened[eventType.Id].Add(
-                                                                        entity.Id,
-                                                                        eventComponentAdditionalMergeFields.FormatEntityNotification( eventType, entity, followedEventList ) );
+                                                                    if ( eventComponent is IEventComponentPerRecipient perRecipientComponent )
+                                                                    {
+                                                                        // The notice is formatted for each recipient when it is sent.
+                                                                        eventsThatHappened[eventType.Id].Add( entity.Id, string.Empty );
+
+                                                                        perRecipientEventData.TryAdd( eventType.Id, new Dictionary<int, PerRecipientEventData>() );
+                                                                        perRecipientEventData[eventType.Id][entity.Id] = new PerRecipientEventData
+                                                                        {
+                                                                            Component = perRecipientComponent,
+                                                                            Entity = entity,
+                                                                            Data = followedEventList
+                                                                        };
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        eventsThatHappened[eventType.Id].Add(
+                                                                            entity.Id,
+                                                                            eventComponentAdditionalMergeFields.FormatEntityNotification( eventType, entity, followedEventList ) );
+                                                                    }
                                                                 }
                                                             }
                                                             else
@@ -346,7 +365,27 @@ namespace Rock.Jobs
                                                 var eventTypeObj = followingEvents.Where( e => e.Id == eventType.Key ).FirstOrDefault();
                                                 if ( eventTypeObj != null )
                                                 {
-                                                    personEventTypeNotices.Add( new FollowingEventTypeNotices( eventTypeObj, personFollowedEntities.Select( e => e.Value ).ToList() ) );
+                                                    var notices = new List<string>();
+                                                    foreach ( var e in personFollowedEntities )
+                                                    {
+                                                        if ( perRecipientEventData.TryGetValue( eventType.Key, out var byEntity ) && byEntity.TryGetValue( e.Key, out var data ) )
+                                                        {
+                                                            var notice = data.Component.FormatEntityNotificationForRecipient( eventTypeObj, data.Entity, data.Data, person );
+                                                            if ( notice.IsNotNullOrWhiteSpace() )
+                                                            {
+                                                                notices.Add( notice );
+                                                            }
+                                                        }
+                                                        else
+                                                        {
+                                                            notices.Add( e.Value );
+                                                        }
+                                                    }
+
+                                                    if ( notices.Any() )
+                                                    {
+                                                        personEventTypeNotices.Add( new FollowingEventTypeNotices( eventTypeObj, notices ) );
+                                                    }
                                                 }
                                             }
                                         }
@@ -388,6 +427,18 @@ namespace Rock.Jobs
                     throw new Exception( "One or more exceptions occurred calculating following events..." + Environment.NewLine + exceptionMsgs.AsDelimited( Environment.NewLine ) );
                 }
             }
+        }
+
+        /// <summary>
+        /// The event data kept for an event component that formats its notice for each recipient.
+        /// </summary>
+        private class PerRecipientEventData
+        {
+            public IEventComponentPerRecipient Component;
+
+            public IEntity Entity;
+
+            public Dictionary<string, List<object>> Data;
         }
     }
 

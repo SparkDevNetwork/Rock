@@ -26,6 +26,7 @@ using Rock.Data;
 using Rock.Enums.Core;
 using Rock.Model;
 using Rock.Net;
+using Rock.Security;
 using Rock.ViewModels.Core;
 using Rock.Utility;
 using Rock.Web;
@@ -104,6 +105,12 @@ namespace Rock.Core.NotificationMessageTypes
                 // Shouldn't happen, but it's always possible data changed
                 // while we were processing.
                 if ( fromPerson?.PrimaryAliasId == null || mentionedPerson?.PrimaryAliasId == null )
+                {
+                    return;
+                }
+
+                // Only notify a person who can view the request.
+                if ( !request.IsAuthorized( Authorization.VIEW, mentionedPerson ) )
                 {
                     return;
                 }

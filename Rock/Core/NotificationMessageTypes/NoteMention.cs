@@ -26,6 +26,7 @@ using Rock.Data;
 using Rock.Enums.Core;
 using Rock.Model;
 using Rock.Net;
+using Rock.Security;
 using Rock.ViewModels.Core;
 using Rock.Utility;
 using Rock.Web;
@@ -111,6 +112,17 @@ namespace Rock.Core.NotificationMessageTypes
                 // Shouldn't happen, but it's always possible data changed
                 // while we were processing.
                 if ( fromPerson?.PrimaryAliasId == null || mentionedPerson?.PrimaryAliasId == null )
+                {
+                    return;
+                }
+
+                // Only notify a person who can view the note and the record it is on.
+                if ( !note.IsAuthorized( Authorization.VIEW, mentionedPerson ) )
+                {
+                    return;
+                }
+
+                if ( !( entity is Person ) && entity is ISecured securedEntity && !securedEntity.IsAuthorized( Authorization.VIEW, mentionedPerson ) )
                 {
                     return;
                 }
