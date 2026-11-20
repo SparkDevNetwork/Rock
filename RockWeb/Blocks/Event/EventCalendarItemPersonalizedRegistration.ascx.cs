@@ -26,6 +26,7 @@ using Humanizer;
 using Rock;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Attribute;
@@ -171,16 +172,7 @@ namespace RockWeb.Blocks.Event
         {
             var rockContext = new RockContext();
 
-            // get the person who was passed in for the registration registrar
-            Person person = null;
-
-            Guid personGuid = Guid.Empty;
-            if ( PageParameter( "PersonGuid" ) != null )
-            {
-                personGuid = PageParameter( "PersonGuid" ).AsGuid();
-
-                person = new PersonService( _rockContext ).Get( personGuid );
-            }
+            var person = GetRegistrationPerson();
 
             if ( person == null )
             {
@@ -210,7 +202,8 @@ namespace RockWeb.Blocks.Event
                 var toDate = fromDate.AddDays( _daysInRange );
 
                 if ( ( eventGroup.CampusId.HasValue && eventGroup.CampusId != campusId )
-                    || !eventGroup.GetStartTimes( fromDate, toDate ).Any() )
+                    || !eventGroup.GetStartTimes( fromDate, toDate ).Any()
+                    || !CanViewEventItem( eventGroup.EventItem ) )
                 {
                     eventGroup = null;
                 }
@@ -283,18 +276,83 @@ namespace RockWeb.Blocks.Event
 
         #region Methods
 
+        /// <summary>
+        /// Gets the person to register, which is always the current person.
+        /// </summary>
+        /// <returns>The current person, or <c>null</c> when nobody is signed in or the PersonGuid page parameter names someone else.</returns>
+        private Person GetRegistrationPerson()
+        {
+            var currentPerson = CurrentPerson;
+
+            if ( currentPerson == null )
+            {
+                return null;
+            }
+
+            /*
+                11/20/26 - JMH
+
+                The PersonGuid page parameter only confirms who the link was meant for. Personalized
+                links that carry a person token sign the visitor in as that person before this block
+                loads, so they still resolve here.
+
+                Reason: A Guid in the URL is not proof of identity.
+            */
+            var personGuidParameter = PageParameter( "PersonGuid" );
+
+            if ( personGuidParameter.IsNotNullOrWhiteSpace() && personGuidParameter.AsGuidOrNull() != currentPerson.Guid )
+            {
+                return null;
+            }
+
+            return new PersonService( _rockContext ).Get( currentPerson.Id );
+        }
+
+        /// <summary>
+        /// Determines whether the current person may see the event item.
+        /// </summary>
+        /// <param name="eventItem">The event item to check.</param>
+        /// <returns><c>true</c> if the event item can be shown to the current person; otherwise <c>false</c>.</returns>
+        private bool CanViewEventItem( EventItem eventItem )
+        {
+            if ( eventItem == null )
+            {
+                return false;
+            }
+
+            var isPublished = eventItem.IsActive && eventItem.IsApproved;
+
+            if ( !isPublished && !eventItem.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
+            {
+                return false;
+            }
+
+            /*
+                11/20/26 - JMH
+
+                The event's calendars are checked directly rather than through EventItem.IsAuthorized,
+                which falls back to the default security chain when no calendar allows the action.
+                An event that is not on any calendar uses its own security.
+
+                Reason: Calendar security decides who can see an event.
+            */
+            var calendarIds = eventItem.EventCalendarItems.Select( c => c.EventCalendarId ).ToList();
+
+            if ( !calendarIds.Any() )
+            {
+                return eventItem.IsAuthorized( Authorization.VIEW, CurrentPerson );
+            }
+
+            return calendarIds
+                .Select( id => EventCalendarCache.Get( id ) )
+                .Any( c => c != null
+                    && ( c.IsAuthorized( Authorization.VIEW, CurrentPerson ) || c.IsAuthorized( Authorization.EDIT, CurrentPerson ) ) );
+        }
+
         private void LoadContent() {
-            Person person = null;
             EventItem eventItem = null;
 
-            // get person
-            Guid personGuid = Guid.Empty;
-            if ( PageParameter( "PersonGuid" ) != null )
-            {
-                personGuid = PageParameter( "PersonGuid" ).AsGuid();
-
-                person = new PersonService( _rockContext ).Get( personGuid );
-            }
+            var person = GetRegistrationPerson();
 
             if ( person == null )
             {
@@ -312,7 +370,7 @@ namespace RockWeb.Blocks.Event
                 eventItem = new EventItemService( _rockContext ).Get( calendarItemId );
             }
 
-            if ( eventItem == null )
+            if ( eventItem == null || !CanViewEventItem( eventItem ) )
             {
                 lErrors.Text = "<div class='alert alert-warning'>Invalid calendar item id.</div>";
                 return;
