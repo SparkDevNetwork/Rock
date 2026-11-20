@@ -72,6 +72,7 @@
                         <!-- The iframe srcdoc is dynamically updated with the email content -->
                         <iframe name="emailPreview"
                                 :srcdoc="emailContent"
+                                sandbox="allow-same-origin allow-popups allow-popups-to-escape-sandbox"
                                 class="emaileditor-iframe bg-white inset-0 w-100 h-100 js-emailpreview-iframe email-wrapper email-content-desktop styled-scroll"
                                 frameborder="0"
                                 border="0"
