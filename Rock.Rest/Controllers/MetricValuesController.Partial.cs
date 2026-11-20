@@ -47,6 +47,21 @@ namespace Rock.Rest.Controllers
         [Rock.SystemGuid.RestActionGuid( "A92E98C4-B44B-4119-A2C5-B4AD3451959A" )]
         public IQueryable<MetricValue> GetByMetricId( int metricId, MetricValueType? metricValueType = null )
         {
+            /*
+                11/20/2026 - MSE
+
+                The REST action grant only says the person may use this endpoint. The metric has
+                its own VIEW rule (on the metric or its categories), as GetSeriesPartitionName
+                below checks, so return no values for a metric the person cannot view.
+
+                Reason: Anyone with the REST action could read the values of any metric.
+            */
+            var metric = new MetricService( new RockContext() ).Get( metricId );
+            if ( metric == null || !metric.IsAuthorized( Rock.Security.Authorization.VIEW, GetPerson() ) )
+            {
+                return new List<MetricValue>().AsQueryable();
+            }
+
             // include MetricValuePartitions and each MetricValuePartition's MetricPartition so that MetricValuePartitionEntityIds doesn't have to lazy load
             var result = Get().Include( a => a.MetricValuePartitions.Select( b => b.MetricPartition ) ).Where( a => a.MetricId == metricId );
             if ( metricValueType.HasValue )
@@ -73,6 +88,16 @@ namespace Rock.Rest.Controllers
         public IEnumerable<MetricSummary> GetSummary( string metricIdList, DateTime? startDate = null, DateTime? endDate = null, MetricValueType? metricValueType = null, int? entityTypeId = null, int? entityId = null )
         {
             List<int> metricIds = metricIdList.SplitDelimitedValues().AsIntegerList();
+
+            // Only summarize the metrics the person can view (see the note in GetByMetricId).
+            var person = GetPerson();
+            metricIds = new MetricService( new RockContext() ).Queryable()
+                .Where( m => metricIds.Contains( m.Id ) )
+                .ToList()
+                .Where( m => m.IsAuthorized( Rock.Security.Authorization.VIEW, person ) )
+                .Select( m => m.Id )
+                .ToList();
+
             var qry = Get().Where( a => metricIds.Contains( a.MetricId ) );
             if ( metricValueType.HasValue )
             {

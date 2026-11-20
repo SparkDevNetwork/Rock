@@ -20,6 +20,7 @@ using System.Linq;
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Rest.Controllers
@@ -45,6 +46,7 @@ namespace Rock.Rest.Controllers
             int? siteType = null,
             int rootPageId = 0 )
         {
+            var person = GetPerson();
             IQueryable<Page> qry;
             if ( id == 0 )
             {
@@ -68,7 +70,19 @@ namespace Rock.Rest.Controllers
             }
 
             List<int> hidePageIdList = ( hidePageIds ?? string.Empty ).Split( ',' ).Select( s => s.AsInteger() ).ToList();
-            List<Page> pageList = qry.Where( a => !hidePageIdList.Contains( a.Id ) ).OrderBy( a => a.Order ).ThenBy( a => a.InternalName ).ToList();
+            /*
+                11/20/2026 - MSE
+
+                The REST action grant only says the person may use this endpoint. Each page has
+                its own VIEW rule, inherited from its parent pages and site, so only list the pages
+                (and count the children) the person can view. PageCache is used because it walks
+                that inheritance; the Page entities here are loaded without their parents.
+
+                Reason: Anyone with the REST action could list the names and ids of every page.
+            */
+            List<Page> pageList = qry.Where( a => !hidePageIdList.Contains( a.Id ) ).OrderBy( a => a.Order ).ThenBy( a => a.InternalName ).ToList()
+                .Where( p => PageCache.Get( p.Id )?.IsAuthorized( Rock.Security.Authorization.VIEW, person ) == true )
+                .ToList();
             List<TreeViewItem> pageItemList = new List<TreeViewItem>();
             foreach ( var page in pageList )
             {
@@ -86,7 +100,10 @@ namespace Rock.Rest.Controllers
                 .Where( p =>
                     p.ParentPageId.HasValue &&
                     resultIds.Contains( p.ParentPageId.Value ) )
-                .Select( p => p.ParentPageId.Value )
+                .Select( p => new { p.Id, ParentPageId = p.ParentPageId.Value } )
+                .ToList()
+                .Where( p => PageCache.Get( p.Id )?.IsAuthorized( Rock.Security.Authorization.VIEW, person ) == true )
+                .Select( p => p.ParentPageId )
                 .Distinct()
                 .ToList();
 
