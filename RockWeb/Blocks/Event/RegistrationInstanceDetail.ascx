@@ -1,4 +1,5 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="RegistrationInstanceDetail.ascx.cs" Inherits="RockWeb.Blocks.Event.RegistrationInstanceDetail" %>
+<%@ Import Namespace="Rock" %>
 
 <script type="text/javascript">
     Sys.Application.add_load(function () {
@@ -114,7 +115,7 @@
 	                                    <asp:Repeater ID="rptGroupPlacements" runat="server">
 	                                        <ItemTemplate>
 	                                            <li>
-	                                                <asp:HyperLink ID="hlPlacement" runat="server" NavigateUrl='<%# Eval("Url") %>' Text='<%# Eval("Name") %>' />
+	                                                <asp:HyperLink ID="hlPlacement" runat="server" NavigateUrl='<%# Eval("Url") %>' Text='<%# ( Eval( "Name" ) as string ).EncodeHtml() %>' />
 	                                            </li>
 	                                        </ItemTemplate>
 	                                    </asp:Repeater>
