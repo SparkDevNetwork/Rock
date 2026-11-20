@@ -408,6 +408,7 @@ namespace Rock.Web.UI.Controls
             {
                 EnsureChildControls();
                 _apAccount.SetValue( value );
+                ServerAccountId = value;
             }
         }
 
@@ -649,6 +650,15 @@ namespace Rock.Web.UI.Controls
         private int? GatewayEntityTypeId { get; set; }
 
         /// <summary>
+        /// Gets or sets the account identifier that the server put in the account picker,
+        /// such as a default or copied account. See <see cref="IsAccountAllowed(int, int?, int?, Person)"/>.
+        /// </summary>
+        /// <value>
+        /// The account identifier that the server put in the account picker.
+        /// </value>
+        private int? ServerAccountId { get; set; }
+
+        /// <summary>
         /// Gets or sets the validation group.
         /// </summary>
         /// <value>
@@ -742,6 +752,7 @@ namespace Rock.Web.UI.Controls
                 _cbDefaultPaymentAmount.Value = instance.DefaultPayment;
                 _cbDefaultPaymentAmount.Visible = instance.RegistrationTemplate != null && ( instance.RegistrationTemplate.SetCostOnInstance ?? false );
                 _apAccount.SetValue( instance.AccountId );
+                ServerAccountId = instance.AccountId;
                 _apAccount.Visible = instance.RegistrationTemplate != null && instance.RegistrationTemplate.FinancialGatewayId.HasValue;
                 _dtpSendReminder.SelectedDateTime = instance.SendReminderDateTime;
                 _dpPaymentDeadline.SelectedDate = instance.PaymentDeadlineDate;
@@ -830,6 +841,7 @@ namespace Rock.Web.UI.Controls
                 _cbMinimumInitialPayment.Value = null;
                 _cbDefaultPaymentAmount.Value = null;
                 _apAccount.SetValue( null );
+                ServerAccountId = null;
                 _dtpSendReminder.SelectedDateTime = null;
                 _dpPaymentDeadline.SelectedDate = null;
                 _dpPaymentDeadline.Required = false;
@@ -880,7 +892,7 @@ namespace Rock.Web.UI.Controls
                 instance.MinimumInitialPayment = _cbMinimumInitialPayment.Value;
                 instance.DefaultPayment = _cbDefaultPaymentAmount.Value;
                 int accountId = _apAccount.SelectedValue.AsInteger();
-                if ( IsAccountAllowed( accountId, instance.AccountId ) )
+                if ( IsAccountAllowed( accountId, instance.AccountId, ServerAccountId, person ) )
                 {
                     instance.AccountId = accountId > 0 ? accountId : ( int? ) null;
                 }
@@ -936,22 +948,33 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         /// <param name="postedAccountId">The account identifier posted by the client, zero or less when cleared.</param>
         /// <param name="currentAccountId">The account identifier currently on the registration instance.</param>
-        /// <returns><c>true</c> if the posted value is empty, unchanged or an active account; otherwise <c>false</c>.</returns>
-        private static bool IsAccountAllowed( int postedAccountId, int? currentAccountId )
+        /// <param name="serverAccountId">The account identifier the server put in the account picker, such as a default or copied account.</param>
+        /// <param name="person">The person saving the registration instance.</param>
+        /// <returns><c>true</c> if the posted value is empty, unchanged, the account the server put in the picker, or an active account that is public or the person can view; otherwise <c>false</c>.</returns>
+        private static bool IsAccountAllowed( int postedAccountId, int? currentAccountId, int? serverAccountId, Person person )
         {
-            if ( postedAccountId <= 0 || postedAccountId == currentAccountId )
+            if ( postedAccountId <= 0 || postedAccountId == currentAccountId || postedAccountId == serverAccountId )
             {
                 return true;
             }
 
-            // The picker offers every active account to anyone who can edit the instance,
-            // and stock security only lets finance roles view accounts, so VIEW is not checked.
-            using ( var rockContext = new RockContext() )
-            {
-                var account = new FinancialAccountService( rockContext ).Get( postedAccountId );
+            /*
+                11/20/2026 - MSE
 
-                return account != null && account.IsActive;
-            }
+                The account picker lists the accounts the person can view, plus active public
+                accounts in their public form, so only those may be chosen here. An account the
+                server put in the picker (the block's default account on Add, the copied account
+                on Copy, or the default account of a new event linkage) is accepted unchanged,
+                because it is often not public and the person may not be able to view it. That
+                account is kept in view state, which the client cannot change.
+
+                Reason: Only accept an account the person could choose in the account picker.
+            */
+            var account = FinancialAccountCache.Get( postedAccountId );
+
+            return account != null
+                && account.IsActive
+                && ( account.IsPublic == true || account.IsAuthorized( Authorization.VIEW, person ) );
         }
 
         /// <summary>
@@ -963,6 +986,7 @@ namespace Rock.Web.UI.Controls
             base.LoadViewState( savedState );
 
             GatewayEntityTypeId = ViewState["GatewayEntityTypeId"] as int?;
+            ServerAccountId = ViewState["ServerAccountId"] as int?;
         }
 
         /// <summary>
@@ -974,6 +998,7 @@ namespace Rock.Web.UI.Controls
         protected override object SaveViewState()
         {
             ViewState["GatewayEntityTypeId"] = GatewayEntityTypeId;
+            ViewState["ServerAccountId"] = ServerAccountId;
 
             return base.SaveViewState();
         }
