@@ -533,10 +533,9 @@ namespace Rock.Blocks.CheckIn.Configuration
                     return false;
                 }
 
-                // The initial view shows an error instead of the edit button
-                // when the person can not view the template, so require the
-                // same here.
-                if ( !entity.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+                // Changing an existing template requires EDIT permission on
+                // the template itself, in addition to the block EDIT check.
+                if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
                 {
                     error = ActionBadRequest( $"Not authorized to edit {FRIENDLY_TYPE_NAME}." );
                     return false;
@@ -689,7 +688,8 @@ namespace Rock.Blocks.CheckIn.Configuration
             }
 
             var isViewable = entity.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson );
-            box.IsEditable = entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) || BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
+            box.IsEditable = BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson )
+                && ( entity.Id == 0 || entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) );
             entity.LoadAttributes( RockContext );
 
             if ( entity.Id != 0 )
