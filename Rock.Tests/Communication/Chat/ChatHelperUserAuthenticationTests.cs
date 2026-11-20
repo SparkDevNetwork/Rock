@@ -30,7 +30,7 @@ using Rock.Communication.Chat.DTO;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Tests.Shared;
+using Rock.Tests.Shared.Constants;
 using Rock.Tests.Shared.TestFramework;
 using Rock.Web;
 using Rock.Web.Cache;
