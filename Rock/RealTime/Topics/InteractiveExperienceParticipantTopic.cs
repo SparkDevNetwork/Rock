@@ -114,6 +114,35 @@ namespace Rock.RealTime.Topics
                     throw new RealTimeException( "Requested occurrence was not found." );
                 }
 
+                /*
+                    11/20/2026 - MSE
+
+                    The blocks check the schedule group and data view requirement
+                    before they issue a participant token, but the token is a bearer
+                    token: it is not tied to a person and never expires, so anyone
+                    holding a copy could join with it. Joining is the one step every
+                    client goes through, so the requirement is checked here against
+                    the person on this connection. RealTime identifies the person
+                    from the .ROCK cookie, which the mobile app's WebView also has
+                    (signed in through rckipid). People who can edit the experience
+                    may join anyway, same as the blocks. Moderator and visualizer
+                    tokens are skipped because only secured blocks issue them.
+
+                    Reason: Enforce the schedule group and data view requirement at join.
+                */
+                if ( !occurrenceState.IsModerator && !occurrenceState.IsVisualizer )
+                {
+                    var person = Context.CurrentPersonId.HasValue
+                        ? new PersonService( rockContext ).Get( Context.CurrentPersonId.Value )
+                        : null;
+
+                    if ( !InteractiveExperienceScheduleService.AreRequirementsMetForPerson( occurrence.InteractiveExperienceScheduleId, person )
+                        && !InteractiveExperienceCache.Get( occurrence.InteractiveExperienceSchedule.InteractiveExperienceId ).IsAuthorized( Security.Authorization.EDIT, person ) )
+                    {
+                        throw new RealTimeException( "You do not meet the requirements to join this experience." );
+                    }
+                }
+
                 occurrenceState.InteractiveExperienceId = occurrence.InteractiveExperienceSchedule.InteractiveExperienceId;
 
                 response.OccurrenceIdKey = occurrence.IdKey;
