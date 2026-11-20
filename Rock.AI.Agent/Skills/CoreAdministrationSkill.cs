@@ -24,9 +24,9 @@ using Rock.SystemGuid;
 namespace Rock.AI.Agent.Skills;
 
 /// <summary>
-/// Provides read access to Rock's core configuration metadata: defined types and
-/// values, entity types, categories, field types, attribute definitions, and
-/// system communications.
+/// Provides access to Rock's core configuration metadata: defined types and
+/// values, entity types, categories, field types, attribute definitions,
+/// system communications, and locations.
 /// </summary>
 /// <remarks>
 /// <para>
@@ -42,7 +42,7 @@ namespace Rock.AI.Agent.Skills;
 /// cannot be expressed.
 /// </para>
 /// </remarks>
-[Description( "Provides access to Rock's core configuration metadata: defined types and values, entity types, categories, field types, attributes, and system communications." )]
+[Description( "Provides access to Rock's core configuration metadata: defined types and values, entity types, categories, field types, attributes, system communications, and locations (addresses and named places such as buildings and rooms)." )]
 [AgentSkillGuid( "6DBD6867-2E0B-4D2E-9BF9-B34B77E4E94B" )]
 [EntityTypeGuid( "55EB1E6F-EFBF-4E9C-BA11-DBC7147DA342" )]
 internal sealed partial class CoreAdministrationSkill : AgentSkillComponent
