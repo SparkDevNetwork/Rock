@@ -58,6 +58,17 @@ namespace Rock.Plugin.HotFixes
     </div>
 {% endif -%}";
 
+            /*
+                11/20/2026 - MSE
+
+                A later hotfix migration escapes the nick name in the stock Baptism
+                badge (DEV-16581). A site that runs it before this one holds the
+                escaped Lava, so treat that as unmodified too.
+
+                Reason: Keep the icon update for stock badges that already have the name escape fix.
+            */
+            var escapedLava = originalLava.Replace( "{{ Person.NickName }}", "{{ Person.NickName | Escape | Escape }}" );
+
             Sql( $@"
 DECLARE @BadgeId INT = (SELECT TOP 1 [Id] FROM [Badge] WHERE [Guid] = '66972BFF-42CD-49AB-9A7A-E1B9DECA4EBE')
 DECLARE @DisplayTextAttributeId INT = (SELECT TOP 1 [Id] FROM [Attribute] WHERE [Guid] = '01C9BA59-D8D4-4137-90A6-B3C06C70BBC3')
@@ -67,7 +78,7 @@ SET [Value] = REPLACE([Value], 'fa fa-tint', 'ti ti-droplet')
     , [IsPersistedValueDirty] = 1
 WHERE [AttributeId] = @DisplayTextAttributeId
     AND [EntityId] = @BadgeId
-    AND {NormalizeWhitespace( "[Value]" )} = {NormalizeWhitespace( $"N'{originalLava}'" )}" );
+    AND {NormalizeWhitespace( "[Value]" )} IN ( {NormalizeWhitespace( $"N'{originalLava}'" )}, {NormalizeWhitespace( $"N'{escapedLava}'" )} )" );
         }
 
         /// <summary>
