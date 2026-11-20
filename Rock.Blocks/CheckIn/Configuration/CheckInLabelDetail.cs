@@ -413,6 +413,11 @@ namespace Rock.Blocks.CheckIn.Configuration
                 return actionError;
             }
 
+            if ( entity.IsSystem )
+            {
+                return ActionBadRequest( "Not allowed to edit system labels." );
+            }
+
             entity.LoadAttributes( RockContext );
 
             var bag = GetEntityBagForEdit( entity );
@@ -437,6 +442,11 @@ namespace Rock.Blocks.CheckIn.Configuration
             if ( !TryGetEntityForEditAction( box.Bag.IdKey, out var entity, out var actionError ) )
             {
                 return actionError;
+            }
+
+            if ( entity.IsSystem )
+            {
+                return ActionBadRequest( "Not allowed to edit system labels." );
             }
 
             // Update the entity instance from the information in the bag.
@@ -493,6 +503,11 @@ namespace Rock.Blocks.CheckIn.Configuration
             if ( !TryGetEntityForEditAction( key, out var entity, out var actionError ) )
             {
                 return actionError;
+            }
+
+            if ( entity.IsSystem )
+            {
+                return ActionBadRequest( "Not allowed to delete system labels." );
             }
 
             if ( !entityService.CanDelete( entity, out var errorMessage ) )

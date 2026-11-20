@@ -11,6 +11,7 @@
 
             <div class="panel-body">
 
+                <Rock:NotificationBox ID="nbMessage" runat="server" NotificationBoxType="Warning" Visible="false" />
                 <asp:HiddenField ID="hfBinaryFileId" runat="server" />
                 <asp:Panel ID="pnlOpenFile" runat="server" Visible="false" class="row">
                     <div class="col-md-6">
