@@ -305,6 +305,78 @@ SET
 FROM [Site] AS [s]
 WHERE [s].[Id] <> @SiteId; -- exclude the site being deleted
 
+/*
+    Copy the security rules each cross-site child inherited (every ancestor page, nearest first, then the top page's site) onto
+    the child, after its own rules, so the child keeps the same restrictions once detached. A rule the child already has, or
+    that appears again further up, is skipped because it could never change the result.
+*/
+DECLARE @PageEntityTypeId INT = ( SELECT TOP 1 [Id] FROM [EntityType] WHERE [Guid] = 'E104DCDF-247C-4CED-A119-8CC51632761F' );
+DECLARE @SiteEntityTypeId INT = ( SELECT TOP 1 [Id] FROM [EntityType] WHERE [Guid] = '7244C10B-5D87-467B-A7F5-12DC29910CA8' );
+
+WITH [Ancestor] AS (
+    SELECT c.[Id] AS [ChildPageId]
+        , p.[Id] AS [PageId]
+        , p.[ParentPageId]
+        , p.[LayoutId]
+        , 1 AS [Depth]
+    FROM [Page] AS c
+    INNER JOIN [Page] AS p ON p.[Id] = c.[ParentPageId]
+    WHERE p.[SiteId] = @SiteId
+        AND c.[SiteId] <> @SiteId
+    UNION ALL
+    SELECT an.[ChildPageId]
+        , p.[Id]
+        , p.[ParentPageId]
+        , p.[LayoutId]
+        , an.[Depth] + 1
+    FROM [Ancestor] AS an
+    INNER JOIN [Page] AS p ON p.[Id] = an.[ParentPageId]
+    WHERE an.[Depth] < 50
+)
+, [InheritedRule] AS (
+    SELECT an.[ChildPageId], an.[Depth], a.[Order], a.[Action], a.[AllowOrDeny], a.[SpecialRole], a.[GroupId], a.[PersonAliasId]
+    FROM [Ancestor] AS an
+    INNER JOIN [Auth] AS a ON a.[EntityTypeId] = @PageEntityTypeId AND a.[EntityId] = an.[PageId]
+    UNION ALL
+    SELECT an.[ChildPageId], an.[Depth] + 1, a.[Order], a.[Action], a.[AllowOrDeny], a.[SpecialRole], a.[GroupId], a.[PersonAliasId]
+    FROM [Ancestor] AS an
+    INNER JOIN [Layout] AS l ON l.[Id] = an.[LayoutId]
+    INNER JOIN [Auth] AS a ON a.[EntityTypeId] = @SiteEntityTypeId AND a.[EntityId] = l.[SiteId]
+    WHERE an.[ParentPageId] IS NULL
+)
+, [FirstRule] AS (
+    SELECT r.*
+        , ROW_NUMBER() OVER (
+            PARTITION BY r.[ChildPageId], r.[Action], r.[AllowOrDeny], r.[SpecialRole], ISNULL( r.[GroupId], 0 ), ISNULL( r.[PersonAliasId], 0 )
+            ORDER BY r.[Depth], r.[Order] ) AS [Occurrence]
+    FROM [InheritedRule] AS r
+)
+INSERT INTO [Auth] ( [EntityTypeId], [EntityId], [Order], [Action], [AllowOrDeny], [SpecialRole], [GroupId], [PersonAliasId], [Guid], [CreatedDateTime], [ModifiedDateTime] )
+SELECT @PageEntityTypeId
+    , r.[ChildPageId]
+    , ISNULL( ( SELECT MAX( x.[Order] ) FROM [Auth] AS x WHERE x.[EntityTypeId] = @PageEntityTypeId AND x.[EntityId] = r.[ChildPageId] AND x.[Action] = r.[Action] ), -1 )
+        + ROW_NUMBER() OVER ( PARTITION BY r.[ChildPageId], r.[Action] ORDER BY r.[Depth], r.[Order] )
+    , r.[Action]
+    , r.[AllowOrDeny]
+    , r.[SpecialRole]
+    , r.[GroupId]
+    , r.[PersonAliasId]
+    , NEWID()
+    , GETDATE()
+    , GETDATE()
+FROM [FirstRule] AS r
+WHERE r.[Occurrence] = 1
+    AND NOT EXISTS (
+        SELECT 1
+        FROM [Auth] AS y
+        WHERE y.[EntityTypeId] = @PageEntityTypeId
+            AND y.[EntityId] = r.[ChildPageId]
+            AND y.[Action] = r.[Action]
+            AND y.[AllowOrDeny] = r.[AllowOrDeny]
+            AND y.[SpecialRole] = r.[SpecialRole]
+            AND ISNULL( y.[GroupId], 0 ) = ISNULL( r.[GroupId], 0 )
+            AND ISNULL( y.[PersonAliasId], 0 ) = ISNULL( r.[PersonAliasId], 0 ) );
+
 -- Step 3.1a: Handle cross-site children.  Null any ParentPageId that are pages which belong to the site being deleted
 UPDATE c
 SET c.[ParentPageId] = NULL
@@ -357,6 +429,10 @@ DELETE FROM [Theme]
 WHERE [RootPath] = '/Themes/KioskStark' AND IsSystem = 1
 ";
             DbService.ExecuteCommand( queryToDeleteBlocksPagesAndBlockTypes, System.Data.CommandType.Text, null, _commandTimeout );
+
+            // The query changes security rules and page parents directly, so drop the cached copies.
+            Rock.Security.Authorization.Clear();
+            PageCache.Clear();
         }
 
         /// <summary>
