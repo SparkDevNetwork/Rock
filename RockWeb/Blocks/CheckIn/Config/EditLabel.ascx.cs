@@ -64,6 +64,8 @@ namespace RockWeb.Blocks.CheckIn.Config
         // ^JUS will save changes to EEPROM. Doing this for each label is not needed, slows printing dramatically, and shortens the printer's memory life.
         private const string REMOVE_ZPL_CONFIG_UPDATE_CODE = "^JUS";
 
+        private static readonly string LabelNotAvailableMessage = "The label file could not be found or you are not authorized to view it.";
+
         #endregion
 
         #region Control Methods
@@ -74,6 +76,8 @@ namespace RockWeb.Blocks.CheckIn.Config
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
+            nbMessage.Visible = false;
+
             if ( !Page.IsPostBack )
             {
                 using ( var rockContext = new RockContext() )
@@ -81,17 +85,24 @@ namespace RockWeb.Blocks.CheckIn.Config
                     int? binaryFileId = PageParameter( "BinaryFileId" ).AsIntegerOrNull();
                     if ( binaryFileId.HasValue )
                     {
-                        hfBinaryFileId.Value = binaryFileId.Value.ToString();
                         pnlOpenFile.Visible = false;
-                        btnSave.Visible = true;
                         btnCancel.Visible = true;
 
-                        var binaryFile = new BinaryFileService( rockContext ).Get( binaryFileId.Value );
+                        var binaryFile = GetAuthorizedLabelFile( rockContext, binaryFileId.Value, Rock.Security.Authorization.VIEW );
                         if ( binaryFile != null )
                         {
+                            hfBinaryFileId.Value = binaryFileId.Value.ToString();
+                            btnSave.Visible = binaryFile.IsAuthorized( Rock.Security.Authorization.EDIT, CurrentPerson );
                             lTitle.Text = binaryFile.FileName;
                             ceLabel.Text = binaryFile.ContentsToString().Replace( REMOVE_ZPL_CONFIG_UPDATE_CODE, string.Empty );
                             SetLabelSize( ceLabel.Text );
+                        }
+                        else
+                        {
+                            hfBinaryFileId.Value = string.Empty;
+                            btnSave.Visible = false;
+                            nbMessage.Text = LabelNotAvailableMessage;
+                            nbMessage.Visible = true;
                         }
                     }
                     else
@@ -149,17 +160,24 @@ namespace RockWeb.Blocks.CheckIn.Config
             int? fileId = ddlLabel.SelectedValueAsInt();
             if ( fileId.HasValue )
             {
-                hfBinaryFileId.Value = fileId.Value.ToString();
                 using ( var rockContext = new RockContext() )
                 {
-                    var file = new BinaryFileService( rockContext ).Get( fileId.Value );
+                    var file = GetAuthorizedLabelFile( rockContext, fileId.Value, Rock.Security.Authorization.VIEW );
                     if ( file != null )
                     {
+                        hfBinaryFileId.Value = fileId.Value.ToString();
                         ceLabel.Text = file.ContentsToString().Replace( REMOVE_ZPL_CONFIG_UPDATE_CODE, string.Empty );
                         SetLabelSize( ceLabel.Text );
                         ceLabel.Label = string.Format( file.FileName );
                         btnSave.Text = "Save " + file.FileName;
-                        btnSave.Visible = true;
+                        btnSave.Visible = file.IsAuthorized( Rock.Security.Authorization.EDIT, CurrentPerson );
+                    }
+                    else
+                    {
+                        hfBinaryFileId.Value = string.Empty;
+                        ceLabel.Text = string.Empty;
+                        nbMessage.Text = LabelNotAvailableMessage;
+                        nbMessage.Visible = true;
                     }
                 }
             }
@@ -172,33 +190,25 @@ namespace RockWeb.Blocks.CheckIn.Config
             {
                 using ( var rockContext = new RockContext() )
                 {
-                    var binaryFileService = new BinaryFileService( rockContext );
-                    var binaryFile = binaryFileService.Get( binaryFileId.Value );
-
-                    // The file id comes from a hidden field, so only accept the page parameter's file
-                    // or a check-in label file (the files the Open list offers).
-                    var labelTypeGuid = Rock.SystemGuid.BinaryFiletype.CHECKIN_LABEL.AsGuid();
-                    if ( binaryFile != null
-                        && binaryFile.Id != PageParameter( "BinaryFileId" ).AsIntegerOrNull()
-                        && ( binaryFile.BinaryFileType == null || binaryFile.BinaryFileType.Guid != labelTypeGuid ) )
+                    var binaryFile = GetAuthorizedLabelFile( rockContext, binaryFileId.Value, Rock.Security.Authorization.EDIT );
+                    if ( binaryFile == null )
                     {
-                        binaryFile = null;
+                        nbMessage.Text = Rock.Constants.EditModeMessage.NotAuthorizedToEdit( BinaryFile.FriendlyTypeName );
+                        nbMessage.Visible = true;
+                        return;
                     }
 
-                    if ( binaryFile != null )
+                    using ( var stream = new MemoryStream() )
                     {
-                        using ( var stream = new MemoryStream() )
-                        {
-                            ceLabel.Text = ceLabel.Text.Replace( REMOVE_ZPL_CONFIG_UPDATE_CODE, string.Empty );
-                            ceLabel.Text = cbForceUTF8.Checked ? ceLabel.Text.Replace( "^CI0", "^CI28" ) : ceLabel.Text;
+                        ceLabel.Text = ceLabel.Text.Replace( REMOVE_ZPL_CONFIG_UPDATE_CODE, string.Empty );
+                        ceLabel.Text = cbForceUTF8.Checked ? ceLabel.Text.Replace( "^CI0", "^CI28" ) : ceLabel.Text;
 
-                            var writer = new StreamWriter( stream );
-                            writer.Write( ceLabel.Text );
-                            writer.Flush();
-                            stream.Position = 0;
-                            binaryFile.ContentStream = stream;
-                            rockContext.SaveChanges();
-                        }
+                        var writer = new StreamWriter( stream );
+                        writer.Write( ceLabel.Text );
+                        writer.Flush();
+                        stream.Position = 0;
+                        binaryFile.ContentStream = stream;
+                        rockContext.SaveChanges();
                     }
                 }
 
@@ -297,6 +307,30 @@ namespace RockWeb.Blocks.CheckIn.Config
             string labelIndex = nbShowLabel.Text;
 
             imgLabelary.ImageUrl = string.Format( urlTemplate, dpmm, width, height, labelIndex, ceLabel.Text.UrlEncode() );
+        }
+
+        /// <summary>
+        /// Gets the check-in label file with the specified identifier if the current person is authorized for the
+        /// action on it.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="binaryFileId">The binary file identifier.</param>
+        /// <param name="action">The security action to check, such as <see cref="Rock.Security.Authorization.VIEW"/>.</param>
+        /// <returns>The label file, or <c>null</c> if it was not found, is not a check-in label or is not authorized.</returns>
+        private BinaryFile GetAuthorizedLabelFile( RockContext rockContext, int binaryFileId, string action )
+        {
+            var labelTypeGuid = Rock.SystemGuid.BinaryFiletype.CHECKIN_LABEL.AsGuid();
+            var binaryFile = new BinaryFileService( rockContext ).Get( binaryFileId );
+
+            if ( binaryFile == null
+                || binaryFile.BinaryFileType == null
+                || binaryFile.BinaryFileType.Guid != labelTypeGuid
+                || !binaryFile.IsAuthorized( action, CurrentPerson ) )
+            {
+                return null;
+            }
+
+            return binaryFile;
         }
 
         #endregion
