@@ -179,6 +179,17 @@
         try {
             // First, we must clone and clean the HTML so it can be saved without runtime code.
             tempRenderElement = document.createElement("iframe");
+
+            /*
+                11/20/26 - JMH
+
+                The frame holds stored message HTML, so it is sandboxed before srcdoc is set.
+                allow-same-origin is only there so html2canvas can read the rendered body.
+                Never add allow-scripts: a same-origin frame that may run script can remove its own sandbox.
+
+                Reason: Keep message HTML from running script in the Rock origin.
+            */
+            tempRenderElement.setAttribute("sandbox", "allow-same-origin allow-popups allow-popups-to-escape-sandbox");
             tempRenderElement.onload = async () => {
                 await callback(tempRenderElement!.contentDocument!.body);
                 // Remove the temporary element from the DOM.
