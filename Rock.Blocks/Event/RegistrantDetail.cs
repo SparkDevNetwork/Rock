@@ -297,7 +297,7 @@ namespace Rock.Blocks.Event
             // registration template forms. Person and GroupMember attributes are edited on
             // their own detail blocks.
             var registrantAttributeFields = GetRegistrantAttributeFieldsByKey( entity );
-            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson, enforceSecurity: false );
+            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson, enforceSecurity: false, attributeFilter: IsAttributeEditable );
 
             if ( registrantAttributeFields.Count > 0 )
             {
@@ -398,7 +398,7 @@ namespace Rock.Blocks.Event
                     .Where( kvp => allowedAttributeKeys.Contains( kvp.Key ) )
                     .ToDictionary( kvp => kvp.Key, kvp => kvp.Value );
 
-                entity.SetPublicAttributeValues( filteredValues, RequestContext.CurrentPerson, enforceSecurity: false );
+                entity.SetPublicAttributeValues( filteredValues, RequestContext.CurrentPerson, enforceSecurity: false, attributeFilter: IsAttributeEditable );
             } );
 
             return true;
@@ -549,6 +549,45 @@ namespace Rock.Blocks.Event
             return GetRegistrantAttributeFieldsByKey( entity ).Keys.ToHashSet();
         }
 
+        /*
+            11/20/26 - JMH
+
+            This block is secured by block security, so the attribute helpers
+            are called with enforceSecurity: false. Turning it on would fall back
+            to entity and Global Default security when an attribute has no rule of
+            its own, which would hide every attribute from non-administrators.
+            These filters apply only the rules set directly on the attribute
+            (AuthorizedForEntity without the parent authority walk), and block
+            security decides when the attribute has no rule for the action.
+
+            Reason: Honor View and Edit security set on individual attributes.
+        */
+
+        /// <summary>
+        /// Determines whether the current person may view the attribute, based only on rules set on the attribute itself.
+        /// </summary>
+        /// <param name="attribute">The attribute to check.</param>
+        /// <returns><c>true</c> if the attribute can be viewed; otherwise, <c>false</c>.</returns>
+        private bool IsAttributeViewable( AttributeCache attribute )
+        {
+            return Authorization.AuthorizedForEntity( attribute, Authorization.VIEW, RequestContext.CurrentPerson ) ?? true;
+        }
+
+        /// <summary>
+        /// Determines whether the current person may edit the attribute, based only on rules set on the attribute itself.
+        /// </summary>
+        /// <param name="attribute">The attribute to check.</param>
+        /// <returns><c>true</c> if the attribute can be viewed and edited; otherwise, <c>false</c>.</returns>
+        private bool IsAttributeEditable( AttributeCache attribute )
+        {
+            if ( !IsAttributeViewable( attribute ) )
+            {
+                return false;
+            }
+
+            return Authorization.AuthorizedForEntity( attribute, Authorization.EDIT, RequestContext.CurrentPerson ) ?? true;
+        }
+
         /// <summary>
         /// Returns the <see cref="RegistrationFieldSource.RegistrantAttribute"/> form fields defined
         /// on the registration template forms, keyed by the attribute key each field edits.
@@ -609,7 +648,7 @@ namespace Rock.Blocks.Event
             foreach ( var field in registrantAttributeFields )
             {
                 var attribute = AttributeCache.Get( field.AttributeId.Value );
-                if ( attribute != null )
+                if ( attribute != null && IsAttributeEditable( attribute ) )
                 {
                     attributeByFieldGuid[field.Guid] = attribute;
                 }
@@ -644,7 +683,8 @@ namespace Rock.Blocks.Event
                     if ( comparedToAttribute == null )
                     {
                         // The rule compares to a field this block does not render (e.g. a person
-                        // field). It cannot be evaluated client-side, so skip it.
+                        // field, or an attribute the person may not edit). It cannot be evaluated
+                        // client-side, so skip it.
                         continue;
                     }
 
