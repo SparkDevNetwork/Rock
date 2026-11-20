@@ -1859,6 +1859,7 @@
     <Compile Include="Plugin\HotFixes\346_EscapeLavaChartShortcodeData.cs" />
     <Compile Include="Plugin\HotFixes\348_RepairV2ControllerSeededAuthOrder.cs" />
     <Compile Include="Plugin\HotFixes\280_AuthFixForIssue6712.cs" />
+    <Compile Include="Plugin\HotFixes\353_EncodeNameInBaptismAndEraBadges.cs" />
     <Compile Include="Plugin\HotFixes\HotFixMigrationResource.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
