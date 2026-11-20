@@ -50,6 +50,21 @@
     margin:               0;
     font-size:            var(--font-size-xsmall);
   }
+
+  // Holds the controls a block places in the default slot, such as a Clear Filters or Add button.
+  &-actions {
+    display:              flex;
+    flex-wrap:            wrap;
+    align-items:          center;
+    justify-content:      center;
+    gap:                  var(--spacing-small);
+    margin-top:           var(--spacing-tiny);
+
+    // Nothing was placed in the slot, so remove the wrapper from the layout and keep its margin and the parent gap from adding space.
+    &:empty {
+      display:            none;
+    }
+  }
 }
 // ====================== END BASE STYLE ======================
 

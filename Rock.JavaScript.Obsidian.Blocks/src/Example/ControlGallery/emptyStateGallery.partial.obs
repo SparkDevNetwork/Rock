@@ -9,9 +9,22 @@
                     :title="title || undefined"
                     :description="isDescriptionHidden ? '' : (description || undefined)"
                     :iconCssClass="iconCssClass || undefined"
-                    :isClearFiltersButtonShown="isClearFiltersButtonShown"
-                    :isBordered="isBordered"
-                    @clearFilters="onClearFilters" />
+                    :isBordered="isBordered">
+            <template v-if="actions === 'clearFilters'">
+                <RockButton :btnType="BtnType.Link" @click="onActionClick('Clear Filters')">Clear Filters</RockButton>
+            </template>
+            <template v-else-if="actions === 'primaryAndSecondary'">
+                <RockButton :btnType="BtnType.Primary" @click="onActionClick('New Communication')">New Communication</RockButton>
+                <RockButton :btnType="BtnType.Default" @click="onActionClick('View Templates')">View Templates</RockButton>
+            </template>
+            <template v-else-if="actions === 'addButton'">
+                <RockButton :btnType="BtnType.Default" @click="onActionClick('Add Group')"><i class="ti ti-plus"></i> Add Group</RockButton>
+            </template>
+            <template v-else-if="actions === 'upload'">
+                <RockButton :btnType="BtnType.Default" @click="onActionClick('Upload Image')"><i class="ti ti-upload"></i> Upload Image</RockButton>
+                <small class="text-muted">JPG, PNG or GIF up to 10 MB</small>
+            </template>
+        </EmptyState>
 
         <template #settings>
             <div class="row">
@@ -33,12 +46,12 @@
                 <div class="col-md-3">
                     <CheckBox label="Hide Description" v-model="isDescriptionHidden" help="Passes an empty description, which hides the description line." />
                 </div>
-                <div class="col-md-3">
-                    <CheckBox label="Show Clear Filters Button" v-model="isClearFiltersButtonShown" help="Shows a Clear Filters link button below the message. Handle the clearFilters event to reset the filters." />
-                </div>
             </div>
 
             <div class="row">
+                <div class="col-md-6">
+                    <DropDownList label="Slot Content Examples" v-model="actions" :items="actionOptions" :showBlankItem="false" help="The control's slot renders below the message. Any control can be placed in it, such as buttons or links. These are examples of what a block might slot in." />
+                </div>
                 <div class="col-md-3">
                     <CheckBox label="Bordered" v-model="isBordered" help="Adds a border. Use it when the empty state sits directly on the block surface, not inside a panel." />
                 </div>
@@ -53,7 +66,9 @@
     import EmptyState from "@Obsidian/Controls/emptyState.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { getSfcControlImportPath } from "./common/utils.partial";
 
@@ -65,18 +80,33 @@
         { text: "Unavailable", value: "unavailable" }
     ];
 
+    const actionOptions: ListItemBag[] = [
+        { text: "None (empty slot)", value: "none" },
+        { text: "Slot: Clear Filters link button", value: "clearFilters" },
+        { text: "Slot: Primary and secondary buttons", value: "primaryAndSecondary" },
+        { text: "Slot: Add button with icon", value: "addButton" },
+        { text: "Slot: Upload button with help text", value: "upload" }
+    ];
+
     // The dropdowns emit plain strings, so these are typed as strings and narrowed below.
     const type = ref("noData");
     const title = ref("");
     const description = ref("");
     const iconCssClass = ref("");
     const isDescriptionHidden = ref(false);
-    const isClearFiltersButtonShown = ref(false);
+    const actions = ref("none");
     const isBordered = ref(false);
 
-    const onClearFilters = (): void => alert('"clearFilters" event fired. Parents are responsible for resetting the filters.');
+    const onActionClick = (label: string): void => alert(`"${label}" clicked. Blocks are responsible for handling their own actions.`);
 
     const typeProp = computed(() => type.value as "noData" | "noItems" | "noResults" | "noAccess" | "unavailable");
+
+    const slotExamples: Record<string, string> = {
+        clearFilters: `<RockButton :btnType="BtnType.Link" @click="onClearFilters">Clear Filters</RockButton>`,
+        primaryAndSecondary: `<RockButton :btnType="BtnType.Primary" @click="onNewCommunication">New Communication</RockButton>\n    <RockButton :btnType="BtnType.Default" @click="onViewTemplates">View Templates</RockButton>`,
+        addButton: `<RockButton :btnType="BtnType.Default" @click="onAddGroup"><i class="ti ti-plus"></i> Add Group</RockButton>`,
+        upload: `<RockButton :btnType="BtnType.Default" @click="onUploadImage"><i class="ti ti-upload"></i> Upload Image</RockButton>\n    <small class="text-muted">JPG, PNG or GIF up to 10 MB</small>`
+    };
 
     const importCode = getSfcControlImportPath("emptyState");
     const exampleCode = computed((): string => {
@@ -85,11 +115,15 @@
             title.value ? `title="${title.value}"` : "",
             isDescriptionHidden.value ? "description=\"\"" : description.value ? `description="${description.value}"` : "",
             iconCssClass.value ? `iconCssClass="${iconCssClass.value}"` : "",
-            isClearFiltersButtonShown.value ? "isClearFiltersButtonShown" : "",
-            isBordered.value ? "isBordered" : "",
-            isClearFiltersButtonShown.value ? "@clearFilters=\"onClearFilters\"" : ""
+            isBordered.value ? "isBordered" : ""
         ].filter(attribute => attribute !== "");
 
-        return `<EmptyState ${attributes.join("\n            ")} />`;
+        const slotContent = slotExamples[actions.value];
+
+        if (!slotContent) {
+            return `<EmptyState ${attributes.join("\n            ")} />`;
+        }
+
+        return `<EmptyState ${attributes.join("\n            ")}>\n    ${slotContent}\n</EmptyState>`;
     });
 </script>

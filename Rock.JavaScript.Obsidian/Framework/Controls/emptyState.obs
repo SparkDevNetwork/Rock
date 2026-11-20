@@ -6,14 +6,15 @@
             <p class="empty-state-text">{{ resolvedTitle }}</p>
             <small v-if="resolvedDescription" class="empty-state-help-text">{{ resolvedDescription }}</small>
         </div>
-        <RockButton v-if="isClearFiltersButtonShown" :btnType="BtnType.Link" @click="onClearFiltersClick">Clear Filters</RockButton>
+        <!-- The default slot holds optional actions, such as a Clear Filters or Add button. The wrapper is hidden by CSS when the slot renders nothing. -->
+        <div class="empty-state-actions">
+            <slot />
+        </div>
     </div>
 </template>
 
 <script setup lang="ts">
     import { computed, PropType } from "vue";
-    import RockButton from "@Obsidian/Controls/rockButton.obs";
-    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
 
     // #region Types
 
@@ -54,15 +55,6 @@
         },
 
         /**
-         * When true, a "Clear Filters" link button is shown below the message. Use it with
-         * the "noResults" type and handle the clearFilters event to reset the filters.
-         */
-        isClearFiltersButtonShown: {
-            type: Boolean as PropType<boolean>,
-            default: false
-        },
-
-        /**
          * When true, the empty state gets a border. Use it when the empty state sits directly on
          * the block surface, where the soft background blends into the page, and leave it off
          * inside a panel, which already has its own border.
@@ -72,11 +64,6 @@
             default: false
         }
     });
-
-    const emit = defineEmits<{
-        /** Raised when the "Clear Filters" button is clicked. */
-        (event: "clearFilters"): void;
-    }>();
 
     // #region Values
 
@@ -128,11 +115,4 @@
 
     // #endregion Computed Values
 
-    // #region Event Handlers
-
-    const onClearFiltersClick = (): void => {
-        emit("clearFilters");
-    };
-
-    // #endregion Event Handlers
 </script>
