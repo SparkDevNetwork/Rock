@@ -237,6 +237,9 @@ namespace Rock.Blocks.CheckIn.Manager
 
             return AttributeCache.GetByEntityType( personEntityTypeId )
                 .Where( a => a.CategoryIds.Contains( attendanceCategoryId ) )
+                // AuthorizedForEntity returns null when the attribute has no rules of its own, so "!= false" keeps
+                // those and drops only attributes whose own rules deny View.
+                .Where( a => Authorization.AuthorizedForEntity( a, Authorization.VIEW, RequestContext.CurrentPerson ) != false )
                 .Select( a => a.Id )
                 .ToList();
         }
