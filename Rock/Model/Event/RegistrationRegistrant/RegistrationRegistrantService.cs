@@ -50,6 +50,12 @@ namespace Rock.Model
         public List<GroupPlacementRegistrant> GetGroupPlacementRegistrants( GetGroupPlacementRegistrantsParameters options, Person currentPerson )
         {
             var rockContext = this.Context as RockContext;
+            if ( !TryLimitToViewablePlacementInstances( rockContext, options, currentPerson ) )
+            {
+                return new List<GroupPlacementRegistrant>();
+            }
+
+            options.DisplayedAttributeIds = ( options.DisplayedAttributeIds ?? new int[0] ).Where( id => AttributeCache.Get( id )?.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson ) == true ).ToArray();
 
             var registrationRegistrantService = new RegistrationRegistrantService( rockContext );
             var registrationRegistrantQuery = registrationRegistrantService.Queryable();
@@ -285,6 +291,63 @@ namespace Rock.Model
         public IQueryable<RegistrationRegistrant> GetRegistrantsUsingSignatureDocument( int signatureDocumentId )
         {
             return Queryable().Where( r => r.SignatureDocumentId == signatureDocumentId );
+        }
+
+        /// <summary>
+        /// Checks that the placement belongs to the template and that the person can
+        /// view the requested registration instance. A list of requested instances
+        /// fails if any of them is missing, on another template or not viewable. When no instance is requested,
+        /// limits the options to the template's instances the person can view.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="options">The options.</param>
+        /// <param name="currentPerson">The current person.</param>
+        /// <returns><c>true</c> if the registrants may be listed; otherwise <c>false</c>.</returns>
+        private bool TryLimitToViewablePlacementInstances( RockContext rockContext, GetGroupPlacementRegistrantsParameters options, Person currentPerson )
+        {
+            if ( options == null )
+            {
+                return false;
+            }
+
+            var placement = new RegistrationTemplatePlacementService( rockContext ).Get( options.RegistrationTemplatePlacementId );
+            if ( placement == null || placement.RegistrationTemplateId != options.RegistrationTemplateId )
+            {
+                return false;
+            }
+
+            var instanceService = new RegistrationInstanceService( rockContext );
+            if ( options.RegistrationInstanceId.HasValue )
+            {
+                var instance = instanceService.Get( options.RegistrationInstanceId.Value );
+                return instance != null
+                    && instance.RegistrationTemplateId == options.RegistrationTemplateId
+                    && instance.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson );
+            }
+
+            if ( options.RegistrationTemplateInstanceIds?.Any() == true )
+            {
+                var requestedIds = options.RegistrationTemplateInstanceIds.Distinct().ToList();
+                var requestedInstances = instanceService.GetByIds( requestedIds ).ToList();
+
+                return requestedInstances.Count == requestedIds.Count
+                    && requestedInstances.All( i => i.RegistrationTemplateId == options.RegistrationTemplateId && i.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson ) );
+            }
+
+            var viewableIds = instanceService.Queryable()
+                .Where( i => i.RegistrationTemplateId == options.RegistrationTemplateId )
+                .ToList()
+                .Where( i => i.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson ) )
+                .Select( i => i.Id )
+                .ToArray();
+
+            if ( !viewableIds.Any() )
+            {
+                return false;
+            }
+
+            options.RegistrationTemplateInstanceIds = viewableIds;
+            return true;
         }
 
         /// <summary>
