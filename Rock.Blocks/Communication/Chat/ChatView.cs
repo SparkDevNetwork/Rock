@@ -514,6 +514,11 @@ namespace Rock.Blocks.Communication.Chat
                 }
 
                 var chatUserAuth = await chatHelper.GetChatUserAuthenticationAsync( person.Id, true );
+                if ( chatUserAuth == null )
+                {
+                    return ActionBadRequest( "Chat is not available." );
+                }
+
                 var dataViewGuid = ChatHelper.GetChatConfiguration().DirectMessageAccessDataViewGuid;
 
                 bool dmAllowed = true;

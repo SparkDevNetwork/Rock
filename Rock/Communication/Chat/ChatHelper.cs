@@ -708,13 +708,14 @@ namespace Rock.Communication.Chat
         /// </param>
         /// <returns>
         /// A task representing the asynchronous operation, containing the <see cref="ChatUserAuthentication"/> or
-        /// <see langword="null"/> if unable to find the <see cref="ChatUser"/> or get a token.
+        /// <see langword="null"/> if the <see cref="Person"/> is on the chat ban list or if unable to find the
+        /// <see cref="ChatUser"/> or get a token.
         /// </returns>
         internal async Task<ChatUserAuthentication> GetChatUserAuthenticationAsync( int personId, bool shouldCreate )
         {
             ChatUserAuthentication auth = null;
 
-            if ( !IsChatEnabled || personId < 1 )
+            if ( !IsChatEnabled || personId < 1 || IsPersonBanned( personId ) )
             {
                 return auth;
             }
