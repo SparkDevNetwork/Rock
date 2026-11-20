@@ -27,7 +27,9 @@
             </div>
 
             <div class="email-body">
-                <iframe ref="iframeElement" :srcdoc="message"></iframe>
+                <iframe ref="iframeElement"
+                        :srcdoc="message"
+                        sandbox="allow-same-origin allow-popups allow-popups-to-escape-sandbox"></iframe>
             </div>
         </div>
     </div>
