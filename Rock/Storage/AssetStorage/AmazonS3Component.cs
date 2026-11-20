@@ -249,6 +249,7 @@ namespace Rock.Storage.AssetStorage
         {
             string rootFolder = FixRootFolder( GetAttributeValue( assetStorageProvider, AttributeKeys.RootFolder ) );
             asset.Key = FixKey( asset, rootFolder );
+            VerifyKeyIsWithinRoot( assetStorageProvider, asset.Key );
             HasRequirementsFolder( asset );
 
             try
@@ -318,6 +319,7 @@ namespace Rock.Storage.AssetStorage
             string bucketName = GetAttributeValue( assetStorageProvider, AttributeKeys.Bucket );
 
             asset.Key = FixKey( asset, rootFolder );
+            VerifyKeyIsWithinRoot( assetStorageProvider, asset.Key );
             HasRequirementsFolder( asset );
 
             try
@@ -613,6 +615,13 @@ namespace Rock.Storage.AssetStorage
             string rootFolder = FixRootFolder( GetAttributeValue( assetStorageProvider, AttributeKeys.RootFolder ) );
             string bucketName = GetAttributeValue( assetStorageProvider, AttributeKeys.Bucket );
             asset.Key = FixKey( asset, rootFolder );
+
+            // The key "/" lists the root folder itself here.
+            if ( asset.Key != "/" )
+            {
+                VerifyKeyIsWithinRoot( assetStorageProvider, asset.Key );
+            }
+
             HasRequirementsFolder( asset );
 
             try
@@ -957,6 +966,49 @@ namespace Rock.Storage.AssetStorage
             if ( asset.Name.IsNullOrWhiteSpace() && asset.Key.IsNullOrWhiteSpace() )
             {
                 throw new Exception( "Name and key cannot both be null or empty." );
+            }
+        }
+
+        /// <summary>
+        /// Verifies that the key is inside the provider's root folder and throws an exception if it isn't.
+        /// A blank root folder, or "/", means the whole bucket, so any key is allowed.
+        /// </summary>
+        /// <param name="assetStorageProvider">The asset storage provider.</param>
+        /// <param name="key">The asset key, after <see cref="FixKey(Asset, string)"/>.</param>
+        /// <exception cref="Rock.Web.FileUploadException">The key is outside the root folder.</exception>
+        private void VerifyKeyIsWithinRoot( AssetStorageProvider assetStorageProvider, string key )
+        {
+            /*
+                11/20/2026 - MSE
+
+                Callers pass the full key, so without this check any key in the bucket could be
+                listed and the provider's root folder would only be a default. S3 keys are plain
+                strings with no folder navigation, so a prefix match is the boundary. This is the
+                same check FileSystemComponent.VerifyPathFromRoot makes.
+
+                The same root reaches us in three spellings, and each one is inside the root:
+                as saved (FixKey builds the default key from it), trimmed (GetRootFolder, which
+                the WebForms asset manager builds its keys from) and trimmed without its leading
+                "/" (the Obsidian asset manager strips it from every key).
+
+                Reason: Keep S3 listings inside the provider's configured root folder.
+            */
+            var savedRootFolder = GetAttributeValue( assetStorageProvider, AttributeKeys.RootFolder ) ?? string.Empty;
+            var rootFolder = FixRootFolder( savedRootFolder.Trim() );
+            var rootFolderWithoutLeadingSlash = rootFolder.TrimStart( '/' );
+
+            if ( rootFolderWithoutLeadingSlash.IsNullOrWhiteSpace() )
+            {
+                return;
+            }
+
+            var isKeyWithinRoot = key.StartsWith( FixRootFolder( savedRootFolder ), StringComparison.Ordinal )
+                || key.StartsWith( rootFolder, StringComparison.Ordinal )
+                || key.StartsWith( rootFolderWithoutLeadingSlash, StringComparison.Ordinal );
+
+            if ( !isKeyWithinRoot )
+            {
+                throw new Rock.Web.FileUploadException( "Invalid path.", System.Net.HttpStatusCode.BadRequest );
             }
         }
 

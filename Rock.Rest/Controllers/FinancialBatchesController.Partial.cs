@@ -92,7 +92,23 @@ namespace Rock.Rest.Controllers
             var financialBatchQuery = new FinancialBatchService( this.Service.Context as Rock.Data.RockContext ).Queryable();
             financialBatchQuery = queryOptions.ApplyTo( financialBatchQuery ) as IOrderedQueryable<FinancialBatch>;
 
-            var batchControlTotalsQuery = financialBatchQuery.SelectMany( a => a.Transactions ).Where(a => a.BatchId.HasValue).GroupBy( a => a.BatchId.Value ).Select( a => new
+            /*
+                11/20/2026 - MSE
+
+                The REST action grant only says the person may use this endpoint. Each batch has
+                its own VIEW rule, so only total the batches the person can view, the same rule
+                the batch list and batch detail blocks apply.
+
+                Reason: Anyone with the REST action could read the count and total of any batch.
+            */
+            var person = GetPerson();
+            var viewableBatchIds = financialBatchQuery
+                .ToList()
+                .Where( b => b.IsAuthorized( Rock.Security.Authorization.VIEW, person ) )
+                .Select( b => b.Id )
+                .ToList();
+
+            var batchControlTotalsQuery = financialBatchQuery.Where( b => viewableBatchIds.Contains( b.Id ) ).SelectMany( a => a.Transactions ).Where(a => a.BatchId.HasValue).GroupBy( a => a.BatchId.Value ).Select( a => new
             {
                 BatchId = a.Key,
                 TransactionTotalAmounts = a.Select( x => x.TransactionDetails.Sum( d => (decimal?)d.Amount ) )
