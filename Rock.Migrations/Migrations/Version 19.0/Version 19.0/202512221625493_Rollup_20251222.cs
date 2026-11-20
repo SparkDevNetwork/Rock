@@ -416,7 +416,7 @@ WHERE [Guid] = '{SystemGuid.Person.SYSTEM_SENDER}';" );
         {
             Sql( @"
 -- Add Edit and Administrate auth to the RSR Event Registration Administration group
--- on all top-level RegistrationTemplate categories, without duplicates.
+-- on all top-level RegistrationTemplate categories, after any existing rules, without duplicates.
 
 DECLARE @Now DATETIME = GETDATE();
 DECLARE @RSREventRegistrationAdministrationRoleId INT =
@@ -477,7 +477,7 @@ INSERT INTO [Auth]
 SELECT
       @CategoryEntityTypeId                       -- [EntityTypeId]
     , d.[CategoryId]                              -- [EntityId]
-    , d.[Order]                                   -- [Order]
+    , ISNULL( ( SELECT MAX( x.[Order] ) FROM [Auth] AS x WHERE x.[EntityTypeId] = @CategoryEntityTypeId AND x.[EntityId] = d.[CategoryId] AND x.[Action] = d.[Action] ), -1 ) + 1 -- [Order]
     , d.[Action]                                  -- [Action]
     , 'A'                                         -- [AllowOrDeny]
     , 0                                           -- [SpecialRole]
@@ -522,7 +522,7 @@ WHERE NOT EXISTS
         private void AddEventRegistrationAdminAuthToTopLevelCategoriesSecondRound()
         {
             Sql( @"-- Add Edit and Administrate auth to the RSR Event Registration Administration group
--- on all top-level RegistrationTemplate categories, without duplicates.
+-- on all top-level RegistrationTemplate categories, after any existing rules, without duplicates.
 
 DECLARE @Now DATETIME = GETDATE();
 DECLARE @RSREventRegistrationAdministrationRoleId INT =
@@ -583,7 +583,7 @@ INSERT INTO [Auth]
 SELECT
       @CategoryEntityTypeId                       -- [EntityTypeId]
     , d.[CategoryId]                              -- [EntityId]
-    , d.[Order]                                   -- [Order]
+    , ISNULL( ( SELECT MAX( x.[Order] ) FROM [Auth] AS x WHERE x.[EntityTypeId] = @CategoryEntityTypeId AND x.[EntityId] = d.[CategoryId] AND x.[Action] = d.[Action] ), -1 ) + 1 -- [Order]
     , d.[Action]                                  -- [Action]
     , 'A'                                         -- [AllowOrDeny]
     , 0                                           -- [SpecialRole]
