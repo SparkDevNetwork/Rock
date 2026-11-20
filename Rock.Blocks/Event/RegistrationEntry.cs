@@ -555,6 +555,24 @@ namespace Rock.Blocks.Event
                     return ActionBadRequest( InvalidSignedDocumentMessage );
                 }
 
+                // A reused document is checked again when the registration is saved, so one that is no longer valid must be caught here, before any payment.
+                if ( context.Registration == null
+                    && context.RegistrationSettings.SignatureDocumentTemplateId.HasValue
+                    && context.RegistrationSettings.IsInlineSignatureRequired
+                    && args.Registrants != null
+                    && args.Registrants.Any( r => r.ExistingSignatureDocumentGuid.HasValue ) )
+                {
+                    var documentTemplate = new SignatureDocumentTemplateService( rockContext ).Get( context.RegistrationSettings.SignatureDocumentTemplateId.Value );
+                    var hasInvalidReusedDocument = args.Registrants
+                        .Where( r => r.ExistingSignatureDocumentGuid.HasValue )
+                        .Any( r => !GetValidExistingSignatureDocumentId( rockContext, null, documentTemplate, r.ExistingSignatureDocumentGuid.Value ).HasValue );
+
+                    if ( hasInvalidReusedDocument )
+                    {
+                        return ActionBadRequest( InvalidSignedDocumentMessage );
+                    }
+                }
+
                 var session = UpsertSession( rockContext, context, args, SessionStatus.PaymentPending, out errorMessage );
 
                 if ( !errorMessage.IsNullOrWhiteSpace() )
@@ -854,6 +872,20 @@ namespace Rock.Blocks.Event
 
                 // Process the Person so we have data for the Lava merge.
                 var (person, registrant) = GetExistingOrCreatePerson( context, registrantInfo, registrarPerson, registrarFamily?.Guid ?? Guid.Empty, rockContext, args );
+
+                /*
+                    11/20/26 - JMH
+
+                    The person may have been matched only from the details typed into the form.
+                    Their stored values are merged into the document only when the current person
+                    could already see them; anyone else gets a new person built from the typed values.
+
+                    Reason: A name and email match is not proof of identity.
+                */
+                if ( person.Id != 0 && !IsPersonAvailableForDefaultValues( rockContext, person, GetCurrentPerson(), context.Registration ) )
+                {
+                    person = CreatePersonFromRegistrantFields( context, registrantInfo );
+                }
 
                 var response = new RegistrationEntrySignatureDocumentBag();
 
@@ -3561,6 +3593,70 @@ namespace Rock.Blocks.Event
         }
 
         /// <summary>
+        /// Creates an unsaved person from the name and email typed for the registrant, with the same defaults a newly matched-to-nobody registrant gets.
+        /// </summary>
+        /// <param name="context">The registration context.</param>
+        /// <param name="registrantInfo">The registrant information from the form.</param>
+        /// <returns>A new <see cref="Person"/> that has not been added to the database.</returns>
+        private Person CreatePersonFromRegistrantFields( RegistrationContext context, ViewModels.Blocks.Event.RegistrationEntry.RegistrantBag registrantInfo )
+        {
+            var connectionStatusValueId = context.RegistrationSettings.ConnectionStatusValueId
+                ?? DefinedValueCache.GetId( GetAttributeValue( AttributeKey.ConnectionStatus ).AsGuid() );
+            var recordStatusValue = DefinedValueCache.Get( GetAttributeValue( AttributeKey.RecordStatus ).AsGuid() );
+
+            var person = new Person
+            {
+                FirstName = GetPersonFieldValue( context.RegistrationSettings, RegistrationPersonFieldType.FirstName, registrantInfo.FieldValues ).ToStringSafe(),
+                LastName = GetPersonFieldValue( context.RegistrationSettings, RegistrationPersonFieldType.LastName, registrantInfo.FieldValues ).ToStringSafe(),
+                Email = GetPersonFieldValue( context.RegistrationSettings, RegistrationPersonFieldType.Email, registrantInfo.FieldValues ).ToStringSafe(),
+                IsEmailActive = true,
+                EmailPreference = EmailPreference.EmailAllowed,
+                RecordTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id
+            };
+
+            if ( connectionStatusValueId.HasValue )
+            {
+                person.ConnectionStatusValueId = connectionStatusValueId.Value;
+            }
+
+            if ( recordStatusValue != null )
+            {
+                person.RecordStatusValueId = recordStatusValue.Id;
+            }
+
+            return person;
+        }
+
+        /// <summary>
+        /// Gets the identifier of a previously signed document the person may reuse for this template.
+        /// </summary>
+        /// <param name="rockContext">The Rock database context.</param>
+        /// <param name="personId">The identifier of the person being registered, or <c>null</c> to accept a document signed for anyone's registration.</param>
+        /// <param name="documentTemplate">The signature document template the registration requires.</param>
+        /// <param name="signatureDocumentGuid">The unique identifier of the document the client asked to reuse.</param>
+        /// <returns>The document identifier when it was signed for one of the person's registrations with this template and is still within its validity period; otherwise <c>null</c>.</returns>
+        private static int? GetValidExistingSignatureDocumentId( RockContext rockContext, int? personId, SignatureDocumentTemplate documentTemplate, Guid signatureDocumentGuid )
+        {
+            if ( documentTemplate == null || !documentTemplate.IsValidInFuture || !documentTemplate.ValidityDurationInDays.HasValue )
+            {
+                return null;
+            }
+
+            // Same validity window that GetSignatureDocumentData uses when it offers the document.
+            var earliestSignatureDate = RockDateTime.Today.AddDays( -documentTemplate.ValidityDurationInDays.ToIntSafe() + 1 );
+
+            return new RegistrationRegistrantService( rockContext )
+                .Queryable()
+                .Where( r =>
+                    ( !personId.HasValue || r.PersonAlias.PersonId == personId.Value ) &&
+                    r.SignatureDocument.Guid == signatureDocumentGuid &&
+                    r.SignatureDocument.SignatureDocumentTemplateId == documentTemplate.Id &&
+                    r.SignatureDocument.SignedDateTime >= earliestSignatureDate )
+                .Select( r => ( int? ) r.SignatureDocument.Id )
+                .FirstOrDefault();
+        }
+
+        /// <summary>
         /// Determines if a field is unlocked for editing.
         /// </summary>
         /// <param name="field">The field to check.</param>
@@ -3984,6 +4080,16 @@ namespace Rock.Blocks.Event
 
             var (person, registrant) = GetExistingOrCreatePerson( context, registrantInfo, registrar, registrarFamilyGuid, rockContext, args );
 
+            var isSigningInline = context.RegistrationSettings.SignatureDocumentTemplateId.HasValue
+                && context.RegistrationSettings.IsInlineSignatureRequired
+                && isNewRegistration;
+
+            // Checked before the registrant is linked to the person below, which would
+            // make every matched person look like a registrant of this registration.
+            var isPersonAvailableForSignature = !isSigningInline
+                || person.Id == 0
+                || IsPersonAvailableForDefaultValues( rockContext, person, GetCurrentPerson(), context.Registration );
+
             var familyGroupType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
             var adultRoleId = familyGroupType.Roles
                 .Where( r => r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ) )
@@ -4223,15 +4329,16 @@ namespace Rock.Blocks.Event
             // Save the signed document if we have one. We only process a document
             // if this is a new registration since editing registrations with an
             // inline signature is not currently supported.
-            if ( context.RegistrationSettings.SignatureDocumentTemplateId.HasValue && context.RegistrationSettings.IsInlineSignatureRequired && isNewRegistration )
+            if ( isSigningInline )
             {
                 var signatureDocumentService = new SignatureDocumentService( rockContext );
+                var documentTemplate = new SignatureDocumentTemplateService( rockContext ).Get( context.RegistrationSettings.SignatureDocumentTemplateId ?? 0 );
 
-                // If a previously-signed document was specified for reuse, make a query to the database to get its ID.
+                // If a previously-signed document was specified for reuse, make sure it is still a valid document of this person's for this template.
                 int? existingSignatureDocumentId = null;
-                if ( registrantInfo.ExistingSignatureDocumentGuid.HasValue )
+                if ( registrantInfo.ExistingSignatureDocumentGuid.HasValue && isPersonAvailableForSignature )
                 {
-                    existingSignatureDocumentId = signatureDocumentService.GetId( registrantInfo.ExistingSignatureDocumentGuid.Value );
+                    existingSignatureDocumentId = GetValidExistingSignatureDocumentId( rockContext, person.Id, documentTemplate, registrantInfo.ExistingSignatureDocumentGuid.Value );
                 }
 
                 // If the previous document's ID was found, use it to complete the registration. Otherwise, attempt to create a new document.
@@ -4242,8 +4349,6 @@ namespace Rock.Blocks.Event
                 }
                 else
                 {
-                    var documentTemplate = new SignatureDocumentTemplateService( rockContext ).Get( context.RegistrationSettings.SignatureDocumentTemplateId ?? 0 );
-
                     // Get the signed document data and encode any string data that was sent by the front-end.
                     var signedData = Encryption.DecryptStringForPurpose( registrantInfo.SignatureData, SignedDocumentDataEncryptionPurpose )?.FromJsonOrNull<SignedDocumentData>();
 
@@ -4259,7 +4364,19 @@ namespace Rock.Blocks.Event
                     signedData.UserAgent = signedData.UserAgent.EncodeHtml();
 
                     // Don't trust that the DocumentHtml sent to the user hasn't been altered - recreate it for safety.
-                    signedData.DocumentHtml = GetDocumentHtml( rockContext, context, registrantInfo, person, campusId, location, documentTemplate );
+                    // A person the current person can't see is merged only from the typed values, matching the document they were shown.
+                    var documentPerson = person;
+                    var documentCampusId = campusId;
+                    var documentLocation = location;
+                    if ( !isPersonAvailableForSignature )
+                    {
+                        documentPerson = CreatePersonFromRegistrantFields( context, registrantInfo );
+                        ( documentCampusId, documentLocation, _ ) = UpdatePersonFromRegistrant( documentPerson, registrantInfo, new History.HistoryChangeList(), context.RegistrationSettings );
+                        documentPerson.LoadAttributes( rockContext );
+                        UpdatePersonAttributes( documentPerson, new History.HistoryChangeList(), registrantInfo, context.RegistrationSettings );
+                    }
+
+                    signedData.DocumentHtml = GetDocumentHtml( rockContext, context, registrantInfo, documentPerson, documentCampusId, documentLocation, documentTemplate );
 
                     var signedBy = RequestContext.CurrentPerson ?? registrar;
 
