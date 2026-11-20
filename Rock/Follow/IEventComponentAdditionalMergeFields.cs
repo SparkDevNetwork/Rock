@@ -46,4 +46,21 @@ namespace Rock.Follow
         /// <returns></returns>
         bool HasEventHappened( FollowingEventType followingEvent, IEntity entity, DateTime? lastNotified, out Dictionary<string, List<object>> followedEventObjects );
     }
+
+    /// <summary>
+    /// Following event components that format their notice separately for each recipient.
+    /// </summary>
+    internal interface IEventComponentPerRecipient
+    {
+        /// <summary>
+        /// Formats the entity notification for one recipient. Returns an empty
+        /// string when nothing in the notice may be shown to that recipient.
+        /// </summary>
+        /// <param name="followingEvent">The following event.</param>
+        /// <param name="entity">The entity being followed.</param>
+        /// <param name="additionalMergeFields">The collection of additional merge fields and values for the following event.</param>
+        /// <param name="recipient">The person who will receive the notice.</param>
+        /// <returns>An HTML string to include in the recipient's notification email, or an empty string.</returns>
+        string FormatEntityNotificationForRecipient( FollowingEventType followingEvent, IEntity entity, Dictionary<string, List<object>> additionalMergeFields, Person recipient );
+    }
 }
