@@ -26,6 +26,8 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
+using Microsoft.Data.SqlClient;
+
 using Rock.Attribute;
 using Rock.Configuration;
 using Rock.Model;
@@ -159,12 +161,30 @@ namespace Rock.Blocks.Example
         }
 
         /// <summary>
-        /// Gets the connection string of the Rock database.
+        /// Gets the connection string of the Rock database, set up for the
+        /// sample data loader.
         /// </summary>
         /// <returns>The connection string.</returns>
         private static string GetConnectionString()
         {
-            return RockApp.Current.InitializationSettings.ConnectionString;
+            var builder = new SqlConnectionStringBuilder( RockApp.Current.InitializationSettings.ConnectionString )
+            {
+                /*
+                    11/19/26 - CLAUDE
+
+                    The sample data loader uses Microsoft.Data.SqlClient, which since v4.0
+                    requires a trusted server certificate by default. Rock's EF6 connection
+                    uses System.Data.SqlClient, which does not. Without this, the installer
+                    fails on any SQL Server whose certificate isn't trusted by the web server
+                    (localhost dev SQL, on-prem self-signed certs) even though Rock itself
+                    connects fine. Matches SqlServerDistributedLockProvider.
+
+                    Reason: Keep the loader's connection behavior the same as Rock's.
+                */
+                TrustServerCertificate = true
+            };
+
+            return builder.ConnectionString;
         }
 
         /// <summary>
