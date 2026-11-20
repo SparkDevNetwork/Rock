@@ -142,22 +142,117 @@ internal sealed partial class PersonSkill
             .FirstOrDefault( gl => gl.GroupId == person.PrimaryFamilyId
                 && gl.GroupLocationTypeValueId == locationTypeValue.Id );
 
-        if ( groupLocation == null )
+        var isNewGroupLocation = groupLocation == null;
+
+        // If no address exists today we should at least have street1, city and postal code
+        if ( isNewGroupLocation && ( street1.IsNullOrWhiteSpace() || city.IsNullOrWhiteSpace() || postalCode.IsNullOrWhiteSpace() ) )
         {
-            // If no address exists today we should at least have street1, city and postal code
-            if ( street1.IsNullOrWhiteSpace() || city.IsNullOrWhiteSpace() || postalCode.IsNullOrWhiteSpace() )
+            helper.AddError( "At minimum, street1, city, and postal code must be provided when adding a new address." );
+            return null;
+        }
+
+        /*
+            11/20/26 - CLAUDE
+
+            Address Location rows are shared. The family editor and other core
+            blocks find or create them with LocationService.Get(), so two
+            families at the same address, or a family and an Address attribute,
+            can point at the same row. Editing the row in place would change
+            the address for every record that uses it. Instead we work out the
+            final address, then point this GroupLocation at the matching row
+            from LocationService.Get(), the same way EditGroup.ascx.cs does.
+            Get() also verifies and geocodes any new row it creates.
+
+            Reason: Never edit a shared address Location row in place.
+        */
+
+        // A new address starts from the organization's state, the same
+        // default this tool has always used. Parts the caller did not send
+        // keep the current value, matching how UpdateProperty() ignores null
+        // or blank values.
+        var currentLocation = isNewGroupLocation
+            ? new Location { State = GlobalAttributesCache.Get().OrganizationState }
+            : groupLocation.Location;
+
+        var isStreet1Changed = street1.IsNotNullOrWhiteSpace() && street1 != currentLocation.Street1;
+
+        var finalStreet1 = GetAddressPartValue( street1, currentLocation.Street1 );
+
+        // Blank out street 2 if street1 is a different value and no new
+        // street 2 was sent.
+        var finalStreet2 = GetAddressPartValue( street2, isStreet1Changed ? null : currentLocation.Street2 );
+        var finalCity = GetAddressPartValue( city, currentLocation.City );
+        var finalState = GetAddressPartValue( state, currentLocation.State );
+        var finalPostalCode = GetAddressPartValue( postalCode, currentLocation.PostalCode );
+        var finalCountry = GetAddressPartValue( country, currentLocation.Country );
+
+        var isCountyChanged = county.IsNotNullOrWhiteSpace() && county != currentLocation.County;
+
+        var isAddressChanged = isNewGroupLocation
+            || isCountyChanged
+            || !IsSameAddressPart( finalStreet1, currentLocation.Street1 )
+            || !IsSameAddressPart( finalStreet2, currentLocation.Street2 )
+            || !IsSameAddressPart( finalCity, currentLocation.City )
+            || !IsSameAddressPart( finalState, currentLocation.State )
+            || !IsSameAddressPart( finalPostalCode, currentLocation.PostalCode )
+            || !IsSameAddressPart( finalCountry, currentLocation.Country );
+
+        Location updatedAddress = null;
+
+        if ( isAddressChanged )
+        {
+            // Older addresses may have no country. Fall back to the
+            // organization's country, as FamilyPreRegistration does, so the
+            // country address requirements can be checked.
+            finalCountry = finalCountry.IfEmpty( GlobalAttributesCache.Get().OrganizationCountry );
+
+            var addressToValidate = new Location
             {
-                helper.AddError( "At minimum, street1, city, and postal code must be provided when adding a new address." );
+                Street1 = finalStreet1,
+                Street2 = finalStreet2,
+                City = finalCity,
+                State = finalState,
+                County = county.IfEmpty( currentLocation.County ),
+                PostalCode = finalPostalCode,
+                Country = finalCountry
+            };
+
+            if ( !LocationService.ValidateLocationAddressRequirements( addressToValidate, out var validationMessage ) )
+            {
+                helper.AddError( validationMessage );
                 return null;
             }
 
+            // LocationService.Get throws when a new address fails validation or
+            // cannot be saved (for example, a street that is too long), so turn
+            // that into a tool error instead of a failed request.
+            try
+            {
+                updatedAddress = new LocationService( rockContext ).Get( finalStreet1, finalStreet2, finalCity, finalState, finalPostalCode, finalCountry );
+            }
+            catch ( System.Exception ex )
+            {
+                ExceptionLogService.LogException( ex );
+                helper.AddError( "The address could not be saved. Check the address parts and try again." );
+                return null;
+            }
+
+            if ( updatedAddress == null )
+            {
+                helper.AddError( "The address could not be found or created." );
+                return null;
+            }
+
+            helper.UpdateProperty( updatedAddress, l => l.County, county );
+        }
+
+        if ( isNewGroupLocation )
+        {
             groupLocation = rockContext.Set<GroupLocation>().Create();
             new GroupLocationService( rockContext ).Add( groupLocation );
 
             groupLocation.GroupId = person.PrimaryFamilyId.Value;
             groupLocation.GroupLocationTypeValueId = locationTypeValue.Id;
-            groupLocation.Location = rockContext.Set<Location>().Create();
-            groupLocation.Location.State = GlobalAttributesCache.Get().OrganizationState;
 
             // If the location type is Home then by default set it to mailing
             // location and mapped location.
@@ -173,30 +268,19 @@ internal sealed partial class PersonSkill
             // then create a previous address record. In the future, it might
             // be nice to use some kind of fuzzy matching to determine if the
             // address has changed enough to warrant creating a previous
-            // address record.
-            if ( street1 != groupLocation.Location.Street1 )
+            // address record. A call that does not send street1 leaves the
+            // street unchanged, so it does not create one.
+            if ( isStreet1Changed )
             {
                 CreatePreviousAddress( rockContext, person.PrimaryFamily, groupLocation.Location );
             }
         }
 
-        if ( street1.IsNotNullOrWhiteSpace() )
+        if ( updatedAddress != null )
         {
-            // Blank out street 2 if street1 is a different value.
-            if ( street1 != groupLocation.Location.Street1 )
-            {
-                groupLocation.Location.Street2 = null;
-            }
-
-            helper.UpdateProperty( groupLocation.Location, l => l.Street1, street1 );
+            groupLocation.Location = updatedAddress;
         }
 
-        helper.UpdateProperty( groupLocation.Location, l => l.Street2, street2 );
-        helper.UpdateProperty( groupLocation.Location, l => l.City, city );
-        helper.UpdateProperty( groupLocation.Location, l => l.State, state );
-        helper.UpdateProperty( groupLocation.Location, l => l.PostalCode, postalCode );
-        helper.UpdateProperty( groupLocation.Location, l => l.Country, country );
-        helper.UpdateProperty( groupLocation.Location, l => l.County, county );
         helper.UpdateProperty( groupLocation, gl => gl.IsMappedLocation, isMappedLocation );
         helper.UpdateProperty( groupLocation, gl => gl.IsMailingLocation, isMailingLocation );
 
@@ -237,6 +321,33 @@ internal sealed partial class PersonSkill
 
             return true;
         }
+    }
+
+    /// <summary>
+    /// Gets the value an address part should have after the update. A null or
+    /// blank parameter means the caller did not send that part, so the current
+    /// value is kept. This matches how <c>AgentToolHelper.UpdateProperty()</c>
+    /// treats string parameters.
+    /// </summary>
+    /// <param name="parameter">The value the caller sent, if any.</param>
+    /// <param name="currentValue">The value the address has today.</param>
+    /// <returns>The value the address part should have after the update.</returns>
+    private static string GetAddressPartValue( string parameter, string currentValue )
+    {
+        return parameter.IsNotNullOrWhiteSpace() ? parameter : currentValue;
+    }
+
+    /// <summary>
+    /// Determines whether two address parts are the same. A null part and an
+    /// empty part are treated as the same, as GroupDetail does when it decides
+    /// whether an address changed.
+    /// </summary>
+    /// <param name="value">The first address part.</param>
+    /// <param name="otherValue">The second address part.</param>
+    /// <returns><c>true</c> if both address parts are the same.</returns>
+    private static bool IsSameAddressPart( string value, string otherValue )
+    {
+        return ( value ?? string.Empty ) == ( otherValue ?? string.Empty );
     }
 
     /// <summary>

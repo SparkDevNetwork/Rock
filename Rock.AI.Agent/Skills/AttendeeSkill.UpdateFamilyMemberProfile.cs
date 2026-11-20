@@ -99,10 +99,25 @@ internal sealed partial class AttendeeSkill
         UpdateEmail( helper, person, email );
         UpdateBirthdate( helper, person, birthYear, birthDay, birthMonth );
         UpdatePhoneNumber( helper, rockContext, person, phoneNumber, phoneTypeValueIdKey, isMessagingEnabled );
-        UpdateAddress( helper, rockContext, person, street1, street2, city, state, postalCode, country, isPhysicalAddress, isMailingAddress );
         UpdateCampus( helper, person, campusIdKey );
         UpdateDemographics( helper, person, gender, raceValueIdKey, ethnicityValueIdKey );
         UpdateAttributes( helper, rockContext, person, attributeValues );
+
+        /*
+            11/20/2026 - CLAUDE
+
+            The address is updated last, and only when every other change is
+            valid. LocationService.Get saves a new or matched address row in its
+            own context and may call the paid address verification service, so
+            running it before another check fails would leave that write and
+            cost behind on a call that saves nothing else.
+
+            Reason: Do not write address rows or pay for verification on a failed call.
+        */
+        if ( !helper.HasErrors )
+        {
+            UpdateAddress( helper, rockContext, person, street1, street2, city, state, postalCode, country, isPhysicalAddress, isMailingAddress );
+        }
 
         helper.SaveChangesIfNoErrors();
 
