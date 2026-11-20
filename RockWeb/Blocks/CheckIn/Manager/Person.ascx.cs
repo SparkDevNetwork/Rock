@@ -1001,7 +1001,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
             if ( isAdult && adultCategoryGuid.HasValue )
             {
                 avcAdultAttributes.IncludedCategoryNames = new string[] { CategoryCache.Get( adultCategoryGuid.Value ).Name };
-                avcAdultAttributes.AddDisplayControls( person );
+                avcAdultAttributes.AddDisplayControls( person, Authorization.VIEW, CurrentPerson );
 
                 pnlAdultFields.Visible = avcAdultAttributes.GetDisplayedAttributes().Any();
             }
@@ -1009,7 +1009,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
             if ( isChild && childCategoryGuid.HasValue )
             {
                 avcChildAttributes.IncludedCategoryNames = new string[] { CategoryCache.Get( childCategoryGuid.Value ).Name };
-                avcChildAttributes.AddDisplayControls( person );
+                avcChildAttributes.AddDisplayControls( person, Authorization.VIEW, CurrentPerson );
 
                 pnlChildFields.Visible = avcChildAttributes.GetDisplayedAttributes().Any();
             }
