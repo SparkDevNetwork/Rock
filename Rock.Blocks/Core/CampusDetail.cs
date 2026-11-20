@@ -470,8 +470,80 @@ namespace Rock.Blocks.Core
                 Url = entity.Url,
                 ClosedDate = entity.ClosedDate,
                 OpenedDate = entity.OpenedDate,
-                AverageWeekendAttendance = entity.AverageWeekendAttendance
+                AverageWeekendAttendance = entity.AverageWeekendAttendance,
+                PhotoBinaryFile = BuildBinaryFileRef( entity.Photo, entity.PhotoId ),
+                PhotoUrl = entity.PhotoUrl
             };
+        }
+
+        /// <summary>
+        /// Builds a <see cref="ListItemBag"/> for an
+        /// <c>&lt;ImageUploader&gt;</c>-bound BinaryFile, using the loaded
+        /// navigation property when available and falling back to a
+        /// service lookup by Id.
+        /// </summary>
+        /// <param name="attachedFile">The navigation property value, which may not be loaded.</param>
+        /// <param name="binaryFileId">The identifier of the attached BinaryFile.</param>
+        /// <returns>A <see cref="ListItemBag"/> that represents the file, or <c>null</c> when no file is attached.</returns>
+        private ListItemBag BuildBinaryFileRef( BinaryFile attachedFile, int? binaryFileId )
+        {
+            if ( attachedFile != null )
+            {
+                return new ListItemBag
+                {
+                    Value = attachedFile.Guid.ToString(),
+                    Text = attachedFile.FileName
+                };
+            }
+
+            if ( !binaryFileId.HasValue )
+            {
+                return null;
+            }
+
+            var file = new BinaryFileService( RockContext ).GetSelect( binaryFileId.Value, bf => new { bf.Guid, bf.FileName } );
+            if ( file == null )
+            {
+                return null;
+            }
+
+            return new ListItemBag
+            {
+                Value = file.Guid.ToString(),
+                Text = file.FileName
+            };
+        }
+
+        /// <summary>
+        /// Toggles the <see cref="BinaryFile.IsTemporary"/> flag so the
+        /// orphaned file is marked temporary (eligible for cleanup) and
+        /// the current file is marked permanent. No work is performed
+        /// when <paramref name="oldId"/> equals <paramref name="newId"/>.
+        /// </summary>
+        /// <param name="oldId">The identifier of the BinaryFile attached before the save.</param>
+        /// <param name="newId">The identifier of the BinaryFile attached after the save.</param>
+        private void ToggleBinaryFileIsTemporary( int? oldId, int? newId )
+        {
+            var binaryFileService = new BinaryFileService( RockContext );
+
+            // Orphan the old file only when it differs from the new.
+            if ( oldId.HasValue && oldId != newId )
+            {
+                var orphanedFile = binaryFileService.Get( oldId.Value );
+                if ( orphanedFile != null )
+                {
+                    orphanedFile.IsTemporary = true;
+                }
+            }
+
+            if ( newId.HasValue )
+            {
+                var currentFile = binaryFileService.Get( newId.Value );
+                if ( currentFile != null )
+                {
+                    currentFile.IsTemporary = false;
+                }
+            }
         }
 
         /// <inheritdoc/>
@@ -612,6 +684,15 @@ namespace Rock.Blocks.Core
 
             box.IfValidProperty( nameof( box.Bag.ClosedDate ),
                 () => entity.ClosedDate = box.Bag.ClosedDate );
+
+            box.IfValidProperty( nameof( box.Bag.PhotoBinaryFile ),
+                () =>
+                {
+                    var photoGuid = box.Bag.PhotoBinaryFile?.Value.AsGuidOrNull();
+                    entity.PhotoId = photoGuid.HasValue
+                        ? new BinaryFileService( RockContext ).GetSelect( photoGuid.Value, bf => ( int? ) bf.Id )
+                        : null;
+                } );
 
             box.IfValidProperty( nameof( box.Bag.AttributeValues ),
                 () =>
@@ -758,10 +839,23 @@ namespace Rock.Blocks.Core
                 return actionError;
             }
 
+            // Capture the current photo so the replaced or cleared file can
+            // be marked temporary after the save.
+            var oldPhotoId = entity.PhotoId;
+
             // Update the entity instance from the information in the bag.
             if ( !UpdateEntityFromBox( entity, box ) )
             {
                 return ActionBadRequest( "Invalid data." );
+            }
+
+            // Make sure the photo is either the current file or a file newly
+            // uploaded by this person. Otherwise a tampered value could attach
+            // an unrelated file, which would be marked temporary and cleaned
+            // up when it is later replaced.
+            if ( !new BinaryFileService( RockContext ).IsUploadedBinaryFileAllowedForPerson( entity.PhotoId, oldPhotoId, RequestContext.CurrentPerson ) )
+            {
+                return ActionBadRequest( "Invalid file." );
             }
 
             // Ensure everything is valid before saving.
@@ -774,6 +868,10 @@ namespace Rock.Blocks.Core
 
             RockContext.WrapTransaction( () =>
             {
+                // Keep the new photo and let the replaced or cleared photo
+                // become eligible for cleanup.
+                ToggleBinaryFileIsTemporary( oldPhotoId, entity.PhotoId );
+
                 RockContext.SaveChanges();
                 entity.SaveAttributeValues( RockContext );
             } );

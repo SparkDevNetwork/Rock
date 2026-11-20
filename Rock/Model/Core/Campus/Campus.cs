@@ -251,6 +251,15 @@ namespace Rock.Model
         [DataMember]
         public int? AverageWeekendAttendance { get; set; }
 
+        /// <summary>
+        /// Gets or sets the Id of the <see cref="Rock.Model.BinaryFile"/> that contains the photo of the Campus.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.BinaryFile"/> containing the photo of the Campus.
+        /// </value>
+        [DataMember]
+        public int? PhotoId { get; set; }
+
         #endregion Entity Properties
 
         #region Navigation Properties
@@ -299,6 +308,15 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual Group TeamGroup { get; set; }
+
+        /// <summary>
+        /// Gets or sets the <see cref="Rock.Model.BinaryFile"/> that contains the photo of the Campus.
+        /// </summary>
+        /// <value>
+        /// The <see cref="Rock.Model.BinaryFile"/> containing the photo of the Campus.
+        /// </value>
+        [DataMember]
+        public virtual BinaryFile Photo { get; set; }
 
         /// <summary>
         /// Gets or sets a collection containing the <see cref="Rock.Model.CampusSchedule">Schedules</see> that are associated with this Campus.
@@ -351,6 +369,7 @@ namespace Rock.Model
             this.HasOptional( c => c.Location ).WithMany().HasForeignKey( c => c.LocationId ).WillCascadeOnDelete( false );
             this.HasOptional( c => c.LeaderPersonAlias ).WithMany().HasForeignKey( c => c.LeaderPersonAliasId ).WillCascadeOnDelete( false );
             this.HasOptional( c => c.TeamGroup ).WithMany().HasForeignKey( c => c.TeamGroupId ).WillCascadeOnDelete( false );
+            this.HasOptional( c => c.Photo ).WithMany().HasForeignKey( c => c.PhotoId ).WillCascadeOnDelete( false );
         }
     }
 

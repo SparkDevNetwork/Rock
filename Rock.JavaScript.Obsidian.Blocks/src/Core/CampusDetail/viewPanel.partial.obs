@@ -18,6 +18,11 @@
         </div>
 
         <AttributeValuesContainer :modelValue="attributeValues" :attributes="attributes" :numberOfColumns="2" />
+
+        <img v-if="modelValue?.photoUrl"
+             class="campus-photo img-fluid rounded"
+             :src="`${modelValue.photoUrl}&maxwidth=600&maxheight=600`"
+             :alt="modelValue.name ?? ''" />
     </fieldset>
 </template>
 

@@ -160,6 +160,15 @@ namespace Rock.Web.Cache
         public int? TeamGroupId { get; set; }
 
         /// <summary>
+        /// Gets the Id of the <see cref="Rock.Model.BinaryFile"/> that contains the photo of the campus.
+        /// </summary>
+        /// <value>
+        /// The Id of the photo <see cref="Rock.Model.BinaryFile"/>, or <c>null</c> when no photo is set.
+        /// </value>
+        [DataMember]
+        public int? PhotoId { get; private set; }
+
+        /// <summary>
         /// Gets or sets the location.
         /// </summary>
         /// <value>
@@ -428,6 +437,7 @@ namespace Rock.Web.Cache
             CampusStatusValueId = campus.CampusStatusValueId;
             CampusTypeValueId = campus.CampusTypeValueId;
             TeamGroupId = campus.TeamGroupId;
+            PhotoId = campus.PhotoId;
             PhoneNumber = campus.PhoneNumber;
             LeaderPersonAliasId = campus.LeaderPersonAliasId;
 #pragma warning disable CS0612, CS0618

@@ -155,5 +155,17 @@ namespace Rock.ViewModels.Blocks.Core.CampusDetail
         /// Gets or sets the campus average weekend attendance.
         /// </summary>
         public int? AverageWeekendAttendance { get; set; }
+
+        /// <summary>
+        /// Gets or sets the BinaryFile reference for the campus photo,
+        /// or null when the campus has no photo set.
+        /// </summary>
+        public ListItemBag PhotoBinaryFile { get; set; }
+
+        /// <summary>
+        /// Gets or sets the URL of the campus photo shown in view mode.
+        /// Null when the campus has no photo set.
+        /// </summary>
+        public string PhotoUrl { get; set; }
     }
 }

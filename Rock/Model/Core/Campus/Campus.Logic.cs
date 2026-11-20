@@ -18,6 +18,8 @@ using System;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
 
+using Rock.Lava;
+using Rock.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -81,5 +83,18 @@ namespace Rock.Model
         /// </value>
         [NotMapped]
         public string CondensedName => ShortCode.IfEmpty( Name.ReplaceIfEndsWith( " Campus", string.Empty ) );
+
+        /// <summary>
+        /// Gets the URL of the campus's photo, or <see langword="null"/> when
+        /// <see cref="PhotoId"/> is null. Matches <see cref="Group.PhotoUrl"/>.
+        /// </summary>
+        /// <value>
+        /// URL of the photo, or <see langword="null"/> when no photo is set.
+        /// </value>
+        [LavaVisible]
+        [NotMapped]
+        public virtual string PhotoUrl => PhotoId.HasValue
+            ? FileUrlHelper.GetImageUrl( PhotoId.Value )
+            : null;
     }
 }

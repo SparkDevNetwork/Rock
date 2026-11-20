@@ -13,6 +13,7 @@
 //  + Notifications
 //  + Webfarm Settings
 //  + Exception Detail
+//  + Campus Detail
 // =============================================================
 
 .rock-fullscreen-toggle {
@@ -1403,3 +1404,11 @@ body.hide-block-role-secondary .block-instance.block-role-secondary:not(.block-r
 // ====================== END EXCEPTION DETAIL ======================
 
 // ===================== END WEBFARM SETTINGS ======================
+
+// ======================== CAMPUS DETAIL ========================
+// The photo loads at 600px so it stays sharp on high-DPI screens,
+// but displays at no more than 300px wide.
+.campus-photo {
+  max-width: 300px;
+}
+// ====================== END CAMPUS DETAIL ======================

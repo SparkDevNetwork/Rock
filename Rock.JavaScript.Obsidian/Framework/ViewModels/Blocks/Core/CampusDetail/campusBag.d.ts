@@ -91,6 +91,18 @@ export type CampusBag = {
     /** Get or sets the Country Code of the Phone Number */
     phoneNumberCountryCode?: string | null;
 
+    /**
+     * Gets or sets the BinaryFile reference for the campus photo,
+     * or null when the campus has no photo set.
+     */
+    photoBinaryFile?: ListItemBag | null;
+
+    /**
+     * Gets or sets the URL of the campus photo shown in view mode.
+     * Null when the campus has no photo set.
+     */
+    photoUrl?: string | null;
+
     /** Gets or sets the service times. */
     serviceTimes?: ListItemBag[] | null;
 

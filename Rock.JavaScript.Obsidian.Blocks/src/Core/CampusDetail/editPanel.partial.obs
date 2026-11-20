@@ -20,6 +20,11 @@
                          label="Description"
                          textMode="multiline" />
 
+                <ImageUploader v-model="photoBinaryFile"
+                               label="Photo"
+                               help="The photo used to represent this campus."
+                               :binaryFileTypeGuid="BinaryFiletype.Default" />
+
                 <AttributeValuesContainer v-model="coreAttributeValues" :attributes="coreAttributes" isEditMode :numberOfColumns="1" />
 
             </ContentStack>
@@ -197,6 +202,7 @@
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import ImageUploader from "@Obsidian/Controls/imageUploader.obs";
     import KeyValueList from "@Obsidian/Controls/keyValueList.obs";
     import { KeyValueItem } from "@Obsidian/Types/Controls/keyValueItem";
     import { Guid } from "@Obsidian/Types";
@@ -214,6 +220,7 @@
     import { CampusScheduleBag } from "@Obsidian/ViewModels/Blocks/Core/CampusDetail/campusScheduleBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { DefinedType } from "@Obsidian/SystemGuids/definedType";
+    import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
     import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
     import DatePicker from "@Obsidian/Controls/datePicker.obs";
     import SchedulePicker from "@Obsidian/Controls/schedulePicker.obs";
@@ -268,6 +275,7 @@
     const openedDate = propertyRef(props.modelValue.bag?.openedDate ?? "", "OpenedDate");
     const closedDate = propertyRef(props.modelValue.bag?.closedDate ?? "", "ClosedDate");
     const phoneNumberCountryCode = propertyRef(props.modelValue.bag?.phoneNumberCountryCode ?? "", "PhoneNumber");
+    const photoBinaryFile = propertyRef<ListItemBag | null>(props.modelValue.bag?.photoBinaryFile ?? null, "PhotoId");
     const campusSchedules = ref(props.modelValue.bag?.campusSchedules ?? []);
     const campusTopics = ref(props.modelValue.bag?.campusTopics ?? []);
 
@@ -307,7 +315,8 @@
         url,
         openedDate,
         closedDate,
-        phoneNumberCountryCode];
+        phoneNumberCountryCode,
+        photoBinaryFile];
 
     // #endregion
 
@@ -498,6 +507,7 @@
         updateRefValue(url, props.modelValue.bag?.url ?? "");
         updateRefValue(openedDate, props.modelValue.bag?.openedDate ?? "");
         updateRefValue(closedDate, props.modelValue.bag?.closedDate ?? "");
+        updateRefValue(photoBinaryFile, props.modelValue.bag?.photoBinaryFile ?? null);
         updateRefValue(campusSchedules, props.modelValue.bag?.campusSchedules ?? []);
         updateRefValue(campusTopics, props.modelValue.bag?.campusTopics ?? []);
     });
@@ -526,6 +536,7 @@
         setPropertiesBoxValue(newValue, "url", url.value);
         setPropertiesBoxValue(newValue, "openedDate", openedDate.value);
         setPropertiesBoxValue(newValue, "closedDate", closedDate.value);
+        setPropertiesBoxValue(newValue, "photoBinaryFile", photoBinaryFile.value);
         setPropertiesBoxValue(newValue, "campusSchedules", campusSchedules.value);
         setPropertiesBoxValue(newValue, "campusTopics", campusTopics.value);
 
