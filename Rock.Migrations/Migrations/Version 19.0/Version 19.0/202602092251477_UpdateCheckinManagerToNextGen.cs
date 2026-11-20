@@ -49,6 +49,36 @@ namespace Rock.Migrations
             Sql( @"
 DECLARE @NewParentPageId INT = (SELECT TOP 1 [ParentPageId] FROM [Page] WHERE [Guid] = 'CECB1460-10D4-4054-B5C3-903991CA40AB')
 DECLARE @OldParentPageId INT = (SELECT TOP 1 [Id] FROM [Page] WHERE [Guid] = 'CECB1460-10D4-4054-B5C3-903991CA40AB')
+DECLARE @PageEntityTypeId INT = (SELECT TOP 1 [Id] FROM [EntityType] WHERE [Guid] = 'E104DCDF-247C-4CED-A119-8CC51632761F')
+
+-- Copy the Room Manager page's security rules to each child page, after the child's own rules,
+-- so the children keep the restrictions they inherited once the Room Manager page is deleted.
+INSERT INTO [Auth] ( [EntityTypeId], [EntityId], [Order], [Action], [AllowOrDeny], [SpecialRole], [GroupId], [PersonAliasId], [Guid], [CreatedDateTime], [ModifiedDateTime] )
+SELECT @PageEntityTypeId
+    , c.[Id]
+    , ISNULL( ( SELECT MAX( x.[Order] ) FROM [Auth] AS x WHERE x.[EntityTypeId] = @PageEntityTypeId AND x.[EntityId] = c.[Id] AND x.[Action] = a.[Action] ), -1 )
+        + ROW_NUMBER() OVER ( PARTITION BY c.[Id], a.[Action] ORDER BY a.[Order], a.[Id] )
+    , a.[Action]
+    , a.[AllowOrDeny]
+    , a.[SpecialRole]
+    , a.[GroupId]
+    , a.[PersonAliasId]
+    , NEWID()
+    , GETDATE()
+    , GETDATE()
+FROM [Page] AS c
+INNER JOIN [Auth] AS a ON a.[EntityTypeId] = @PageEntityTypeId AND a.[EntityId] = @OldParentPageId
+WHERE c.[ParentPageId] = @OldParentPageId
+    AND NOT EXISTS (
+        SELECT 1
+        FROM [Auth] AS y
+        WHERE y.[EntityTypeId] = @PageEntityTypeId
+            AND y.[EntityId] = c.[Id]
+            AND y.[Action] = a.[Action]
+            AND y.[AllowOrDeny] = a.[AllowOrDeny]
+            AND y.[SpecialRole] = a.[SpecialRole]
+            AND ISNULL( y.[GroupId], 0 ) = ISNULL( a.[GroupId], 0 )
+            AND ISNULL( y.[PersonAliasId], 0 ) = ISNULL( a.[PersonAliasId], 0 ) );
 
 UPDATE [Page] SET [ParentPageId] = @NewParentPageId WHERE [ParentPageId] = @OldParentPageId
 " );
