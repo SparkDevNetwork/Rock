@@ -2525,8 +2525,40 @@ namespace Rock.Blocks.Engagement
             box.IfValidProperty( nameof( box.Bag.Requester ),
                 () => entity.PersonAliasId = box.Bag.Requester.GetEntityId<PersonAlias>( RockContext ).Value );
 
-            box.IfValidProperty( nameof( box.Bag.ConnectorPersonAliasGuid ),
-                () => entity.ConnectorPersonAliasId = new PersonAliasService( RockContext ).GetId( box.Bag.ConnectorPersonAliasGuid.AsGuid() ) );
+            // A changed connector must be in the opportunity's connector list for every campus (the Edit panel list).
+            var isConnectorValid = box.IfValidProperty( nameof( box.Bag.ConnectorPersonAliasGuid ), () =>
+            {
+                var postedAlias = new PersonAliasService( RockContext ).Get( box.Bag.ConnectorPersonAliasGuid.AsGuid() );
+
+                if ( postedAlias == null )
+                {
+                    entity.ConnectorPersonAliasId = null;
+                    return true;
+                }
+
+                if ( postedAlias.Id != entity.ConnectorPersonAliasId )
+                {
+                    // The Add Connection Request dialog pre-fills a campus default connector, a stored alias
+                    // that may no longer be the person's primary alias or in a connector group.
+                    var isCampusDefaultConnector = new ConnectionOpportunityCampusService( RockContext ).Queryable()
+                        .AsNoTracking()
+                        .Any( c => c.ConnectionOpportunityId == entity.ConnectionOpportunityId
+                            && c.DefaultConnectorPersonAliasId == postedAlias.Id );
+
+                    if ( !isCampusDefaultConnector && !IsConnectorAllowedForOpportunity( entity.ConnectionOpportunityId, postedAlias.Guid, entity.ConnectorPersonAlias ) )
+                    {
+                        return false;
+                    }
+                }
+
+                entity.ConnectorPersonAliasId = postedAlias.Id;
+                return true;
+            }, true );
+
+            if ( !isConnectorValid )
+            {
+                return false;
+            }
 
             box.IfValidProperty( nameof( box.Bag.ConnectionState ), () =>
             {
@@ -2543,7 +2575,15 @@ namespace Rock.Blocks.Engagement
 
             var isConnectionStatusValid = box.IfValidProperty( nameof( box.Bag.ConnectionStatusGuid ), () =>
             {
-                var connectionStatusId = new ConnectionStatusService( RockContext ).GetId( box.Bag.ConnectionStatusGuid.AsGuid() );
+                // The status must belong to the request's connection type and be active, unless it is the current status.
+                var postedStatusGuid = box.Bag.ConnectionStatusGuid.AsGuid();
+                var connectionStatusId = new ConnectionStatusService( RockContext ).Queryable()
+                    .AsNoTracking()
+                    .Where( s => s.Guid == postedStatusGuid
+                        && s.ConnectionTypeId == entity.ConnectionTypeId
+                        && ( s.IsActive || s.Id == entity.ConnectionStatusId ) )
+                    .Select( s => ( int? ) s.Id )
+                    .FirstOrDefault();
 
                 if ( !connectionStatusId.HasValue )
                 {
@@ -2582,8 +2622,36 @@ namespace Rock.Blocks.Engagement
             box.IfValidProperty( nameof( box.Bag.Comments ),
                 () => entity.Comments = box.Bag.Comments );
 
-            box.IfValidProperty( nameof( box.Bag.RequestSourceGuid ),
-                () => entity.ConnectionTypeSourceId = new ConnectionTypeSourceService( RockContext ).GetId( box.Bag.RequestSourceGuid.AsGuid() ) );
+            // The source must belong to the request's connection type. An empty value clears it.
+            var isSourceValid = box.IfValidProperty( nameof( box.Bag.RequestSourceGuid ), () =>
+            {
+                var postedSourceGuid = box.Bag.RequestSourceGuid.AsGuid();
+
+                if ( postedSourceGuid == Guid.Empty )
+                {
+                    entity.ConnectionTypeSourceId = null;
+                    return true;
+                }
+
+                var sourceId = new ConnectionTypeSourceService( RockContext ).Queryable()
+                    .AsNoTracking()
+                    .Where( s => s.Guid == postedSourceGuid && s.ConnectionTypeId == entity.ConnectionTypeId )
+                    .Select( s => ( int? ) s.Id )
+                    .FirstOrDefault();
+
+                if ( !sourceId.HasValue )
+                {
+                    return false;
+                }
+
+                entity.ConnectionTypeSourceId = sourceId;
+                return true;
+            }, true );
+
+            if ( !isSourceValid )
+            {
+                return false;
+            }
 
             box.IfValidProperty( nameof( box.Bag.ConnectionRequestAttributeValues ), () =>
             {
@@ -2971,6 +3039,56 @@ namespace Rock.Blocks.Engagement
                 .Any( c => c.ConnectionOpportunityId == connectionRequest.ConnectionOpportunityId
                     && c.GroupTypeId == placementGroupTypeId.Value
                     && c.GroupMemberRoleId == assignedGroupMemberRoleId );
+        }
+
+        /// <summary>
+        /// Determines if the person alias is in the opportunity's connector list built by
+        /// <see cref="GetConnectorItems"/> for every campus (the Edit panel list).
+        /// </summary>
+        /// <param name="connectionOpportunityId">The identifier of the Connection Opportunity whose connectors are offered.</param>
+        /// <param name="personAliasGuid">The primary alias Guid of the person being assigned as connector.</param>
+        /// <param name="currentConnector">The optional currently assigned connector, which is always offered.</param>
+        /// <returns>True if the person is offered as a connector for the opportunity; otherwise false.</returns>
+        private bool IsConnectorAllowedForOpportunity( int connectionOpportunityId, Guid personAliasGuid, Rock.Model.PersonAlias currentConnector )
+        {
+            return GetConnectorItems( connectionOpportunityId, null, currentConnector )
+                .Any( c => c.ListItemBag.Value.AsGuid() == personAliasGuid );
+        }
+
+        /// <summary>
+        /// Determines if the person alias is in the connection type's connector list that GetOptions
+        /// builds for the Assign and Activity dialogs: active members of active, non-archived connector
+        /// groups of the active opportunities the current person can view, plus the current person.
+        /// The check runs as a single query.
+        /// </summary>
+        /// <param name="connectionTypeId">The identifier of the Connection Type whose connectors are offered.</param>
+        /// <param name="personAliasGuid">The primary alias Guid of the person being assigned as connector.</param>
+        /// <returns>True if the person is offered as a connector for the connection type; otherwise false.</returns>
+        private bool IsConnectorAllowedForConnectionType( int connectionTypeId, Guid personAliasGuid )
+        {
+            // The dialogs always offer the current person.
+            if ( RequestContext.CurrentPerson?.PrimaryAlias?.Guid == personAliasGuid )
+            {
+                return true;
+            }
+
+            var connectionType = new ConnectionTypeService( RockContext ).Get( connectionTypeId );
+            if ( connectionType == null )
+            {
+                return false;
+            }
+
+            var opportunityIds = GetViewAuthorizedConnectionOpportunityIds( connectionType ).ToList();
+
+            return new ConnectionOpportunityConnectorGroupService( RockContext ).Queryable()
+                .AsNoTracking()
+                .Where( g => g.ConnectionOpportunity.ConnectionTypeId == connectionTypeId
+                    && g.ConnectionOpportunity.IsActive
+                    && opportunityIds.Contains( g.ConnectionOpportunityId ) )
+                .Where( g => g.ConnectorGroup.IsActive && !g.ConnectorGroup.IsArchived )
+                .SelectMany( g => g.ConnectorGroup.Members )
+                .Where( m => m.GroupMemberStatus == GroupMemberStatus.Active && !m.IsArchived )
+                .Any( m => m.Person.Aliases.Any( a => a.AliasPersonId == m.PersonId && a.Guid == personAliasGuid ) );
         }
 
         /// <summary>
@@ -5508,6 +5626,27 @@ WHERE 1 = 1" );
 
             var newConnectorPersonAlias = new PersonAliasService( RockContext ).GetInclude( connectorPersonAliasGuid.AsGuid(), c => c.Person );
 
+            // The connector must be in the Assign dialog's list (the connection type's connectors) or
+            // the request's opportunity connectors for every campus. Requests that already have this
+            // connector are not checked. Nothing is saved until every request passes.
+            if ( newConnectorPersonAlias != null )
+            {
+                var isTypeConnector = IsConnectorAllowedForConnectionType( connectionType.Id, newConnectorPersonAlias.Guid );
+
+                foreach ( var request in connectionRequests )
+                {
+                    if ( request.ConnectorPersonAliasId == newConnectorPersonAlias.Id )
+                    {
+                        continue;
+                    }
+
+                    if ( !isTypeConnector && !IsConnectorAllowedForOpportunity( request.ConnectionOpportunityId, newConnectorPersonAlias.Guid, request.ConnectorPersonAlias ) )
+                    {
+                        return ActionBadRequest( "Connector not found." );
+                    }
+                }
+            }
+
             List<ConnectionListGridUpdateBag> gridUpdateBags = new List<ConnectionListGridUpdateBag>();
             ListItemBag connectorItem = null;
             GroupingFieldBag connectorGroupingField = null;
@@ -5636,6 +5775,12 @@ WHERE 1 = 1" );
                 var newStatus = statusByIdKey.GetValueOrNull( updateBag.ConnectionStatusKey )
                     ?? statusByGuid.GetValueOrNull( updateBag.ConnectionStatusKey )
                     ?? statusById.GetValueOrNull( updateBag.ConnectionStatusKey );
+
+                // The status must be active, unless it is the request's current status.
+                if ( newStatus != null && !newStatus.IsActive && newStatus.Id != request.ConnectionStatusId )
+                {
+                    newStatus = null;
+                }
 
                 if ( newStatus == null )
                 {
@@ -5834,9 +5979,15 @@ WHERE 1 = 1" );
             var connectorPersonAlias = new PersonAliasService( RockContext ).GetInclude( bag.ConnectorPersonAliasGuid.AsGuid(), c => c.Person );
             var activityType = new ConnectionActivityTypeService( RockContext ).Get( bag.ActivityTypeGuid.AsGuid() );
 
-            if ( activityType == null )
+            // The activity type must be an active type of this connection type.
+            if ( activityType == null || !activityType.IsActive || activityType.ConnectionTypeId != connectionType.Id )
             {
                 return ActionBadRequest( "Invalid Activity Type" );
+            }
+
+            if ( connectorPersonAlias != null && !IsConnectorAllowedForConnectionType( connectionType.Id, connectorPersonAlias.Guid ) )
+            {
+                return ActionBadRequest( "Connector not found." );
             }
 
             var shouldCreatePersonNote = activityType.PersonNoteCreationBehavior == PersonNoteCreationBehavior.AlwaysCreateAPersonNote || ( activityType.PersonNoteCreationBehavior == PersonNoteCreationBehavior.AskAtActivityCreation && bag.AddPersonNote );
@@ -6114,11 +6265,31 @@ WHERE 1 = 1" );
             var isInEditMode = entity.Id != 0;
             var originalAssignedGroupId = entity.AssignedGroupId;
             var originalAssignedGroupMemberRoleId = entity.AssignedGroupMemberRoleId;
+            var originalConnectionState = entity.ConnectionState;
+            var originalConnectionStatusId = entity.ConnectionStatusId;
 
             // Update the entity instance from the information in the bag.
             if ( !UpdateEntityFromBox( entity, box ) )
             {
                 return ActionBadRequest( "Invalid data." );
+            }
+
+            // Requests are completed through the dedicated Connect actions, which run the placement checks.
+            if ( entity.ConnectionState == ConnectionState.Connected && originalConnectionState != ConnectionState.Connected )
+            {
+                return ActionBadRequest( "Use the Connect action to complete a request." );
+            }
+
+            // Moving off an active status that requires a note on completion needs a history note.
+            // Inactive statuses are skipped because the Edit panel does not ask for the note for them.
+            if ( isInEditMode && entity.ConnectionStatusId != originalConnectionStatusId )
+            {
+                var originalStatus = new ConnectionStatusService( RockContext ).Get( originalConnectionStatusId );
+
+                if ( originalStatus != null && originalStatus.IsActive && originalStatus.IsNoteRequiredOnCompletion && entity.ConnectionStatusHistoryNote.IsNullOrWhiteSpace() )
+                {
+                    return ActionBadRequest( "A note is required." );
+                }
             }
 
             // Reject saves that assign an inactive or archived placement group. The picker filters
@@ -6206,7 +6377,12 @@ WHERE 1 = 1" );
             }
 
             var connectionRequestStatus = new ConnectionStatusService( RockContext ).Get( bag.ConnectionStatusKey, !PageCache.Layout.Site.DisablePredictableIds );
-            if ( connectionRequestStatus == null || connectionRequestStatus.ConnectionTypeId != connectionRequest.ConnectionTypeId )
+            // The status must belong to the request's connection type and be active, unless it is the current status.
+            var isStatusAllowed = connectionRequestStatus != null
+                && connectionRequestStatus.ConnectionTypeId == connectionRequest.ConnectionTypeId
+                && ( connectionRequestStatus.IsActive || connectionRequestStatus.Id == connectionRequest.ConnectionStatusId );
+
+            if ( !isStatusAllowed )
             {
                 return ActionBadRequest( "Invalid Connection Status" );
             }
@@ -6411,9 +6587,28 @@ WHERE 1 = 1" );
                 return ActionBadRequest( "Invalid Activity Type." );
             }
 
+            // A changed activity type must be an active type of this connection type. The type of a
+            // system activity is never changed, so the stored type is used for the response.
+            var isSystemActivity = activity.ConnectionActivityType == null || !activity.ConnectionActivityType.ConnectionTypeId.HasValue;
+
+            if ( !isSystemActivity && activityType.Id != activity.ConnectionActivityTypeId && ( !activityType.IsActive || activityType.ConnectionTypeId != connectionType.Id ) )
+            {
+                return ActionBadRequest( "Invalid Activity Type." );
+            }
+
+            if ( isSystemActivity && activity.ConnectionActivityType != null )
+            {
+                activityType = activity.ConnectionActivityType;
+            }
+
             var connectorPersonAlias = bag.ConnectorPersonAliasGuid.IsNullOrWhiteSpace()
                 ? null
                 : new PersonAliasService( RockContext ).GetInclude( bag.ConnectorPersonAliasGuid.AsGuid(), c => c.Person );
+
+            if ( connectorPersonAlias != null && connectorPersonAlias.Id != activity.ConnectorPersonAliasId && !IsConnectorAllowedForConnectionType( connectionType.Id, connectorPersonAlias.Guid ) )
+            {
+                return ActionBadRequest( "Connector not found." );
+            }
 
             activity.Note = bag.Note;
             activity.ConnectorPersonAliasId = connectorPersonAlias?.Id;
@@ -7151,6 +7346,12 @@ WHERE 1 = 1" );
                     return ActionBadRequest( "Connector not found." );
                 }
 
+                // The connector must be in the destination opportunity's connector list for every campus.
+                if ( !IsConnectorAllowedForOpportunity( newOpportunity.Id, bag.ConnectorPersonAliasGuid.Value, null ) )
+                {
+                    return ActionBadRequest( "Connector not found." );
+                }
+
                 connectorPersonAliasId = newConnectorId.Value;
             }
 
@@ -7508,6 +7709,12 @@ WHERE 1 = 1" );
                 var newConnectorId = personAliasService.GetId( bag.ConnectorPersonAliasGuid.Value );
 
                 if ( !newConnectorId.HasValue )
+                {
+                    return ActionBadRequest( "Connector not found." );
+                }
+
+                // The connector must be in the destination opportunity's connector list for every campus.
+                if ( !IsConnectorAllowedForOpportunity( newOpportunity.Id, bag.ConnectorPersonAliasGuid.Value, null ) )
                 {
                     return ActionBadRequest( "Connector not found." );
                 }
