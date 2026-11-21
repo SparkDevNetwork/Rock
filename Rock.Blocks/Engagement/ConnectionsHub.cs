@@ -833,20 +833,20 @@ namespace Rock.Blocks.Engagement
             options.CanEditConnectionRequests = CanEditConnectionRequests( connectionType );
             options.IsSequentialStatusMode = connectionType.IsSequentialStatusEnforced;
 
-            // Exclude inactive and archived connector groups. A global query filter sets the
-            // ConnectorGroup navigation to null for archived groups, so guard against null as well.
-            // Also exclude inactive/archived group members so they do not appear as connectors.
-            var connectorData = connectionType.ConnectionOpportunities
-                .Where( o => o.IsActive && viewAuthorizedOpportunityIds.Contains( o.Id ) )
-                .SelectMany( o => o.ConnectionOpportunityConnectorGroups )
-                .Where( g => g.ConnectorGroup != null && g.ConnectorGroup.IsActive && !g.ConnectorGroup.IsArchived )
-                .SelectMany( g => g.ConnectorGroup.Members.Where( m => m.GroupMemberStatus == GroupMemberStatus.Active && !m.IsArchived ) )
-                .DistinctBy( m => m.Person.PrimaryAlias.Guid )
-                .Select( m => new
+            // Load the connectors in one query, in the order of opportunity, connector group and member,
+            // then list each person once. A member whose person has no primary alias is left out.
+            var connectorData = GetConnectionTypeConnectorQuery( connectionType.Id, viewAuthorizedOpportunityIds )
+                .Where( c => c.PrimaryAliasGuid.HasValue )
+                .OrderBy( c => c.ConnectionOpportunityId )
+                .ThenBy( c => c.ConnectorGroupLinkId )
+                .ThenBy( c => c.GroupMemberId )
+                .ToList()
+                .DistinctBy( c => c.PrimaryAliasGuid )
+                .Select( c => new
                 {
-                    PrimaryAliasGuid = m.Person.PrimaryAlias.Guid.ToString(),
-                    PersonIdKey = m.Person.IdKey,
-                    ConnectorName = m.Person.FullName
+                    PrimaryAliasGuid = c.PrimaryAliasGuid.Value.ToString(),
+                    PersonIdKey = IdHasher.Instance.GetHash( c.PersonId ),
+                    ConnectorName = Rock.Model.Person.FormatFullName( c.NickName, c.LastName, c.SuffixValueId, c.RecordTypeValueId )
                 } )
                 .ToList();
 
@@ -3021,10 +3021,47 @@ namespace Rock.Blocks.Engagement
         }
 
         /// <summary>
-        /// Determines if the person alias is in the connection type's connector list that GetOptions
-        /// builds for the Assign and Activity dialogs: active members of active, non-archived connector
-        /// groups of the active opportunities the current person can view, plus the current person.
-        /// The check runs as a single query.
+        /// Gets the query for the connection type's connectors offered in the Assign and Activity
+        /// dialogs: active members of active, non-archived connector groups of the active opportunities
+        /// the current person can view. <see cref="GetConnectionTypeOptions"/> builds the dialog list
+        /// from it and <see cref="IsConnectorAllowedForConnectionType"/> checks posted connectors
+        /// against it, so the two always use the same rules. The current person is not included;
+        /// both callers add them.
+        /// </summary>
+        /// <param name="connectionTypeId">The identifier of the Connection Type whose connectors are offered.</param>
+        /// <param name="viewAuthorizedOpportunityIds">The identifiers of the opportunities the current person can view.</param>
+        /// <returns>A query of one row per connector group member, which may include the same person more than once.</returns>
+        private IQueryable<ConnectorRow> GetConnectionTypeConnectorQuery( int connectionTypeId, ICollection<int> viewAuthorizedOpportunityIds )
+        {
+            return new ConnectionOpportunityConnectorGroupService( RockContext ).Queryable()
+                .AsNoTracking()
+                .Where( g => g.ConnectionOpportunity.ConnectionTypeId == connectionTypeId
+                    && g.ConnectionOpportunity.IsActive
+                    && viewAuthorizedOpportunityIds.Contains( g.ConnectionOpportunityId ) )
+                .Where( g => g.ConnectorGroup.IsActive && !g.ConnectorGroup.IsArchived )
+                .SelectMany( g => g.ConnectorGroup.Members
+                    .Where( m => m.GroupMemberStatus == GroupMemberStatus.Active && !m.IsArchived )
+                    .Select( m => new ConnectorRow
+                    {
+                        ConnectionOpportunityId = g.ConnectionOpportunityId,
+                        ConnectorGroupLinkId = g.Id,
+                        GroupMemberId = m.Id,
+                        PersonId = m.PersonId,
+                        PrimaryAliasGuid = m.Person.Aliases
+                            .Where( a => a.AliasPersonId == m.PersonId )
+                            .Select( a => ( Guid? ) a.Guid )
+                            .FirstOrDefault(),
+                        NickName = m.Person.NickName,
+                        LastName = m.Person.LastName,
+                        SuffixValueId = m.Person.SuffixValueId,
+                        RecordTypeValueId = m.Person.RecordTypeValueId
+                    } ) );
+        }
+
+        /// <summary>
+        /// Determines if the person alias is in the connection type's connector list that
+        /// <see cref="GetConnectionTypeOptions"/> builds for the Assign and Activity dialogs,
+        /// plus the current person. The check runs as a single query.
         /// </summary>
         /// <param name="connectionTypeId">The identifier of the Connection Type whose connectors are offered.</param>
         /// <param name="personAliasGuid">The primary alias Guid of the person being assigned as connector.</param>
@@ -3045,15 +3082,8 @@ namespace Rock.Blocks.Engagement
 
             var opportunityIds = GetViewAuthorizedConnectionOpportunityIds( connectionType ).ToList();
 
-            return new ConnectionOpportunityConnectorGroupService( RockContext ).Queryable()
-                .AsNoTracking()
-                .Where( g => g.ConnectionOpportunity.ConnectionTypeId == connectionTypeId
-                    && g.ConnectionOpportunity.IsActive
-                    && opportunityIds.Contains( g.ConnectionOpportunityId ) )
-                .Where( g => g.ConnectorGroup.IsActive && !g.ConnectorGroup.IsArchived )
-                .SelectMany( g => g.ConnectorGroup.Members )
-                .Where( m => m.GroupMemberStatus == GroupMemberStatus.Active && !m.IsArchived )
-                .Any( m => m.Person.Aliases.Any( a => a.AliasPersonId == m.PersonId && a.Guid == personAliasGuid ) );
+            return GetConnectionTypeConnectorQuery( connectionTypeId, opportunityIds )
+                .Any( c => c.PrimaryAliasGuid == personAliasGuid );
         }
 
         /// <summary>
@@ -8773,6 +8803,39 @@ WHERE 1 = 1" );
 
             /// <summary>Whether the status that ended requires a note (ConnectionStatus.IsNoteRequiredOnCompletion).</summary>
             public bool IsEndedStatusNoteRequired { get; set; }
+        }
+
+        /// <summary>
+        /// Projection of one connector group member offered as a connector for a connection type.
+        /// </summary>
+        private class ConnectorRow
+        {
+            /// <summary>The connection opportunity Id, used to keep the list in its original order.</summary>
+            public int ConnectionOpportunityId { get; set; }
+
+            /// <summary>The opportunity connector group Id, used to keep the list in its original order.</summary>
+            public int ConnectorGroupLinkId { get; set; }
+
+            /// <summary>The group member Id, used to keep the list in its original order.</summary>
+            public int GroupMemberId { get; set; }
+
+            /// <summary>The person Id.</summary>
+            public int PersonId { get; set; }
+
+            /// <summary>The Guid of the person's primary alias, or null if the person has none.</summary>
+            public Guid? PrimaryAliasGuid { get; set; }
+
+            /// <summary>The person's nick name.</summary>
+            public string NickName { get; set; }
+
+            /// <summary>The person's last name.</summary>
+            public string LastName { get; set; }
+
+            /// <summary>The person's suffix defined value Id.</summary>
+            public int? SuffixValueId { get; set; }
+
+            /// <summary>The person's record type defined value Id.</summary>
+            public int? RecordTypeValueId { get; set; }
         }
 
         public class CommunicationRow
