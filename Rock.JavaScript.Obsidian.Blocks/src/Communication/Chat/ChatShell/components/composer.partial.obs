@@ -138,6 +138,7 @@
                             @mention="emit('mention', $event)"
                             @send="onSubmit"
                             @upWhenEmpty="emit('editLast')"
+                            @escape="onEscape"
                             @mentionQuery="onMentionQuery" />
                 <!--
                     Send keeps its own control, the form's submit in the church's fill, and says
@@ -588,6 +589,7 @@
     import GifPicker from "./gifPicker.partial.obs";
     import MentionPicker, { MentionPickerSource } from "./mentionPicker.partial.obs";
     import { attachmentsPreview, AttachmentTray, isTrayReady } from "../composables/useAttachments.partial";
+    import { quoteWords } from "../heldMessage.partial";
     import { gifsKey } from "../composables/useGifs.partial";
     import { useChatSession } from "../chatSession.partial";
     import { useFaceStatus } from "../composables/usePresenceStatus.partial";
@@ -891,9 +893,8 @@
             return "";
         }
 
-        const text = quote.pieces?.length ? quote.pieces.map(piece => piece.text).join("") : quote.body ?? "";
-        // a message of files alone reads as its files
-        return text.replace(/\s+/g, " ").trim() || attachmentsPreview(quote.attachments);
+        // read as the message draws it; a message of files alone reads as its files
+        return quoteWords(quote) || attachmentsPreview(quote.attachments);
     });
 
     /** Whether the locked bar stands in the box's place, so nothing can be sent from here. */
@@ -984,6 +985,16 @@
     // #endregion Computed Values
 
     // #region Event Handlers
+
+    /**
+     * Escape the box did not hand to a picker above it takes back the quote waiting over it. The
+     * strip's own button is not pressed, so focus stays in the box.
+     */
+    function onEscape(): void {
+        if (props.quote) {
+            emit("cancelQuote");
+        }
+    }
 
     /**
      * Hands the text to the shell and asks the box's owner to clear it, unless it is kept. A send that fails keeps

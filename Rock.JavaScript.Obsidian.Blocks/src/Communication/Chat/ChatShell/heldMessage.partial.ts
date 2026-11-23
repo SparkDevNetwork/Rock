@@ -369,6 +369,28 @@ export function pendingPieces(body: string, names: ReadonlyMap<string, string>, 
 }
 
 /**
+ * A quoted message's words on one line, as its body draws them: a mention as the name, a glyph as
+ * the glyph, a link as its address without the scheme; never a token or a shortcode the message
+ * shows as something else. The composer's quote strip and the quote over a message both read it.
+ *
+ * @param message The quoted message's pieces and body.
+ *
+ * @returns The words, blank for a message of files alone.
+ */
+export function quoteWords(message: { pieces?: readonly DisplayPiece[] | null, body?: string | null }): string {
+    const text = message.pieces?.length
+        ? message.pieces.map(piece => {
+            if (piece.type === "emoji" && typeof piece.emoji === "string" && piece.emoji) {
+                return piece.emoji;
+            }
+            return piece.type === "link" ? piece.text.replace(/^https?:\/\//i, "") || piece.text : piece.text;
+        }).join("")
+        : message.body ?? "";
+
+    return text.replace(/\s+/g, " ").trim();
+}
+
+/**
  * Whether a piece mentions the whole room. The platform marks the room's mention as such when it
  * admits it, and nothing else does, so a piece's text never makes one.
  *

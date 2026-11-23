@@ -248,7 +248,7 @@ button.chat-quote:active .chat-quote-body {
     import Icon from "../ui/icon.partial.obs";
     import { attachmentsPreview } from "../composables/useAttachments.partial";
     import { useChatSession } from "../chatSession.partial";
-    import { blockedSentence } from "../heldMessage.partial";
+    import { blockedSentence, quoteWords } from "../heldMessage.partial";
     import { TimelineMessage } from "../types.partial";
 
     const props = defineProps({
@@ -329,16 +329,15 @@ button.chat-quote:active .chat-quote-body {
         return isSameSender ? "Replied to their message" : `Replied to ${firstName}`;
     });
 
-    /** The original as one run of text, a mention as the name the body draws, never its token. */
+    /** The original as one run of text, read as its body draws it. */
     const preview = computed((): string => {
         const original = quoted.value;
         if (!original) {
             return "";
         }
 
-        const text = original.pieces?.length ? original.pieces.map(piece => piece.text).join("") : original.body ?? "";
         // a message of files alone reads as its files
-        return text.replace(/\s+/g, " ").trim() || attachmentsPreview(original.attachments);
+        return quoteWords(original) || attachmentsPreview(original.attachments);
     });
 
     // #endregion Computed Values
