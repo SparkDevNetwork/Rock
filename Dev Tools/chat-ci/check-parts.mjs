@@ -61,8 +61,27 @@ const OWNERS = {
 /** Type names two files may each define for unrelated jobs, each with the reason a review agreed. */
 export const UNRELATED_TYPE_NAMES = new Map([]);
 
+/**
+ * Single listeners a rule lets one named file keep, each by its exact call and the reason a review
+ * agreed. Unlike an owner, the file holds no other finding of that rule.
+ */
+const ALLOWED_CALLS = [
+  // A fired hold leaves one click behind when the finger lifts; the long press swallows that click,
+  // and a press that comes first takes the swallow down. It closes no surface.
+  { rule: 'P3', stem: 'composables/useLongPress.partial', call: 'document.addEventListener("click", onClick, true)' },
+  { rule: 'P3', stem: 'composables/useLongPress.partial', call: 'document.addEventListener("pointerdown", onDown, true)' },
+];
+
 function isOwner(rule, file) {
   return (OWNERS[rule] ?? []).some((stem) => file.endsWith(`/${stem}.ts`) || file.endsWith(`/${stem}.obs`));
+}
+
+/** Whether the finding starting at this offset is a call the rule allows in this file. */
+function isAllowedCall(rule, file, code, offset) {
+  const here = code.slice(offset).replace(/\s+/g, ' ');
+  return ALLOWED_CALLS.some((allowed) => allowed.rule === rule
+    && (file.endsWith(`/${allowed.stem}.ts`) || file.endsWith(`/${allowed.stem}.obs`))
+    && here.startsWith(allowed.call));
 }
 
 /** What each per-file rule finds, and where in a file it looks. */
@@ -146,6 +165,7 @@ export function findPartDebt(files, { unrelatedTypeNames = UNRELATED_TYPE_NAMES 
       if (isOwner(rule, file)) continue;
       for (const { start, end } of ranges[where]) {
         for (const match of code.slice(start, end).matchAll(re)) {
+          if (isAllowedCall(rule, file, code, start + match.index)) continue;
           findings.push({ rule, file, line: lineOf(start + match.index), what: `${what}: ${match[0].trim().slice(0, 80)}` });
         }
       }
