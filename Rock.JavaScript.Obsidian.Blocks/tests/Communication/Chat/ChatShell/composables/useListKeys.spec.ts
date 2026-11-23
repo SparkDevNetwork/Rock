@@ -143,7 +143,7 @@ describe("a list of row components, as the feed draws its messages", () => {
         renders.length = 0;
     });
 
-    const Row = defineComponent({
+    const rowPart = defineComponent({
         props: { id: { type: Number, required: true } },
         setup(props) {
             const keys = useRowKeys();
@@ -156,18 +156,18 @@ describe("a list of row components, as the feed draws its messages", () => {
     });
 
     function feed(ids: number[], isNewestDefault = true): VueWrapper {
-        const Feed = defineComponent({
+        const feedPart = defineComponent({
             props: { ids: { type: Array as PropType<number[]>, required: true } },
             setup(props) {
-                const keys = () => props.ids.map(String);
+                const keys = (): string[] => props.ids.map(String);
                 provideRowKeys(useListKeys(keys, {
                     isRowOnly: true,
                     ...(isNewestDefault ? { defaultKey: () => keys()[keys().length - 1] ?? null } : {})
                 }));
-                return () => h("div", props.ids.map(id => h(Row, { key: id, id })));
+                return () => h("div", props.ids.map(id => h(rowPart, { key: id, id })));
             }
         });
-        wrapper = mount(Feed, { props: { ids }, attachTo: document.body });
+        wrapper = mount(feedPart, { props: { ids }, attachTo: document.body });
         return wrapper;
     }
 
@@ -216,7 +216,7 @@ describe("a list of row components, as the feed draws its messages", () => {
     });
 
     test("a row drawn with no list around it is focusable but no stop", async () => {
-        wrapper = mount(Row, { props: { id: 7 }, attachTo: document.body });
+        wrapper = mount(rowPart, { props: { id: 7 }, attachTo: document.body });
         await settle();
         expect(row(7).tabIndex).toBe(-1);
     });
