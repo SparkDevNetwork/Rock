@@ -15,7 +15,7 @@
 // </copyright>
 //
 // The chat's frame, mounted as the block: three columns side by side while the block is wide, and
-// one pane at a time once the block itself is narrower than 760px, whatever the window's width,
+// one pane at a time once the block itself is narrower than 660px, whatever the window's width,
 // since a block in a narrow zone of a wide screen has no more room than a phone. Opening a
 // conversation on a phone brings its pane in over the list, Back returns to the list, and nothing
 // focuses the composer on its own there, because that would raise the keyboard over the messages.
@@ -975,15 +975,22 @@ describe("drafts", () => {
 });
 
 describe("the switch to phone panes", () => {
-    test("follows the block's own width below 760px, not the window's", async () => {
+    // A tablet gets two columns once the sidebar and the conversation's least width fit side by
+    // side, read from the sheet as the panel's fold is: 296px and 364px, so from 660px.
+    test("follows the block's own width below the sidebar and the conversation's least width, not the window's", async () => {
         const w = await mountBlock(1200);
         expect(shellRoot(w).getAttribute("data-phone")).toBe("false");
 
-        FakeResizeObserver.resize(759);
+        FakeResizeObserver.resize(659);
         await settle();
         expect(shellRoot(w).getAttribute("data-phone")).toBe("true");
 
-        FakeResizeObserver.resize(760);
+        FakeResizeObserver.resize(660);
+        await settle();
+        expect(shellRoot(w).getAttribute("data-phone")).toBe("false");
+
+        // a 768px tablet held upright draws the sidebar beside the conversation
+        FakeResizeObserver.resize(768);
         await settle();
         expect(shellRoot(w).getAttribute("data-phone")).toBe("false");
     });
