@@ -815,17 +815,22 @@ describe("the notify menu and Star", () => {
         expect(w.emitted("details")).toHaveLength(1);
     });
 
-    test("Star is pressed while the room is starred, and asks to change it", async () => {
+    // A toggle keeps one name and says its state by being pressed, so a screen reader never hears
+    // "Remove from favorites, pressed"; the tip, for the eye, names what a click does.
+    test("Star is one toggle named Favorite, pressed while the room is a favorite, its tip naming the click, and asks to change it", async () => {
         const w = mountHeader({ kind: "channel", isPrefsOffered: true, notifyMode: "all", isStarred: false });
         const star = (): ReturnType<VueWrapper["get"]> => w.get("[data-testid='header-star']");
 
         expect(star().attributes("aria-pressed")).toBe("false");
-        expect(star().attributes("aria-label")).toBe("Add to favorites");
+        expect(star().attributes("aria-label")).toBe("Favorite");
+        expect(await tipOn(star().element)).toBe("Add to favorites");
         expect(hasIcon(w, star(), "star")).toBe(true);
+        star().element.dispatchEvent(new MouseEvent("mouseleave"));
 
         await w.setProps({ isStarred: true });
         expect(star().attributes("aria-pressed")).toBe("true");
-        expect(star().attributes("aria-label")).toBe("Remove from favorites");
+        expect(star().attributes("aria-label")).toBe("Favorite");
+        expect(await tipOn(star().element)).toBe("Remove from favorites");
         expect(hasIcon(w, star(), "star-f")).toBe(true);
 
         await star().trigger("click");
