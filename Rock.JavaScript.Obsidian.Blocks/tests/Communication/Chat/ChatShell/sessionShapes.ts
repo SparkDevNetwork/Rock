@@ -48,3 +48,37 @@ export function providedSession(shape: SessionShape = {}): Record<symbol, Sessio
         }
     };
 }
+
+/** A back stack that records what is held, for a part's cells; Back closes the newest held layer. */
+export type RecordedBackStack = {
+    stack: BackStack;
+
+    /** Every layer held now, oldest first. */
+    held: Array<{ back: () => void }>;
+
+    /** The system Back: asks the newest held layer's owner to close it. */
+    back: () => void;
+};
+
+/**
+ * A back stack that records holds instead of writing history.
+ *
+ * @returns The stack and what it holds.
+ */
+export function recordingBackStack(): RecordedBackStack {
+    const held: Array<{ back: () => void }> = [];
+    const stack: BackStack = {
+        screens: () => undefined,
+        hold: back => {
+            const layer = { back };
+            held.push(layer);
+            return () => {
+                const at = held.indexOf(layer);
+                if (at >= 0) {
+                    held.splice(at, 1);
+                }
+            };
+        }
+    };
+    return { stack, held, back: () => held[held.length - 1]?.back() };
+}

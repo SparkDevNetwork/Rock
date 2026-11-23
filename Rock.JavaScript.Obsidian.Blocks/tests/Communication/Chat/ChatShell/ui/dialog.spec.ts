@@ -24,7 +24,7 @@ import { defineComponent, h, nextTick, ref } from "vue";
 import Button from "../../../../../src/Communication/Chat/ChatShell/ui/button.partial.obs";
 import Dialog from "../../../../../src/Communication/Chat/ChatShell/ui/dialog.partial.obs";
 import SurfacePage from "../../../../../src/Communication/Chat/ChatShell/ui/surfacePage.partial.obs";
-import { providedSession } from "../sessionShapes";
+import { providedSession, recordingBackStack } from "../sessionShapes";
 import { shellFolder } from "../statusStore";
 import { ruleOf, styleOf } from "./partStyle";
 import { panelMotion, standInHeights } from "./surfaceMotion";
@@ -277,5 +277,34 @@ describe("a panel turned into another page", () => {
         expect(blocked.isConnected && blocked.classList.contains("is-leaving")).toBe(true);
         expect([blocked.style.top, blocked.style.maxHeight, blocked.scrollTop]).toEqual(["382px", "300px", 32]);
         expect([first.style.top, first.style.maxHeight]).toEqual(["", ""]);
+    });
+});
+
+// On a phone every dialog, a confirm, a panel or the photo viewer, holds one history entry while
+// open, so the system Back closes it as its Cancel or X would.
+describe("a dialog on a phone's Back", () => {
+    test.each([
+        ["a confirm", { confirmLabel: "Delete", isDestructive: true }],
+        ["a panel drawn as a sheet", { isPanel: true, sheet: "phone" }],
+        ["the photo viewer", { isPanel: true, isMedia: true }]
+    ])("%s holds one entry while open, and Back closes it", async (_what, props) => {
+        const recorded = recordingBackStack();
+        const isOpen = ref(true);
+        const Host = defineComponent({
+            setup() {
+                return () => h(Dialog, { isOpen: isOpen.value, title: "Photo", ...props, onClose: () => {
+                    isOpen.value = false;
+                } });
+            }
+        });
+        wrapper = mount(Host, { global: { provide: { ...providedSession({ isPhone: true, backStack: recorded.stack }) } }, attachTo: document.body });
+        await nextTick();
+        expect(recorded.held).toHaveLength(1);
+
+        recorded.back();
+        await nextTick();
+
+        expect(isOpen.value).toBe(false);
+        expect(recorded.held).toHaveLength(0);
     });
 });
