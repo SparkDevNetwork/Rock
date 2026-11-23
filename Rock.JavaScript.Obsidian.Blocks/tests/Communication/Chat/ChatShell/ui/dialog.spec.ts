@@ -397,6 +397,64 @@ describe("a panel drawn as a sheet following its content's height", () => {
         }
     });
 
+    test("changes at once under reduced motion", async () => {
+        const original = window.matchMedia;
+        window.matchMedia = ((query: string) => ({ media: query, matches: query === "(prefers-reduced-motion: reduce)" })) as unknown as typeof window.matchMedia;
+        const { dialog, content, heights, setHeight } = await drawSheet(true);
+        try {
+            resized(dialog.parentElement as Element, 800);
+            setHeight(360);
+            resized(content as Element, 300);
+
+            expect(heights.played).toEqual([]);
+        }
+        finally {
+            heights.restore();
+            window.matchMedia = original;
+        }
+    });
+
+    // A turn plays its own height change over the panel's duration; the content box's change it
+    // brings is that same change, so the sheet does not play it a second time.
+    test("plays a turn's own content change once", async () => {
+        const heights = standInHeights();
+        try {
+            const isBlocked = ref(false);
+            const Host = defineComponent({
+                setup() {
+                    return () => h(Dialog, { isOpen: true, title: "Chat settings", isPanel: true, placement: "top", sheet: "phone" }, {
+                        default: () => h("button", { "data-testid": "to-blocked", onClick: () => {
+                            isBlocked.value = true;
+                        } }, "Blocked people"),
+                        pages: () => h(SurfacePage, { isOpen: isBlocked.value, title: "Blocked people", onBack: () => {
+                            isBlocked.value = false;
+                        } }, () => h("p", "No one blocked"))
+                    });
+                }
+            });
+            wrapper = mount(Host, { global: { provide: { ...providedSession({ isPhone: true }) } }, attachTo: document.body });
+            await nextTick();
+            await nextTick();
+            const dialog = document.querySelector<HTMLElement>("[data-testid='dialog']") as HTMLElement;
+            const isTurned = (): boolean => !!dialog.querySelector("[data-testid='page-back']");
+            heights.size(dialog, () => isTurned() ? 180 : 520);
+            dialog.style.setProperty("--chat-d-move", "240ms");
+            const content = dialog.querySelector<HTMLElement>(".chat-dialog-pages") as HTMLElement;
+            content.getBoundingClientRect = (): DOMRect => ({ height: isTurned() ? 140 : 480 }) as DOMRect;
+            resized(dialog.parentElement as Element, 800);
+
+            document.querySelector<HTMLElement>("[data-testid='to-blocked']")?.click();
+            await nextTick();
+            await nextTick();
+            resized(content, 140);
+
+            expect(heights.played).toEqual([expect.objectContaining({ element: dialog, from: "520px", to: "180px", duration: panelMotion.duration })]);
+        }
+        finally {
+            heights.restore();
+        }
+    });
+
     test("a desktop panel observes nothing", async () => {
         const { heights } = await drawSheet(false);
         heights.restore();
