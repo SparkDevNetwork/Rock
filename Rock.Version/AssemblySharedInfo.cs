@@ -48,7 +48,7 @@ using System.Reflection;
 
 // This is the "official" product name that will be shown to people. 
 // It's shown in the SystemInfo details and perhaps the RockUpdate page.
-[assembly: AssemblyInformationalVersion( "Rock McKinley 17.12" )]
+[assembly: AssemblyInformationalVersion( "Rock McKinley 17.13" )]
 
   
 
