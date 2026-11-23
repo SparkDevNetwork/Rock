@@ -52,6 +52,8 @@
                 <span v-else-if="isBehind" class="chat-header-sub" data-testid="catching-up-badge" data-tone="info">
                     <Dot class="chat-header-live" tone="info" pulse />Catching up on new messages…
                 </span>
+                <!-- The title button's name already says the status, so the line is for the eye alone. -->
+                <span v-else-if="statusWords" class="chat-header-sub" data-testid="header-status" aria-hidden="true">{{ statusWords }}</span>
                 <span v-else-if="shownSubtitle" class="chat-header-sub" data-testid="header-subtitle">{{ shownSubtitle }}</span>
             </span>
         </div>
@@ -487,7 +489,7 @@ button.chat-header-name-row:hover .chat-header-chev {
     import ChannelMark from "../ui/channelMark.partial.obs";
     import Dot from "../ui/dot.partial.obs";
     import GroupFace from "../ui/groupFace.partial.obs";
-    import { peopleCountWords, personFace } from "../ui/face.partial";
+    import { cardStatusWords, peopleCountWords, personFace, shownStatus } from "../ui/face.partial";
     import Icon from "../ui/icon.partial.obs";
     import IconButton from "../ui/iconButton.partial.obs";
     import Menu, { MenuItem } from "../ui/menu.partial.obs";
@@ -736,6 +738,16 @@ button.chat-header-name-row:hover .chat-header-chev {
     const statusOf = useFaceStatus(() => otherAlias.value ? [otherAlias.value] : [], 1);
 
     const otherStatus = computed(() => otherAlias.value ? statusOf(otherAlias.value) : null);
+
+    /**
+     * A two-person room's line under the title: the other person's status in the words their
+     * profile puts on its line, so Away or Busy is never the badge's colour alone. None while the
+     * store holds nothing for them, as the profile then says nothing either.
+     */
+    const statusWords = computed((): string | null => {
+        const status = shownStatus(otherStatus.value, false);
+        return status ? cardStatusWords(status, new Date()) : null;
+    });
 
     /** How many other people a group holds: the row's count, else the room's head count less the reader. */
     const groupOtherCount = computed((): number | null => props.otherCount ?? (props.facts ? props.facts.member_count - 1 : null));
