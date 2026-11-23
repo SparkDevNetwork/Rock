@@ -328,6 +328,12 @@ namespace Rock.Blocks.Crm
                     .Select( m => m.PersonId );
 
                 personQry = personQry.Where( p => !optOutPersonIdQry.Contains( p.Id ) );
+
+                // Family members come from the data view query, so exclude opted-out people there too.
+                if ( dataViewPersonIdQry != null )
+                {
+                    dataViewPersonIdQry = dataViewPersonIdQry.Where( id => !optOutPersonIdQry.Contains( id ) );
+                }
             }
 
             var visibility = GetPersonFieldVisibility();
@@ -770,11 +776,11 @@ namespace Rock.Blocks.Crm
         }
 
         /// <summary>
-        /// Gets the person ids the opt-out change applies to: the whole family in family mode,
+        /// Gets the person ids an opt-out applies to: the whole family in family mode,
         /// otherwise just the current person.
         /// </summary>
         /// <param name="currentPersonId">The current person's id.</param>
-        /// <returns>The distinct list of person ids to toggle.</returns>
+        /// <returns>The distinct list of person ids to opt out.</returns>
         private List<int> GetOptOutTargetPersonIds( int currentPersonId )
         {
             if ( !IsShowByFamily() )
@@ -839,8 +845,9 @@ namespace Rock.Blocks.Crm
         }
 
         /// <summary>
-        /// Toggles the current person's directory opt-out state. In family mode the change is
-        /// applied to every member of the current person's family.
+        /// Toggles the current person's directory opt-out state. In family mode an opt-out is
+        /// applied to every member of the current person's family, and an opt-in is applied
+        /// only to the current person.
         /// </summary>
         /// <returns>The new opt-out state.</returns>
         [BlockAction]
@@ -867,7 +874,8 @@ namespace Rock.Blocks.Crm
                 .Any( m => m.GroupId == optOutGroup.Id && m.PersonId == currentPersonId.Value );
             var shouldOptOut = !isCurrentlyOptedOut;
 
-            var personIds = GetOptOutTargetPersonIds( currentPersonId.Value );
+            // Opting out applies to the target list; opting in changes only the current person.
+            var personIds = shouldOptOut ? GetOptOutTargetPersonIds( currentPersonId.Value ) : new List<int> { currentPersonId.Value };
 
             if ( shouldOptOut )
             {
