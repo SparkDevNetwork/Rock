@@ -17,9 +17,11 @@
         <div v-else
              :key="shellBuild"
              class="chat-frame"
-             :class="{ 'is-pane-motion-on': isPaneMotionOn }"
+             :class="{ 'is-pane-motion-on': paneMove === 'slide' }"
              data-testid="chat-frame"
              :data-pane="pane"
+             :data-under="paneUnder"
+             :data-main-over="isMainOverPanel ? 'true' : undefined"
              :data-panel-open="panelKind ? 'true' : 'false'"
              :data-sidebar="sidebarFold ?? undefined"
              @focusin="onFrameFocusIn"
@@ -123,7 +125,7 @@
                                 @turnOnPush="onTurnOnPush"
                                 @notify="onRoomChoice({ kind: 'notify', mode: $event })"
                                 @star="onRoomChoice({ kind: 'star' })"
-                                @back="onBack"
+                                @back="stepBack"
                                 @backOnline="onBackOnline"
                                 @details="isDetailsOpen = true" />
 
@@ -222,7 +224,7 @@
                                       :previewId="previewId"
                                       :campuses="campuses"
                                       :personCampusGuid="personCampusGuid"
-                                      @back="onBack"
+                                      @back="stepBack"
                                       @close="closeMainView"
                                       @query="shell.rooms.setQuery"
                                       @clearQuery="shell.rooms.clearQuery"
@@ -273,7 +275,7 @@
                                 :isServiceLocked="!shell.state.isComposerOpen"
                                 :lockedReason="lockedReason(null, shell.state.service)"
                                 :emojiSource="emojiSource"
-                                @back="onBack"
+                                @back="stepBack"
                                 @close="closeMainView"
                                 @choose="shell.directMessages.choose"
                                 @unchoose="shell.directMessages.unchoose"
@@ -594,8 +596,9 @@
 
 <style scoped>
 /*
-    The height is the room Rock's header and the context slicer leave on a Full Worksurface page,
-    written out because Rock wraps a block in containers a percentage cannot reach through. The
+    The height is the room Rock's header, the context slicer and, for an editor, Rock's admin
+    footer leave on a Full Worksurface page, written out because Rock wraps a block in containers a
+    percentage cannot reach through. The chat's sheet names the footer's room, none without it. The
     page's own padding and empty rows are taken away in the chat's sheet, so nothing else remains
     to subtract.
 */
@@ -603,7 +606,7 @@
     position: relative;
     display: flex;
     flex-direction: column;
-    height: calc(100vh - var(--top-header-height, 80px) - var(--context-slicer-height, 0px));
+    height: calc(100vh - var(--top-header-height, 80px) - var(--context-slicer-height, 0px) - var(--chat-page-foot, 0px));
 }
 
 .chat-frame {
@@ -810,6 +813,18 @@
     transform: translateX(calc(var(--chat-rise-sheet) / -4));
 }
 
+/* Activity under a conversation opened from it waits a quarter left, as the list does under a pane. */
+.chat-shell[data-phone="true"] .chat-frame[data-under="panel"] .chat-frame-panel {
+    pointer-events: none;
+    opacity: 0;
+    transform: translateX(calc(var(--chat-rise-sheet) / -4));
+}
+
+/* The conversation is drawn over the panel when it lies over it, or slides away from over it. */
+.chat-shell[data-phone="true"] .chat-frame[data-main-over="true"] .chat-frame-main {
+    z-index: calc(var(--chat-z-panel) + 1);
+}
+
 .chat-shell[data-phone="true"] .chat-frame[data-pane="list"] .chat-frame-main {
     pointer-events: none;
     opacity: 0;
@@ -864,7 +879,7 @@
 </style>
 
 <script setup lang="ts">
-    import { computed, nextTick, onBeforeUnmount, onMounted, provide, ref, shallowRef, watch } from "vue";
+    import { computed, onBeforeUnmount, onMounted, provide, ref, shallowRef, watch } from "vue";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import { AlertType } from "@Obsidian/Enums/Controls/alertType";
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
@@ -1089,9 +1104,9 @@
     });
 
     const {
-        isPhone, isPaneMotionOn, pane, isSidebarHidden, isMainInert, isPanelHidden, isPanelInert, isSidebarGone, isConversationGone, isPanelGone, goneStyle,
-        panelKind, shownPanel, shownList, activityTab, sidebarFold, isMembersOffered, panelElement, sidebarElement, mainElement, mainViewElement, drawnThread, threadOrigin, personOrigin, focusStop,
-        onResize, onFocusIn, onFocusOut, onSelect, onBack, onListPanel, onActivityTab, onPanelLeave, onSidebarOver, onSidebarAway, onThreadsTab, openThreadFromList, onOpenThread, onThreadBack, onPersonBack, onMentionOpen,
+        isPhone, paneOrder, paneMove, pane, stepBack, askFocus, isSidebarHidden, isMainInert, isPanelHidden, isPanelInert, isSidebarGone, isConversationGone, isPanelGone, goneStyle,
+        panelKind, shownPanel, shownList, activityTab, sidebarFold, isMembersOffered, panelElement, sidebarElement, mainElement, mainViewElement, drawnThread, threadOrigin, personOrigin,
+        onResize, onFocusIn, onFocusOut, onSelect, onListPanel, onActivityTab, onPanelLeave, onSidebarOver, onSidebarAway, onThreadsTab, openThreadFromList, onOpenThread, onThreadBack, onPersonBack, onMentionOpen,
         openThreadFromMentions, openFromTap, closeThreadDrawer, closePanel, closePersonPanel,
         mainView, openMainView, closeMainView, openFromMainView, previewId, onPreview, onPreviewJoin, openAddPeople,
         landingReplyId, landingMessageId, onJump, landInConversation,
@@ -1102,6 +1117,20 @@
     // The phone's history entries, one per step deep: every layer opened over the frame holds one
     // through the session, so the system Back takes one step.
     const backStack = createBackStack(() => isPhone.value);
+    backStack.screens(frame.screenCount, frame.backScreens);
+
+    /** The pane under the one in front, which a phone draws a quarter left, out of reach. */
+    const paneUnder = computed((): string | undefined => paneOrder.value[paneOrder.value.length - 2]);
+
+    /**
+     * Whether the conversation is drawn over the panel: while it lies over it, and while it slides
+     * away, out of the stack; the panel is over it while it lies over the conversation or slides away.
+     */
+    const isMainOverPanel = computed((): boolean => {
+        const conversationAt = paneOrder.value.indexOf("conversation");
+        const panelAt = paneOrder.value.indexOf("panel");
+        return panelAt >= 0 && (conversationAt < 0 || conversationAt > panelAt);
+    });
 
     /** Activity's two lists, in the Segmented over whichever is shown. */
     const activityTabs: SegmentedOption[] = [{ value: "mentions", label: "Mentions" }, { value: "threads", label: "Threads" }];
@@ -1206,7 +1235,6 @@
 
     /** New message's send: to the conversation found, or the first message of a new one. */
     function onSendFirst(body: string): void {
-        isPaneMotionOn.value = true;
         void shell.value.directMessages.sendFirst(body);
     }
 
@@ -1397,7 +1425,7 @@
             return;
         }
 
-        void nextTick(() => focusStop(["composer", "header"], { within: "main" }));
+        void askFocus(["composer", "header"], { within: "main" });
     });
 
     // From the first sidebar the page loads, a count of none included, so a badge a mention push
@@ -1435,7 +1463,7 @@
             return;
         }
 
-        void nextTick(() => focusStop(["composer", "header"], { within: "main" }));
+        void askFocus(["composer", "header"], { within: "main" });
     });
 
     // The details go with the room's row when a reload no longer lists it, which a leave's own

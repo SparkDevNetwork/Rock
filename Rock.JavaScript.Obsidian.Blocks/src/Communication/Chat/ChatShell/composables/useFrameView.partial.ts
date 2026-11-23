@@ -76,6 +76,12 @@ export type MainViewKind = "directory" | "newdm";
 /** Which pane a phone shows in front. */
 export type FramePane = "list" | "conversation" | "panel";
 
+/** How the panes move to a new order: sliding, or drawn at once where the person made no move or the browser drew it. */
+export type PaneMove = "slide" | "cut";
+
+/** What a full view was opened over: the list, which it takes the conversation's pane over, or a conversation in front, as one step more. */
+type ViewPlace = "list" | "conversation";
+
 /** The list a thread was opened from, which its back chevron returns to, or null when it was opened from the conversation. */
 export type ThreadOrigin = "threads" | "activity" | null;
 
@@ -135,10 +141,28 @@ export type Frame = MembersPanelViews & ThreadsPanelWiring & Landings & {
     /** Whether the block itself is narrower than a phone's layout allows, wherever it sits in the window. */
     isPhone: Ref<boolean>;
 
-    /** Turned on by the person's first move between panes, so the pane a page load opens does not slide in. */
-    isPaneMotionOn: Ref<boolean>;
+    /**
+     * A phone's panes as a stack of screens, the list first and the one in front last; the ones
+     * under stay laid out and out of reach, so Back shows them as they were left.
+     */
+    paneOrder: Readonly<Ref<readonly FramePane[]>>;
+
+    /** How the last move of the panes is drawn. */
+    paneMove: Readonly<Ref<PaneMove>>;
 
     pane: ComputedRef<FramePane>;
+
+    /** How many screens deep a phone is: each pane over the list, and each step inside one. */
+    screenCount: () => number;
+
+    /** Steps back the screens given, each by its own close, drawn at once when the browser drew the step. */
+    backScreens: (steps: number, options: { isDrawnByBrowser: boolean }) => void;
+
+    /** One screen back, as the system Back takes it: the on-screen arrows of the conversation and the full views. */
+    stepBack: () => void;
+
+    /** Asks for focus at the first drawn place of an order, put there by the frame's one settle once the change is drawn. */
+    askFocus: (order: FocusTarget[], options?: FocusStopOptions) => Promise<void>;
 
     isSidebarHidden: ComputedRef<boolean>;
 
@@ -360,10 +384,17 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
     /** Set by the header's sidebar button while the sidebar is folded, until a conversation is chosen. */
     const isSidebarOver = ref(false);
 
-    /** Set by Back on a phone, so the list shows while the conversation stays open behind it. */
-    const isListChosen = ref(false);
+    // The page's first paint seeds the panes from the room the page load opens first, a link's or
+    // the one this browser opened last, so a reload or a push opens on that conversation with the
+    // list under it, drawn at once, before sign-in can name anything.
+    const paneOrder = shallowRef<readonly FramePane[]>(shell.value.openingRoom() ? ["list", "conversation"] : ["list"]);
+    const paneMove = ref<PaneMove>("cut");
 
-    const isPaneMotionOn = ref(false);
+    /** Set while a Back the browser drew itself runs, so each pane it moves is drawn at once. */
+    let isBrowserBack = false;
+
+    /** What the open full view was opened over, which says whether it is a screen of its own. */
+    const viewPlace = ref<ViewPlace>("list");
 
     // A pane that has slid out of view is also hidden, once its slide is over, because the oldest
     // Safari Rock supports ignores inert and would still let Tab walk into it.
@@ -453,22 +484,8 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
 
     // #region Computed Values
 
-    /**
-     * Which pane a phone shows: the conversation once one is open, or a full view in its place,
-     * until Back asks for the list, and an open panel over the conversation.
-     */
-    const pane = computed((): FramePane => {
-        // Activity is opened from the list's head, and slides in over the list.
-        if (panelKind.value === "activity" && !mainView.value) {
-            return "panel";
-        }
-
-        if (!(activeChannelId.value || mainView.value) || isListChosen.value) {
-            return "list";
-        }
-
-        return panelKind.value && !mainView.value ? "panel" : "conversation";
-    });
+    /** Which pane a phone shows: the front of the stack. */
+    const pane = computed((): FramePane => paneOrder.value[paneOrder.value.length - 1]);
 
     /**
      * A panel open in a window too narrow for three columns folds the sidebar away, and the header
@@ -538,9 +555,9 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
         // Choosing the conversation already open behind the list or a full view brings it back too.
         const isFolding = sidebarFold.value === "over";
         leaveMainView();
-        isListChosen.value = false;
+        // A panel open beside a wider block's conversation stays its own pane over it.
+        movePanes(panelKind.value ? ["list", "conversation", "panel"] : ["list", "conversation"]);
         isSidebarOver.value = false;
-        isPaneMotionOn.value = true;
         void shell.value.selectChannel(channelId);
 
         // The row that had focus has slid out of view and out of reach, on a phone or with the
@@ -553,10 +570,21 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
         }
     }
 
+    /** Back from the conversation's pane: only that pane goes, uncovering the screen under it as it was left. */
     async function onBack(): Promise<void> {
+        if (pane.value !== "conversation") {
+            return;
+        }
+
         const leftChannelId = activeChannelId.value;
-        isListChosen.value = true;
-        isPaneMotionOn.value = true;
+        movePanes(paneOrder.value.slice(0, -1));
+
+        // A conversation opened from Activity uncovers it on its tab and scroll, with focus on the
+        // row the person opened, as Back from a thread gives it.
+        if (pane.value === "panel") {
+            await askFocus([{ stop: "mentions-row", match: "[aria-current='true']" }, "panel-start"], { within: "panel" });
+            return;
+        }
 
         // Back on a phone hides the button that had focus, so focus returns to the row of the
         // conversation just left, where the person was in the list, or with none to the New
@@ -595,7 +623,6 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
         // The column holds one panel at a time, so the list takes an open thread's or list's place.
         releasePanel();
         window.clearTimeout(panelClearTimer);
-        isPaneMotionOn.value = true;
         if (kind === "activity") {
             activityTab.value = tab;
         }
@@ -612,8 +639,9 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
         const start = document.activeElement;
         if (start instanceof HTMLElement && panelElement.value?.contains(start) && !start.hasAttribute("data-autofocus")) {
             void opened.then(() => nextTick()).then(() => {
-                if (document.activeElement === start) {
-                    firstDrawn(panelElement.value, "[data-autofocus]")?.focus({ preventScroll: true });
+                const first = firstDrawn(panelElement.value, "[data-autofocus]");
+                if (first && document.activeElement === start) {
+                    void askFocus([first], { preventScroll: true });
                 }
             });
         }
@@ -668,8 +696,6 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
         if (channelId !== activeChannelId.value) {
             void shell.value.selectChannel(channelId);
         }
-        // Activity's list is opened from a phone's list, and the thread is over its conversation.
-        isListChosen.value = false;
         void openThreadDrawer(channelId, rootId, panelKind.value === "activity" ? "activity" : "threads");
     }
 
@@ -699,8 +725,8 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
 
     /**
      * A row of the mentions inbox: the shell's jump marks it opened and lands on its message, in its
-     * conversation beside the inbox, or in its thread with a way back. A phone shows one pane, so a
-     * channel mention closes the inbox to bring its conversation forward.
+     * conversation beside the inbox, or in its thread with a way back. On a phone the conversation
+     * goes over the inbox, which Back uncovers as it was.
      */
     function onMentionOpen(messageId: number): void {
         const row = shell.value.mentions.state.inbox.rows.find(r => r.message.id === messageId);
@@ -709,9 +735,9 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
         }
 
         void shell.value.mentions.jump(row);
-        if (row.parent_id === null && isPhone.value) {
-            isListChosen.value = false;
-            closePanel();
+        // The conversation already open changes no room, so it comes forward here.
+        if (row.parent_id === null && row.channel_id === activeChannelId.value) {
+            showConversation();
         }
     }
 
@@ -723,8 +749,7 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
      * the button that opened the view has slid away with the list.
      */
     async function openMainView(kind: MainViewKind, people?: PersonRow[]): Promise<void> {
-        isListChosen.value = false;
-        isPaneMotionOn.value = true;
+        const wasOpen = !!mainView.value;
         if (mainView.value !== kind) {
             // One full view taking another's place returns, when it closes, to what opened the first.
             const active = document.activeElement;
@@ -749,6 +774,16 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
             shell.value.directMessages.begin(people);
         }
 
+        // Over a conversation in front the view is one screen more; from the list or Activity it
+        // draws in the conversation's pane over the list, as a conversation would.
+        if (pane.value !== "conversation") {
+            viewPlace.value = wasOpen ? viewPlace.value : "list";
+            movePanes(["list", "conversation"]);
+        }
+        else if (!wasOpen) {
+            viewPlace.value = activeChannelId.value ? "conversation" : "list";
+        }
+
         // The view is still rising in, and on a phone its pane still sliding from the right, so
         // the focus leaves what holds it unscrolled; the first field is at the view's top.
         if (!isPhone.value || kind === "newdm") {
@@ -768,7 +803,12 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
         }
 
         const opener = mainViewOpener;
+        const place = viewPlace.value;
         leaveMainView();
+        // A view over the list with no conversation under it leaves the list.
+        if (place === "list" && !activeChannelId.value) {
+            dropConversation();
+        }
         void askFocus(["composer", isPhone.value && pane.value !== "list" ? null : opener, "header"], { within: "main" });
     }
 
@@ -782,8 +822,6 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
         shell.value.rooms.previewRoom(channelId);
         const isPreviewed = mainView.value === "directory";
         leaveMainView(true);
-        isListChosen.value = false;
-        isPaneMotionOn.value = true;
         const opening = shell.value.selectChannel(channelId);
 
         // Let go only once the room is on screen: the preview's end keeps that room's page, so the
@@ -855,7 +893,6 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
         if (channelId !== activeChannelId.value) {
             void shell.value.selectChannel(channelId);
         }
-        isListChosen.value = false;
         await landOnReply({ channelId, rootId, messageId }, "activity");
     }
 
@@ -875,9 +912,11 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
         }
 
         const isOpenConversation = channelId === activeChannelId.value;
-        isListChosen.value = false;
-        isPaneMotionOn.value = true;
         void shell.value.selectChannel(channelId);
+        // The conversation open behind the list changes no room, so it comes forward here.
+        if (rootId === null && isOpenConversation) {
+            showConversation();
+        }
         if (rootId !== null) {
             void landOnReply({ channelId, rootId, messageId });
         }
@@ -986,7 +1025,6 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
         }
 
         window.clearTimeout(panelClearTimer);
-        isPaneMotionOn.value = true;
         personOrigin.value = origin;
         panelKind.value = "person";
         shownPanel.value = "person";
@@ -1047,7 +1085,6 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
         // A thread opened afresh lands nothing old.
         landingReplyId.value = null;
         window.clearTimeout(panelClearTimer);
-        isPaneMotionOn.value = true;
         threadOrigin.value = origin;
         threadChannelId = channelId;
         panelKind.value = "thread";
@@ -1130,9 +1167,9 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
         }, panelSlideMs());
     }
 
-    /** How long a pane slides: none for a move the person did not make, or when they ask for reduced motion. */
+    /** How long a pane slides: none for a move drawn at once, or when they ask for reduced motion. */
     function paneSlideMs(): number {
-        if (!isPaneMotionOn.value || isMotionReduced() || !rootElement.value) {
+        if (paneMove.value === "cut" || isMotionReduced() || !rootElement.value) {
             return 0;
         }
 
@@ -1215,6 +1252,84 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
         }
 
         return marked.querySelector<HTMLElement>("button") ?? marked;
+    }
+
+    /**
+     * The one writer of the phone's panes and how they move. A move the person did not make, the
+     * page load's, or one the browser drew itself, is drawn at once.
+     */
+    function movePanes(next: readonly FramePane[], move: PaneMove = "slide"): void {
+        const order = paneOrder.value;
+        if (next.length === order.length && next.every((place, at) => place === order[at])) {
+            return;
+        }
+
+        paneMove.value = move === "cut" || isBrowserBack || shell.value.state.isOpening ? "cut" : "slide";
+        paneOrder.value = next;
+    }
+
+    /** Puts the open conversation's pane in front when no pane holds it. */
+    function showConversation(): void {
+        if (!paneOrder.value.includes("conversation")) {
+            movePanes([...paneOrder.value, "conversation"]);
+        }
+    }
+
+    /** Takes the conversation's pane and what lies over it away, at once: there is no conversation to show. */
+    function dropConversation(): void {
+        const at = paneOrder.value.indexOf("conversation");
+        if (at > 0) {
+            movePanes(paneOrder.value.slice(0, at), "cut");
+        }
+    }
+
+    function screenCount(): number {
+        const kind = panelKind.value;
+        const isViewInFront = pane.value === "conversation" && !!mainView.value;
+        return paneOrder.value.length - 1
+            + (kind === "thread" && threadOrigin.value !== null ? 1 : 0)
+            + (kind === "person" && personOrigin.value !== null ? 1 : 0)
+            + (isViewInFront && viewPlace.value === "conversation" ? 1 : 0)
+            + (isViewInFront && mainView.value === "directory" && previewId.value ? 1 : 0);
+    }
+
+    function backScreens(steps: number, options: { isDrawnByBrowser: boolean }): void {
+        isBrowserBack = options.isDrawnByBrowser;
+        try {
+            for (let step = 0; step < steps && screenCount() > 0; step++) {
+                stepBack();
+            }
+        }
+        finally {
+            isBrowserBack = false;
+        }
+    }
+
+    /** Closes the top screen by its own owner, which puts focus where its own Back does. */
+    function stepBack(): void {
+        const kind = panelKind.value;
+        if (pane.value === "conversation") {
+            if (mainView.value === "directory" && previewId.value) {
+                onPreview(null);
+            }
+            else if (mainView.value && viewPlace.value === "conversation") {
+                closeMainView();
+            }
+            else {
+                void onBack();
+            }
+        }
+        else if (pane.value === "panel") {
+            if (kind === "person") {
+                void (personOrigin.value ? onPersonBack() : closePersonPanel());
+            }
+            else if (kind === "thread") {
+                void (threadOrigin.value ? onThreadBack() : closeThreadDrawer());
+            }
+            else {
+                closePanel();
+            }
+        }
     }
 
     /** The sidebar's row of the open conversation, as a place for focus. */
@@ -1301,13 +1416,55 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
         };
     });
 
-    // Any conversation that opens, from a row, a push or a first message, comes forward on a phone,
-    // and takes the place of a full view. A New message draft is drawn inside its view, so it
-    // coming or going changes nothing here.
-    watch(activeChannelId, () => {
-        isListChosen.value = false;
+    // Any conversation that opens, from a row, a push, a first message or a leave's next room,
+    // comes forward on a phone, and takes the place of a full view; its own thread opened with it
+    // stays in front. None left takes the conversation's pane away. A New message draft is drawn
+    // inside its view, so it coming or going changes nothing here.
+    watch(activeChannelId, channelId => {
         leaveMainView();
+        if (!channelId) {
+            dropConversation();
+            return;
+        }
+
+        const isOwnThread = pane.value === "panel" && panelKind.value === "thread" && threadChannelId === channelId;
+        if (!isOwnThread) {
+            showConversation();
+        }
     });
+
+    // The page load that settles with no room open, a link refused or nothing to open, leaves the
+    // list in front of the conversation its first paint drew.
+    watch(() => shell.value.state.phase !== "starting" && !shell.value.state.isOpening, isSettled => {
+        if (isSettled && !activeChannelId.value && !mainView.value) {
+            dropConversation();
+        }
+    });
+
+    // The panel's pane follows the column, before anything draws: a closed column takes it away,
+    // Activity is opened from the list's head over the list, and any other panel goes over the
+    // conversation, taking the place of a panel under it. A thread or profile opened from the
+    // list in front is a step inside its pane.
+    watch(panelKind, kind => {
+        const without = paneOrder.value.filter(place => place !== "panel");
+        if (!kind) {
+            movePanes(without);
+            return;
+        }
+
+        const isStepInside = pane.value === "panel" && ((kind === "thread" && threadOrigin.value !== null) || (kind === "person" && personOrigin.value !== null));
+        if (isStepInside) {
+            return;
+        }
+
+        if (kind === "activity") {
+            movePanes(["list", "panel"]);
+            return;
+        }
+
+        const under: FramePane[] = without.includes("conversation") || !activeChannelId.value ? [...without] : [...without, "conversation"];
+        movePanes([...under, "panel"]);
+    }, { flush: "sync" });
 
     // The profile in the column is the open card's person, so it follows the card: a card let go
     // of, by another room, a read that failed or a person the platform does not list, ends the
@@ -1369,8 +1526,14 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
             return;
         }
 
+        // Focus the person put outside the chat stays there.
         if (!channelId || (kind === "members" && !isMembersOffered.value)) {
-            closePanel();
+            if (rootElement.value?.contains(document.activeElement)) {
+                closePanel();
+            }
+            else {
+                endPanel();
+            }
             return;
         }
 
@@ -1404,8 +1567,13 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
 
     return {
         isPhone,
-        isPaneMotionOn,
+        paneOrder,
+        paneMove,
         pane,
+        screenCount,
+        backScreens,
+        stepBack,
+        askFocus,
         isSidebarHidden,
         isMainInert,
         isPanelHidden,

@@ -307,6 +307,12 @@ export type ChatShell = {
      */
     relink: (channelId: string) => void;
 
+    /**
+     * The room the page load opens first, known before sign-in: a link's, an early tap's, or the
+     * one this browser opened last, so the frame can draw it at first paint. Null for none.
+     */
+    openingRoom: () => string | null;
+
     /** Opens a channel the person chose. */
     selectChannel: (channelId: string) => Promise<void>;
 
@@ -1300,6 +1306,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
         },
 
         relink: (channelId: string): void => opener.relink(channelId),
+        openingRoom: (): string | null => opener.openingRoom(),
 
         selectChannel: (channelId: string): Promise<void> => opener.select(channelId),
 

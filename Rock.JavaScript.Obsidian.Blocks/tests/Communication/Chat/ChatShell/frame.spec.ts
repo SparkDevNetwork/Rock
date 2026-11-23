@@ -1384,6 +1384,8 @@ describe("focus moved late, through the frame's one settle", () => {
     test("a panel the room change closes leaves focus the person put outside the chat where it is", async () => {
         const w = await mountBlock(1200);
         await openRow(w, team.channel_id);
+        roomsOf().state.facts[team.channel_id] = roomFacts({ channel_id: team.channel_id, name: "Worship Team", member_count: 12 });
+        await settle();
         await w.get("[data-testid='frame-main'] [data-testid='header-members']").trigger("click");
         await settle();
         const outside = document.createElement("input");
@@ -3423,8 +3425,8 @@ describe("mentions", () => {
         expect(w.findComponent(MessageFeedComponent).props("landOnId")).toBe(30);
     });
 
-    // Activity's button is in the list's head, behind the conversation the jump brought forward
-    // and out of reach, so focus goes to the conversation's More, the next place in reach. A
+    // The row pressed is in Activity, which the conversation the jump brought forward now covers,
+    // out of reach, so focus goes to the conversation's title, as a sidebar row's open gives it. A
     // message the jump lands on takes focus itself; this one is not in the conversation's pages.
     test("on a phone, a channel mention's row gives focus to the conversation it shows, not the list behind it", async () => {
         const w = await mountBlock(390);
@@ -3436,7 +3438,7 @@ describe("mentions", () => {
 
         expect(w.get("[data-testid='chat-frame']").attributes("data-pane")).toBe("conversation");
         expect(document.activeElement?.closest("[inert]")).toBeNull();
-        expect(document.activeElement).toBe(w.get("[data-testid='header-more'] button").element);
+        expect(document.activeElement).toBe(w.get("[data-testid='header-details']").element);
     });
 
     test("a reply's row opens its thread with a way back to the inbox and the row", async () => {
@@ -3952,7 +3954,9 @@ describe("a push about a thread reply", () => {
         expect(replyRow(w, 42)).toBeNull();
     });
 
-    test("tells the shell the thread's pane is out of view while a phone shows the list over an open thread", async () => {
+    // A phone's screens are a stack, so nothing is ever drawn over an open thread: Back from it
+    // lets it go. Its pane is out of view as it goes, and on a wider block beside the conversation.
+    test("tells the shell the thread's pane is out of view once a phone's Back has taken the thread away", async () => {
         mockThreadPages = { newest: [41, 42, 43], older: [] };
         const w = await mountBlock(390);
         const paneHidden = (): unknown => hiddenPanes().thread;
@@ -3964,15 +3968,16 @@ describe("a push about a thread reply", () => {
         expect(w.get("[data-testid='chat-frame']").attributes("data-pane")).toBe("panel");
         expect(paneHidden()).toBe(false);
 
-        // Back to the list, the thread still open behind it
-        await w.get("[data-testid='header-back']").trigger("click");
-        await settle();
-        expect(w.get("[data-testid='chat-frame']").attributes("data-pane")).toBe("list");
-        expect(paneHidden()).toBe(true);
-
         FakeResizeObserver.resize(1200);
         await settle();
         expect(paneHidden()).toBe(false);
+
+        FakeResizeObserver.resize(390);
+        await settle();
+        await w.get("[data-testid='frame-panel'] [data-testid='panel-back']").trigger("click");
+        await settle();
+        expect(w.get("[data-testid='chat-frame']").attributes("data-pane")).toBe("conversation");
+        expect(paneHidden()).toBe(true);
     });
 
     test("tells the shell the conversation's pane is out of view while a phone shows the list or a thread over it", async () => {
@@ -3993,7 +3998,10 @@ describe("a push about a thread reply", () => {
         await settle();
         expect(hiddenPanes()).toEqual({ conversation: false, thread: false });
 
+        // a phone steps back from the thread to the conversation, then to the list
         FakeResizeObserver.resize(390);
+        await settle();
+        await w.get("[data-testid='frame-panel'] [data-testid='panel-back']").trigger("click");
         await settle();
         await w.get("[data-testid='header-back']").trigger("click");
         await settle();

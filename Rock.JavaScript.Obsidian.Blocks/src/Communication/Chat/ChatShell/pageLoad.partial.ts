@@ -726,6 +726,12 @@ export type RoomOpener = {
 
     /** A room asked for before sign-in becomes the room the page load opens; after it, nothing changes. */
     relink: (channelId: string) => void;
+
+    /**
+     * The room the page load tries first, known before sign-in: the one a link or an early tap
+     * named, else the one this browser opened last for this person. Null for none.
+     */
+    openingRoom: () => string | null;
 };
 
 /**
@@ -871,6 +877,7 @@ export function createRoomOpener(dependencies: RoomOpenerDependencies): RoomOpen
         state.isOpening = true;
         try {
             const last: { outcome: OpenOutcome | null } = { outcome: null };
+            // The opening room's two sources, which openingRoom reads the same way.
             const opened = await startPageLoad({
                 linkedChannelId: linkedChannelId?.toLowerCase() ?? null,
                 rememberedChannelId: readRememberedChannel(storage, storageKey),
@@ -913,6 +920,7 @@ export function createRoomOpener(dependencies: RoomOpenerDependencies): RoomOpen
         select,
         closeActive,
         runPageLoad,
+        openingRoom: (): string | null => linkedChannelId?.toLowerCase() ?? readRememberedChannel(storage, storageKey),
         relink: (channelId: string): void => {
             // Read once the session has signed in; a tap after that opens the room itself. The
             // frame asks only while starting too, and this holds the opener's own word either way.
