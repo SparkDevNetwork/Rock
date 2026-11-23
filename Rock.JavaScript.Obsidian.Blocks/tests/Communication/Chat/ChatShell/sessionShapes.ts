@@ -18,12 +18,16 @@
 // phone flag and the signed-in person from it rather than from its own inputs.
 import { computed, ref } from "vue";
 import { ChatMe, chatSessionKey, SessionContext } from "../../../../src/Communication/Chat/ChatShell/chatSession.partial";
+import { EmojiGlyph } from "../../../../src/Communication/Chat/ChatShell/types.partial";
 
 /** What a spec sets of the session; the rest reads as a wide window with no one signed in. */
 export type SessionShape = {
     isPhone?: boolean;
     me?: Partial<ChatMe>;
     churchName?: string;
+
+    /** The church's emoji catalog as the shell holds it once loaded; none by default. */
+    emoji?: EmojiGlyph[];
 };
 
 /**
@@ -40,7 +44,9 @@ export function providedSession(shape: SessionShape = {}): Record<symbol, Sessio
             isPhone: ref(shape.isPhone ?? false),
             me: computed(() => me),
             church: { name: shape.churchName ?? "" },
-            emojiSource: null,
+            emojiSource: shape.emoji
+                ? ref({ favorites: [], catalog: shape.emoji.map(glyph => ({ ...glyph, category: "people", keywords: [] })), recents: [], churchName: "" }) as SessionContext["emojiSource"]
+                : null,
             mentionSource: () => null
         }
     };

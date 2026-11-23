@@ -225,6 +225,14 @@ describe("grouping", () => {
         expect(shape(list)).toEqual(["1,2"]);
     });
 
+    test("in Community a quoted send not stored yet starts its group as its stored copy will", () => {
+        const list = [message(1, me, at(14, 59))];
+        const quoting = { ...pendingRow("q"), quotedMessageId: 1 };
+
+        expect(shape(list, { layout: "community", pending: [quoting] })).toEqual(["1", "p:q"]);
+        expect(shape(list, { pending: [quoting] })).toEqual(["1,p:q"]);
+    });
+
     test("a deleted or hidden message keeps its place in its sender's group", () => {
         const list = [
             message(1, anna, at(9, 0)),
