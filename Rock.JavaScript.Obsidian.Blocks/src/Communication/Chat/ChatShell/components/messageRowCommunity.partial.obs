@@ -32,6 +32,8 @@
                         @click="on.author"><Avatar :people="[view.face]" :size="faceSize" /></button>
                 <span v-else class="chat-cm-av"><Avatar :people="[view.face]" :size="faceSize" /></span>
             </template>
+            <span v-else-if="isStateAtTime && view.isSendingShown" class="chat-cm-gutter-state"><Icon name="clock" size="xs" /><span class="chat-sr-only" data-testid="message-state">Sending…</span></span>
+            <span v-else-if="isStateAtTime && view.state === 'sent'" class="chat-cm-gutter-state is-sent"><Icon name="check" size="xs" /><span class="chat-sr-only" data-testid="message-state">Sent</span></span>
             <span v-else class="chat-cm-gutter-time" data-testid="gutter-time" aria-hidden="true">{{ gutterTime }}</span>
         </div>
         <div class="chat-cm-main">
@@ -45,6 +47,8 @@
                 <Badge v-if="isLeaderShown" tone="tag" label="Leader" isSpoken class="chat-cm-pill" data-testid="leader-pill" />
                 <Badge v-if="view.isAnnouncement" tone="brand" icon="speaker" label="Announcement" isSpoken class="chat-cm-pill" data-testid="announcement-pill" />
                 <span ref="timeElement" class="chat-cm-time" data-testid="message-time" @mouseenter="onPointerEnter" @mouseleave="onPointerLeave" @pointerdown="onPointerDown">{{ view.time }}</span>
+                <span v-if="isStateAtTime && view.isSendingShown" class="chat-cm-state"><Icon name="clock" size="xs" /><span class="chat-cm-state-words" data-testid="message-state">Sending…</span></span>
+                <span v-else-if="isStateAtTime && view.state === 'sent'" class="chat-cm-state is-sent"><Icon name="check" size="xs" /><span class="chat-cm-state-words" data-testid="message-state">Sent</span></span>
                 <span v-if="view.readerMention" class="chat-cm-mention" data-testid="mention-tag" aria-hidden="true"><Icon name="at" size="xs" /><span class="chat-cm-mention-words">Mentioned {{ view.readerMention }}</span></span>
             </div>
             <MessageEditor v-if="view.isEditorShown && view.message"
@@ -57,8 +61,8 @@
                 <Icon v-if="view.isTomb" :name="view.tombIcon" size="sm" class="chat-tomb-icon" />
                 <MessageBody :text="view.text" :pieces="view.pieces" :isPersonOpenable="!!view.message" isInline @person="on.person" />
                 <span v-if="view.isEdited" class="chat-cm-edited" :class="{ 'is-swapping': view.isEditedNow }" data-testid="message-edited">(edited)</span>
-                <span v-if="view.isSendingShown" class="chat-cm-state"><Icon name="clock" size="xs" /><span class="chat-cm-state-words" data-testid="message-state">Sending…</span></span>
-                <span v-else-if="view.state === 'sent'" class="chat-cm-state is-sent"><Icon name="check" size="xs" /><span class="chat-cm-state-words" data-testid="message-state">Sent</span></span>
+                <span v-if="view.isSendingShown && !isStateAtTime" class="chat-cm-state"><Icon name="clock" size="xs" /><span class="chat-cm-state-words" data-testid="message-state">Sending…</span></span>
+                <span v-else-if="view.state === 'sent' && !isStateAtTime" class="chat-cm-state is-sent"><Icon name="check" size="xs" /><span class="chat-cm-state-words" data-testid="message-state">Sent</span></span>
                 <span v-else-if="view.state === 'failed'" class="chat-cm-state is-failed">
                     <FailedMarker :canRetry="view.canRetryFailed" :reason="view.failedReason" @retry="on.retry" @discard="on.discard" />
                 </span>
@@ -220,6 +224,14 @@
 }
 
 /* One line as tall as the text's, so the time sits on the text it belongs to. */
+/* A message of files alone says Sending or Sent where its time would show, so no text line comes and goes above its files. */
+.chat-cm-gutter-state {
+    display: flex;
+    justify-content: center;
+    line-height: 22px;
+    color: var(--chat-muted);
+}
+
 .chat-cm-gutter-time {
     width: 100%;
     font-size: var(--chat-fs-badge);
@@ -427,6 +439,12 @@
     const faceSize = computed((): number => isPhone.value ? 32 : 36);
 
     const gutterTime = computed((): string => gutterTimeLabel(props.view.at));
+
+    /**
+     * A message of files alone, which has no text line: its sending state takes the time's place,
+     * in its head or its gutter, so no line is added above its files and then taken away.
+     */
+    const isStateAtTime = computed((): boolean => props.view.files.length > 0 && !props.view.text?.trim() && !props.view.isTomb);
 
     /** The head time's tooltip, such as "Today at 9:02 AM". */
     const longTime = computed((): string => `${dayLabel(props.view.at, new Date())} at ${props.view.time}`);

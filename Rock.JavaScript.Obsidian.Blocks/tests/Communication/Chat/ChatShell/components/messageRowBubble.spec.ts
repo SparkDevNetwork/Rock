@@ -123,7 +123,7 @@ describe("files sent alone", () => {
         await row.setProps({ pending: null, message: stored({ body: null, attachments: [photo] }), isJustSent: true });
 
         expect(row.get(home).find("[data-testid='message-state']").text()).toBe("Sent");
-        expect(row.find(".chat-cm-text").exists()).toBe(false);
+        expect(row.get(".chat-cm-text").find("[data-testid='message-state']").exists()).toBe(false);
     });
 
     test("in a direct message, Sent rides the time line under the files", async () => {
