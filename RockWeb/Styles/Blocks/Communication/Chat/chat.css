@@ -1275,25 +1275,6 @@ body:has(#cms-admin-footer) .chat-shell {
     --chat-ic-stroke: 2.3;
 }
 
-/*
-    A tooltip, placed by script below its anchor, or above where there is no room. Fixed, so the
-    chat's clipped frame cannot cut a tip near its edge. It only fades in, since the placement owns
-    where it is.
-*/
-.chat-tip {
-    z-index: var(--chat-z-tip);
-    max-width: 260px;
-    padding: 6px 10px;
-    font-size: var(--chat-fs-small);
-    font-weight: 500;
-    line-height: 1.35;
-    color: var(--chat-tip-fg);
-    pointer-events: none;
-    background: var(--chat-tip-bg);
-    border-radius: var(--chat-r-inset);
-    animation: chat-fade-in var(--chat-t-fast) var(--chat-ease-in);
-}
-
 
 /*
     A panel's list of rows, shared by the threads list and the mentions inbox. Each row is the list

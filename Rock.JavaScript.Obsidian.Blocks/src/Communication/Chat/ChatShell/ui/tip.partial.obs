@@ -11,13 +11,34 @@
     </Teleport>
 </template>
 
+<style scoped>
+/*
+    A tooltip, placed by script below its anchor, or above where there is no room. Fixed, so the
+    chat's clipped frame cannot cut a tip near its edge. It only fades in, since the placement owns
+    where it is.
+*/
+.chat-tip {
+    z-index: var(--chat-z-tip);
+    max-width: 260px;
+    padding: 6px 10px;
+    font-size: var(--chat-fs-small);
+    font-weight: 500;
+    line-height: 1.35;
+    color: var(--chat-tip-fg);
+    pointer-events: none;
+    background: var(--chat-tip-bg);
+    border-radius: var(--chat-r-inset);
+    animation: chat-fade-in var(--chat-t-fast) var(--chat-ease-in);
+}
+</style>
+
 <script setup lang="ts">
     import { computed, PropType } from "vue";
     import { ChatTooltip, overlayHostOf } from "./tooltip.partial";
 
     // The tip is carried out to the chat's root, so the feed's faded edges neither fade nor cut it,
     // and drawn in place where the anchor is drawn alone.
-    // The tip's look is the sheet's chat-tip, shared with every tip. A holder's attributes, as
+    // The tip's look is this part's own, shared with every tip. A holder's attributes, as
     // aria-hidden on a tip whose words the anchor already reads, go to the tip, since a Teleport
     // cannot take them.
     defineOptions({ inheritAttrs: false });

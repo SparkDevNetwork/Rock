@@ -106,7 +106,7 @@ export function isCutShort(element: HTMLElement | undefined): boolean {
 }
 
 /**
- * The chat's tooltip for one anchor. The caller draws the tip, class chat-tip, role tooltip, at
+ * The chat's tooltip for one anchor. The caller draws the tip with the Tip part, at
  * the floating styles while it is shown, and binds the anchor's handlers. A tip shows once the
  * pointer has rested or a keyboard focus has arrived, never under a press, and hides on a click.
  *
