@@ -163,6 +163,7 @@ describe("the pill, in a direct message", () => {
         expect(pill.attributes("data-testid")).toBe("thread-summary");
         expect(plain(pill.attributes("aria-label"))).toBe("3 replies, last reply 9:41 AM. Open thread");
         expect(await tooltipOf(pill)).toBe("Last reply 9:41 AM");
+        expect(pill.findComponent({ name: "tip.partial" }).exists()).toBe(true);
     });
 
     // The pill lifts on hover, and a lifted box holds a fixed child against itself: a tip kept in

@@ -15,14 +15,17 @@
 // </copyright>
 //
 
-import { ComputedRef, onBeforeUnmount, Ref, ref } from "vue";
+import { computed, ComputedRef, effectScope, onBeforeUnmount, Ref, ref, shallowRef } from "vue";
 import { tokenDuration } from "./brand.partial";
 import { focusableSelector, focusQuietly, isDrawn, isFocusQuiet } from "./focusTrap.partial";
 import { isHoverless } from "./viewport.partial";
-import { usePopover } from "./popover.partial";
+import { PopoverControl, usePopover } from "./popover.partial";
 
 /** A tooltip's state and the handlers its anchor binds, and an interactive tip's own. */
 export type ChatTooltip = {
+    /** The element the tip belongs to, which the Tip part reads the chat's root from. */
+    anchor: Ref<HTMLElement | undefined>;
+
     /** The drawn tip, for the placement to measure. */
     tipElement: Ref<HTMLElement | undefined>;
     isTipShown: Ref<boolean>;
@@ -119,6 +122,7 @@ export function isCutShort(element: HTMLElement | undefined): boolean {
  */
 export function useTooltip(anchor: Ref<HTMLElement | undefined>, isDisabled: () => boolean = () => false, delay: TooltipDelay = defaultTipDelay, isInteractive: boolean = false): ChatTooltip {
     const tipElement = ref<HTMLElement>();
+    const isTipShown = ref(false);
 
     // One timer: the rest before showing, or an interactive tip's grace before hiding.
     let tipTimer: number | undefined;
@@ -126,15 +130,28 @@ export function useTooltip(anchor: Ref<HTMLElement | undefined>, isDisabled: () 
     /** Whether the focus that is coming was a press, since a tip under the pointer is noise. */
     let isPointerFocus = false;
 
-    // Below the anchor, or above it when there is no room, kept 8px inside the window: the chat
-    // sits under the page's own header, which a tip hung above a header button would cover. An
-    // interactive tip hangs from the anchor's start, as a card opened from it does. Placed as every
-    // popover is; shown and hidden by the tip's own timers, never by a press or a key.
-    const { isOpen: isTipShown, floatingStyles } = usePopover(anchor, tipElement, {
-        placement: isInteractive ? "bottom-start" : "bottom",
-        offset: isInteractive ? 6 : 8,
-        isDismissable: false
-    });
+    // A long channel holds hundreds of anchors, a message's time and words each, and the pointer
+    // rests on a few; so the placing and its watchers are made the first time a tip may show, in a
+    // scope of this anchor's that ends with it, never at mount.
+    const placingScope = effectScope();
+    const placing = shallowRef<PopoverControl>();
+
+    /**
+     * Makes the placing once. Below the anchor, or above it when there is no room, kept 8px inside
+     * the window: the chat sits under the page's own header, which a tip hung above a header button
+     * would cover. An interactive tip hangs from the anchor's start, as a card opened from it does.
+     * Placed as every popover is; shown and hidden by the tip's own timers, never by a press or a key.
+     */
+    function ensurePlacing(): void {
+        placing.value ??= placingScope.run(() => usePopover(anchor, tipElement, {
+            placement: isInteractive ? "bottom-start" : "bottom",
+            offset: isInteractive ? 6 : 8,
+            isDismissable: false
+        }));
+    }
+
+    // Where the placing puts the tip, or the popover's own unplaced spot before it has one.
+    const floatingStyles = computed((): Record<string, string> => placing.value?.floatingStyles.value ?? { position: "fixed", left: "0", top: "0" });
 
     /**
      * Shows the tip once the pointer has rested, so passing over a row of buttons does not flicker
@@ -146,6 +163,7 @@ export function useTooltip(anchor: Ref<HTMLElement | undefined>, isDisabled: () 
             return;
         }
 
+        ensurePlacing();
         window.clearTimeout(tipTimer);
         const restMs = anchor.value ? tokenDuration(anchor.value, delay.token, delay.fallbackMs) : delay.fallbackMs;
         tipTimer = window.setTimeout(() => {
@@ -264,9 +282,11 @@ export function useTooltip(anchor: Ref<HTMLElement | undefined>, isDisabled: () 
 
     onBeforeUnmount(() => {
         window.clearTimeout(tipTimer);
+        placingScope.stop();
     });
 
     return {
+        anchor,
         tipElement,
         isTipShown,
         floatingStyles,

@@ -15,6 +15,16 @@
     --chat-brand-fill: var(--chat-brand-fill-light, #CD4B00);
     --chat-on-brand: var(--chat-on-brand-light, #FFFFFF);
     --chat-brand-ink: var(--chat-brand-ink-light, #7A3608);
+
+    /*
+        The one focus ring, in brand ink rather than the church color itself, which can fall under
+        3 to 1 against white. A part that draws the ring on something other than the focused
+        element, as a row around its hidden radio, names this and sets only its offset.
+    */
+    --chat-focus-ring: 2px solid var(--chat-brand-ink);
+
+    /* What Rock draws over the window's foot, which the chat's height leaves room for; none by default. */
+    --chat-page-foot: 0px;
     --chat-brand-tint: var(--chat-brand-tint-light, #FDECE0);
     --chat-brand-wash: var(--chat-brand-wash-light, #F9EBE6);
     --chat-brand-ring: var(--chat-brand-ring-light, rgba(255, 121, 29, .32));
@@ -780,6 +790,16 @@
     padding: 0;
 }
 
+/*
+    Rock's admin footer, drawn for a person who can edit the page, is fixed to the window's foot,
+    36px tall, and see-through until hovered on a wide screen, so it took the presses meant for
+    the sidebar's foot and the drawer's last row. The chat ends above it; Rock's footer keeps its
+    own look.
+*/
+body:has(#cms-admin-footer) .chat-shell {
+    --chat-page-foot: 36px;
+}
+
 .full-work-surface:has(.chat-shell) > .row:not(:has(.block-instance)),
 #content-wrapper .full-work-surface:has(.chat-shell) > .main-content {
     display: none;
@@ -810,9 +830,9 @@
     cursor: not-allowed;
 }
 
-/* Brand ink rather than the church color itself, which can fall under 3 to 1 against white. */
+/* The ring on whatever takes focus; a part that needs it inside its edge sets only the offset. */
 .chat-shell :focus-visible {
-    outline: 2px solid var(--chat-brand-ink);
+    outline: var(--chat-focus-ring);
     outline-offset: 2px;
 }
 
@@ -822,7 +842,7 @@
     from a click's takes it back from the click's.
 */
 .chat-shell :focus {
-    outline: 2px solid var(--chat-brand-ink);
+    outline: var(--chat-focus-ring);
     outline-offset: 2px;
 }
 

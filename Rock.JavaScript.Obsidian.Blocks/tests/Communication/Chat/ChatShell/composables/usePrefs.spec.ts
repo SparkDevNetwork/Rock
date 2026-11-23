@@ -30,7 +30,7 @@
 // {code, isPending, message}.
 /* eslint-disable @typescript-eslint/naming-convention */
 import { computed, watch } from "vue";
-import { createPrefs, PersonSettingKey, PersonSettingResult, PrefsCallResult, StatusChoice } from "../../../../../src/Communication/Chat/ChatShell/composables/usePrefs.partial";
+import { createPrefs, notifyOptionsFor, PersonSettingKey, PersonSettingResult, PrefsCallResult, StatusChoice } from "../../../../../src/Communication/Chat/ChatShell/composables/usePrefs.partial";
 import { StatusChange, statusSaveOutcome } from "../../../../../src/Communication/Chat/ChatShell/composables/statusTabs.partial";
 import { readOnlySentence as readOnlyWordsOfOurs } from "../../../../../src/Communication/Chat/ChatShell/errors.partial";
 import { CallResult, createPlatformCall } from "../../../../../src/Communication/Chat/ChatShell/platformCall.partial";
@@ -374,6 +374,16 @@ describe("a room's notify mode", () => {
         await settle();
 
         expect(rowOf(s, team)?.notify_mode).toBe("silent");
+    });
+});
+
+// The header's menu and the details draw a mode by its title, its description and its icon; the
+// words nothing draws are not kept beside them to drift.
+describe("the notify modes' words", () => {
+    test("are the title, description and icon each screen draws, and nothing more", () => {
+        for (const option of notifyOptionsFor("channel")) {
+            expect(Object.keys(option).sort()).toEqual(["description", "icon", "title", "value"]);
+        }
     });
 });
 
