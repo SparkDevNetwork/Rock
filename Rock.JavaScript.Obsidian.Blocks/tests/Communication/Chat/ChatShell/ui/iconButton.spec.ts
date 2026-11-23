@@ -87,6 +87,17 @@ describe("the icon button", () => {
         expect(tooltip()?.textContent?.trim()).toBe("Turn on notifications");
     });
 
+    // Every tip in the chat is drawn by the one Tip part, so they look and place alike.
+    test("draws its tooltip with the shared tip part", async () => {
+        const wrapper = draw();
+        await wrapper.get("button").trigger("mouseenter");
+        jest.advanceTimersByTime(500);
+        await nextTick();
+
+        expect(wrapper.findComponent({ name: "tip.partial" }).exists()).toBe(true);
+        expect(tooltip()?.textContent?.trim()).toBe("Turn on notifications");
+    });
+
     test("shows no tooltip when the pointer leaves before 500ms", async () => {
         const button = draw().get("button");
 

@@ -454,6 +454,7 @@ describe("a face's status badge", () => {
         await nextTick();
 
         expect(document.querySelector("[role='tooltip']")?.textContent?.trim()).toBe("Busy until 3:00 PM");
+        expect(wrapper.findComponent({ name: "tip.partial" }).exists()).toBe(true);
         wrapper.unmount();
     });
 

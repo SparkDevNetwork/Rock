@@ -150,6 +150,12 @@ const isDarkFollowingSystem = (rule: Rule): boolean => rule.media.includes("pref
 const isLight = (rule: Rule): boolean => rule.media === "" && !rule.selector.includes("theme");
 const isReducedMotion = (rule: Rule): boolean => rule.media.includes("prefers-reduced-motion:reduce");
 
+/** A focus outline as drawn: the ring token read from the sheet where a rule names it. */
+function ringOf(sheet: Sheet, value: string): string {
+    const ring = valuesOf(sheet, "--chat-focus-ring", rule => rule.media === "")[0] ?? "";
+    return normalize(value).replace("var(--chat-focus-ring)", ring);
+}
+
 /** Every value the sheet gives one custom property in the rules a condition picks out. */
 function valuesOf(sheet: Sheet, property: string, where: (rule: Rule) => boolean): string[] {
     return sheet.rules.filter(where).filter(r => r.declarations.has(property)).map(r => normalize(r.declarations.get(property)!));
@@ -495,7 +501,7 @@ describe("the chat token sheet", () => {
         const focus = sheet.rules.filter(r => r.selector.includes(".chat-shell") && r.selector.includes(":focus-visible") && r.declarations.has("outline"));
 
         expect(focus.length).toBeGreaterThan(0);
-        const outline = normalize(focus[0].declarations.get("outline")!);
+        const outline = ringOf(sheet, focus[0].declarations.get("outline")!);
         expect(outline).toContain("2px");
         expect(outline).toContain("solid");
         expect(outline).toContain("var(--chat-brand-ink");
@@ -511,7 +517,7 @@ describe("the chat token sheet", () => {
         const takenBack = sheet.rules.find(r => r.media.includes("@supportsselector(:focus-visible)") && r.selector.includes(".chat-shell")
             && r.selector.includes(":focus:not(:focus-visible)"));
 
-        expect(normalize(onFocus?.declarations.get("outline") ?? "")).toContain("var(--chat-brand-ink");
+        expect(ringOf(sheet, onFocus?.declarations.get("outline") ?? "")).toContain("var(--chat-brand-ink");
         expect(normalize(onFocus?.declarations.get("outline-offset") ?? "")).toBe("2px");
         expect(normalize(takenBack?.declarations.get("outline") ?? "")).toMatch(/^(none|0)$/);
     });
@@ -1436,6 +1442,56 @@ describe("the section label", () => {
             const path = resolve(shell, file);
             expect(tag.exec(readFileSync(path, "utf8"))?.[0]).toMatch(/class="[^"]*\bchat-list-heading\b/);
             expect(styleRules(path, selector).join(";")).not.toMatch(copied);
+        }
+    });
+});
+
+// #endregion
+
+// #region One tip, one focus ring
+
+describe("the tip and the focus ring", () => {
+    const shell = resolve(__dirname, "../../../../../src/Communication/Chat/ChatShell");
+
+    /** The parts this pass moved onto the shared tip; the rest move with their owners. */
+    const tipHolders = ["ui/iconButton.partial.obs", "ui/statusBadge.partial.obs", "components/threadSummary.partial.obs", "components/emojiPicker.partial.obs"];
+
+    /** A part's template, without its styles or script. */
+    function templateOf(path: string): string {
+        const text = readFileSync(path, "utf8");
+        return text.slice(text.indexOf("<template>"), text.lastIndexOf("</template>"));
+    }
+
+    test("the tip's markup has one home, the Tip part", () => {
+        expect(templateOf(resolve(shell, "ui/tip.partial.obs"))).toMatch(/class="chat-tip"[\s\S]*role="tooltip"/);
+    });
+
+    test.each(tipHolders)("%s draws its tip with the Tip part and no markup of its own", file => {
+        const template = templateOf(resolve(shell, file));
+
+        expect(template).toMatch(/<Tip\b/);
+        expect(template).not.toMatch(/class="chat-tip"/);
+    });
+
+    // One recipe for the ring, named once in the sheet: the shell's own focus rules and every part
+    // that draws the ring somewhere other than the focused element, as a row around a hidden radio.
+    test("the sheet names the ring once, as a token, and its focus rules draw it", () => {
+        const sheet = readSheet();
+
+        expect(valuesOf(sheet, "--chat-focus-ring", rule => rule.media === "")).toEqual([normalize("2px solid var(--chat-brand-ink)")]);
+        const shellRings = sheet.rules.filter(r => r.selector.includes(".chat-shell :focus") && !r.selector.includes(":not(") && r.declarations.has("outline"));
+        expect(shellRings.length).toBe(2);
+        for (const rule of shellRings) {
+            expect(normalize(rule.declarations.get("outline")!)).toBe("var(--chat-focus-ring)");
+        }
+    });
+
+    test.each(["components/removeMember.partial.obs", "components/emojiPicker.partial.obs", "components/gifPicker.partial.obs"])("%s draws focus only with the shared ring", file => {
+        const focusRules = readSheet(resolve(shell, file)).rules.filter(r => /:focus-visible|:focus(?![-\w])/.test(r.selector));
+
+        for (const rule of focusRules) {
+            const outline = normalize(rule.declarations.get("outline") ?? "var(--chat-focus-ring)");
+            expect({ selector: rule.selector, outline, shadow: rule.declarations.has("box-shadow") }).toEqual({ selector: rule.selector, outline: "var(--chat-focus-ring)", shadow: false });
         }
     });
 });
