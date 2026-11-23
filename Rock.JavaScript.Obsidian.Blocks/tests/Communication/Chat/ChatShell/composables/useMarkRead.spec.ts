@@ -404,6 +404,41 @@ describe("createTabReads", () => {
         expect(annas.heard).toEqual([`${channel}:12`]);
     });
 
+    // A position is a message id, so a word naming none, which would pin the row read until the
+    // sidebar is read again, is no read. Handed straight to the line, since the fake's copy would
+    // turn NaN and Infinity to null where the browser's clone keeps them.
+    test("a read whose position is not a message id is dropped", () => {
+        let line: StatusChannel | null = null;
+        const heard: number[] = [];
+        createTabReads({
+            channel: () => line = { onmessage: null, postMessage: () => undefined, close: () => undefined },
+            tenantId: tenant,
+            personAliasGuid: anna,
+            onRead: (_, readCursor) => heard.push(readCursor)
+        });
+
+        for (const position of [Number.NaN, Number.POSITIVE_INFINITY, -1, 0, 12.5, Number.MAX_SAFE_INTEGER + 2, 12]) {
+            (line as StatusChannel | null)?.onmessage?.({ data: { person_alias_guid: anna, channel_id: channel, read_cursor: position } } as MessageEvent);
+        }
+
+        expect(heard).toEqual([12]);
+    });
+
+    // A line the browser has already closed, as a page being torn down can have, throws on a post;
+    // a read told then is lost, and the tracker's turn goes on.
+    test("a tell on a line the browser has closed fails nothing", () => {
+        const closed: StatusChannel = {
+            onmessage: null,
+            postMessage: () => {
+                throw new DOMException("closed", "InvalidStateError");
+            },
+            close: () => undefined
+        };
+        const reads = createTabReads({ channel: () => closed, tenantId: tenant, personAliasGuid: anna, onRead: () => undefined });
+
+        expect(() => reads.tell(channel, 12)).not.toThrow();
+    });
+
     test("closed at sign-out, a tab neither hears nor tells", () => {
         const b = browser();
         const one = tab(b, anna);
