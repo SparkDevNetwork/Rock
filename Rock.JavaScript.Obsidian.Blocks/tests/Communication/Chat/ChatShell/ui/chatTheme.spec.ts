@@ -1188,9 +1188,11 @@ describe("the components' own styles", () => {
             }
         });
 
-        test("pops, and stays in its own layer for its whole life, only where it is marked to pop", () => {
-            expect(badgeRule(".chat-badge.is-pop", "will-change")).toBe("transform");
-            expect(badgeRule(".chat-badge.is-pop", "animation")).toBe(normalize("chat-spring var(--chat-d-spring) var(--chat-ease-spring)"));
+        // No screen ever asked a badge to pop, so it keeps no spring and no layer of its own; the
+        // spring's tokens stay for the parts that do spring.
+        test("draws in its row's layer with no spring of its own", () => {
+            expect(badgeRule(".chat-badge.is-pop", "will-change")).toBe("");
+            expect(badgeRule(".chat-badge.is-pop", "animation")).toBe("");
             expect(badgeRule(".chat-badge", "will-change")).toBe("");
             expect(badgeRule(".chat-badge", "animation")).toBe("");
             // under reduced motion the spring has no scale and the quick time, so it only fades in
