@@ -506,17 +506,17 @@ export function createMentions(dependencies: MentionsDependencies): Mentions {
     /** Empties the inbox and drops any page still on its way, as an opening starts from nothing. */
     function resetInbox(): void {
         closeInbox();
-        Object.assign(state.inbox, { rows: [], hasMore: false, error: null, olderError: null, newIds: [], currentId: null });
+        Object.assign(state.inbox, { rows: [], hasMore: false, isLoading: false, isRefreshing: false, isLoadingOlder: false, error: null, olderError: null, newIds: [], currentId: null });
     }
 
     /**
-     * The panel closed: any page still on its way is dropped, and the rows stay, so the panel
-     * leaving keeps drawing them until it is gone rather than saying there are no mentions.
+     * The panel closed: any page still on its way is dropped, and what the inbox holds stays, its
+     * loading included, so the panel leaving keeps drawing what it drew until it is gone rather
+     * than saying there are no mentions. The next opening starts from nothing.
      */
     function closeInbox(): void {
         isInboxShown = false;
         inboxGeneration++;
-        Object.assign(state.inbox, { isLoading: false, isRefreshing: false, isLoadingOlder: false });
     }
 
     // #endregion The inbox

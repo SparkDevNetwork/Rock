@@ -994,12 +994,12 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
             await fetchList("more");
         },
 
-        // The rows stay, so the panel leaving keeps drawing them until it is gone.
+        // What the list holds stays, its loading included, so the panel leaving keeps drawing what
+        // it drew until it is gone rather than saying there are no threads. The page on its way is
+        // dropped, and the next opening's fetch sets the loading afresh.
         closeList: (): void => {
             isListShown = false;
             listFetch++;
-            state.list.isLoading = false;
-            state.list.isRefreshing = false;
         },
 
         follow: async (rootId: number, isFollowing: boolean): Promise<boolean> => {
