@@ -43,6 +43,7 @@
                         class="chat-rx"
                         :class="{ 'is-popping': popping.has(reaction.code) }"
                         data-testid="reaction-chip"
+                        data-long-press
                         :data-code="reaction.code"
                         :aria-pressed="reaction.mine ? 'true' : 'false'"
                         :aria-label="chipLabel(reaction)"
@@ -52,11 +53,7 @@
                         :aria-disabled="isPreviewing ? 'true' : undefined"
                         @pointerenter="onChipEnter($event, reaction)"
                         @pointerleave="onPointerLeave"
-                        @pointerdown="onChipPointerDown($event, reaction.code)"
-                        @pointermove="onChipPointerMove"
-                        @pointerup="cancelLongPress"
-                        @pointercancel="cancelLongPress"
-                        @contextmenu="onChipContextMenu"
+                        @pointerdown="onPointerDown"
                         @focus="onChipFocus($event, reaction)"
                         @blur="onBlur"
                         @keydown="onAnchorKeydown"
@@ -288,16 +285,16 @@
 </style>
 
 <script setup lang="ts">
-    import { computed, nextTick, onBeforeUnmount, PropType, ref, TransitionGroup, useSlots, watch } from "vue";
+    import { computed, nextTick, PropType, ref, TransitionGroup, useSlots, watch } from "vue";
     import { newGuid } from "@Obsidian/Utility/guid";
     import Icon from "../ui/icon.partial.obs";
     import ReactionCard from "./reactionCard.partial.obs";
     import ReactorsList from "./reactorsList.partial.obs";
-    import { tokenDuration } from "../ui/brand.partial";
     import { preloadPhotos } from "../ui/face.partial";
     import { focusQuietly } from "../ui/focusTrap.partial";
     import { overlayHostOf, useTooltip } from "../ui/tooltip.partial";
     import { isHoverless } from "../ui/viewport.partial";
+    import { useLongPress } from "../composables/useLongPress.partial";
     import { ReactionReader, whoReactedLine } from "../composables/useReactions.partial";
     import { useChatSession } from "../chatSession.partial";
     import { Reaction, ReactorsCursor, ReactorsPage, TimelineMessage } from "../types.partial";
@@ -367,9 +364,6 @@
 
     const uid = `chat-rx-${newGuid()}`;
 
-    /** How far, in pixels, a finger may move before a press stops being a long press. */
-    const longPressSlopPx = 8;
-
     const addElement = ref<HTMLButtonElement>();
     const rowElement = ref<HTMLElement>();
     const summaryElement = ref<HTMLButtonElement>();
@@ -395,12 +389,6 @@
     const listOpenedOn = ref("");
     const isListMounted = ref(false);
     const listHost = ref<HTMLElement | null>(null);
-
-    /** A touch held on a chip, which opens the full list once it has been held long enough. */
-    let longPress: { timer: number, x: number, y: number } | null = null;
-
-    /** Set once a long press opened the list, so the click its release makes does not also toggle. */
-    let isClickSwallowed = false;
 
     // Chips animate only on a change seen here, never as a page draws them.
     const popping = ref(new Set<string>());
@@ -465,53 +453,8 @@
         onFocus();
     }
 
-    function onChipPointerDown(event: PointerEvent, code: string): void {
-        onPointerDown();
-        cancelLongPress();
-        isClickSwallowed = false;
-
-        if (event.pointerType === "mouse") {
-            return;
-        }
-
-        const chip = event.currentTarget as HTMLElement;
-        const holdMs = tokenDuration(chip, "--chat-d-long-press", 450);
-        longPress = {
-            x: event.clientX,
-            y: event.clientY,
-            timer: window.setTimeout(() => {
-                longPress = null;
-                isClickSwallowed = true;
-
-                // The list gives focus back to the chip it opened from, so the chip holds it first,
-                // quietly, as See all does: not the composer, which would raise a phone's keyboard.
-                focusQuietly(chip);
-                openList(code, chip);
-            }, holdMs)
-        };
-    }
-
-    function onChipPointerMove(event: PointerEvent): void {
-        if (longPress && Math.hypot(event.clientX - longPress.x, event.clientY - longPress.y) > longPressSlopPx) {
-            cancelLongPress();
-        }
-    }
-
-    /** A held chip opens the list, never the phone's own menu. */
-    function onChipContextMenu(event: Event): void {
-        if (longPress || isClickSwallowed) {
-            event.preventDefault();
-        }
-    }
-
     function onChipClick(code: string): void {
         hideTip();
-
-        // The release of a long press that opened the list is not a press of the chip.
-        if (isClickSwallowed) {
-            isClickSwallowed = false;
-            return;
-        }
 
         // A previewer's chip says it cannot be pressed; this holds a press to that.
         if (props.isPreviewing) {
@@ -593,13 +536,6 @@
         listCode.value = code;
     }
 
-    function cancelLongPress(): void {
-        if (longPress) {
-            window.clearTimeout(longPress.timer);
-            longPress = null;
-        }
-    }
-
     /**
      * A thread pill alone keeps the row, so a tombstone's thread can still be opened. Read on each
      * draw rather than held, since whether the row is handed a pill is not something Vue tracks.
@@ -663,10 +599,25 @@
 
     // #endregion Watchers
 
-    // #region Lifecycle Hooks
+    /*
+        A chip held opens who reacted, by any pointer but a mouse, which rests on the chip for its
+        card instead, on every layout: a touch laptop at a desktop's width keeps the list. The list
+        gives focus back to the chip it opened from, so the chip holds it first, quietly, as See all
+        does: not the composer, which would raise a phone's keyboard. A chip held as its row goes,
+        as when the feed switches room, opens nothing.
+    */
+    useLongPress(rowElement, {
+        isOn: () => true,
+        isPointerTaken: event => event.isPrimary !== false && event.pointerType !== "mouse",
+        heldOf: target => target.closest(".chat-rx[data-code]"),
+        onPress: target => {
+            const chip = target.closest<HTMLElement>(".chat-rx[data-code]");
+            const code = chip?.dataset.code;
+            if (chip && code) {
+                focusQuietly(chip);
+                openList(code, chip);
+            }
+        }
+    });
 
-    // A chip held as its row goes, as when the feed switches room, opens nothing on a row that is gone.
-    onBeforeUnmount(cancelLongPress);
-
-    // #endregion Lifecycle Hooks
 </script>
