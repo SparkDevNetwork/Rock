@@ -1049,6 +1049,14 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
                 // Cancelling on Edit.  Return to Details
                 WorkflowTypeService service = new WorkflowTypeService( RockApp.Current.CreateRockContext() );
                 WorkflowType item = service.Get( int.Parse( hfWorkflowTypeId.Value ) );
+
+                // The workflow type id comes from a hidden field, so re-check view rights.
+                if ( item == null || !CanViewWorkflowType( item ) )
+                {
+                    ShowDetail();
+                    return;
+                }
+
                 ShowReadonlyDetails( item );
             }
         }
@@ -1481,10 +1489,25 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
         }
 
         /// <summary>
+        /// Determines whether the current person can view the workflow type, including system workflow types.
+        /// </summary>
+        /// <param name="workflowType">The workflow type.</param>
+        /// <returns><c>true</c> if the current person can view the workflow type; otherwise, <c>false</c>.</returns>
+        private bool CanViewWorkflowType( WorkflowType workflowType )
+        {
+            return IsUserAuthorized( Authorization.EDIT )
+                || workflowType.IsAuthorized( Authorization.VIEW, CurrentPerson )
+                || workflowType.IsAuthorized( Authorization.EDIT, CurrentPerson )
+                || workflowType.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
+        }
+
+        /// <summary>
         /// Shows the detail.
         /// </summary>
         private void ShowDetail()
         {
+            nbNotAuthorizedToView.Visible = false;
+
             var rockContext = RockApp.Current.CreateRockContext();
             var disablePredictableIds = PageCache.Layout.Site.DisablePredictableIds;
 
@@ -1523,7 +1546,17 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
                 // hide the panel drawer that show created and last modified dates
                 pdAuditDetails.Visible = false;
             }
-            else
+
+            if ( workflowType.Id > 0 && !CanViewWorkflowType( workflowType ) )
+            {
+                pnlDetails.Visible = false;
+                nbNotAuthorizedToView.Heading = "Information";
+                nbNotAuthorizedToView.Text = "You are not authorized to view this workflow type.";
+                nbNotAuthorizedToView.Visible = true;
+                return;
+            }
+
+            if ( workflowType.Id > 0 )
             {
                 pdAuditDetails.SetEntity( workflowType, ResolveRockUrl( "~" ) );
             }
