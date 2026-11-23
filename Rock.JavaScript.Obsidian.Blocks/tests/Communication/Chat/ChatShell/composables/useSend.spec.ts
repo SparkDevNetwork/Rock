@@ -18,7 +18,7 @@
 // keeps its text so it can be sent again.
 import { createSender, isComposerOpen, mediaArgs, useSlowSend, isInConversation, isOwnedByConversation, JoinResult, lockedReason, newLocalId, sendFailure, SendResult, SenderDependencies, textAfterSend } from "../../../../../src/Communication/Chat/ChatShell/composables/useSend.partial";
 import { mount } from "@vue/test-utils";
-import { defineComponent, reactive } from "vue";
+import { computed, defineComponent, reactive, ref } from "vue";
 import { sendingQuietMs } from "../../../../../src/Communication/Chat/ChatShell/feedLayout.partial";
 import { createTimelines } from "../../../../../src/Communication/Chat/ChatShell/composables/useHistory.partial";
 import { platformMask } from "../../../../../src/Communication/Chat/ChatShell/heldMessage.partial";
@@ -1206,6 +1206,29 @@ describe("a failed send's reason", () => {
         await sender.send(channel, "hello");
 
         expect(sender.pending(channel)[0].reason).toEqual({ alone: "You're offline. Try again when you're back.", besideRetry: "You're offline.", canRetry: true });
+    });
+
+    // The words follow the connection now, not as it was at the failure: offline words only
+    // while offline, and once back the plain failure, which offers Try again. Nothing resends
+    // by itself, since a send the person did not ask for again could surprise them.
+    test("nothing reached while offline says offline only while the connection stays lost", async () => {
+        const connection = ref<"lost" | "healthy">("lost");
+        const { sender, sent } = await setup([{ ok: false, error: { code: "rpc.transport", severity: "failed" } }], () => connection.value === "lost");
+        await sender.send(channel, "hello");
+        const strip = computed(() => sendFailure(sender.pending(channel)));
+        const marker = computed(() => sender.pending(channel)[0].reason?.alone ?? null);
+        expect(strip.value?.reason?.besideRetry).toBe("You're offline.");
+        expect(marker.value).toBe("You're offline. Try again when you're back.");
+
+        connection.value = "healthy";
+
+        expect(strip.value).toEqual({ count: 1, reason: null, canRetry: true, localIds: [sender.pending(channel)[0].localId] });
+        expect(marker.value).toBeNull();
+        expect(sent).toHaveLength(1);
+
+        connection.value = "lost";
+
+        expect(strip.value?.reason?.besideRetry).toBe("You're offline.");
     });
 
     test("nothing reached while the connection holds is not called offline", async () => {
