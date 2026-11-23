@@ -278,12 +278,14 @@ export function createTabReads(options: TabReadsOptions): TabReads {
             // the word's own key names
             /* eslint-disable-next-line @typescript-eslint/naming-convention */
             const read = event.data as { person_alias_guid?: unknown, channel_id?: unknown, read_cursor?: unknown } | null;
+            // A position is a message id: NaN or Infinity would pin the row read, since a row's
+            // position only moves forward, until the sidebar is read again.
             if (typeof read?.person_alias_guid !== "string" || read.person_alias_guid.toLowerCase() !== person
-                || typeof read.channel_id !== "string" || typeof read.read_cursor !== "number") {
+                || typeof read.channel_id !== "string" || !Number.isSafeInteger(read.read_cursor) || (read.read_cursor as number) <= 0) {
                 return;
             }
 
-            options.onRead(read.channel_id, read.read_cursor);
+            options.onRead(read.channel_id, read.read_cursor as number);
         };
     }
 
@@ -291,10 +293,17 @@ export function createTabReads(options: TabReadsOptions): TabReads {
 
     return {
         tell: (channelId: string, readCursor: number): void => {
-            if (!isClosed) {
+            if (isClosed) {
+                return;
+            }
+            try {
                 // the word's own key names, as the platform's read signal spells them
                 /* eslint-disable-next-line @typescript-eslint/naming-convention */
                 line?.postMessage({ person_alias_guid: person, channel_id: channelId, read_cursor: readCursor });
+            }
+            catch {
+                // A line the browser closed, as a page being torn down can, throws InvalidStateError;
+                // the read is lost to the other tabs, who catch up on their next save or sidebar read.
             }
         },
 
