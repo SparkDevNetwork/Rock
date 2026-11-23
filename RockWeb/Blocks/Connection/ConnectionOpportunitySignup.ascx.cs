@@ -25,6 +25,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -244,6 +245,20 @@ namespace RockWeb.Blocks.Connection
                     .Where( o => o.Id == _opportunityId )
                     .FirstOrDefault();
 
+                if ( opportunity == null || !CanViewOpportunity( opportunity ) )
+                {
+                    pnlSignup.Visible = false;
+                    ShowError( "Sorry", "The requested opportunity does not exist." );
+                    return;
+                }
+
+                if ( !( opportunity.IsActive && opportunity.ConnectionType.IsActive ) )
+                {
+                    pnlSignup.Visible = false;
+                    ShowError( "Inactive", "The opportunity is not currently active." );
+                    return;
+                }
+
                 int defaultStatusId = opportunity.ConnectionType.ConnectionStatuses
                     .Where( s => s.IsDefault )
                     .Select( s => s.Id )
@@ -397,7 +412,7 @@ namespace RockWeb.Blocks.Connection
             using ( var rockContext = new RockContext() )
             {
                 var opportunity = new ConnectionOpportunityService( rockContext ).Get( opportunityId );
-                if ( opportunity == null )
+                if ( opportunity == null || !CanViewOpportunity( opportunity ) )
                 {
                     pnlSignup.Visible = false;
                     ShowError( "Sorry", "The requested opportunity does not exist." );
@@ -566,6 +581,30 @@ namespace RockWeb.Blocks.Connection
                 }
 
             }
+        }
+
+        /// <summary>
+        /// Determines whether the current person may use the specified opportunity in this block.
+        /// </summary>
+        /// <param name="opportunity">The opportunity.</param>
+        /// <returns><c>true</c> if the opportunity can be shown and signed up for; otherwise <c>false</c>.</returns>
+        private bool CanViewOpportunity( ConnectionOpportunity opportunity )
+        {
+            /*
+                11/23/2026 - MSE
+
+                An opportunity chosen in the block settings was picked by an administrator,
+                so it stays trusted. One named in the page address can be any opportunity,
+                so the person must be allowed to view it.
+
+                Reason: Do not show or accept signups for opportunities the person cannot view.
+            */
+            if ( GetAttributeValue( AttributeKey.ConnectionOpportunity ).AsGuidOrNull().HasValue )
+            {
+                return true;
+            }
+
+            return opportunity.IsAuthorized( Authorization.VIEW, CurrentPerson );
         }
 
         private void ShowError( string title, string message )

@@ -23,6 +23,7 @@ using System.Linq;
 using Rock.Attribute;
 using Rock.Enums.Blocks.Connection.ConnectionOpportunitySignup;
 using Rock.Model;
+using Rock.Security;
 using Rock.ViewModels.Blocks.Connection.ConnectionOpportunitySignup;
 using Rock.ViewModels.Controls;
 using Rock.ViewModels.Utility;
@@ -394,7 +395,18 @@ namespace Rock.Blocks.Connection
             }
             else
             {
-                return qry.FirstOrDefault( o => o.Id == opportunityId.Value );
+                /*
+                    11/23/2026 - MSE
+
+                    An opportunity chosen in the block settings was picked by an administrator,
+                    so it stays trusted. One named in the page address can be any opportunity,
+                    so the person must be allowed to view it.
+
+                    Reason: Do not show or accept signups for opportunities the person cannot view.
+                */
+                var opportunity = qry.FirstOrDefault( o => o.Id == opportunityId.Value );
+
+                return opportunity != null && opportunity.IsAuthorized( Authorization.VIEW, GetCurrentPerson() ) ? opportunity : null;
             }
         }
 
