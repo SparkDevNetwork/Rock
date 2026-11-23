@@ -326,10 +326,17 @@ export type RowMotion = {
 
     /**
      * The message was heard arriving live, or grew out of its sender's typing, rather than sent
-     * here or loaded with a page; a row greets such news once as it is drawn.
+     * here or loaded with a page; the first row drawn for it greets such news, once per page life.
      */
     isArrivedLive: Readonly<Ref<boolean>>;
 };
+
+/**
+ * The messages whose live arrival a drawn row has greeted, by row key, per provided reader. Kept
+ * beside the reader rather than in a record: a record ends with its shell, while the page provides
+ * one reader for its life, so a message greets once per page life, across a shell built again too.
+ */
+const greetedBy = new WeakMap<MotionReader, Set<string>>();
 
 /**
  * A row's motion from the shell's record, from the moment it mounts: only an event recorded after
@@ -373,9 +380,26 @@ export function useRowMotion(key: () => string | null): RowMotion {
         }
     });
 
+    // Claimed on this row's first read of a live arrival and kept, so the row reads the same
+    // answer each time and another row drawn for the same message later reads no.
+    let greeted = greetedBy.get(motion);
+    if (!greeted) {
+        greeted = new Set<string>();
+        greetedBy.set(motion, greeted);
+    }
+    const claimed = greeted;
+    let greets: boolean | null = null;
     const isArrivedLive = computed((): boolean => {
+        const rowAt = key();
         const how = events()?.arrival?.how;
-        return how === "live" || how === "handoff";
+        if (!rowAt || (how !== "live" && how !== "handoff")) {
+            return false;
+        }
+        if (greets === null) {
+            greets = !claimed.has(rowAt);
+            claimed.add(rowAt);
+        }
+        return greets;
     });
 
     return { isCrossfading, isEditedNow, isThreadStartedHere, reaction, isArrivedLive };
