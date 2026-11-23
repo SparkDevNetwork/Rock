@@ -53,6 +53,19 @@ namespace Rock.ViewModels.Blocks.AI.AIAgentDetail
         public List<Guid> EnabledTools { get; set; }
 
         /// <summary>
+        /// The total number of tools the skill provides. This is the same set
+        /// of tools that can be picked when editing the skill.
+        /// </summary>
+        public int AvailableToolCount { get; set; }
+
+        /// <summary>
+        /// The number of the skill's tools that are enabled for this agent.
+        /// Only tools that still exist on the skill are counted, so this will
+        /// never be greater than the available tool count.
+        /// </summary>
+        public int EnabledToolCount { get; set; }
+
+        /// <summary>
         /// The configuration values for the skill.
         /// </summary>
         public Dictionary<string, string> ConfigurationValues { get; set; }

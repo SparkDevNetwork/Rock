@@ -305,10 +305,12 @@ namespace Rock.Blocks.AI
                 Description = agentSkill.AISkill.Description
             };
 
+            var settings = agentSkill.GetAdditionalSettings<AgentSkillSettings>();
+
+            SetToolCounts( bag, agentSkill.AISkill.AISkillTools, settings.EnabledTools );
+
             if ( isEditing )
             {
-                var settings = agentSkill.GetAdditionalSettings<AgentSkillSettings>();
-
                 bag.EnabledTools = settings.EnabledTools;
 
                 if ( agentSkill.AISkill.CodeEntityTypeId.HasValue )
@@ -324,6 +326,37 @@ namespace Rock.Blocks.AI
             }
 
             return bag;
+        }
+
+        /// <summary>
+        /// Sets the available and enabled tool counts on the skill bag so the
+        /// skill grid can show how many of the skill's tools the agent uses.
+        /// </summary>
+        /// <param name="bag">The bag that will have its tool counts set.</param>
+        /// <param name="availableTools">The tools defined on the skill. This is the same list shown when editing the skill.</param>
+        /// <param name="enabledToolGuids">The unique identifiers of the tools enabled for the agent.</param>
+        private static void SetToolCounts( AgentSkillBag bag, IEnumerable<AISkillTool> availableTools, List<Guid> enabledToolGuids )
+        {
+            var availableToolGuids = availableTools?
+                .Where( t => t != null )
+                .Select( t => t.Guid )
+                .ToList() ?? new List<Guid>();
+
+            bag.AvailableToolCount = availableToolGuids.Count;
+
+            /*
+                11/23/26 - CLAUDE
+
+                The enabled tool list can hold the Guid of a tool that was later
+                removed from the skill. Only count enabled tools that still exist
+                on the skill so the badge never shows more enabled tools than the
+                skill provides.
+
+                Reason: Stale tool Guids must not inflate the enabled count.
+            */
+            bag.EnabledToolCount = enabledToolGuids == null
+                ? 0
+                : availableToolGuids.Count( availableGuid => enabledToolGuids.Contains( availableGuid ) );
         }
 
         /// <inheritdoc/>

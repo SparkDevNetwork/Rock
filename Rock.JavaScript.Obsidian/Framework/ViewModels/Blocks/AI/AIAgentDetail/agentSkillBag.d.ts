@@ -28,11 +28,24 @@ import { Guid } from "@Obsidian/Types";
  * Detail block.
  */
 export type AgentSkillBag = {
+    /**
+     * The total number of tools the skill provides. This is the same set
+     * of tools that can be picked when editing the skill.
+     */
+    availableToolCount: number;
+
     /** The configuration values for the skill. */
     configurationValues?: Record<string, string> | null;
 
     /** The user-friendly description of the skill being used by the agent. */
     description?: string | null;
+
+    /**
+     * The number of the skill's tools that are enabled for this agent.
+     * Only tools that still exist on the skill are counted, so this will
+     * never be greater than the available tool count.
+     */
+    enabledToolCount: number;
 
     /** The list of tools that are enabled for the skill to use. */
     enabledTools?: Guid[] | null;

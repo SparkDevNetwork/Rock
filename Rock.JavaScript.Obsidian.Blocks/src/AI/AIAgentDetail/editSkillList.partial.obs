@@ -24,6 +24,18 @@
                 </template>
             </TextColumn>
 
+            <Column name="tools"
+                    title="Tools"
+                    width="120px">
+                <template #format="{ row }">
+                    <span v-if="isToolCountShown(row)"
+                          :class="getToolCountLabelClass(row)"
+                          :title="`${row.enabledToolCount} of ${row.availableToolCount} tools enabled`">
+                        {{ row.enabledToolCount }} of {{ row.availableToolCount }}
+                    </span>
+                </template>
+            </Column>
+
             <EditColumn :rowDisabled="r => !!r.isSystem" @click="onEditSkill" />
 
             <DeleteColumn disableConfirmation @click="onRemoveSkill" />
@@ -71,7 +83,7 @@
     import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import DynamicComponent from "@Obsidian/Controls/dynamicComponent.obs";
-    import Grid, { DeleteColumn, EditColumn, TextColumn } from "@Obsidian/Controls/grid";
+    import Grid, { Column, DeleteColumn, EditColumn, TextColumn } from "@Obsidian/Controls/grid";
     import Modal from "@Obsidian/Controls/modal.obs";
     import StaticFormControl from "@Obsidian/Controls/staticFormControl.obs";
     import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
@@ -142,7 +154,9 @@
             description: skill.category,
             isSystem: true,
             name: skill.text,
-            skillGuid: skill.value!
+            skillGuid: skill.value!,
+            availableToolCount: 0,
+            enabledToolCount: 0
         }));
 
         const rows = [...systemSkills, ...skills.value];
@@ -169,6 +183,44 @@
     // #endregion
 
     // #region Functions
+
+    /**
+     * Determines if the tool count badge should be shown for a skill row.
+     * System skills always use all of their tools and cannot be edited, and
+     * a skill with no tools has nothing to count, so neither shows a badge.
+     *
+     * @param row The grid row that represents the skill.
+     *
+     * @returns `true` if the tool count badge should be shown.
+     */
+    function isToolCountShown(row: Record<string, unknown>): boolean {
+        return !row.isSystem && typeof row.availableToolCount === "number" && row.availableToolCount > 0;
+    }
+
+    /**
+     * Gets the CSS class for the tool count badge of a skill row. A skill with
+     * all of its tools enabled is shown as success, one with only some
+     * enabled as a warning, and one with none enabled as danger because the
+     * agent will not be able to use the skill at all.
+     *
+     * @param row The grid row that represents the skill.
+     *
+     * @returns The CSS class to apply to the badge.
+     */
+    function getToolCountLabelClass(row: Record<string, unknown>): string {
+        const enabledToolCount = row.enabledToolCount as number;
+        const availableToolCount = row.availableToolCount as number;
+
+        if (enabledToolCount >= availableToolCount) {
+            return "label label-success";
+        }
+        else if (enabledToolCount > 0) {
+            return "label label-warning";
+        }
+        else {
+            return "label label-danger";
+        }
+    }
 
     // #endregion
 
