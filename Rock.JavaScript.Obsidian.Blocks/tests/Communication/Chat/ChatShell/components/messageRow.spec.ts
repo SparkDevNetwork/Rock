@@ -1473,6 +1473,22 @@ describe("the phone's action sheet", () => {
         expect(root(draw({ message: message() })).getAttribute("aria-haspopup")).toBeNull();
     });
 
+    // A long press is the message's own on a touch screen, so a link or photo under the finger is
+    // never lifted to be dragged away; a pointer may still drag one out on a wide screen.
+    test("a touch row cancels the drag of a link or photo in it, and a pointer row lets it go", () => {
+        const pieces = [{ type: "link", text: "a.org", url: "https://a.org" }];
+        const dragFrom = (w: VueWrapper): boolean => {
+            const link = root(w).querySelector("a") as HTMLElement;
+            const drag = new Event("dragstart", { bubbles: true, cancelable: true });
+            link.dispatchEvent(drag);
+            return drag.defaultPrevented;
+        };
+
+        expect(dragFrom(onPhone({ message: message({ pieces } as Partial<TimelineMessage>) }))).toBe(true);
+        expect(dragFrom(draw({ message: message({ pieces } as Partial<TimelineMessage>) }))).toBe(false);
+        expect(rowStyles()).not.toMatch(/user-drag/);
+    });
+
     // A tap focuses what it lands on; on a touch screen that lights nothing, neither the row's
     // tint nor, in a channel, its gutter time, both of which read a focus inside the row.
     test("a focus inside a touch row lights no tint", () => {
