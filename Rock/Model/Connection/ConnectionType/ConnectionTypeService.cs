@@ -702,13 +702,19 @@ namespace Rock.Model
             var connectionOpportunityGuid = options?.ConnectionOpportunityGuid;
             var connectorGuid = options?.ConnectorPersonAliasGuid;
 
+            // EF cannot compare a list to null in SQL, so use a flag and a non-null list.
+            var isFilteredByOpportunityIds = options?.ConnectionOpportunityIds != null;
+            var opportunityIds = options?.ConnectionOpportunityIds ?? new List<int>();
+
             var query =
                 from cr in connectionTypeQuery
                     .SelectMany( ct =>
                         ct.ConnectionOpportunities
                             .Where( co =>
-                                !connectionOpportunityGuid.HasValue
-                                || co.Guid == connectionOpportunityGuid.Value
+                                ( !connectionOpportunityGuid.HasValue
+                                    || co.Guid == connectionOpportunityGuid.Value )
+                                && ( !isFilteredByOpportunityIds
+                                    || opportunityIds.Contains( co.Id ) )
                             )
                             .SelectMany( co => co.ConnectionRequests )
                             .Where( cr =>
