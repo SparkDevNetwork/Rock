@@ -97,6 +97,8 @@ namespace RockWeb.Blocks.Groups
 
             var _commonMergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
 
+            groups = groups.Where( g => g.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ) ).ToList();
+
             if ( groups.Count == 1 )
             {
                 var mergeFields = new Dictionary<string, object>(_commonMergeFields)
