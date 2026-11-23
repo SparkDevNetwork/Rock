@@ -162,6 +162,11 @@ namespace RockWeb.Blocks.Connection
                 campaignConnection = CampaignConnectionHelper.GetCampaignConfiguration( campaignConnectionGuid );
             }
 
+            // Each call reads the stored settings again, so this is a separate copy of the stored values.
+            var previous = campaignConnectionGuid == Guid.Empty
+                ? new CampaignItem()
+                : ( CampaignConnectionHelper.GetCampaignConfiguration( campaignConnectionGuid ) ?? new CampaignItem() );
+
             campaignConnection.Name = tbName.Text;
             campaignConnection.IsActive = cbIsActive.Checked;
             campaignConnection.ConnectionTypeGuid = ddlConnectionType.SelectedValue.AsGuid();
@@ -181,6 +186,15 @@ namespace RockWeb.Blocks.Connection
             else
             {
                 campaignConnection.OptOutGroupGuid = null;
+            }
+
+            // The person may only point the campaign at records they could select themselves.
+            if ( !CampaignConnectionHelper.ValidateCampaignReferences( previous, campaignConnection, CurrentPerson, out var referenceError ) )
+            {
+                nbEditModeMessage.NotificationBoxType = Rock.Web.UI.Controls.NotificationBoxType.Danger;
+                nbEditModeMessage.Text = referenceError;
+                nbEditModeMessage.Visible = true;
+                return;
             }
 
             campaignConnection.DailyLimitAssigned = nbDailyLimit.Text.AsIntegerOrNull();
