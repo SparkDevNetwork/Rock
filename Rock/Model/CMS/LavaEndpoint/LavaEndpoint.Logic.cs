@@ -47,6 +47,12 @@ namespace Rock.Model
         }
 
         /// <inheritdoc/>
+        public override bool IsAllowedByDefault( string action )
+        {
+            return action != Authorization.VIEW && base.IsAllowedByDefault( action );
+        }
+
+        /// <inheritdoc/>
         public override bool IsAuthorized( string action, Person person )
         {
             // We have custom logic if we're trying to determine execute permission and we're configured
