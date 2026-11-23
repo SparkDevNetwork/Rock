@@ -325,9 +325,6 @@ type ThreadsPanelWiring = ReturnType<typeof threadsPanelWiring>;
 
 // #endregion Types
 
-/** Below this width the block shows one pane at a time, as on a phone. */
-const phoneWidth = 760;
-
 /** The design's pane slide, used when the sheet is not on the page. */
 const fallbackPaneSlideMs = 300;
 
@@ -335,6 +332,12 @@ const fallbackPaneSlideMs = 300;
 const fallbackSidePx = 296;
 const fallbackPanelPx = 392;
 const fallbackMainMinPx = 480;
+
+/**
+ * The conversation's least width beside the sidebar alone, used when the sheet does not name one:
+ * with the sidebar's 296px, a block from 660px wide draws two columns, as a tablet held upright does.
+ */
+const fallbackConversationMinPx = 364;
 
 /**
  * Creates the block's frame. Its watches of the open conversation are made here in the order they
@@ -510,7 +513,7 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
     function onResize(entries: ResizeObserverEntry[]): void {
         const width = entries[entries.length - 1]?.contentRect.width;
         if (width !== undefined) {
-            isPhone.value = width < phoneWidth;
+            isPhone.value = width < phoneWidth();
             isNarrow.value = width < foldWidth();
         }
     }
@@ -933,6 +936,14 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
         else if (list === "members") {
             shell.value.members.close();
         }
+    }
+
+    /** The width under which the block shows one pane at a time: the sidebar and the conversation's least width, as the sheet names them. */
+    function phoneWidth(): number {
+        const root = rootElement.value;
+        return root
+            ? tokenLength(root, "--chat-w-side", fallbackSidePx) + tokenLength(root, "--chat-w-conversation-min", fallbackConversationMinPx)
+            : fallbackSidePx + fallbackConversationMinPx;
     }
 
     /** The width under which a panel folds the sidebar: the sidebar, the panel and the conversation's least width, as the sheet names them. */
