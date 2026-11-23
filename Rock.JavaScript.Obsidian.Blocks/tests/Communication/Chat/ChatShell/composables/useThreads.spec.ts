@@ -338,6 +338,23 @@ describe("the threads list is fetched", () => {
         expect(callsTo("chat_list_threads")).toHaveLength(1);
     });
 
+    // Closed while its first page was on its way, the panel slid out saying there were no
+    // threads: closing ended the loading, which drew the empty words for the leave. The leaving
+    // panel holds the look it had, and the dropped page never lands.
+    test("closed during its first load, the list keeps its loading look for the panel leaving, and the page never lands", async () => {
+        const { threads, answers } = await setup();
+        const page = deferred<CallResult>();
+        answers.chat_list_threads = [page];
+        const opening = threads.openList(channel);
+
+        threads.closeList();
+        page.resolve(listAnswer([listRow(40)]));
+        await opening;
+
+        expect(threads.state.list.isLoading).toBe(true);
+        expect(threads.state.list.rows).toEqual([]);
+    });
+
     // A panel opened draws its rows entering as its first page lands; rows held from before would
     // be drawn at once and then played in again under the reader, so an opening is always the first.
     test("when the panel opens again, afresh as at its first opening: nothing held is drawn until the first page lands", async () => {
