@@ -24,7 +24,7 @@ import { defineComponent, h, nextTick, ref } from "vue";
 import Button from "../../../../../src/Communication/Chat/ChatShell/ui/button.partial.obs";
 import Dialog from "../../../../../src/Communication/Chat/ChatShell/ui/dialog.partial.obs";
 import SurfacePage from "../../../../../src/Communication/Chat/ChatShell/ui/surfacePage.partial.obs";
-import { providedSession } from "../sessionShapes";
+import { providedSession, recordingBackStack } from "../sessionShapes";
 import { shellFolder } from "../statusStore";
 import { ruleOf, styleOf } from "./partStyle";
 import { panelMotion, standInHeights } from "./surfaceMotion";
@@ -277,5 +277,188 @@ describe("a panel turned into another page", () => {
         expect(blocked.isConnected && blocked.classList.contains("is-leaving")).toBe(true);
         expect([blocked.style.top, blocked.style.maxHeight, blocked.scrollTop]).toEqual(["382px", "300px", 32]);
         expect([first.style.top, first.style.maxHeight]).toEqual(["", ""]);
+    });
+});
+
+// On a phone every dialog, a confirm, a panel or the photo viewer, holds one history entry while
+// open, so the system Back closes it as its Cancel or X would.
+describe("a dialog on a phone's Back", () => {
+    test.each([
+        ["a confirm", { confirmLabel: "Delete", isDestructive: true }],
+        ["a panel drawn as a sheet", { isPanel: true, sheet: "phone" }],
+        ["the photo viewer", { isPanel: true, isMedia: true }]
+    ])("%s holds one entry while open, and Back closes it", async (_what, props) => {
+        const recorded = recordingBackStack();
+        const isOpen = ref(true);
+        const Host = defineComponent({
+            setup() {
+                return () => h(Dialog, { isOpen: isOpen.value, title: "Photo", ...props, onClose: () => {
+                    isOpen.value = false;
+                } });
+            }
+        });
+        wrapper = mount(Host, { global: { provide: { ...providedSession({ isPhone: true, backStack: recorded.stack }) } }, attachTo: document.body });
+        await nextTick();
+        expect(recorded.held).toHaveLength(1);
+
+        recorded.back();
+        await nextTick();
+
+        expect(isOpen.value).toBe(false);
+        expect(recorded.held).toHaveLength(0);
+    });
+});
+
+// A phone's panel drawn as a sheet is held at the frame's bottom, so a change of its content's
+// height within a page, a list loading, an ask opening or a row leaving, moves its top edge and
+// head. The sheet glides its edge with the content's own move instead of jumping; a frame change,
+// as a keyboard rising, changes the height at once.
+describe("a panel drawn as a sheet following its content's height", () => {
+    type Observed = { callback: ResizeObserverCallback, targets: Element[] };
+    let observers: Observed[] = [];
+    const originalObserver = (globalThis as { ResizeObserver?: unknown }).ResizeObserver;
+
+    beforeEach(() => {
+        observers = [];
+        (globalThis as { ResizeObserver?: unknown }).ResizeObserver = class {
+            private readonly entry: Observed;
+            constructor(callback: ResizeObserverCallback) {
+                this.entry = { callback, targets: [] };
+                observers.push(this.entry);
+            }
+            observe(target: Element): void {
+                this.entry.targets.push(target);
+            }
+            unobserve(target: Element): void {
+                this.entry.targets = this.entry.targets.filter(t => t !== target);
+            }
+            disconnect(): void {
+                this.entry.targets = [];
+            }
+        };
+    });
+
+    afterEach(() => {
+        (globalThis as { ResizeObserver?: unknown }).ResizeObserver = originalObserver;
+    });
+
+    /** Tells the observers a box changed size, as the browser's layout would. */
+    function resized(target: Element, height: number): void {
+        observers.filter(o => o.targets.includes(target)).forEach(o => o.callback([{ target, contentRect: { height } as DOMRectReadOnly } as ResizeObserverEntry], {} as ResizeObserver));
+    }
+
+    async function drawSheet(isPhone: boolean): Promise<{ dialog: HTMLElement, content: HTMLElement | null, heights: ReturnType<typeof standInHeights>, setHeight: (h: number) => void }> {
+        const heights = standInHeights();
+        let height = 300;
+        wrapper = mount(Dialog, {
+            props: { isOpen: true, title: "Chat settings", isPanel: true, sheet: "phone" },
+            slots: { default: () => h("div", { "data-testid": "rows" }, "rows") },
+            global: { provide: { ...providedSession({ isPhone }) } },
+            attachTo: document.body
+        });
+        await nextTick();
+        await nextTick();
+        const dialog = wrapper.get("[data-testid='dialog']").element as HTMLElement;
+        heights.size(dialog, () => height);
+        dialog.style.setProperty("--chat-d-move", "240ms");
+        const content = document.querySelector<HTMLElement>("[data-testid='rows']")?.parentElement ?? null;
+        return { dialog, content, heights, setHeight: h => {
+            height = h;
+        } };
+    }
+
+    test("glides from its old height to its content's new one, over the content's own move", async () => {
+        const { dialog, content, heights, setHeight } = await drawSheet(true);
+        try {
+            resized(dialog.parentElement as Element, 800);
+            setHeight(360);
+            resized(content as Element, 300);
+
+            expect(heights.played).toEqual([expect.objectContaining({ element: dialog, from: "300px", to: "360px", duration: 240 })]);
+        }
+        finally {
+            heights.restore();
+        }
+    });
+
+    test("changes at once for a frame change, and the next content change glides from there", async () => {
+        const { dialog, content, heights, setHeight } = await drawSheet(true);
+        try {
+            setHeight(250);
+            resized(dialog.parentElement as Element, 500);
+            expect(heights.played).toEqual([]);
+
+            setHeight(290);
+            resized(content as Element, 280);
+            expect(heights.played).toEqual([expect.objectContaining({ from: "250px", to: "290px" })]);
+        }
+        finally {
+            heights.restore();
+        }
+    });
+
+    test("changes at once under reduced motion", async () => {
+        const original = window.matchMedia;
+        window.matchMedia = ((query: string) => ({ media: query, matches: query === "(prefers-reduced-motion: reduce)" })) as unknown as typeof window.matchMedia;
+        const { dialog, content, heights, setHeight } = await drawSheet(true);
+        try {
+            resized(dialog.parentElement as Element, 800);
+            setHeight(360);
+            resized(content as Element, 300);
+
+            expect(heights.played).toEqual([]);
+        }
+        finally {
+            heights.restore();
+            window.matchMedia = original;
+        }
+    });
+
+    // A turn plays its own height change over the panel's duration; the content box's change it
+    // brings is that same change, so the sheet does not play it a second time.
+    test("plays a turn's own content change once", async () => {
+        const heights = standInHeights();
+        try {
+            const isBlocked = ref(false);
+            const Host = defineComponent({
+                setup() {
+                    return () => h(Dialog, { isOpen: true, title: "Chat settings", isPanel: true, placement: "top", sheet: "phone" }, {
+                        default: () => h("button", { "data-testid": "to-blocked", onClick: () => {
+                            isBlocked.value = true;
+                        } }, "Blocked people"),
+                        pages: () => h(SurfacePage, { isOpen: isBlocked.value, title: "Blocked people", onBack: () => {
+                            isBlocked.value = false;
+                        } }, () => h("p", "No one blocked"))
+                    });
+                }
+            });
+            wrapper = mount(Host, { global: { provide: { ...providedSession({ isPhone: true }) } }, attachTo: document.body });
+            await nextTick();
+            await nextTick();
+            const dialog = document.querySelector<HTMLElement>("[data-testid='dialog']") as HTMLElement;
+            const isTurned = (): boolean => !!dialog.querySelector("[data-testid='page-back']");
+            heights.size(dialog, () => isTurned() ? 180 : 520);
+            dialog.style.setProperty("--chat-d-move", "240ms");
+            const content = dialog.querySelector<HTMLElement>(".chat-dialog-pages") as HTMLElement;
+            content.getBoundingClientRect = (): DOMRect => ({ height: isTurned() ? 140 : 480 }) as DOMRect;
+            resized(dialog.parentElement as Element, 800);
+
+            document.querySelector<HTMLElement>("[data-testid='to-blocked']")?.click();
+            await nextTick();
+            await nextTick();
+            resized(content, 140);
+
+            expect(heights.played).toEqual([expect.objectContaining({ element: dialog, from: "520px", to: "180px", duration: panelMotion.duration })]);
+        }
+        finally {
+            heights.restore();
+        }
+    });
+
+    test("a desktop panel observes nothing", async () => {
+        const { heights } = await drawSheet(false);
+        heights.restore();
+
+        expect(observers.flatMap(o => o.targets)).toEqual([]);
     });
 });

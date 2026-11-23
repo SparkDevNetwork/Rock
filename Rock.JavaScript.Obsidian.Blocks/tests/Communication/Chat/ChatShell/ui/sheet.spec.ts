@@ -27,6 +27,7 @@ import Scrim from "../../../../../src/Communication/Chat/ChatShell/ui/scrim.part
 import SurfacePage from "../../../../../src/Communication/Chat/ChatShell/ui/surfacePage.partial.obs";
 import { provideAnnouncer, useAnnouncer } from "../../../../../src/Communication/Chat/ChatShell/ui/announcer.partial";
 import { SheetHeight } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
+import { recordingBackStack, providedSession } from "../sessionShapes";
 import { chatSheet } from "../statusStore";
 import { ruleOf, styleOf } from "./partStyle";
 import { panelMotion, standInHeights } from "./surfaceMotion";
@@ -511,5 +512,91 @@ describe("a sheet turned into another page", () => {
             expect(sheet.classList.contains("is-picker")).toBe(true);
             expect(heights.played).toEqual([]);
         });
+    });
+});
+
+// On a phone the sheet and each page turned in it hold one history entry while open, so the
+// system Back, the edge swipe or the on-screen arrow takes one step: the page, then the sheet.
+describe("a sheet on a phone's Back", () => {
+    let wrapper: VueWrapper | null = null;
+
+    afterEach(() => {
+        wrapper?.unmount();
+        wrapper = null;
+        document.body.innerHTML = "";
+    });
+
+    function phoneSheet(): { isGif: Ref<boolean>, isOpen: Ref<boolean>, recorded: ReturnType<typeof recordingBackStack> } {
+        const isGif = ref(false);
+        const isOpen = ref(true);
+        const recorded = recordingBackStack();
+        const Host = defineComponent({
+            setup() {
+                return () => h(Sheet, { isOpen: isOpen.value, label: "Add to your message", onDismiss: () => {
+                    isOpen.value = false;
+                } }, {
+                    default: () => [h("button", { "data-testid": "to-gif", onClick: () => {
+                        isGif.value = true;
+                    } }, "GIF")],
+                    pages: () => h(SurfacePage, { isOpen: isGif.value, title: "GIF", onBack: () => {
+                        isGif.value = false;
+                    } }, () => [h("input", { "data-testid": "gif-search" })])
+                });
+            }
+        });
+        wrapper = mount(Host, { attachTo: document.body, global: { provide: { ...providedSession({ isPhone: true, backStack: recorded.stack }) } } });
+        return { isGif, isOpen, recorded };
+    }
+
+    it("holds one entry while open, and Back closes it", async () => {
+        const { isOpen, recorded } = phoneSheet();
+        await settle();
+        expect(recorded.held).toHaveLength(1);
+
+        recorded.back();
+        await settle();
+
+        expect(isOpen.value).toBe(false);
+        expect(recorded.held).toHaveLength(0);
+    });
+
+    it("a turned page is one more entry, and Back returns one page with focus as its own Back gives it", async () => {
+        const { isGif, isOpen, recorded } = phoneSheet();
+        await settle();
+        const opener = find("to-gif") as HTMLElement;
+        opener.focus();
+        opener.click();
+        await settle();
+        expect(recorded.held).toHaveLength(2);
+
+        recorded.back();
+        await settle();
+
+        expect(isGif.value).toBe(false);
+        expect(isOpen.value).toBe(true);
+        expect(recorded.held).toHaveLength(1);
+        expect(document.activeElement).toBe(opener);
+    });
+
+    it("closing the sheet lets go of its pages' entries with its own", async () => {
+        const { isOpen, recorded } = phoneSheet();
+        await settle();
+        (find("to-gif") as HTMLElement).click();
+        await settle();
+
+        isOpen.value = false;
+        await settle();
+
+        expect(recorded.held).toHaveLength(0);
+    });
+
+    it("lets go of its entry when it leaves the page while open", async () => {
+        const { recorded } = phoneSheet();
+        await settle();
+
+        wrapper?.unmount();
+        wrapper = null;
+
+        expect(recorded.held).toHaveLength(0);
     });
 });

@@ -108,6 +108,8 @@ async function setup(): Promise<{
     const shell = {
         state: reactive({ hiddenPanes: { conversation: false, thread: false } }),
         timelines,
+        // no room known before sign-in, so the frame starts on the list
+        openingRoom: () => null,
         // a second select of the conversation still opening waits for that open, as the shell's does
         selectChannel: async (channelId: string): Promise<void> => {
             namedAtOpen.push(jump.landingMessageId.value);

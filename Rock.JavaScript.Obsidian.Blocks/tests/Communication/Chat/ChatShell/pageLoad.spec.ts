@@ -21,6 +21,7 @@ import { nextTick } from "vue";
 import {
     createPageReveal,
     faceGraceMs,
+    forgetRememberedRooms,
     openChannel,
     OpenOutcome,
     readRememberedChannel,
@@ -610,5 +611,45 @@ describe("the remembered room's look", () => {
         const odd = memory();
         odd.setItem(`${key}:kind`, "nonsense");
         expect(readRememberedKind(odd, key)).toBe("channel");
+    });
+});
+
+// A shared computer keeps nothing of a person after they sign out, and nothing of anyone else
+// once another person signs in: the remembered rooms, and with them the recent reactions, the
+// mark of the last visit to the mentions inbox and the push-off choice, each kept per person.
+describe("forgetting a person's keys on a shared computer", () => {
+    /** A browser storage holding the keys given. */
+    function storageOf(keys: string[]): { length: number, key: (index: number) => string | null, removeItem: (key: string) => void, getItem: (key: string) => string | null, setItem: (key: string, value: string) => void, keys: () => string[] } {
+        const items = new Map(keys.map(key => [key, "1"]));
+        return {
+            get length() {
+                return items.size;
+            },
+            key: index => [...items.keys()][index] ?? null,
+            removeItem: key => void items.delete(key),
+            getItem: key => items.get(key) ?? null,
+            setItem: (key, value) => void items.set(key, value),
+            keys: () => [...items.keys()]
+        };
+    }
+
+    const own = ["rock-chat:last-channel:t1:anna", "rock-chat-recent-reactions:T1:ANNA", "rock-chat:mentions-visit:t1:anna", "rock-chat:push-off:t1:anna"];
+    const other = ["rock-chat:last-channel:t1:ben", "rock-chat-recent-reactions:T1:BEN", "rock-chat:mentions-visit:t1:ben", "rock-chat:push-off:t1:ben"];
+    const unrelated = ["rock-chat:draft:x", "someone-else"];
+
+    test("after a sign-out every person's keys go", () => {
+        const storage = storageOf([...own, ...other, ...unrelated]);
+
+        forgetRememberedRooms(storage, rememberedChannelKey("T1", "Anna"), true);
+
+        expect(storage.keys()).toEqual(unrelated);
+    });
+
+    test("with the person still signed in, only another person's keys go", () => {
+        const storage = storageOf([...own, ...other, ...unrelated]);
+
+        forgetRememberedRooms(storage, rememberedChannelKey("T1", "Anna"), false);
+
+        expect(storage.keys()).toEqual([...own, ...unrelated]);
     });
 });

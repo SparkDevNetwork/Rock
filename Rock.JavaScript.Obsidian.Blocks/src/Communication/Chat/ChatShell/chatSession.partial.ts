@@ -22,6 +22,7 @@ import { computed, inject, InjectionKey, provide, Ref, ref } from "vue";
 import type { PickerSource } from "./components/emojiPicker.partial.obs";
 import type { MentionPickerSource } from "./components/mentionPicker.partial.obs";
 import { SidebarRow } from "./types.partial";
+import { BackStack, noBackStack } from "./composables/useBackStack.partial";
 
 export type ChatMe = {
     personAliasGuid: string;
@@ -41,6 +42,9 @@ export type SessionContext = {
     emojiSource: Readonly<Ref<PickerSource>> | null;
 
     mentionSource: (row: SidebarRow | null) => MentionPickerSource | null;
+
+    /** The phone's history entries, which every layer opened over the frame holds one of. */
+    backStack: BackStack;
 };
 
 /** Exported so a spec can mount a part under a session. */
@@ -58,6 +62,7 @@ export function useChatSession(): SessionContext {
         me: computed((): ChatMe => ({ personAliasGuid: "", name: "", photoUrl: null })),
         church: { name: "" },
         emojiSource: null,
-        mentionSource: () => null
+        mentionSource: () => null,
+        backStack: noBackStack
     };
 }

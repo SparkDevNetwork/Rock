@@ -29,11 +29,15 @@
                     </div>
                     <!-- A panel whose rows lead to other pages draws its own body as the first of them. -->
                     <div ref="scrollElement" class="chat-dialog-scroll">
-                        <div v-if="$slots.pages" class="chat-dialog-pages">
+                        <div v-if="$slots.pages" ref="contentElement" class="chat-dialog-pages">
                             <SurfacePage isFirst>
                                 <slot />
                             </SurfacePage>
                             <slot name="pages" />
+                        </div>
+                        <!-- A box that is the content alone, whose height the sheet follows. -->
+                        <div v-else-if="!isMedia" ref="contentElement" class="chat-dialog-pages">
+                            <slot />
                         </div>
                         <slot v-else />
                     </div>
@@ -192,6 +196,8 @@
 /* The sheet's body runs nearer the phone's edges, with more room above the home bar. */
 .chat-modal.is-sheet .chat-dialog-scroll {
     padding: 16px 16px 24px;
+    /* A classic scrollbar coming during a glide would narrow the content and rewrap it mid-glide. */
+    scrollbar-gutter: stable;
 }
 
 .chat-modal.is-sheet .chat-dialog {
@@ -253,6 +259,7 @@
     import { useAnnouncerModal } from "./announcer.partial";
     import { useFocusTrap } from "./focusTrap.partial";
     import { provideSurfacePages } from "./surfacePages.partial";
+    import { useBackLayer } from "../composables/useBackStack.partial";
 
     const props = defineProps({
         isOpen: {
@@ -343,7 +350,13 @@
     const dialogElement = ref<HTMLElement>();
     const cancelElement = ref<InstanceType<typeof Button>>();
     const scrollElement = ref<HTMLElement>();
+    const contentElement = ref<HTMLElement>();
     const titleId = `chat-dialog-${newGuid()}`;
+
+    const session = useChatSession();
+
+    /** Whether it is drawn as a sheet now. */
+    const isSheet = computed((): boolean => props.sheet === "always" || (props.sheet === "phone" && session.isPhone.value));
 
     /**
      * The pages a panel's row turns it into, one at a time, in this one dialog, which grows and
@@ -352,13 +365,11 @@
     const pages = provideSurfacePages({
         isOpen: () => props.isOpen,
         surface: () => dialogElement.value,
-        scroller: () => scrollElement.value
+        scroller: () => scrollElement.value,
+        // Only a sheet, held at the frame's bottom, follows its content; a desktop panel keeps its title in place.
+        content: () => isSheet.value ? contentElement.value : undefined
     });
 
-    const session = useChatSession();
-
-    /** Whether it is drawn as a sheet now. */
-    const isSheet = computed((): boolean => props.sheet === "always" || (props.sheet === "phone" && session.isPhone.value));
 
     /** Whether the press that ends in a click began on the scrim, so a drag out of the dialog does not close it. */
     let isScrimPress = false;
@@ -418,4 +429,8 @@
     const trapped = (): HTMLElement | undefined => props.isOpen ? dialogElement.value : undefined;
     useFocusTrap(trapped, { returnTo: () => props.returnFocus?.() ?? null, initialFocus: firstFocus });
     useAnnouncerModal(trapped);
+
+    // On a phone every open dialog, a confirm, a panel or the photo viewer, is one step of Back,
+    // which closes it as its Cancel or X does.
+    useBackLayer(() => props.isOpen, () => emit("close"));
 </script>

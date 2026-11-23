@@ -18,12 +18,14 @@
 // phone flag and the signed-in person from it rather than from its own inputs.
 import { computed, ref } from "vue";
 import { ChatMe, chatSessionKey, SessionContext } from "../../../../src/Communication/Chat/ChatShell/chatSession.partial";
+import { BackStack, noBackStack } from "../../../../src/Communication/Chat/ChatShell/composables/useBackStack.partial";
 
 /** What a spec sets of the session; the rest reads as a wide window with no one signed in. */
 export type SessionShape = {
     isPhone?: boolean;
     me?: Partial<ChatMe>;
     churchName?: string;
+    backStack?: BackStack;
 };
 
 /**
@@ -41,7 +43,42 @@ export function providedSession(shape: SessionShape = {}): Record<symbol, Sessio
             me: computed(() => me),
             church: { name: shape.churchName ?? "" },
             emojiSource: null,
-            mentionSource: () => null
+            mentionSource: () => null,
+            backStack: shape.backStack ?? noBackStack
         }
     };
+}
+
+/** A back stack that records what is held, for a part's cells; Back closes the newest held layer. */
+export type RecordedBackStack = {
+    stack: BackStack;
+
+    /** Every layer held now, oldest first. */
+    held: Array<{ back: () => void }>;
+
+    /** The system Back: asks the newest held layer's owner to close it. */
+    back: () => void;
+};
+
+/**
+ * A back stack that records holds instead of writing history.
+ *
+ * @returns The stack and what it holds.
+ */
+export function recordingBackStack(): RecordedBackStack {
+    const held: Array<{ back: () => void }> = [];
+    const stack: BackStack = {
+        screens: () => undefined,
+        hold: back => {
+            const layer = { back };
+            held.push(layer);
+            return () => {
+                const at = held.indexOf(layer);
+                if (at >= 0) {
+                    held.splice(at, 1);
+                }
+            };
+        }
+    };
+    return { stack, held, back: () => held[held.length - 1]?.back() };
 }
