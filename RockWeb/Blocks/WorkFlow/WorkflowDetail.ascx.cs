@@ -741,10 +741,13 @@ namespace RockWeb.Blocks.WorkFlow
                 hlCampus.Text = Workflow.Campus.Name;
             }
 
-            string quickReturnLava = "{{ Workflow.Name | AddQuickReturn:'Workflows', 70 }}";
-            var quickReturnMergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new Rock.Lava.CommonMergeFieldsOptions() );
-            quickReturnMergeFields.Add( "Workflow", Workflow );
-            quickReturnLava.ResolveMergeFields( quickReturnMergeFields );
+            if ( _canView )
+            {
+                string quickReturnLava = "{{ Workflow.Name | AddQuickReturn:'Workflows', 70 }}";
+                var quickReturnMergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new Rock.Lava.CommonMergeFieldsOptions() );
+                quickReturnMergeFields.Add( "Workflow", Workflow );
+                quickReturnLava.ResolveMergeFields( quickReturnMergeFields );
+            }
 
             ShowReadonlyDetails();
         }
