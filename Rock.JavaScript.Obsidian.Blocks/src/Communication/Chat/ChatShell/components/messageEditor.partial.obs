@@ -2,7 +2,7 @@
 <template>
     <div ref="rootElement"
          class="chat-editor"
-         :class="{ 'is-community': isCommunity }"
+         :class="{ 'is-community': isCommunity, 'is-phone': isPhone }"
          data-testid="message-editor"
          @keydown="onKeydown">
         <ChipEditor ref="editor"
@@ -12,6 +12,7 @@
                     :isConversation="!isCommunity"
                     placeholder="Edit message"
                     data-testid="edit-input"
+                    @update:text="onType"
                     @send="onSave"
                     @escape="emit('cancel')" />
         <div v-if="error" class="chat-editor-error" role="alert" data-testid="edit-error">
@@ -22,11 +23,11 @@
             <!-- A phone has no Escape, and its Enter key is the keyboard's own, so only a keyboard's screen names them. -->
             <span v-if="!isPhone" class="chat-editor-hint"><kbd>Esc</kbd> to cancel, <kbd>Enter</kbd> to save</span>
             <Button kind="ghost" size="sm" data-testid="edit-cancel" @click="emit('cancel')">Cancel</Button>
-            <!-- Held while the save is out, so a second press does not send the same edit twice. -->
+            <!-- Held while the save is out, so a second press does not send the same edit twice, and while there is nothing to save. -->
             <Button kind="brand"
                     size="sm"
                     data-testid="edit-save"
-                    :disabled="isSaving"
+                    :disabled="isSaving || isEmpty"
                     @click="onSave(editor?.getText() ?? '')">Save</Button>
         </div>
     </div>
@@ -51,6 +52,14 @@
     box-shadow: 0 0 0 3px var(--chat-brand-ring);
     scroll-margin: 12px 0 var(--chat-feed-bottom-mask, 14px);
     animation: chat-fade-in var(--chat-t-base) var(--chat-ease-state);
+}
+
+/*
+    A phone's editor is as wide as the message column lets it be, as its composer is the screen's
+    width: the column's own bound holds it, not a share of the screen, which left it 62 percent wide.
+*/
+.chat-editor.is-phone {
+    width: 560px;
 }
 
 /* A channel's editor fills the text column, squarer, as the channel's composer is. */
@@ -110,8 +119,9 @@
 </style>
 
 <script setup lang="ts">
-    import { computed, onMounted, PropType, ref } from "vue";
+    import { computed, inject, onMounted, PropType, ref } from "vue";
     import { useChatSession } from "../chatSession.partial";
+    import { editTextsKey } from "../composables/useMessageActions.partial";
     import Button from "../ui/button.partial.obs";
     import ChipEditor from "../ui/chipEditor.partial.obs";
     import Icon from "../ui/icon.partial.obs";
@@ -157,12 +167,22 @@
 
     const { isPhone } = useChatSession();
 
+    /** Where the words of an edit left unfinished are kept; absent for an editor drawn alone. */
+    const editTexts = inject(editTextsKey, null);
+
     /**
-     * What the editor opens with, read once: the same message changed from another device while
-     * the person types here must not reload the box under them.
+     * The message's words and pieces, read once: the same message changed from another device
+     * while the person types here must not reload the box under them. The pieces name the chips
+     * of kept words too, which hold no mention the message did not.
      */
-    const initialText = props.message.body ?? "";
+    const originalText = props.message.body ?? "";
     const initialPieces: DisplayPiece[] | null = props.message.pieces ?? null;
+
+    /** What the editor opens with: the words this edit was left with, else the message's own. */
+    const initialText = editTexts?.keptEditText(props.message.id) ?? originalText;
+
+    /** What the box holds now, as wire text. */
+    const text = ref(initialText);
 
     // #endregion Values
 
@@ -170,14 +190,29 @@
 
     const errorSentence = computed((): string => props.error ? messageForError(props.error) : "");
 
+    const isEmpty = computed((): boolean => text.value.trim() === "");
+
     // #endregion Computed Values
 
     // #region Event Handlers
 
-    /** A save of the same text, or of nothing, changes nothing, so it only closes the editor. */
-    function onSave(text: string): void {
-        const body = text.trim();
-        if (!body || body === initialText.trim()) {
+    /** Each change is kept with the message's actions, so a second edit opened over this one loses nothing. */
+    function onType(value: string): void {
+        text.value = value;
+        editTexts?.keepEditText(props.message.id, value);
+    }
+
+    /**
+     * Nothing to save does nothing, as Enter in an empty composer does; Escape or Cancel closes.
+     * The message's own words again change nothing, so they only close the editor.
+     */
+    function onSave(value: string): void {
+        const body = value.trim();
+        if (!body) {
+            return;
+        }
+
+        if (body === originalText.trim()) {
             emit("cancel");
             return;
         }

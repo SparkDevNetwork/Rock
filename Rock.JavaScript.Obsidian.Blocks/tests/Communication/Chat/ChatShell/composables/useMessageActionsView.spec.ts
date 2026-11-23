@@ -148,10 +148,10 @@ test("the delete confirm names a channel by its title, and anything else as this
 // actions' to keep, so the overlays hand every editor the keeping of the shell open now: a session
 // begun afresh, for another person, keeps nothing the last one typed.
 test("an editor reaches the open shell's message actions to keep and read an unfinished edit's words", () => {
-    let editTexts: EditTexts | null = null;
+    const seen: { editTexts: EditTexts | null } = { editTexts: null };
     const editor = defineComponent({
         setup() {
-            editTexts = inject(editTextsKey, null);
+            seen.editTexts = inject(editTextsKey, null);
             return () => h("span");
         }
     });
@@ -160,11 +160,11 @@ test("an editor reaches the open shell's message actions to keep and read an unf
     const next = { keepEditText: jest.fn(), keptEditText: jest.fn(() => null) };
 
     shell.value = { ...shell.value, messageActions: { ...shell.value.messageActions, ...first } } as unknown as ChatShell;
-    editTexts!.keepEditText(41, "half typed");
-    expect(editTexts!.keptEditText(41)).toBe("half typed");
+    seen.editTexts!.keepEditText(41, "half typed");
+    expect(seen.editTexts!.keptEditText(41)).toBe("half typed");
     expect(first.keepEditText).toHaveBeenCalledWith(41, "half typed");
 
     shell.value = { ...shell.value, messageActions: { ...shell.value.messageActions, ...next } } as unknown as ChatShell;
-    expect(editTexts!.keptEditText(41)).toBeNull();
+    expect(seen.editTexts!.keptEditText(41)).toBeNull();
     expect(next.keptEditText).toHaveBeenCalledWith(41);
 });
