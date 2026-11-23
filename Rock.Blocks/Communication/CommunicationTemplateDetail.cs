@@ -411,11 +411,11 @@ namespace Rock.Blocks.Communication
                 if ( newCategoryGuid.HasValue )
                 {
                     // The template inherits its security from its category, so only
-                    // accept a category the picker would have offered.
+                    // accept a communication template category the person can EDIT.
                     var newCategory = new CategoryService( this.RockContext ).Get( newCategoryGuid.Value );
                     var isCategoryAllowed = newCategory != null
                         && newCategory.EntityTypeId == EntityTypeCache.GetId<CommunicationTemplate>()
-                        && newCategory.IsAuthorized( Authorization.VIEW, currentPerson );
+                        && newCategory.IsAuthorized( Authorization.EDIT, currentPerson );
 
                     if ( !isCategoryAllowed )
                     {
