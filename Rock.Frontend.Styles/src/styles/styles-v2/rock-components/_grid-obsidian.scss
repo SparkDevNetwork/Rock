@@ -216,6 +216,11 @@
     overflow: hidden;
 }
 
+// Right-aligns a column title, for use with a column's headerClass (paired with a right-aligned itemClass).
+.title-right .grid-column-title {
+    text-align: right;
+}
+
 .grid-sort-direction {
     display: flex;
     align-items: center;

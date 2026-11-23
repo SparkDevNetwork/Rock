@@ -11,7 +11,7 @@
                 @pointerdown="onPointerDown">
             <i class="ti ti-device-tv"></i>
         </button>
-        <div v-else v-tooltip="tooltip" class="no-media-tooltip">
+        <div v-else v-tooltip="tooltip" class="content-channel-item-no-media-tooltip">
             &nbsp;
         </div>
     </div>
@@ -22,13 +22,6 @@
                                @flyoutEnter="onFlyoutEnter"
                                @flyoutLeave="onFlyoutLeave" />
 </template>
-
-<style scoped>
-.no-media-tooltip {
-    width: 32px;
-    height: 32px;
-}
-</style>
 
 <script setup lang="ts">
     import { computed, ref } from "vue";

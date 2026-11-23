@@ -168,12 +168,6 @@
     </ModalAlert>
 </template>
 
-<style>
-.title-right .grid-column-title {
-    text-align: right;
-}
-</style>
-
 <script setup lang="ts">
     import { computed, reactive, ref, watch } from "vue";
     import CopyUrlCell from "./ContentChannelItemList/copyUrlCell.partial.obs";

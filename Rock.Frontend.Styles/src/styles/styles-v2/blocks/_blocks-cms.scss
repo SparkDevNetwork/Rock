@@ -17,6 +17,7 @@
 //  + Library Viewer
 //  + Lava Shortcode List
 //  + Content Channel Item Metrics
+//  + Content Channel Item List
 // =============================================================
 
 
@@ -1225,3 +1226,17 @@ ul.activeusers {
 }
 
 // ================== END CONTENT CHANNEL ITEM METRICS ===================
+
+// ==================== CONTENT CHANNEL ITEM LIST =====================
+/* Placeholder that holds the width of the linked media elements button when an item has none. */
+.content-channel-item-no-media-tooltip {
+  width:                32px;
+  height:               32px;
+}
+
+/* The flyout's list sits last in the flyout, so drop the default list bottom margin. */
+.content-channel-item-linked-media-elements {
+  margin-bottom:        0;
+}
+
+// ================== END CONTENT CHANNEL ITEM LIST ===================

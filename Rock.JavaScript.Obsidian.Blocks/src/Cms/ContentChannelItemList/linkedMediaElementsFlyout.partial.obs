@@ -11,7 +11,7 @@
 
         <Loading v-else :isLoading="isLoading">
             <RockLabel>Linked Media Elements</RockLabel>
-            <ul class="linked-media-elements">
+            <ul class="content-channel-item-linked-media-elements">
                 <li v-for="linkedMediaElement in linkedMediaElements" :key="linkedMediaElement.idKey!">
                     <a :href="getMediaElementUrl(linkedMediaElement.idKey!)">
                         {{ linkedMediaElement.name }}
@@ -22,12 +22,6 @@
 
     </Flyout>
 </template>
-
-<style scoped>
-.linked-media-elements {
-    margin-bottom: 0;
-}
-</style>
 
 <script setup lang="ts">
     import { PropType, ref, watch } from "vue";
