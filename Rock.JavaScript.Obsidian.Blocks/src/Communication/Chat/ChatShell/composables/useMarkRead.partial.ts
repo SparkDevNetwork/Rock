@@ -54,6 +54,10 @@ export type ReadTrackerDependencies<K = string, A = MarkReadResult> = {
 export type PageEventTargets = {
     document: {
         visibilityState: string;
+
+        /** The tab's title, which the shell counts what waits in while the page is hidden; a page without one keeps none. */
+        title?: string;
+
         addEventListener: (type: string, listener: () => void) => void;
         removeEventListener: (type: string, listener: () => void) => void;
     };

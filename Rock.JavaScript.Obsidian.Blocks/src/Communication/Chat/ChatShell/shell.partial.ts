@@ -23,7 +23,7 @@
 // Each step marks the page's performance timeline (chat:mint, chat:exchange, chat:history,
 // chat:join, chat:sidebar, chat:first-message), so the time from opening the page to the first
 // message on screen can be split into the steps that make it up.
-import { reactive } from "vue";
+import { reactive, watch } from "vue";
 import { classifyPlatformError, errorKey, isReportedRefusal, messageForError } from "./errors.partial";
 import { CallResult, computeBackoff, createPlatformCall, PlatformCall } from "./platformCall.partial";
 import { createDirectMessages, DirectMessages, DoorResult, isNewMessageShown } from "./composables/useDirectMessage.partial";
@@ -419,8 +419,117 @@ export function createChatShell(options: ShellOptions): ChatShell {
     let detachPage: (() => void) | null = null;
     let detachThreads: (() => void) | null = null;
     let detachProblems: (() => void) | null = null;
+    let detachTitle: (() => void) | null = null;
     let push: PushRegistration | null = null;
     let isFirstMessageMarked = false;
+
+    /**
+     * What waits for the person, as the phone app's icon counts it: a conversation between people
+     * is addressed to them, so it counts once however many messages it holds; a channel counts
+     * only its mentions by name, as a mention push does. The room on screen is being read, and one
+     * not joined has no reading of theirs to be behind.
+     */
+    function waiting(): number {
+        return channels.rows.reduce((sum, row) => {
+            if (!row.is_member || row.channel_id === state.activeChannelId) {
+                return sum;
+            }
+            return sum + (row.room_kind === "channel" ? row.mention_count ?? 0 : row.is_unread ? 1 : 0);
+        }, 0);
+    }
+
+    // The tab's title counts what waits while the page is hidden, "(3) Chat", so a person in
+    // another tab sees it; Rock's icon is never touched. Rock's own title is kept from the first
+    // count drawn and given back when the page is seen or the person signs out.
+    let rockTitle: string | null = null;
+
+    // The room left open is read by nobody while the page is hidden, though the sidebar counts it
+    // read: the messages that count in it meanwhile, the first new one of a conversation between
+    // people and each naming the person in a channel, by the same rule as the icon. Emptied when
+    // the page is seen, since the person is then reading it.
+    const awayInOpen = reactive({ channelId: null as string | null, ids: new Set<number>() });
+
+    /** The open room's count while the page is hidden. */
+    function waitingInOpen(): number {
+        if (awayInOpen.channelId === null || awayInOpen.channelId !== state.activeChannelId) {
+            return 0;
+        }
+        const isChannel = channels.roomKindOf(awayInOpen.channelId) === "channel";
+        return isChannel ? awayInOpen.ids.size : Math.min(awayInOpen.ids.size, 1);
+    }
+
+    /** Draws the tab's title for the page as it now is. */
+    function drawTitle(): void {
+        const page = options.pageTargets.document;
+        if (page.visibilityState !== "hidden" || isStopped) {
+            if (rockTitle !== null) {
+                page.title = rockTitle;
+                rockTitle = null;
+            }
+            awayInOpen.channelId = null;
+            awayInOpen.ids.clear();
+            return;
+        }
+
+        const count = waiting() + waitingInOpen();
+        if (count === 0 && rockTitle === null) {
+            return;
+        }
+        rockTitle ??= page.title ?? "";
+        page.title = count > 0 ? `(${count}) ${rockTitle}` : rockTitle;
+    }
+
+    /**
+     * A signal on the person's own topic, heard for the room left open while the page is hidden:
+     * the sidebar's store takes none for the open room, which it counts as being read.
+     */
+    function hearInOpen(event: string, payload: unknown): void {
+        // the signal's own key names
+        /* eslint-disable-next-line @typescript-eslint/naming-convention */
+        const signal = payload as { channel_id?: unknown, message_id?: unknown, read_cursor?: unknown, in_channel?: unknown, all?: unknown } | null;
+        const openId = state.activeChannelId;
+        if (options.pageTargets.document.visibilityState !== "hidden" || openId === null || signal?.channel_id !== openId) {
+            return;
+        }
+
+        if (awayInOpen.channelId !== openId) {
+            awayInOpen.channelId = openId;
+            awayInOpen.ids.clear();
+        }
+
+        // read in another tab or on another device meanwhile
+        if (event === "channel.read" && typeof signal.read_cursor === "number") {
+            const cursor = signal.read_cursor;
+            [...awayInOpen.ids].filter(id => id <= cursor).forEach(id => awayInOpen.ids.delete(id));
+            return;
+        }
+
+        if (typeof signal.message_id !== "number") {
+            return;
+        }
+        const isChannel = channels.roomKindOf(openId) === "channel";
+        // a channel's unread says nothing until it names the person; a conversation's says it all
+        if (isChannel ? event === "channel.mention" && signal.in_channel === true && signal.all !== true : event === "channel.unread") {
+            awayInOpen.ids.add(signal.message_id);
+        }
+    }
+
+    /** Keeps the tab's title drawn from sign-in to sign-out. Returns what stops it. */
+    function attachTitle(): () => void {
+        const page = options.pageTargets.document;
+        const stopWatch = watch(() => waiting() + waitingInOpen(), drawTitle);
+        page.addEventListener("visibilitychange", drawTitle);
+        return () => {
+            stopWatch();
+            page.removeEventListener("visibilitychange", drawTitle);
+        };
+    }
+
+    /** A signal on the person's own topic, from the live connection or another of her tabs. */
+    function onPersonalEvent(event: string, payload: unknown): void {
+        hearInOpen(event, payload);
+        live.handlers.onPersonalEvent(event, payload);
+    }
 
     /**
      * Whether a failure is the connection itself: a call that never reached the platform. While
@@ -1246,7 +1355,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
             client = options.createPlatformClient(projectUrl, publishableKey, async () => session.currentToken() ?? "",
                 realtimeOptions(session.settings().limits, Math.random));
 
-            hub = createRealtimeHub({ client, tenantId, personAliasGuid, page: options.pageTargets, ...live.handlers });
+            hub = createRealtimeHub({ client, tenantId, personAliasGuid, page: options.pageTargets, ...live.handlers, onPersonalEvent });
             // Another tab's read is taken as one saved on another device, the same signal by the
             // same route, so it is kept over a sidebar read in flight as that signal is.
             tabReads = createTabReads({
@@ -1255,7 +1364,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
                 personAliasGuid,
                 // the signal's own key names
                 /* eslint-disable-next-line @typescript-eslint/naming-convention */
-                onRead: (channelId, readCursor) => live.handlers.onPersonalEvent("channel.read", { channel_id: channelId, read_cursor: readCursor })
+                onRead: (channelId, readCursor) => onPersonalEvent("channel.read", { channel_id: channelId, read_cursor: readCursor })
             });
 
             // The token is on the socket before the first join, which the hub does first.
@@ -1266,6 +1375,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
             detachPage = tracker.attach(options.pageTargets);
             detachThreads = threads.attach(options.pageTargets);
             detachProblems = problems.attach(options.pageTargets);
+            detachTitle = attachTitle();
             state.phase = "ready";
 
             // A start that had to wait is counted once, with how long and how many tries it took
@@ -1452,16 +1562,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
                 && options.pageTargets.document.visibilityState === "visible";
         },
 
-        // What waits for the person, as the phone app's icon counts it: a conversation between
-        // people is addressed to them, so it counts once however many messages it holds; a
-        // channel counts only its mentions by name, as a mention push does. The room on screen is
-        // being read, and one not joined has no reading of theirs to be behind.
-        appBadge: (): number => channels.rows.reduce((sum, row) => {
-            if (!row.is_member || row.channel_id === state.activeChannelId) {
-                return sum;
-            }
-            return sum + (row.room_kind === "channel" ? row.mention_count ?? 0 : row.is_unread ? 1 : 0);
-        }, 0),
+        appBadge: waiting,
 
         // The toast says why; the caller learns it failed, so the feed offers it again rather than
         // asking again by itself.
@@ -1521,6 +1622,9 @@ export function createChatShell(options: ShellOptions): ChatShell {
             detachPage?.();
             detachThreads?.();
             detachProblems?.();
+            detachTitle?.();
+            // the stop is marked, so Rock's own title comes back
+            drawTitle();
             await hub?.stop();
         }
     };
