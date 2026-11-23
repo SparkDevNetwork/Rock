@@ -44,6 +44,25 @@
     transition: background-color var(--chat-t-fast) var(--chat-ease-state), color var(--chat-t-fast) var(--chat-ease-state);
 }
 
+/*
+    Under a finger the hit area reaches 44px around the button's middle, through a mark that paints
+    nothing, so a 22px close or a 32px bar button keeps its drawn size and its neighbours their
+    places. Where two buttons sit closer than that, the later one takes the overlap.
+*/
+@media (pointer: coarse) {
+    .chat-icon-btn::before {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        min-width: 44px;
+        min-height: 44px;
+        width: 100%;
+        height: 100%;
+        content: "";
+        transform: translate(-50%, -50%);
+    }
+}
+
 /* The close inside a pill, a notice or a field: round, as what holds it is. */
 .chat-icon-btn.is-sm {
     width: 22px;
