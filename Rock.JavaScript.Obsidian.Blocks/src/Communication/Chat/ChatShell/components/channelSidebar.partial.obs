@@ -415,6 +415,15 @@
 }
 
 /*
+    Under a finger the plus reaches 44px around its middle, a few pixels past the heading into the
+    first row, which comes later and would take them; lying over the row keeps the reach whole, the
+    row's own tap area losing only that strip at its end.
+*/
+.is-phone .chat-sec-btn {
+    z-index: 1;
+}
+
+/*
     A room: a 36px column first, a direct message's face or a channel's tile centred in it, so
     every row starts on one edge. Heights and lines are whole pixels, so the badge's layer and the
     text in it land on the pixel grid.
