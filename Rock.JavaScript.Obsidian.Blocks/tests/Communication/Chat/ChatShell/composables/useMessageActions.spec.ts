@@ -580,6 +580,17 @@ describe("after stop", () => {
 
         expect(calls).toEqual([]);
     });
+
+    // The words of an unfinished edit are this person's, held only while chat runs for them.
+    test("forgets the text of every unfinished edit", async () => {
+        const { actions } = await setup([own(42)]);
+        actions.startEdit(channel, 42);
+        actions.keepEditText(42, "half typed");
+
+        actions.stop();
+
+        expect(actions.keptEditText(42)).toBeNull();
+    });
 });
 
 // The edit's answer carries the pieces the server built for the new body, so a mention typed in
