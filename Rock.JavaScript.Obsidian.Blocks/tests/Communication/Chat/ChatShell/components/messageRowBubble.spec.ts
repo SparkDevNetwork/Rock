@@ -145,7 +145,7 @@ describe("the jump flash", () => {
 
     test("stands its gap clear of the bubble with the bubble's radius plus that gap", () => {
         expect(flash).toMatch(/--chat-flash-gap: 4px;/);
-        expect(flash).toMatch(/inset: calc\(-1 \* var\(--chat-flash-gap\)\);/);
+        expect(flash).toMatch(/inset: -4px;/);
         expect(flash).toMatch(/border-radius: calc\(var\(--chat-r-bubble\) \+ var\(--chat-flash-gap\)\);/);
     });
 
