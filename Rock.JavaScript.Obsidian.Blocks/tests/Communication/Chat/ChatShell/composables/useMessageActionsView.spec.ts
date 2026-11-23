@@ -21,10 +21,10 @@
 // long as the block does, over a shell faked in its real shape, with only the calls these cells reach.
 /* eslint-disable @typescript-eslint/naming-convention */
 import { mount, VueWrapper } from "@vue/test-utils";
-import { computed, defineComponent, h, reactive, ref, shallowRef } from "vue";
+import { Component, computed, defineComponent, h, inject, reactive, ref, ShallowRef, shallowRef } from "vue";
 import { OverlaysView, useOverlaysView } from "../../../../../src/Communication/Chat/ChatShell/composables/useOverlaysView.partial";
 import { Frame } from "../../../../../src/Communication/Chat/ChatShell/composables/useFrameView.partial";
-import { MessageActionRequest } from "../../../../../src/Communication/Chat/ChatShell/composables/useMessageActions.partial";
+import { EditTexts, editTextsKey, MessageActionRequest } from "../../../../../src/Communication/Chat/ChatShell/composables/useMessageActions.partial";
 import { OpenThreadState } from "../../../../../src/Communication/Chat/ChatShell/composables/useThreads.partial";
 import { ChatShell } from "../../../../../src/Communication/Chat/ChatShell/shell.partial";
 import { TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
@@ -42,7 +42,7 @@ afterEach(() => {
     host = null;
 });
 
-function setUp(activeChannelId: string | null, thread: { channelId: string, rootId: number } | null = null): { view: OverlaysView, actions: { startQuote: jest.Mock, askDelete: jest.Mock }, openCard: jest.Mock, openReactionPicker: jest.Mock } {
+function setUp(activeChannelId: string | null, thread: { channelId: string, rootId: number } | null = null, child: Component | null = null): { view: OverlaysView, actions: { startQuote: jest.Mock, askDelete: jest.Mock }, openCard: jest.Mock, openReactionPicker: jest.Mock, shell: ShallowRef<ChatShell> } {
     const state = reactive({ quotes: {} as Record<string, TimelineMessage>, editing: null, confirmingDelete: null as { channelId: string, message: TimelineMessage } | null });
     const actions = {
         state,
@@ -87,10 +87,10 @@ function setUp(activeChannelId: string | null, thread: { channelId: string, root
                 openReactionPicker,
                 closeReactionPicker: jest.fn()
             });
-            return () => h("div");
+            return () => h("div", child ? [h(child)] : []);
         }
     }));
-    return { view, actions, openCard, openReactionPicker };
+    return { view, actions, openCard, openReactionPicker, shell };
 }
 
 test("an author or chip pressed opens their card where the opener says, for the room it was pressed in", () => {
@@ -142,4 +142,29 @@ test("the delete confirm names a channel by its title, and anything else as this
     const direct = setUp(pair);
     direct.view.onMessageAction({ kind: "delete", message } as MessageActionRequest, null);
     expect(direct.view.deleteBody.value).toBe("It will be removed for everyone in this conversation. You can't undo this.");
+});
+
+// An editor is drawn deep in a row, and the words of an edit left unfinished are the message
+// actions' to keep, so the overlays hand every editor the keeping of the shell open now: a session
+// begun afresh, for another person, keeps nothing the last one typed.
+test("an editor reaches the open shell's message actions to keep and read an unfinished edit's words", () => {
+    const seen: { editTexts: EditTexts | null } = { editTexts: null };
+    const editor = defineComponent({
+        setup() {
+            seen.editTexts = inject(editTextsKey, null);
+            return () => h("span");
+        }
+    });
+    const { shell } = setUp(team, null, editor);
+    const first = { keepEditText: jest.fn(), keptEditText: jest.fn(() => "half typed") };
+    const next = { keepEditText: jest.fn(), keptEditText: jest.fn(() => null) };
+
+    shell.value = { ...shell.value, messageActions: { ...shell.value.messageActions, ...first } } as unknown as ChatShell;
+    seen.editTexts!.keepEditText(41, "half typed");
+    expect(seen.editTexts!.keptEditText(41)).toBe("half typed");
+    expect(first.keepEditText).toHaveBeenCalledWith(41, "half typed");
+
+    shell.value = { ...shell.value, messageActions: { ...shell.value.messageActions, ...next } } as unknown as ChatShell;
+    expect(seen.editTexts!.keptEditText(41)).toBeNull();
+    expect(next.keptEditText).toHaveBeenCalledWith(41);
 });

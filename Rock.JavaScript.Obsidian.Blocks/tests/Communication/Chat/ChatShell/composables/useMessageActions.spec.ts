@@ -43,6 +43,8 @@
 //       startEditNewest(channelId: string, rootId?: number): boolean,   Up in an empty composer, a thread's with its root
 //       cancelEdit(): void,
 //       saveEdit(body: string): Promise<boolean>,
+//       keepEditText(messageId: number, text: string): void,   what the open editor holds now
+//       keptEditText(messageId: number): string | null,       an unfinished edit's text, until saved or cancelled
 //       askDelete(channelId: string, message: TimelineMessage): void,   opens the confirm, calls nothing
 //       cancelDelete(): void,
 //       confirmDelete(): Promise<boolean>,
@@ -282,6 +284,97 @@ describe("editing the person's own message", () => {
 
         expect(actions.state.editing).toBeNull();
         expect(calls).toEqual([]);
+    });
+});
+
+// An edit left unfinished keeps its words: a second edit or a conversation switch closes the
+// first editor without a question, so what was typed in it is kept, by message, until that edit
+// is saved or cancelled. It is kept in memory for the page's life and never written to storage,
+// so nothing is left for another person on the browser, nor to clear at sign-out.
+describe("the text of an unfinished edit", () => {
+    test("comes back when the same message is edited again after a second edit closed it", async () => {
+        const { actions } = await setup([own(42, { body: "See you at 8" }), own(43, { body: "Bring snacks" })]);
+
+        actions.startEdit(channel, 42);
+        actions.keepEditText(42, "See you at 9, not 8");
+        actions.startEdit(channel, 43);
+
+        expect(actions.keptEditText(42)).toBe("See you at 9, not 8");
+        expect(actions.keptEditText(43)).toBeNull();
+
+        actions.startEdit(channel, 42);
+        expect(actions.keptEditText(42)).toBe("See you at 9, not 8");
+    });
+
+    test("is kept across a conversation switch", async () => {
+        const { actions } = await setup([own(42)]);
+
+        actions.startEdit(channel, 42);
+        actions.keepEditText(42, "half typed");
+        actions.switchConversation(otherChannel);
+        actions.switchConversation(channel);
+
+        expect(actions.keptEditText(42)).toBe("half typed");
+    });
+
+    test("is forgotten once the edit is saved", async () => {
+        const { actions } = await setup([own(42)], [ok({ id: 42, edited_at: "2026-10-15T09:05:00Z" })]);
+
+        actions.startEdit(channel, 42);
+        actions.keepEditText(42, "changed");
+        expect(await actions.saveEdit("changed")).toBe(true);
+
+        expect(actions.keptEditText(42)).toBeNull();
+    });
+
+    test("stays while a refused save keeps the editor open", async () => {
+        const { actions } = await setup([own(42)], [refused("rpc.not_editable", "This message can't be edited.")]);
+
+        actions.startEdit(channel, 42);
+        actions.keepEditText(42, "changed");
+        expect(await actions.saveEdit("changed")).toBe(false);
+
+        expect(actions.keptEditText(42)).toBe("changed");
+    });
+
+    test("is forgotten once the edit is cancelled", async () => {
+        const { actions } = await setup([own(42)]);
+
+        actions.startEdit(channel, 42);
+        actions.keepEditText(42, "never mind");
+        actions.cancelEdit();
+
+        expect(actions.keptEditText(42)).toBeNull();
+    });
+
+    // a late report from an editor already closed must not bring back words the person let go
+    test("is only kept for the message open in the editor", async () => {
+        const { actions } = await setup([own(42), own(43)]);
+
+        actions.keepEditText(42, "no editor open");
+        actions.startEdit(channel, 43);
+        actions.keepEditText(42, "another message's editor");
+
+        expect(actions.keptEditText(42)).toBeNull();
+    });
+
+    test("is held in memory only, never written to the browser's storage", async () => {
+        const setItem = jest.spyOn(Storage.prototype, "setItem");
+        try {
+            const { actions } = await setup([own(42), own(43)]);
+
+            actions.startEdit(channel, 42);
+            actions.keepEditText(42, "private words");
+            actions.startEdit(channel, 43);
+            actions.switchConversation(otherChannel);
+
+            expect(setItem).not.toHaveBeenCalled();
+            expect(JSON.stringify({ ...window.localStorage })).not.toContain("private words");
+            expect(JSON.stringify({ ...window.sessionStorage })).not.toContain("private words");
+        }
+        finally {
+            setItem.mockRestore();
+        }
     });
 });
 

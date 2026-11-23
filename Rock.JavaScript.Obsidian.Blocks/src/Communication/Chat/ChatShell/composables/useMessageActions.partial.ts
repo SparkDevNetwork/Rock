@@ -20,10 +20,16 @@
 // Each call answers in its own time. An edit's answer that a newer edit or a conversation switch
 // overtook is dropped, so a late answer never undoes what the person sees now or closes an editor
 // they opened since. Once the actions are stopped nothing new is called and no answer still on
-// its way reaches the screen. The database refuses what it must whatever the client offers; the
+// its way reaches the screen.
+//
+// Opening a second editor, or leaving the conversation, closes the first without a question, so
+// the words typed in it are kept by message until that edit is saved or cancelled, and come back
+// when it is opened again. They are held here in memory for the shell's life, never in the
+// browser's storage: nothing is left for another person on the browser, and a session begun for
+// someone else starts with a new shell that holds none. The database refuses what it must whatever the client offers; the
 // client only keeps from offering what would be refused.
 /* eslint-disable @typescript-eslint/naming-convention */
-import { reactive } from "vue";
+import { InjectionKey, reactive } from "vue";
 import { PickerOpening } from "../components/emojiPicker.partial.obs";
 import { inRoomKind, messageForError } from "../errors.partial";
 import { isOwnMessage } from "../feedLayout.partial";
@@ -123,6 +129,12 @@ export type MessageActions = {
     /** Saves the open editor's text; true once the platform took it. */
     saveEdit: (body: string) => Promise<boolean>;
 
+    /** Keeps what the open editor holds now, for its message alone; any other message's report is late and dropped. */
+    keepEditText: (messageId: number, text: string) => void;
+
+    /** The words an unfinished edit of a message was left with, or null when it has none. */
+    keptEditText: (messageId: number) => string | null;
+
     /** Opens the delete confirm; nothing is called until it is confirmed. */
     askDelete: (channelId: string, message: TimelineMessage) => void;
 
@@ -156,6 +168,15 @@ export type MessageActions = {
     /** Ends the actions for good. */
     stop: () => void;
 };
+
+/** What an editor reaches of the actions, to keep its words and open with them again. */
+export type EditTexts = Pick<MessageActions, "keepEditText" | "keptEditText">;
+
+/**
+ * Provided over the feed and the thread drawer, so an editor drawn deep in a row reaches the
+ * actions without each row between carrying them.
+ */
+export const editTextsKey: InjectionKey<EditTexts> = Symbol("chat-edit-texts");
 
 /**
  * The only functions a server-listed action may call. A listed action names its own function, so
@@ -346,6 +367,9 @@ export function createMessageActions(dependencies: MessageActionsDependencies): 
     // answer counts only while its number is still the newest.
     let editTurn = 0;
 
+    // The words of each edit left unfinished, by message.
+    const editTexts = new Map<number, string>();
+
     /** Toasts a refusal: the server's sentence, or the client's own for its severity. */
     function notifyRefusal(channelId: string, error: ChatError): void {
         dependencies.notify({ code: error.code, text: messageForError(inRoomKind(error, dependencies.roomKind?.(channelId))), icon: "alert" });
@@ -399,6 +423,9 @@ export function createMessageActions(dependencies: MessageActionsDependencies): 
 
         cancelEdit: (): void => {
             editTurn++;
+            if (state.editing) {
+                editTexts.delete(state.editing.messageId);
+            }
             state.editing = null;
         },
 
@@ -413,7 +440,15 @@ export function createMessageActions(dependencies: MessageActionsDependencies): 
             editing.error = null;
 
             const result = await dependencies.call("chat_edit_message", { p_message_id: editing.messageId, p_body: body });
-            if (isStopped || turn !== editTurn) {
+            if (isStopped) {
+                return false;
+            }
+
+            // Overtaken, the saved words are only let go if no editor since has changed them.
+            if (turn !== editTurn) {
+                if (result.ok && editTexts.get(editing.messageId) === body) {
+                    editTexts.delete(editing.messageId);
+                }
                 return false;
             }
 
@@ -434,9 +469,18 @@ export function createMessageActions(dependencies: MessageActionsDependencies): 
                 pieces: answer.pieces ?? null,
                 edited_at: answer.edited_at ?? new Date().toISOString()
             });
+            editTexts.delete(editing.messageId);
             state.editing = null;
             return true;
         },
+
+        keepEditText: (messageId: number, text: string): void => {
+            if (!isStopped && state.editing?.messageId === messageId) {
+                editTexts.set(messageId, text);
+            }
+        },
+
+        keptEditText: (messageId: number): string | null => editTexts.get(messageId) ?? null,
 
         askDelete: (channelId: string, message: TimelineMessage): void => {
             if (isStopped) {
@@ -543,7 +587,8 @@ export function createMessageActions(dependencies: MessageActionsDependencies): 
             delete state.quotes[key];
         },
 
-        // The quotes stay, each kept to its own conversation, so going back finds it still there.
+        // The quotes stay, each kept to its own conversation, so going back finds it still there;
+        // so do an unfinished edit's words, for when that message is edited again.
         switchConversation: (_channelId: string | null): void => {
             editTurn++;
             state.editing = null;

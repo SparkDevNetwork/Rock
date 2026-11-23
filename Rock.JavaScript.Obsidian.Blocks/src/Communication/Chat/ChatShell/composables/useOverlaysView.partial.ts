@@ -25,13 +25,13 @@
 // place each part sits in, the conversation or the open thread, and moves focus as each one ends,
 // so it needs the block's frame and elements, which the shell's half never sees.
 
-import { computed, getCurrentScope, nextTick, onBeforeUnmount, ref, Ref, shallowRef, watch, WatchStopHandle } from "vue";
+import { computed, getCurrentScope, nextTick, onBeforeUnmount, provide, ref, Ref, shallowRef, watch, WatchStopHandle } from "vue";
 import { PickerOpening } from "../components/emojiPicker.partial.obs";
 import { isOwnMessage } from "../feedLayout.partial";
 import type { ChatShell } from "../shell.partial";
 import { CardPlace, ChatError, ChatPerson, ColumnKind, PersonProfile, TimelineMessage } from "../types.partial";
 import { personName } from "../ui/face.partial";
-import { MessageActionRequest, MessageActionsState, quoteKey } from "./useMessageActions.partial";
+import { editTextsKey, MessageActionRequest, MessageActionsState, quoteKey } from "./useMessageActions.partial";
 import { shownMembers } from "./useMembers.partial";
 import { RoomChoice } from "./usePrefs.partial";
 import { Frame } from "./useFrameView.partial";
@@ -107,6 +107,13 @@ export function useOverlaysView(dependencies: OverlaysViewDependencies) {
 
     // The block's own scope, so a wait begun once a block lands still ends when the block goes.
     const viewScope = getCurrentScope();
+
+    // Every editor drawn under the block keeps its words with the shell open now, read at each use,
+    // so a session begun afresh for someone else finds nothing the last person typed.
+    provide(editTextsKey, {
+        keepEditText: (messageId: number, text: string): void => shell.value.messageActions.keepEditText(messageId, text),
+        keptEditText: (messageId: number): string | null => shell.value.messageActions.keptEditText(messageId)
+    });
 
     // #endregion Values
 

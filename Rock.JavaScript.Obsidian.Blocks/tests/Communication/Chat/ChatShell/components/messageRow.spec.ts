@@ -1363,7 +1363,8 @@ describe("edit in place", () => {
         expect(requests(w)).toEqual([{ kind: "cancelEdit", message: lineup }]);
     });
 
-    test("saving the text unchanged, or emptied, only cancels", async () => {
+    // Emptied, Enter does nothing, as it does in an empty composer; Escape or Cancel closes it.
+    test("saving the text unchanged only cancels, and Enter on an emptied editor asks nothing", async () => {
         const w = editing({ message: lineup });
         await nextTick();
         await key(w, "Enter");
@@ -1373,7 +1374,8 @@ describe("edit in place", () => {
         await nextTick();
         await key(w, "Enter");
 
-        expect(requests(w)).toEqual([{ kind: "cancelEdit", message: lineup }, { kind: "cancelEdit", message: lineup }]);
+        expect(requests(w)).toEqual([{ kind: "cancelEdit", message: lineup }]);
+        expect(w.find("[data-testid='message-editor']").exists()).toBe(true);
     });
 
     test("a refusal shows the server's sentence under the editor, which keeps what was typed", async () => {
