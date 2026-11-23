@@ -55,6 +55,12 @@ export type SurfaceParts = {
 
     /** The surface's scrolling body, where each page keeps its own place; none where pages do not scroll. */
     scroller?: () => HTMLElement | undefined;
+
+    /**
+     * The box whose height is the surface's content alone, for a surface that follows its content
+     * within a page, as a panel drawn as a sheet does; none for a surface that does not.
+     */
+    content?: () => HTMLElement | undefined;
 };
 
 /** A surface's height and side inset as drawn, which a turn moves from one page's to the next's. */
@@ -153,6 +159,10 @@ export function provideSurfacePages(parts: SurfaceParts): SurfacePages {
     /** The surface's height change still playing, which the next turn takes over from. */
     let resizing: Animation | null = null;
 
+    /** The surface's height and its content box's as last settled, which a change within a page glides from. */
+    let shownHeight: number | null = null;
+    let contentHeight: number | null = null;
+
     const top = computed((): SurfacePageEntry | null => stack[stack.length - 1] ?? null);
 
     /**
@@ -243,6 +253,80 @@ export function provideSurfacePages(parts: SurfaceParts): SurfacePages {
             duration,
             easing: style.getPropertyValue("--chat-ease-in").trim()
         });
+        noteHeights();
+    }
+
+    /** Records the surface's height and its content box's as they now settle. */
+    function noteHeights(): void {
+        shownHeight = parts.surface()?.getBoundingClientRect().height ?? null;
+        contentHeight = parts.content?.()?.getBoundingClientRect().height ?? null;
+    }
+
+    /**
+     * A surface that follows its content glides its edge as the content changes height within a
+     * page, over the content's own move, so on a surface held at its bottom the head and the rows
+     * above glide with the edge while the rows below hold. A change of the box the surface stands
+     * in, as a keyboard rising or a turn of the phone, changes the height at once. The content box
+     * is watched rather than the surface, whose own glide would report every frame.
+     *
+     * Inside a surface that follows its content, anything that moves its content measures in its
+     * own box, never on the screen: the surface owns the screen motion of its edge.
+     */
+    function onContentResize(entries: ResizeObserverEntry[]): void {
+        const surface = parts.surface();
+        if (!surface || !parts.isOpen()) {
+            return;
+        }
+
+        const isFrameChange = entries.some(entry => entry.target === surface.parentElement);
+        const content = entries.find(entry => entry.target !== surface.parentElement);
+        if (isFrameChange || shownHeight === null || !content) {
+            resizing?.cancel();
+            resizing = null;
+            noteHeights();
+            return;
+        }
+
+        // a turn has already played this change
+        if (content.contentRect.height === contentHeight) {
+            return;
+        }
+
+        // a glide still playing gives way from the height it shows now
+        const from = resizing ? surface.getBoundingClientRect().height : shownHeight;
+        resizing?.cancel();
+        resizing = null;
+        const to = surface.getBoundingClientRect().height;
+        shownHeight = to;
+        contentHeight = content.contentRect.height;
+
+        const style = getComputedStyle(surface);
+        const duration = parseFloat(style.getPropertyValue("--chat-d-move"));
+        if (from === to || !duration || typeof surface.animate !== "function" || isMotionReduced()) {
+            return;
+        }
+
+        resizing = surface.animate([{ height: `${from}px` }, { height: `${to}px` }], {
+            duration,
+            easing: style.getPropertyValue("--chat-ease-in").trim()
+        });
+    }
+
+    // One observer for a surface that follows its content: its content box and the box it stands in.
+    if (parts.content && typeof ResizeObserver === "function") {
+        const observer = new ResizeObserver(onContentResize);
+        watch(() => [parts.isOpen(), parts.content?.(), parts.surface()] as const, ([isOpen, content, surface]) => {
+            observer.disconnect();
+            shownHeight = null;
+            contentHeight = null;
+            if (isOpen && content && surface) {
+                observer.observe(content);
+                if (surface.parentElement) {
+                    observer.observe(surface.parentElement);
+                }
+            }
+        }, { flush: "post", immediate: true });
+        onScopeDispose(() => observer.disconnect());
     }
 
     function turnTo(entry: SurfacePageEntry): void {
