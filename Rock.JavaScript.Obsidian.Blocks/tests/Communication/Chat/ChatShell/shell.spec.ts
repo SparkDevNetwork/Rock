@@ -138,7 +138,7 @@ function build(options: {
     counts: { mints: number, clients: number, setAuths: number, bootstraps: number },
     mintGate: { value: string },
     bootstrap: { value: unknown },
-    pageDocument: { visibilityState: string },
+    pageDocument: { visibilityState: string, title: string },
     sent: Array<{ channelId: string, body: string, args: Record<string, unknown> }>,
     tokenPerson: { value: string | null },
     reloads: { count: number },
@@ -276,6 +276,8 @@ function build(options: {
     const documentListeners: Record<string, Array<() => void>> = {};
     const pageDocument = {
         visibilityState: "visible",
+        // Rock's own title for the page, which the shell counts what waits in while hidden
+        title: "Chat | Rock",
         addEventListener: (type: string, listener: () => void) => (documentListeners[type] ??= []).push(listener),
         removeEventListener: (type: string, listener: () => void) => {
             documentListeners[type] = (documentListeners[type] ?? []).filter(l => l !== listener);
@@ -2089,6 +2091,121 @@ describe("what the page tells push", () => {
         ]);
 
         expect(badge).toBe(1);
+    });
+});
+
+// A person who leaves chat for another tab sees what waits for them in the tab's title, "(3) Chat",
+// counted as the app icon counts it, and Rock's own title again once they come back. The room
+// left open counts too while the page is hidden, since nobody is reading it then.
+describe("the tab's title", () => {
+    const ben = "c00000b1-0000-4000-8000-000000000000";
+    const youth = "c00000c1-0000-4000-8000-000000000000";
+
+    /** A sidebar row of the given kind, read and named nowhere unless the cell says otherwise. */
+    function titleRow(channelId: string, roomKind: "channel" | "person" | "group", extra: Partial<SidebarRow> = {}): Partial<SidebarRow> {
+        return { channel_id: channelId, name: channelId, room_kind: roomKind, is_member: true, is_unread: false, unread_count: 0, mention_count: 0, all_mention_count: 0, read_cursor: 10, last_message_id: 10, ...extra };
+    }
+
+    async function startedWith(rows: Partial<SidebarRow>[]): Promise<ReturnType<typeof build>> {
+        const h = build();
+        h.bootstrap.value = { channels: rows };
+        const starting = h.shell.start();
+        await settle();
+        answerHistory(h, channelA, 10);
+        await starting;
+        await settle();
+        topicOf(h, channelTopic(tenant, channelA)).status?.("SUBSCRIBED");
+        await settle();
+        return h;
+    }
+
+    async function hide(h: ReturnType<typeof build>): Promise<void> {
+        h.pageDocument.visibilityState = "hidden";
+        h.fireShown();
+        await settle();
+    }
+
+    async function show(h: ReturnType<typeof build>): Promise<void> {
+        h.pageDocument.visibilityState = "visible";
+        h.fireShown();
+        await settle();
+    }
+
+    test("while the page is hidden it counts what waits, and Rock's title comes back when the page is seen", async () => {
+        const h = await startedWith([
+            titleRow(channelA, "channel"),
+            titleRow(ben, "person", { is_unread: true }),
+            titleRow(youth, "channel", { is_unread: true, mention_count: 2 })
+        ]);
+        expect(h.pageDocument.title).toBe("Chat | Rock");
+
+        await hide(h);
+        expect(h.pageDocument.title).toBe("(3) Chat | Rock");
+
+        await show(h);
+        expect(h.pageDocument.title).toBe("Chat | Rock");
+    });
+
+    test("a hidden page with nothing waiting keeps Rock's title, and the count follows what arrives", async () => {
+        const h = await startedWith([titleRow(channelA, "channel"), titleRow(ben, "person"), titleRow(youth, "channel")]);
+
+        await hide(h);
+        expect(h.pageDocument.title).toBe("Chat | Rock");
+
+        personal(h, "channel.unread", { channel_id: ben, message_id: 11, id: "5e0000a1-0000-4000-8000-000000000000" });
+        await settle();
+        expect(h.pageDocument.title).toBe("(1) Chat | Rock");
+
+        personal(h, "channel.mention", { channel_id: youth, message_id: 12, parent_id: null, in_channel: true, all: false });
+        await settle();
+        expect(h.pageDocument.title).toBe("(2) Chat | Rock");
+
+        // read on her phone meanwhile
+        personal(h, "channel.read", { channel_id: ben, read_cursor: 11 });
+        await settle();
+        expect(h.pageDocument.title).toBe("(1) Chat | Rock");
+    });
+
+    test("a conversation left open counts once while the page is hidden, and a read of it elsewhere takes it off", async () => {
+        const h = await startedWith([titleRow(channelA, "person")]);
+        await hide(h);
+
+        personal(h, "channel.unread", { channel_id: channelA, message_id: 11, id: "5e0000a2-0000-4000-8000-000000000000" });
+        await settle();
+        expect(h.pageDocument.title).toBe("(1) Chat | Rock");
+
+        personal(h, "channel.read", { channel_id: channelA, read_cursor: 11 });
+        await settle();
+        expect(h.pageDocument.title).toBe("Chat | Rock");
+    });
+
+    test("a channel left open counts its mentions by name while the page is hidden, never @all, and none once seen", async () => {
+        const h = await startedWith([titleRow(channelA, "channel")]);
+        await hide(h);
+
+        personal(h, "channel.unread", { channel_id: channelA, message_id: 11, id: "5e0000a3-0000-4000-8000-000000000000" });
+        personal(h, "channel.mention", { channel_id: channelA, message_id: 12, parent_id: null, in_channel: true, all: false });
+        personal(h, "channel.mention", { channel_id: channelA, message_id: 13, parent_id: null, in_channel: true, all: true });
+        personal(h, "channel.mention", { channel_id: channelA, message_id: 14, parent_id: null, in_channel: true, all: false });
+        await settle();
+        expect(h.pageDocument.title).toBe("(2) Chat | Rock");
+
+        await show(h);
+        expect(h.pageDocument.title).toBe("Chat | Rock");
+
+        await hide(h);
+        expect(h.pageDocument.title).toBe("Chat | Rock");
+    });
+
+    test("signing out gives Rock's title back", async () => {
+        const h = await startedWith([titleRow(channelA, "channel"), titleRow(ben, "person", { is_unread: true })]);
+        await hide(h);
+        expect(h.pageDocument.title).toBe("(1) Chat | Rock");
+
+        await h.shell.stop();
+        await settle();
+
+        expect(h.pageDocument.title).toBe("Chat | Rock");
     });
 });
 
