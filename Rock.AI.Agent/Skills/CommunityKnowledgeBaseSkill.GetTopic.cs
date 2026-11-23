@@ -47,7 +47,10 @@ internal sealed partial class CommunityKnowledgeBaseSkill
     [AgentToolReturnDescription( "The topic exactly as the knowledge service returns it, carrying its instructions text and its articles, each with a retrieval key and title. Pass a retrieval key to GetArticle unchanged." )]
     [AgentToolGuid( "F0179643-6979-416B-8D30-E45CBD96E49E" )]
     [AgentToolPreamble( "Reading Topic" )]
-    public async Task<AgentToolResult> GetTopic( string topicKey )
+    public async Task<AgentToolResult> GetTopic(
+        string topicKey,
+        [Description( RockVersionParameterDescription )]
+        string rockVersion = null )
     {
         if ( topicKey.IsNullOrWhiteSpace() )
         {
@@ -55,9 +58,16 @@ internal sealed partial class CommunityKnowledgeBaseSkill
                 .WithInstructions( $"Call {nameof( GetKnowledgeBaseOverview )} and take a key from its Topics list." );
         }
 
+        var versionError = ResolveRockVersion( rockVersion, out var resolvedRockVersion );
+
+        if ( versionError != null )
+        {
+            return versionError;
+        }
+
         var parameters = new Dictionary<string, string>
         {
-            ["rock_version"] = GetRockVersion()
+            ["rock_version"] = resolvedRockVersion
         };
 
         var path = $"topics/{CommunityKnowledgeBaseClient.EscapeKey( topicKey )}";
@@ -85,7 +95,7 @@ internal sealed partial class CommunityKnowledgeBaseSkill
         if ( !response.IsSuccess || articles == null || !articles.Any() )
         {
             return NoData()
-                .WithInstructions( $"No articles are available for topic '{topicKey}' on Rock {GetRockVersion()}. "
+                .WithInstructions( $"No articles are available for topic '{topicKey}' on Rock {resolvedRockVersion}. "
                     + $"Call {nameof( GetKnowledgeBaseOverview )} and take a key from its Topics list. Never edit a key." );
         }
 

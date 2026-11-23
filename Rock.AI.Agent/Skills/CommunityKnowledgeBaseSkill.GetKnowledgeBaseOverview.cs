@@ -51,11 +51,20 @@ internal sealed partial class CommunityKnowledgeBaseSkill
     [AgentPurpose( "Establishes what the knowledge base actually contains before any search is attempted, so the right store is chosen on the first move and every filter value is known to be real." )]
     [AgentUsage( "Call this once, before the first search of a conversation. Its result stays available for the rest of the conversation and does not need to be called again." )]
     [AgentUsage( "This is also where curated topics are found. Take a topic key from here and open it with GetTopic." )]
-    [AgentToolReturnDescription( "The overview exactly as the knowledge service returns it: the knowledge sources with document counts, the indexed code repositories and the Rock releases they cover, the published topics with a key and a hint for each, the valid filter values, and operator-written guidance on store selection. Filter values taken from here must be passed to the search tools unchanged." )]
+    [AgentToolReturnDescription( "The overview exactly as the knowledge service returns it: the knowledge sources with document counts, the indexed code repositories and the Rock releases they cover, the published topics with a key and a hint for each, the valid filter values, and operator-written guidance on store selection. Filter values taken from here must be passed to the search tools unchanged. The result metadata adds rockVersion, the Rock version this overview describes, and isVersionOverrideAllowed, whether this skill accepts a rockVersion other than this server's." )]
     [AgentToolGuid( "7D3ED0C6-6B02-42F5-AB34-4815FE7FF00C" )]
     [AgentToolPreamble( "Reading Knowledge Base Contents" )]
-    public async Task<AgentToolResult> GetKnowledgeBaseOverview()
+    public async Task<AgentToolResult> GetKnowledgeBaseOverview(
+        [Description( RockVersionParameterDescription )]
+        string rockVersion = null )
     {
+        var versionError = ResolveRockVersion( rockVersion, out var resolvedRockVersion );
+
+        if ( versionError != null )
+        {
+            return versionError;
+        }
+
         var scopeError = ResolveCategoryFilter( null, out var categoryFilter );
 
         if ( scopeError != null )
@@ -65,7 +74,7 @@ internal sealed partial class CommunityKnowledgeBaseSkill
 
         var parameters = new Dictionary<string, string>
         {
-            ["rock_version"] = GetRockVersion(),
+            ["rock_version"] = resolvedRockVersion,
             ["categories"] = categoryFilter
         };
 
@@ -76,13 +85,46 @@ internal sealed partial class CommunityKnowledgeBaseSkill
             return DescribeFailure( response );
         }
 
+        var isVersionOverrideAllowed = IsVersionOverrideAllowed();
+
         // Keyed history. One entry that replaces itself, because the overview is
         // consulted throughout a conversation and re-fetching it on every reference
         // would be wasteful, while accumulating copies of it would be worse.
         return Success( response.Data.ToPlainObject() )
             .WithMetadata( response.Meta.ToPlainMetadata() )
+            .WithMetadata( "rockVersion", resolvedRockVersion )
+            .WithMetadata( "isVersionOverrideAllowed", isVersionOverrideAllowed )
             .WithHistoryKey( "kb-overview" )
-            .WithInstructions( "When asked to author Rock UI or Lava endpoints, open the coding guide topic listed in this overview: pass its topic key unchanged to GetTopic, open the root article it lists, and follow that article's routing for the requested outcome. Retrieve only what the route assigns. Never construct or guess a topic or article key." );
+            .WithInstructions( "When asked to author Rock UI or Lava endpoints, open the coding guide topic listed in this overview: pass its topic key unchanged to GetTopic, open the root article it lists, and follow that article's routing for the requested outcome. Retrieve only what the route assigns. Never construct or guess a topic or article key." )
+            .WithInstructions( DescribeVersionScope( resolvedRockVersion, isVersionOverrideAllowed ) );
+    }
+
+    #endregion
+
+    #region Helper Methods
+
+    /// <summary>
+    /// Describes which Rock version the tools are using and whether a call may
+    /// change it.
+    /// </summary>
+    /// <remarks>
+    /// Stated in the overview because the overview is the one result the agent keeps
+    /// for the whole conversation. Saying it once there is what keeps later calls on
+    /// the same version.
+    /// </remarks>
+    /// <param name="rockVersion">The Rock version this overview describes.</param>
+    /// <param name="isVersionOverrideAllowed"><c>true</c> when this skill accepts a different rockVersion.</param>
+    /// <returns>The instruction text for the agent.</returns>
+    private static string DescribeVersionScope( string rockVersion, bool isVersionOverrideAllowed )
+    {
+        if ( !isVersionOverrideAllowed )
+        {
+            return $"This overview describes Rock {rockVersion}. The version override is off for this skill, so every tool answers for this server's version, Rock {rockVersion}. Do not pass a different rockVersion.";
+        }
+
+        return $"This overview describes Rock {rockVersion}. The version override is on for this skill, so a tool may be given a rockVersion to answer for another Rock release. "
+            + "Pass the same rockVersion to every call in this conversation, because mixing versions combines documentation and code from different releases. "
+            + "If the person moves to a different release, call this overview again with that rockVersion, because topics and filter values can differ by release.";
     }
 
     #endregion

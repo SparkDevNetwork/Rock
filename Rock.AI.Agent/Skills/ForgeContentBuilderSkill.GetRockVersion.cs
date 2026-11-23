@@ -28,7 +28,7 @@ internal sealed partial class ForgeContentBuilderSkill
 
     [Description( "Reports the Rock version this instance is running, so control and API lookups can be scoped to the release actually deployed here." )]
     [AgentToolPreamble( "Checking the Rock version." )]
-    [AgentUsage( "Call this before looking up any control, filter, or API in the Rock knowledge base. The knowledge base tools scope lookups to the connected Rock version automatically, so use this result to interpret compatibility and coverage rather than trying to pass an unsupported version argument." )]
+    [AgentUsage( "Call this before looking up any control, filter, or API in the Rock knowledge base. The knowledge base tools scope lookups to the connected Rock version when their rockVersion argument is blank, so leave it blank and use this result to interpret compatibility and coverage." )]
     [AgentUsage( "This is the version of the Rock instance you are connected to. It is not the newest Rock release, and it is not the version any documentation defaults to." )]
     [AgentToolGuid( "8A51C3E9-674D-4B02-93F8-2E6B9D40A715" )]
     public AgentToolResult GetRockVersion()

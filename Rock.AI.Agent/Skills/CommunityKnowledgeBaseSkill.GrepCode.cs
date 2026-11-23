@@ -56,18 +56,27 @@ internal sealed partial class CommunityKnowledgeBaseSkill
         bool isRegex = false,
         string sourceType = null,
         string pathFilter = null,
-        int contextLines = 3 )
+        int contextLines = 3,
+        [Description( RockVersionParameterDescription )]
+        string rockVersion = null )
     {
         if ( pattern.IsNullOrWhiteSpace() )
         {
             return Error( "A search pattern is required." );
         }
 
+        var versionError = ResolveRockVersion( rockVersion, out var resolvedRockVersion );
+
+        if ( versionError != null )
+        {
+            return versionError;
+        }
+
         var parameters = new Dictionary<string, string>
         {
             ["pattern"] = pattern,
             ["is_regex"] = isRegex.ToString().ToLowerInvariant(),
-            ["rock_version"] = GetRockVersion(),
+            ["rock_version"] = resolvedRockVersion,
             ["source_type"] = sourceType,
             ["path_filter"] = pathFilter,
             ["context_lines"] = contextLines.ToString()
@@ -87,7 +96,7 @@ internal sealed partial class CommunityKnowledgeBaseSkill
             // The same coverage gap SearchCode guards against, and it matters more
             // here: a literal pattern that finds nothing reads as conclusive proof
             // the symbol does not exist.
-            var noCodeResult = DescribeMissingCodeIndex( response );
+            var noCodeResult = DescribeMissingCodeIndex( response, resolvedRockVersion );
 
             if ( noCodeResult != null )
             {
@@ -95,7 +104,7 @@ internal sealed partial class CommunityKnowledgeBaseSkill
             }
 
             return NoData()
-                .WithInstructions( $"No line matched '{pattern}' in the Rock {GetRockVersion()} source. Check the spelling, or use {nameof( SearchCode )} to find the relevant file by description first." );
+                .WithInstructions( $"No line matched '{pattern}' in the Rock {resolvedRockVersion} source. Check the spelling, or use {nameof( SearchCode )} to find the relevant file by description first." );
         }
 
         var isTruncated = response.Meta.GetBool( "truncated" ) || response.Meta.GetBool( "is_truncated" );

@@ -54,11 +54,20 @@ internal sealed partial class CommunityKnowledgeBaseSkill
         string category = null,
         string domain = null,
         string source = null,
-        int pageNumber = 1 )
+        int pageNumber = 1,
+        [Description( RockVersionParameterDescription )]
+        string rockVersion = null )
     {
         if ( query.IsNullOrWhiteSpace() )
         {
             return Error( "A search query is required." );
+        }
+
+        var versionError = ResolveRockVersion( rockVersion, out var resolvedRockVersion );
+
+        if ( versionError != null )
+        {
+            return versionError;
         }
 
         var scopeError = ResolveCategoryFilter( category, out var categoryFilter );
@@ -73,7 +82,7 @@ internal sealed partial class CommunityKnowledgeBaseSkill
         var parameters = new Dictionary<string, string>
         {
             ["q"] = query,
-            ["rock_version"] = GetRockVersion(),
+            ["rock_version"] = resolvedRockVersion,
             ["filter_category"] = categoryFilter,
             ["filter_domain"] = domain,
             ["filter_source"] = source,
@@ -92,7 +101,7 @@ internal sealed partial class CommunityKnowledgeBaseSkill
 
         if ( !hits.Any() )
         {
-            return DescribeEmptySearch( query, categoryFilter, domain, source );
+            return DescribeEmptySearch( query, categoryFilter, domain, source, resolvedRockVersion );
         }
 
         return Success( hits )
@@ -120,8 +129,9 @@ internal sealed partial class CommunityKnowledgeBaseSkill
     /// <param name="categoryFilter">The category filter that was applied, if any.</param>
     /// <param name="domain">The domain filter that was applied, if any.</param>
     /// <param name="source">The source filter that was applied, if any.</param>
+    /// <param name="rockVersion">The Rock version the search was scoped to.</param>
     /// <returns>A no data result describing what was searched.</returns>
-    private AgentToolResult DescribeEmptySearch( string query, string categoryFilter, string domain, string source )
+    private AgentToolResult DescribeEmptySearch( string query, string categoryFilter, string domain, string source, string rockVersion )
     {
         var applied = new List<string>();
 
@@ -145,7 +155,7 @@ internal sealed partial class CommunityKnowledgeBaseSkill
             : " with no filters";
 
         return NoData()
-            .WithInstructions( $"Nothing matched '{query}'{filterText} for Rock {GetRockVersion()}. "
+            .WithInstructions( $"Nothing matched '{query}'{filterText} for Rock {rockVersion}. "
                 + $"If a filter was applied, confirm its value against {nameof( GetKnowledgeBaseOverview )}, which lists the accepted values with document counts. "
                 + "An unrecognized filter value returns no results rather than an error, so a wrong filter and a genuine miss look the same." );
     }

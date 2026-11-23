@@ -14,18 +14,25 @@
                   multiple
                   enhanceForLongLists
                   help="Limits knowledge searches to these categories. Select none to search all of them. This does not limit the source code or curated topic tools, which carry no categories." />
+
+    <CheckBox label="Allow Version Override"
+              v-model="isVersionOverrideAllowed"
+              help="When on, the agent may ask the knowledge base about a different Rock version, such as 19, instead of this server's version. When off, the tools always use this server's Rock version, and a request for any other version is refused." />
 </template>
 
 <script setup lang="ts">
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { asBoolean, asTrueFalseOrNull } from "@Obsidian/Utility/booleanUtils";
     import { standardDynamicComponentProps, updateRefValue } from "@Obsidian/Utility/component";
     import { safeParseJson } from "@Obsidian/Utility/stringUtils";
     import type { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { ref, watch } from "vue";
 
     const enum ConfigurationKey {
-        Categories = "categories"
+        Categories = "categories",
+        IsVersionOverrideAllowed = "isVersionOverrideAllowed"
     }
 
     const props = defineProps(standardDynamicComponentProps);
@@ -43,6 +50,10 @@
     const categoryItems = ref<ListItemBag[]>(
         safeParseJson<ListItemBag[]>(props.options?.categories) ?? []
     );
+
+    // A missing value reads as false, so skills saved before this setting existed
+    // stay locked to the server's version.
+    const isVersionOverrideAllowed = ref(asBoolean(props.modelValue[ConfigurationKey.IsVersionOverrideAllowed]));
 
     // #endregion
 
@@ -63,14 +74,19 @@
 
     // #region Watches
 
-    watch(categories, () => {
+    watch([categories, isVersionOverrideAllowed], () => {
         const newValues = { ...props.modelValue };
         newValues[ConfigurationKey.Categories] = categories.value.join(",");
+        newValues[ConfigurationKey.IsVersionOverrideAllowed] = asTrueFalseOrNull(isVersionOverrideAllowed.value);
         emit("update:modelValue", newValues);
     });
 
     watch(() => props.modelValue[ConfigurationKey.Categories], (value) => {
         updateRefValue(categories, splitValue(value as string | undefined));
+    });
+
+    watch(() => props.modelValue[ConfigurationKey.IsVersionOverrideAllowed], (value) => {
+        updateRefValue(isVersionOverrideAllowed, asBoolean(value));
     });
 
     watch(() => props.options, () => {

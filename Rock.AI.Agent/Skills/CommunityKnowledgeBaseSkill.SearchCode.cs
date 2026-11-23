@@ -47,11 +47,23 @@ internal sealed partial class CommunityKnowledgeBaseSkill
     [AgentToolReturnDescription( "Matching files exactly as the code service returns them. Each carries code_document_id, repo, file_path, description, source_type, role, rock_domain, rock_version, file_url, and score. The id member duplicates code_document_id and is deprecated; use code_document_id. No file content is included; read it with GrepCode or GetCodeLines." )]
     [AgentToolGuid( "A60CA1BC-5E68-481B-8561-27F6AE57D500" )]
     [AgentToolPreamble( "Searching Rock Source" )]
-    public async Task<AgentToolResult> SearchCode( string query, string sourceType = null, int pageNumber = 1 )
+    public async Task<AgentToolResult> SearchCode(
+        string query,
+        string sourceType = null,
+        int pageNumber = 1,
+        [Description( RockVersionParameterDescription )]
+        string rockVersion = null )
     {
         if ( query.IsNullOrWhiteSpace() )
         {
             return Error( "A search query is required." );
+        }
+
+        var versionError = ResolveRockVersion( rockVersion, out var resolvedRockVersion );
+
+        if ( versionError != null )
+        {
+            return versionError;
         }
 
         var page = pageNumber < 1 ? 1 : pageNumber;
@@ -59,7 +71,7 @@ internal sealed partial class CommunityKnowledgeBaseSkill
         var parameters = new Dictionary<string, string>
         {
             ["q"] = query,
-            ["rock_version"] = GetRockVersion(),
+            ["rock_version"] = resolvedRockVersion,
             ["source_type"] = sourceType,
             ["limit"] = SearchPageSize.ToString(),
             ["offset"] = ( ( page - 1 ) * SearchPageSize ).ToString()
@@ -76,7 +88,7 @@ internal sealed partial class CommunityKnowledgeBaseSkill
 
         if ( !hits.Any() )
         {
-            var noCodeResult = DescribeMissingCodeIndex( response );
+            var noCodeResult = DescribeMissingCodeIndex( response, resolvedRockVersion );
 
             if ( noCodeResult != null )
             {
@@ -84,7 +96,7 @@ internal sealed partial class CommunityKnowledgeBaseSkill
             }
 
             return NoData()
-                .WithInstructions( $"No source file matched '{query}' for Rock {GetRockVersion()}. Try different wording, or use {nameof( GrepCode )} if you know the exact text to look for." );
+                .WithInstructions( $"No source file matched '{query}' for Rock {resolvedRockVersion}. Try different wording, or use {nameof( GrepCode )} if you know the exact text to look for." );
         }
 
         return Success( hits )
@@ -119,15 +131,16 @@ internal sealed partial class CommunityKnowledgeBaseSkill
     /// </para>
     /// </remarks>
     /// <param name="response">The successful but empty response.</param>
+    /// <param name="rockVersion">The Rock version the request was scoped to.</param>
     /// <returns>An error naming the release, or <c>null</c> when code is indexed.</returns>
-    private AgentToolResult DescribeMissingCodeIndex( CommunityKnowledgeBaseResponse response )
+    private AgentToolResult DescribeMissingCodeIndex( CommunityKnowledgeBaseResponse response, string rockVersion )
     {
         if ( !response.Meta.GetBool( "no_code_for_version" ) )
         {
             return null;
         }
 
-        return Error( $"The knowledge base has no Rock source code indexed for Rock {GetRockVersion()}." )
+        return Error( $"The knowledge base has no Rock source code indexed for Rock {rockVersion}." )
             .WithInstructions( "This is a coverage gap rather than a search failure. Rewording the query will not help. Answer from SearchKnowledge or say that the source for this release is not available." );
     }
 

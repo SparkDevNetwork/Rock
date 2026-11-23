@@ -56,7 +56,10 @@ internal sealed partial class CommunityKnowledgeBaseSkill
     [AgentToolReturnDescription( "The article exactly as the knowledge service returns it, including its content, summary, the topic it belongs to, its retrieval_key, and its child articles with their own keys." )]
     [AgentToolGuid( "BCE7AD22-3768-4DEE-A2E1-71BC324905EE" )]
     [AgentToolPreamble( "Reading Topic Article" )]
-    public async Task<AgentToolResult> GetArticle( string articleKey )
+    public async Task<AgentToolResult> GetArticle(
+        string articleKey,
+        [Description( RockVersionParameterDescription )]
+        string rockVersion = null )
     {
         if ( articleKey.IsNullOrWhiteSpace() )
         {
@@ -64,9 +67,16 @@ internal sealed partial class CommunityKnowledgeBaseSkill
                 .WithInstructions( $"Call {nameof( GetTopic )} and take a key from its article list." );
         }
 
+        var versionError = ResolveRockVersion( rockVersion, out var resolvedRockVersion );
+
+        if ( versionError != null )
+        {
+            return versionError;
+        }
+
         var parameters = new Dictionary<string, string>
         {
-            ["rock_version"] = GetRockVersion()
+            ["rock_version"] = resolvedRockVersion
         };
 
         // Each segment is escaped separately. Article keys contain slashes and the

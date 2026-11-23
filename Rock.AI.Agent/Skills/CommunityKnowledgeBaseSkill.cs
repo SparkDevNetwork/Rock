@@ -17,7 +17,9 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Globalization;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -67,6 +69,7 @@ namespace Rock.AI.Agent.Skills;
 [AgentUsage( "Prefer SearchKnowledge for general documentation and community guidance. Do not use it as authoritative evidence for exact entity properties. For entity fields, nullability, enums, and relationships, open the version-matching data-model topic advertised by GetKnowledgeBaseOverview, locate the target entity with GetTopic, and read its article with GetArticle." )]
 [AgentUsage( "When you do not know enough about a subject to know what to search for, open a curated topic instead of guessing at search terms. The overview lists the topics with a hint for each; GetTopic opens one and GetArticle reads down through it, revealing a little at a time so you can choose where to go next. Curated topics are never returned by search, so this is the only route to them." )]
 [AgentUsage( "When asked to author Rock UI or Lava endpoints, open the coding guide topic advertised by GetKnowledgeBaseOverview: pass its topic key unchanged to GetTopic, open the root article it lists, and follow that article's routing for the requested outcome. Retrieve only what the route assigns. Never construct or guess a topic or article key." )]
+[AgentUsage( "Every content tool scopes its answer to one Rock version, and by default that is this server's version. When the person asks about a different Rock version, pass its major number as rockVersion. That works only when this skill allows a version override, and GetKnowledgeBaseOverview reports whether it does. When you pass rockVersion, pass the same value to every call in the conversation, because mixing versions combines documentation and code from different releases." )]
 [AgentGuardrail( "Never construct, edit, or guess a topic key or an article key. Take them only from the overview's topic list, a topic's table of contents, or a parent article's child list." )]
 [AgentSkillGuid( "DFCBFDE8-6BF2-4DDF-81FE-FDD436E5FD90" )]
 [EntityTypeGuid( "959F0B92-A3BB-4AAA-9143-CF7D77895392" )]
@@ -83,6 +86,12 @@ internal sealed partial class CommunityKnowledgeBaseSkill : AgentSkillComponent
         /// The categories knowledge search is scoped to. Empty means every category.
         /// </summary>
         public const string Categories = "categories";
+
+        /// <summary>
+        /// Whether a tool call may ask for a Rock version other than this server's.
+        /// Missing or blank means no, so the tools stay locked to this server's version.
+        /// </summary>
+        public const string IsVersionOverrideAllowed = "isVersionOverrideAllowed";
     }
 
     #endregion
@@ -128,6 +137,12 @@ internal sealed partial class CommunityKnowledgeBaseSkill : AgentSkillComponent
     private const int SearchPageSize = 25;
 
     /// <summary>
+    /// The description of the rockVersion parameter, shared by every tool that
+    /// scopes its answer to a Rock version.
+    /// </summary>
+    private const string RockVersionParameterDescription = "The Rock major version to use, such as 19. Leave blank to use this server's version. Only honored when the skill allows a version override; GetKnowledgeBaseOverview reports whether it does.";
+
+    /// <summary>
     /// How long the configuration screen waits for the category list.
     /// </summary>
     /// <remarks>
@@ -137,6 +152,12 @@ internal sealed partial class CommunityKnowledgeBaseSkill : AgentSkillComponent
     /// warning is a better answer than a long wait for the same outcome.
     /// </remarks>
     private static readonly TimeSpan ConfigurationTimeout = TimeSpan.FromSeconds( 8 );
+
+    /// <summary>
+    /// Matches a requested Rock version: a major number, optionally followed by
+    /// dotted parts such as "19.1" or "19.0.4". The first group is the major number.
+    /// </summary>
+    private static readonly Regex RockVersionPattern = new Regex( @"^(\d+)(?:\.\d+)*$", RegexOptions.Compiled );
 
     #endregion
 
@@ -191,6 +212,11 @@ internal sealed partial class CommunityKnowledgeBaseSkill : AgentSkillComponent
             publicConfiguration[ConfigurationKey.Categories] = categories;
         }
 
+        if ( privateConfiguration.TryGetValue( ConfigurationKey.IsVersionOverrideAllowed, out var isVersionOverrideAllowed ) )
+        {
+            publicConfiguration[ConfigurationKey.IsVersionOverrideAllowed] = isVersionOverrideAllowed;
+        }
+
         return publicConfiguration;
     }
 
@@ -202,6 +228,11 @@ internal sealed partial class CommunityKnowledgeBaseSkill : AgentSkillComponent
         if ( publicConfiguration.TryGetValue( ConfigurationKey.Categories, out var categories ) )
         {
             privateConfiguration[ConfigurationKey.Categories] = categories;
+        }
+
+        if ( publicConfiguration.TryGetValue( ConfigurationKey.IsVersionOverrideAllowed, out var isVersionOverrideAllowed ) )
+        {
+            privateConfiguration[ConfigurationKey.IsVersionOverrideAllowed] = isVersionOverrideAllowed;
         }
 
         return privateConfiguration;
@@ -402,23 +433,117 @@ internal sealed partial class CommunityKnowledgeBaseSkill : AgentSkillComponent
     }
 
     /// <summary>
-    /// Gets the Rock version to scope content requests to.
+    /// Gets the major version of the Rock instance this code is running on.
     /// </summary>
-    /// <remarks>
-    /// The service expects the major release only, as a bare number such as "19" or
-    /// "20". Not "19.1", and not "19.0"; a major release carries no trailing minor.
-    /// Nothing checks the version against the corpus before sending. If the running
-    /// Rock is newer than anything indexed the service answers 400
-    /// <c>unknown-rock-version</c> and names the versions it holds, which is both more
-    /// current than a cached list and cheaper than looking one up on every session.
-    /// </remarks>
-    /// <returns>The running Rock major version.</returns>
-    private static string GetRockVersion()
+    /// <returns>The running Rock major version, such as "20".</returns>
+    private static string GetServerRockVersion()
     {
         return VersionInfo.VersionInfo
             .GetRockSemanticVersionNumber()
             .Split( '.' )
             .First();
+    }
+
+    /// <summary>
+    /// Gets whether this skill lets a tool call ask for a Rock version other than
+    /// this server's.
+    /// </summary>
+    /// <returns><c>true</c> when the operator turned the version override on; otherwise <c>false</c>.</returns>
+    private bool IsVersionOverrideAllowed()
+    {
+        return ConfigurationValues
+            .GetReadOnlyValueOrDefault( ConfigurationKey.IsVersionOverrideAllowed, string.Empty )
+            .AsBoolean();
+    }
+
+    /// <summary>
+    /// Works out the Rock version to scope one content request to.
+    /// </summary>
+    /// <remarks>
+    /// See <see cref="DetermineRockVersion"/> for the rules. This wrapper only
+    /// supplies the server's version and the skill's setting, and turns a refusal
+    /// into a tool result.
+    /// </remarks>
+    /// <param name="requestedVersion">The version the caller asked for, or null to use this server's version.</param>
+    /// <param name="rockVersion">The major version to send, or null when the request is refused.</param>
+    /// <returns><c>null</c> when the version resolved, otherwise the error to return.</returns>
+    private AgentToolResult ResolveRockVersion( string requestedVersion, out string rockVersion )
+    {
+        var errorMessage = DetermineRockVersion( GetServerRockVersion(), requestedVersion, IsVersionOverrideAllowed(), out rockVersion );
+
+        if ( errorMessage == null )
+        {
+            return null;
+        }
+
+        return Error( errorMessage );
+    }
+
+    /// <summary>
+    /// Decides which Rock major version a request is scoped to.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// The service expects the major release only, as a bare number such as "19" or
+    /// "20". Not "19.1", and not "19.0"; a major release carries no trailing minor.
+    /// A caller may still write "19.1", so the minor part is accepted and dropped.
+    /// </para>
+    /// <para>
+    /// Nothing checks the version against the corpus before sending. If the version
+    /// is newer or older than anything indexed, the service answers 400
+    /// <c>unknown-rock-version</c> and names the versions it holds, which is both more
+    /// current than a cached list and cheaper than looking one up on every session.
+    /// </para>
+    /// <para>
+    /// 11/23/26 - CLAUDE
+    ///
+    /// A different version is refused, not quietly replaced, when the override is
+    /// off. Falling back to the server's version would hand the agent facts from
+    /// the wrong release while it believes they describe the one it asked for, and
+    /// it would pass them on with confidence. Asking for the server's own version
+    /// is not an override, so it is accepted either way.
+    ///
+    /// Reason: A wrong version answer looks right, so the refusal has to be loud.
+    /// </para>
+    /// </remarks>
+    /// <param name="serverVersion">The major version of the running Rock, such as "20".</param>
+    /// <param name="requestedVersion">The version the caller asked for, or null or blank to use <paramref name="serverVersion"/>.</param>
+    /// <param name="isVersionOverrideAllowed"><c>true</c> when the skill lets a caller ask for a version other than <paramref name="serverVersion"/>.</param>
+    /// <param name="resolvedVersion">The major version to send, or null when the request is refused.</param>
+    /// <returns><c>null</c> when the version resolved, otherwise a message that explains the refusal.</returns>
+    internal static string DetermineRockVersion( string serverVersion, string requestedVersion, bool isVersionOverrideAllowed, out string resolvedVersion )
+    {
+        if ( requestedVersion.IsNullOrWhiteSpace() )
+        {
+            resolvedVersion = serverVersion;
+
+            return null;
+        }
+
+        var match = RockVersionPattern.Match( requestedVersion.Trim() );
+
+        if ( !match.Success || !int.TryParse( match.Groups[1].Value, NumberStyles.None, CultureInfo.InvariantCulture, out var requestedMajor ) )
+        {
+            resolvedVersion = null;
+
+            return $"'{requestedVersion}' is not a Rock version. Pass a major version number such as {serverVersion}, or leave rockVersion blank to use this server's version, Rock {serverVersion}.";
+        }
+
+        // Formatting the parsed number drops leading zeros, so "019" is sent as "19".
+        var requestedMajorVersion = requestedMajor.ToString( CultureInfo.InvariantCulture );
+        var isServerVersion = requestedMajorVersion == serverVersion;
+
+        if ( !isVersionOverrideAllowed && !isServerVersion )
+        {
+            resolvedVersion = null;
+
+            return $"This skill is locked to Rock {serverVersion} and the version override is off, so it cannot answer for Rock {requestedMajorVersion}. "
+                + $"Leave rockVersion blank, and tell the person that this skill answers for Rock {serverVersion} only.";
+        }
+
+        resolvedVersion = requestedMajorVersion;
+
+        return null;
     }
 
     /// <summary>
