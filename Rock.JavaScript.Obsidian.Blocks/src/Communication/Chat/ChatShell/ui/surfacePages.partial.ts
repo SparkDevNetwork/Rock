@@ -24,7 +24,8 @@
 // panel's body, the page sliding out of front is drawn as the view the person last saw of it, so
 // the slide never shows its top or blank space below its end.
 
-import { computed, ComputedRef, inject, InjectionKey, nextTick, provide, shallowReactive, watch } from "vue";
+import { computed, ComputedRef, inject, InjectionKey, nextTick, onScopeDispose, provide, shallowReactive, watch } from "vue";
+import { useChatSession } from "../chatSession.partial";
 import { focusQuietly } from "./focusTrap.partial";
 import { isMotionReduced } from "./viewport.partial";
 import { SheetHeight } from "../types.partial";
@@ -145,6 +146,10 @@ export function provideSurfacePages(parts: SurfaceParts): SurfacePages {
     /** The surface's own first page as drawn. */
     let firstElement: () => HTMLElement | undefined = () => undefined;
 
+    /** Each turned page's history entry on a phone, let go as it closes, so Back returns one page. */
+    const backStack = useChatSession().backStack;
+    const releases = new Map<SurfacePageEntry, () => void>();
+
     /** The surface's height change still playing, which the next turn takes over from. */
     let resizing: Animation | null = null;
 
@@ -252,6 +257,7 @@ export function provideSurfacePages(parts: SurfaceParts): SurfacePages {
         holdView(top.value, 0);
         views.delete(entry);
         stack.push(entry);
+        releases.set(entry, backStack.hold(() => entry.back()));
 
         // After the patch, when the page and the head are drawn; the page starts at its top.
         void nextTick(() => {
@@ -282,6 +288,8 @@ export function provideSurfacePages(parts: SurfaceParts): SurfacePages {
             holdView(entry, place);
         }
         stack.splice(at, 1);
+        releases.get(entry)?.();
+        releases.delete(entry);
         if (wasTop) {
             views.delete(top.value);
         }
@@ -311,6 +319,12 @@ export function provideSurfacePages(parts: SurfaceParts): SurfacePages {
             }
         }
     }, { flush: "sync" });
+
+    // A surface leaving the page while turned lets go of its pages' entries with it.
+    onScopeDispose(() => {
+        releases.forEach(release => release());
+        releases.clear();
+    });
 
     const pages: SurfacePages = {
         isTurned: computed(() => stack.length > 0),

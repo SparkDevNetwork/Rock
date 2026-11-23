@@ -253,6 +253,7 @@
     import { useAnnouncerModal } from "./announcer.partial";
     import { useFocusTrap } from "./focusTrap.partial";
     import { provideSurfacePages } from "./surfacePages.partial";
+    import { useBackLayer } from "../composables/useBackStack.partial";
 
     const props = defineProps({
         isOpen: {
@@ -418,4 +419,8 @@
     const trapped = (): HTMLElement | undefined => props.isOpen ? dialogElement.value : undefined;
     useFocusTrap(trapped, { returnTo: () => props.returnFocus?.() ?? null, initialFocus: firstFocus });
     useAnnouncerModal(trapped);
+
+    // On a phone every open dialog, a confirm, a panel or the photo viewer, is one step of Back,
+    // which closes it as its Cancel or X does.
+    useBackLayer(() => props.isOpen, () => emit("close"));
 </script>

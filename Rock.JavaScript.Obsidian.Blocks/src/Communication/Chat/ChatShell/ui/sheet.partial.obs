@@ -129,6 +129,7 @@
     import { useFocusTrap } from "./focusTrap.partial";
     import { provideSurfacePages } from "./surfacePages.partial";
     import { overlayHostOf } from "./tooltip.partial";
+    import { useBackLayer } from "../composables/useBackStack.partial";
     import { SheetHeight } from "../types.partial";
 
     // A bottom sheet over a scrim: how every menu, picker and card is drawn on a phone. It is
@@ -191,6 +192,10 @@
     const trapped = (): HTMLElement | undefined => props.isOpen ? sheetElement.value : undefined;
     useFocusTrap(trapped, { isFocusReturned: () => !props.isFocusReturnedByOwner });
     useAnnouncerModal(trapped);
+
+    // On a phone the open sheet is one step of Back, which asks its owner to close it as the
+    // scrim does; each page turned in it is one more, held by the pages.
+    useBackLayer(() => props.isOpen, () => emit("dismiss"));
 
     function onKeydown(event: KeyboardEvent): void {
         if (event.key === "Escape" && !event.isComposing) {
