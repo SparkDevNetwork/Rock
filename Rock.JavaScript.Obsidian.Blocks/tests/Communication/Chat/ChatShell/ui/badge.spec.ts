@@ -72,9 +72,13 @@ describe("the badge", () => {
         expect(mount(Badge, { props: { label: "GIF", tone: "media" } }).attributes("aria-hidden")).toBe("true");
     });
 
-    test("springs in as it appears when asked, the set's spring that reduced motion turns to a short fade", () => {
-        expect(mount(Badge, { props: { count: 2, isPopping: true } }).classes()).toContain("is-pop");
-        expect(ruleOf(styleOf("badge.partial.obs"), ".chat-badge.is-pop")).toMatch(/animation:\s*chat-spring var\(--chat-d-spring\)/);
+    // No caller ever asked a badge to spring in; what springs, as a thread pill or a reaction,
+    // springs as a whole, so the badge keeps no motion of its own to drift from theirs.
+    test("has no spring of its own", () => {
+        const props = (Badge as unknown as { props: Record<string, unknown> }).props;
+
+        expect(Object.keys(props)).not.toContain("isPopping");
+        expect(ruleOf(styleOf("badge.partial.obs"), ".chat-badge.is-pop")).toBe("");
     });
 
     test("takes a class and test id from where it is drawn", () => {
