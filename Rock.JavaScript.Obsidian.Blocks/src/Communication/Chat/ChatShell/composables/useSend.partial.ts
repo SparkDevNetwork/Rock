@@ -31,7 +31,7 @@
 // stored with its answer lost; changed words are a new message under a new key. Once stopped,
 // nothing more is sent, a wait to send again sends nothing, and no answer still on its way
 // reaches the screen.
-import { onBeforeUnmount, reactive, Ref, watch } from "vue";
+import { computed, onBeforeUnmount, reactive, Ref, watch } from "vue";
 import { AttachmentItem, ChatError, DisplayPiece, FailureWords, isFileItem, isGifItem, MessageBlock, PendingMessage, QuotedMessage, RoomKind, SidebarRow, TimelineMessage } from "../types.partial";
 import { sendingQuietMs, sentHoldMs } from "../feedLayout.partial";
 import { tokenDuration } from "../ui/brand.partial";
@@ -490,6 +490,14 @@ export function createSender(dependencies: SenderDependencies): Sender {
     const sentKeys = new Set<string>();
     const failures = reactive<{ last: SendFailureNews | null }>({ last: null });
 
+    // The reason of a send that reached nothing while offline, read from the connection now, not
+    // as it was at the failure: offline words while it stays lost, none once back, so the strip
+    // and the Not sent marker offer the plain failure with Try again. Nothing resends by itself,
+    // since a send the person did not ask for again could surprise them. Kept on the row as this
+    // ref, which the reactive row unwraps on every read, so each reader follows the connection.
+    // A sender not told of the connection keeps the offline words, as the failure alone decides.
+    const unreachedReason = computed((): FailureWords | null => isOfflineFailure(null, dependencies.isOffline?.()) ? offlineWords : null);
+
     // The id each key's message landed under. A key in here is posted, whatever an answer still
     // on its way says: the answer may have been lost, or refused a replay of a different text.
     const landedKeys = new Map<string, number>();
@@ -676,7 +684,7 @@ export function createSender(dependencies: SenderDependencies): Sender {
             }
             const reason = failureReason(error, isFinal, dependencies.isOffline?.());
             if (reason) {
-                row.reason = reason;
+                row.reason = reason === offlineWords ? unreachedReason as unknown as FailureWords : reason;
             }
             if (finalRefusals.roomRefusals.includes(error.code)) {
                 dependencies.onRoomRefused?.(row.channelId, error);
