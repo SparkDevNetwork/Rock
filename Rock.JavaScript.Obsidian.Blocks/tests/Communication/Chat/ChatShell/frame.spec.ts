@@ -2019,7 +2019,7 @@ describe("the look, by the open conversation's kind", () => {
             const feed = w.get(".chat-feed-frame").element;
             const classes = [...feed.classList].join(" ");
             expect(lookOf(w)).toBe("conversational");
-            expect(feed.classList.contains("is-pair")).toBe(isPair);
+            expect(w.findComponent(MessageFeedComponent).props("isDirectMessage")).toBe(isPair);
 
             roomsOf().state.facts[unlisted] = roomFacts({ channel_id: unlisted, name: null, channel_type: "dm", room_kind: roomKind, member_count: memberCount });
             await settle();
