@@ -178,6 +178,21 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// </summary>
         public bool CanEditSmsStatus { get; set; }
 
+        /// <summary>
+        /// Can the current user edit the giving group and envelope number?
+        /// </summary>
+        public bool CanEditFinancials { get; set; }
+
+        /// <summary>
+        /// Can the current user edit the connection status?
+        /// </summary>
+        public bool CanEditConnectionStatus { get; set; }
+
+        /// <summary>
+        /// Can the current user edit the record status, reason, note and deceased date?
+        /// </summary>
+        public bool CanEditRecordStatus { get; set; }
+
         #endregion
 
         /// <summary>
@@ -196,15 +211,16 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             dvpReason.DefinedTypeId = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS_REASON ) ).Id;
             dvpRecordSource.DefinedTypeId = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.RECORD_SOURCE_TYPE ) ).Id;
 
-            pnlGivingGroup.Visible = UserCanAdministrate || IsUserAuthorized( SecurityActionKey.EditFinancials );
+            this.CanEditFinancials = UserCanAdministrate || IsUserAuthorized( SecurityActionKey.EditFinancials );
+            pnlGivingGroup.Visible = this.CanEditFinancials;
 
-            bool canEditConnectionStatus = UserCanAdministrate || IsUserAuthorized( SecurityActionKey.EditConnectionStatus );
-            dvpConnectionStatus.Visible = canEditConnectionStatus;
-            lConnectionStatusReadOnly.Visible = !canEditConnectionStatus;
+            this.CanEditConnectionStatus = UserCanAdministrate || IsUserAuthorized( SecurityActionKey.EditConnectionStatus );
+            dvpConnectionStatus.Visible = this.CanEditConnectionStatus;
+            lConnectionStatusReadOnly.Visible = !this.CanEditConnectionStatus;
 
-            bool canEditRecordStatus = UserCanAdministrate || IsUserAuthorized( SecurityActionKey.EditRecordStatus );
-            dvpRecordStatus.Visible = canEditRecordStatus;
-            lRecordStatusReadOnly.Visible = !canEditRecordStatus;
+            this.CanEditRecordStatus = UserCanAdministrate || IsUserAuthorized( SecurityActionKey.EditRecordStatus );
+            dvpRecordStatus.Visible = this.CanEditRecordStatus;
+            lRecordStatusReadOnly.Visible = !this.CanEditRecordStatus;
 
             bool canEditRecordSource = UserCanAdministrate;
             dvpRecordSource.Visible = canEditRecordSource;
@@ -506,7 +522,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         person.MaritalStatusValueId = dvpMaritalStatus.SelectedValueAsInt();
                         person.AnniversaryDate = person.MaritalStatusValueId == DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED ).Id ? dpAnniversaryDate.SelectedDate : null;
                         person.Gender = rblGender.SelectedValue.ConvertToEnum<Gender>();
-                        person.ConnectionStatusValueId = dvpConnectionStatus.SelectedValueAsInt();
+                        person.ConnectionStatusValueId = CanEditConnectionStatus ? dvpConnectionStatus.SelectedValueAsInt() : person.ConnectionStatusValueId;
                         person.RecordSourceValueId = dvpRecordSource.SelectedValueAsInt();
 
                         if ( rpRace.Visible )
@@ -555,6 +571,9 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                         phoneNumber.CountryCode = PhoneNumber.CleanNumber( pnbPhone.CountryCode );
                                         phoneNumber.Number = PhoneNumber.CleanNumber( pnbPhone.Number );
 
+                                        // Keep the stored SMS flag when the user cannot edit it.
+                                        var desiredSms = CanEditSmsStatus ? cbSms.Checked : phoneNumber.IsMessagingEnabled;
+
                                         // Only allow one number to have SMS selected
                                         if ( smsSelected )
                                         {
@@ -562,8 +581,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                         }
                                         else
                                         {
-                                            phoneNumber.IsMessagingEnabled = cbSms.Checked;
-                                            smsSelected = cbSms.Checked;
+                                            phoneNumber.IsMessagingEnabled = desiredSms;
+                                            smsSelected = desiredSms;
                                         }
 
                                         phoneNumber.IsUnlisted = cbUnlisted.Checked;
@@ -616,12 +635,12 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                             person.IsChatOpenDirectMessageAllowed = ddlIsChatOpenDirectMessageAllowed.SelectedValue.AsBooleanOrNull();
                         }
 
-                        person.GivingGroupId = ddlGivingGroup.SelectedValueAsId();
+                        person.GivingGroupId = CanEditFinancials ? ddlGivingGroup.SelectedValueAsId() : person.GivingGroupId;
                         person.IsLockedAsChild = cbLockAsChild.Checked;
 
                         // Save the Envelope Number attribute if it exists and has changed
                         var personGivingEnvelopeAttribute = AttributeCache.Get( Rock.SystemGuid.Attribute.PERSON_GIVING_ENVELOPE_NUMBER.AsGuid() );
-                        if ( GlobalAttributesCache.Get().EnableGivingEnvelopeNumber && personGivingEnvelopeAttribute != null )
+                        if ( CanEditFinancials && GlobalAttributesCache.Get().EnableGivingEnvelopeNumber && personGivingEnvelopeAttribute != null )
                         {
                             if ( person.Attributes == null )
                             {
@@ -667,7 +686,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                         // apostrophes in names (e.g., "O'Reilly") don't break the confirm() call.
                                         string givingEnvelopeWarningScript = string.Format(
                                             givingEnvelopeWarningScriptFormat,
-                                            HttpUtility.JavaScriptStringEncode( givingEnvelopeWarningText ),
+                                            HttpUtility.JavaScriptStringEncode( givingEnvelopeWarningText.EncodeHtml() ),
                                             hfGivingEnvelopeNumberConfirmed.ClientID,
                                             HttpUtility.JavaScriptStringEncode( newEnvelopeNumber ) );
 
@@ -684,7 +703,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         var recordStatusInactiveId = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id;
                         var reasonDeceasedId = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_REASON_DECEASED ) ).Id;
 
-                        int? newRecordStatusId = dvpRecordStatus.SelectedValueAsInt();
+                        int? newRecordStatusId = CanEditRecordStatus ? dvpRecordStatus.SelectedValueAsInt() : person.RecordStatusValueId;
 
                         // Is the person's record status changing?
                         if ( person.RecordStatusValueId.HasValue && person.RecordStatusValueId != newRecordStatusId )
@@ -696,19 +715,19 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                             }
                         }
 
-                        person.RecordStatusValueId = dvpRecordStatus.SelectedValueAsInt();
+                        person.RecordStatusValueId = newRecordStatusId;
 
-                        int? newRecordStatusReasonId = null;
-                        if ( person.RecordStatusValueId.HasValue && person.RecordStatusValueId.Value == recordStatusInactiveId )
+                        int? newRecordStatusReasonId = CanEditRecordStatus ? null : person.RecordStatusReasonValueId;
+                        if ( CanEditRecordStatus && person.RecordStatusValueId.HasValue && person.RecordStatusValueId.Value == recordStatusInactiveId )
                         {
                             newRecordStatusReasonId = dvpReason.SelectedValueAsInt();
                         }
 
                         person.RecordStatusReasonValueId = newRecordStatusReasonId;
-                        person.InactiveReasonNote = tbInactiveReasonNote.Text.Trim();
+                        person.InactiveReasonNote = CanEditRecordStatus ? tbInactiveReasonNote.Text.Trim() : person.InactiveReasonNote;
 
-                        DateTime? deceasedDate = null;
-                        if ( newRecordStatusReasonId.HasValue && newRecordStatusReasonId.Value == reasonDeceasedId )
+                        DateTime? deceasedDate = CanEditRecordStatus ? null : person.DeceasedDate;
+                        if ( CanEditRecordStatus && newRecordStatusReasonId.HasValue && newRecordStatusReasonId.Value == reasonDeceasedId )
                         {
                             // sanity check to ensure that the deceased date is not before the birthday
                             if ( dpDeceasedDate.SelectedDate < bpBirthDay.SelectedDate )

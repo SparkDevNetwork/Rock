@@ -2203,7 +2203,16 @@ namespace Rock.Blocks.Crm
             using ( var rockContext = new RockContext() )
             {
                 var currentPerson = GetCurrentPerson();
-                var (allowedAdult1, allowedAdult2, allowedChildren, allowedFamily) = GetCurrentOrNewFamily( rockContext, currentPerson, GetChildRelationshipTypes() );
+                var childRelationshipTypes = GetChildRelationshipTypes();
+                var (allowedAdult1, allowedAdult2, allowedChildren, allowedFamily) = GetCurrentOrNewFamily( rockContext, currentPerson, childRelationshipTypes );
+
+                // Child roles the block offers. The family Child role is always allowed.
+                var allowedChildRoleGuids = childRelationshipTypes.Values
+                    .Select( v => v.Value.AsGuidOrNull() )
+                    .Where( g => g.HasValue )
+                    .Select( g => g.Value )
+                    .ToList();
+                allowedChildRoleGuids.Add( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid() );
 
                 // Only the existing family offered to the current person may be updated.
                 if ( bag.FamilyGuid.HasValue && ( allowedFamily == null || allowedFamily.Id == 0 || allowedFamily.Guid != bag.FamilyGuid.Value ) )
@@ -2250,6 +2259,12 @@ namespace Rock.Blocks.Crm
                 {
                     foreach ( var child in bag.Children )
                     {
+                        if ( child?.FamilyRoleGuid != null && !allowedChildRoleGuids.Contains( child.FamilyRoleGuid.Value ) )
+                        {
+                            errorMessage = "Invalid child relationship.";
+                            return false;
+                        }
+
                         if ( !RestrictPersonBag( child, allowedChildPeople ) )
                         {
                             errorMessage = "Invalid profile photo.";
