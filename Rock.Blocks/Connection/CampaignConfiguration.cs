@@ -316,6 +316,9 @@ namespace Rock.Blocks.Connection
             var campaignItem = CampaignConnectionHelper.GetCampaignConfiguration( campaignGuid.Value )
                 ?? new CampaignItem { Guid = campaignGuid.Value };
 
+            // Each call reads the stored settings again, so this is a separate copy of the stored values.
+            var previous = CampaignConnectionHelper.GetCampaignConfiguration( campaignGuid.Value ) ?? new CampaignItem();
+
             campaignItem.Name = bag.Name;
             campaignItem.IsActive = bag.IsActive;
             campaignItem.ConnectionTypeGuid = bag.ConnectionTypeGuid.AsGuid();
@@ -333,6 +336,22 @@ namespace Rock.Blocks.Connection
 
             // Resolve the opt-out group Guid.
             campaignItem.OptOutGroupGuid = bag.OptOutGroup?.Value?.AsGuidOrNull();
+
+            /*
+                11/23/2026 - MSE
+
+                Block EDIT does not mean the person may view every data view, connection type,
+                opportunity or opt-out group. The campaign job runs the data view and creates
+                requests in the opportunity, so a changed reference must be one the person can
+                view, and the opportunity must belong to the selected connection type. Values
+                left unchanged from the stored campaign are not checked.
+
+                Reason: Prevent saving a campaign that points at records the person cannot view.
+            */
+            if ( !CampaignConnectionHelper.ValidateCampaignReferences( previous, campaignItem, RequestContext.CurrentPerson, out var errorMessage ) )
+            {
+                return ActionBadRequest( errorMessage );
+            }
 
             // Persist the configuration. This is an initial save; the EntitySet will be
             // updated asynchronously if the campaign is active.
