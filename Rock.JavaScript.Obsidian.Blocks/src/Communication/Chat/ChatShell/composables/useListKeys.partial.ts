@@ -85,7 +85,8 @@ export function useListKeys<K>(items: () => readonly K[], options: ListKeysOptio
         return options.defaultKey ? options.defaultKey() : keys[0] ?? null;
     });
 
-    // Moved key by key, never cleared, since clearing the set would wake every row that asks it.
+    // Moved key by key, never cleared, since clearing the set would wake every row that asks it;
+    // before the rows draw, never in the middle of a change to the list the stop is read from.
     watch(stopKey, (next, before) => {
         if (before !== null && before !== undefined) {
             stop.delete(before);
@@ -93,7 +94,7 @@ export function useListKeys<K>(items: () => readonly K[], options: ListKeysOptio
         if (next !== null) {
             stop.add(next);
         }
-    }, { immediate: true, flush: "sync" });
+    }, { immediate: true });
 
     function onKeydown(key: K, event: KeyboardEvent): void {
         if (options.isRowOnly && event.target !== event.currentTarget) {
