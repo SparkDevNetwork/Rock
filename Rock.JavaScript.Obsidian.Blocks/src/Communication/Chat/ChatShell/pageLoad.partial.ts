@@ -41,6 +41,13 @@ export type StorageLike = {
 const rememberedRoomPrefix = "rock-chat:last-channel:";
 
 /**
+ * The other keys the chat keeps per person on the device, each ending in the church and the
+ * person: the recent reactions, the mark of the last visit to the mentions inbox, and the push-off
+ * choice. A shared computer forgets them by the remembered rooms' rule.
+ */
+const personKeyPrefixes = ["rock-chat-recent-reactions:", "rock-chat:mentions-visit:", "rock-chat:push-off:"];
+
+/**
  * The storage key for the last channel a person opened in a church, so that one person on a
  * shared computer never opens on another person's channel.
  *
@@ -54,8 +61,8 @@ export function rememberedChannelKey(tenantId: string, personAliasGuid: string):
 }
 
 /**
- * Deletes the remembered rooms a shared computer must not keep: every one after a sign-out, and
- * every one not this person's when someone else signed in since. The drafts are deleted by the
+ * Deletes the remembered rooms, and the other keys kept per person, a shared computer must not
+ * keep: every one after a sign-out, and every one not this person's when someone else signed in since. The drafts are deleted by the
  * same rule at the same moment, before either sets the sign-in mark again. Storage that cannot
  * be listed or written holds nothing this can reach.
  *
@@ -65,12 +72,22 @@ export function rememberedChannelKey(tenantId: string, personAliasGuid: string):
  */
 export function forgetRememberedRooms(storage: StorageLike & { readonly length: number, key: (index: number) => string | null, removeItem: (key: string) => void } | null, channelKey: string, isSignedOut: boolean): void {
     try {
+        // The church and the person this person's keys end in; some keys keep their case.
+        const ownEnd = channelKey.slice(rememberedRoomPrefix.length);
         const keys: string[] = [];
         for (let index = 0; storage && index < storage.length; index++) {
             const key = storage.key(index);
-            const isOwn = key === channelKey || key?.startsWith(`${channelKey}:`) === true;
-            if (key?.startsWith(rememberedRoomPrefix) && (isSignedOut || !isOwn)) {
-                keys.push(key);
+            if (key?.startsWith(rememberedRoomPrefix)) {
+                const isOwn = key === channelKey || key.startsWith(`${channelKey}:`);
+                if (isSignedOut || !isOwn) {
+                    keys.push(key);
+                }
+            }
+            else if (key && personKeyPrefixes.some(prefix => key.startsWith(prefix))) {
+                const isOwn = key.toLowerCase().endsWith(`:${ownEnd}`);
+                if (isSignedOut || !isOwn) {
+                    keys.push(key);
+                }
             }
         }
 
