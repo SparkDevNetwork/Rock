@@ -21,7 +21,7 @@
                 @click="on.openThread">
             <Icon name="thread" size="xs" class="chat-thread-label-ic" />Replied to a thread
         </button>
-        <MessageQuote v-if="view.isQuoteShown && view.message" :message="view.message" :isOwn="view.isOwn" isCommunity @jump="on.jump" />
+        <MessageQuote v-if="view.isQuoteShown && view.quoting" :message="view.quoting" :isOwn="view.isOwn" isCommunity @jump="on.jump" />
         <div class="chat-cm-gutter">
             <template v-if="view.isHead">
                 <button v-if="view.authorGuid"

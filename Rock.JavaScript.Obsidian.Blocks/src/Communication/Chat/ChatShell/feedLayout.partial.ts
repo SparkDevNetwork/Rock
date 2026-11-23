@@ -466,7 +466,9 @@ function joinsGroup(previous: Entry, entry: Entry, layout: FeedLayout): boolean 
     }
 
     const isAnnouncement = (e: Entry): boolean => e.message?.message_type === "announcement";
-    return !isAnnouncement(entry) && !isAnnouncement(previous) && !entry.message?.quoted_message_id;
+    // a send not stored yet starts its group as its stored copy will, so the answer moves no head
+    const isQuote = typeof (entry.message?.quoted_message_id ?? entry.pending?.quotedMessageId) === "number";
+    return !isAnnouncement(entry) && !isAnnouncement(previous) && !isQuote;
 }
 
 /** Marks each row with its place in the group, counting a typing row after the last as one more. */

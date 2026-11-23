@@ -21,7 +21,7 @@
                 @click="on.openThread">
             <Icon name="thread" size="xs" class="chat-thread-label-ic" />Replied to a thread
         </button>
-        <MessageQuote v-if="view.isQuoteShown && view.message" :message="view.message" :isOwn="view.isOwn" @jump="on.jump" />
+        <MessageQuote v-if="view.isQuoteShown && view.quoting" :message="view.quoting" :isOwn="view.isOwn" @jump="on.jump" />
         <div class="chat-msg-line">
             <!-- The face a group draws is marked by the group, so the tail moves it only while her run continues. It hangs straight in its line, which carries it when its row steps: a wrapper here would change what carries it. -->
             <span v-if="!view.isOwn" class="chat-msg-face" :data-tail="isLastOfGroup && groupKey ? `face:${groupKey}` : undefined">

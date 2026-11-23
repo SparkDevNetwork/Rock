@@ -24,8 +24,8 @@
                           :type="isOpenable(piece) ? 'button' : undefined"
                           class="chat-mn"
                           :class="[`is-${piece.mention}`, { 'is-punctuated': !!piece.trail }]"
-                          data-testid="piece-mention"
-                          :data-mention="piece.mention"
+                          :data-testid="piece.isPending ? 'piece-mention-pending' : 'piece-mention'"
+                          :data-mention="piece.isPending ? undefined : piece.mention"
                           :aria-label="piece.label"
                           @click="isOpenable(piece) && onPerson(piece, $event)"><span v-if="piece.mention === 'all'" class="chat-mn-glyph chat-all-mark" aria-hidden="true"><Icon name="users" size="xs" /></span><span v-else
                           class="chat-av chat-mn-av"
@@ -149,6 +149,12 @@ button.chat-mn {
 
         /** A person's chip: the alias it names, as the server sent it. */
         guid?: string;
+
+        /**
+         * A chip picked into a send the platform has not stored: drawn in the chip's box so the
+         * answer moves nothing, but inert, since the platform has not admitted the mention yet.
+         */
+        isPending?: boolean;
     };
 
     /** A block's button, and whether the client may call the action it names. */
@@ -305,7 +311,7 @@ button.chat-mn {
 
     /** Whether a chip opens a card: a person's, the reader's own included; @all names no one. */
     function isOpenable(piece: DrawnPiece): boolean {
-        return props.isPersonOpenable && piece.mention !== "all" && !!piece.guid;
+        return props.isPersonOpenable && !piece.isPending && piece.mention !== "all" && !!piece.guid;
     }
 
     /** Whether an address may be opened as a link: only the web, never script or another scheme. */
@@ -336,6 +342,11 @@ button.chat-mn {
         const text = textOf(piece.text);
         if (piece.type === "mention") {
             return mentionPiece(piece, text);
+        }
+
+        // the person's own send not stored yet: the chip's look, opening no one and claiming no admission
+        if (piece.type === "pending-mention") {
+            return { ...mentionPiece(piece, text), isPending: true, guid: undefined };
         }
 
         if (piece.type === "link" && isWebAddress(piece.url)) {
