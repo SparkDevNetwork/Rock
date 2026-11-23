@@ -109,6 +109,12 @@ let mockShell: Record<string, unknown> | null = null;
 /** Set by a test about the start, so the next shell is still signing in when the block mounts. */
 let mockStarting = false;
 
+/** Set by a test about a linked room the page load cannot open: the start opens nothing. */
+let mockOpenRefused = false;
+
+/** The phone pane the block drew as its shell started, before sign-in could name any room. */
+let mockPaneAtStart: string | null = null;
+
 /** What the block built its last shell with, which carries the frame's views for a mention's jump. */
 let mockShellOptions: ShellOptions | null = null;
 
@@ -270,6 +276,15 @@ function fakeShell(): Record<string, unknown> {
         openDirectMessage: jest.fn(),
         // The page load opens the channel a link named, as the shell's start does.
         start: jest.fn(async () => {
+            mockPaneAtStart = document.querySelector("[data-testid='chat-frame']")?.getAttribute("data-pane") ?? null;
+            if (mockOpenRefused) {
+                // the page load tries the linked room, which refuses, and settles on none
+                state.isOpening = true;
+                await Promise.resolve();
+                state.isOpening = false;
+                return;
+            }
+
             if (mockConfig.channelGuid) {
                 state.activeChannelId = (mockConfig.channelGuid as string).toLowerCase();
             }
@@ -281,6 +296,8 @@ function fakeShell(): Record<string, unknown> {
             state.activeChannelId = channelId;
         }),
         relink: jest.fn(),
+        // the room the page load opens first, known before sign-in: here the link's
+        openingRoom: () => (mockConfig.channelGuid as string | null)?.toLowerCase() ?? null,
         readPreview: jest.fn(async () => undefined),
         seen: jest.fn(),
         markRead: jest.fn(),
@@ -799,6 +816,10 @@ afterEach(() => {
     mockShell = null;
     mockShellOptions = null;
     mockStarting = false;
+    mockOpenRefused = false;
+    mockPaneAtStart = null;
+    // the next block starts on a page entry of its own, as a fresh page does
+    window.history.replaceState(null, "");
     mockInvoke.mockReset();
     mockThreadPages = null;
     mockOlderAnswers.length = 0;
@@ -1109,6 +1130,270 @@ describe("focus across the phone panes", () => {
         await openRow(w, team.channel_id);
 
         expect(document.activeElement).toBe(row);
+    });
+});
+
+// On a phone the panes are a stack of screens, each one history entry deep, so the system Back,
+// an edge swipe and the on-screen arrows all go one screen back, to the screen under, drawn as it
+// was left.
+describe("the phone's Back, one screen at a time", () => {
+    /** How deep the phone's history is, as the back stack marks each entry. */
+    function depthNow(): number {
+        return (window.history.state as { rockChat?: { depth: number } } | null)?.rockChat?.depth ?? 0;
+    }
+
+    /** Lets the browser's history move land: jsdom traverses on a task of its own. */
+    async function historyMoved(): Promise<void> {
+        await new Promise(resolve => setTimeout(resolve, 20));
+        await settle();
+        await new Promise(resolve => setTimeout(resolve, 20));
+        await settle();
+    }
+
+    /** The system Back, as a phone's gesture or button gives it. */
+    async function systemBack(): Promise<void> {
+        window.history.back();
+        await historyMoved();
+    }
+
+    function paneOf(w: VueWrapper): string | undefined {
+        return w.get("[data-testid='chat-frame']").attributes("data-pane");
+    }
+
+    async function openActivity(w: VueWrapper, rows: MentionRow[]): Promise<void> {
+        (mockShell!.mentions as { state: { inbox: { rows: MentionRow[] } } }).state.inbox.rows = rows;
+        await w.get("[data-testid='sidebar-activity']").trigger("click");
+        await settle();
+    }
+
+    async function openThreadsPanel(w: VueWrapper): Promise<void> {
+        await w.get("[data-testid='header-more'] button").trigger("click");
+        await settle();
+        Array.from(document.querySelectorAll<HTMLElement>("[role='menu'] [role='menuitem']")).find(i => i.textContent?.trim() === "Threads in Worship Team")!.click();
+        await historyMoved();
+    }
+
+    function channelMention(channelId: string, id: number): MentionRow {
+        return { channel_id: channelId, parent_id: null, message: storedMessage(id) };
+    }
+
+    test("a conversation is one entry, and the system Back shows the list with focus on its row", async () => {
+        const w = await mountBlock(390);
+        await openRow(w, dmAnna.channel_id);
+        await historyMoved();
+        expect(depthNow()).toBe(1);
+
+        await systemBack();
+
+        expect(paneOf(w)).toBe("list");
+        expect(depthNow()).toBe(0);
+        expect(document.activeElement).toBe(w.get(`[data-testid='channel-row'][data-channel-id='${dmAnna.channel_id}']`).element);
+    });
+
+    test("a panel over the conversation is one more entry, and Back shows the conversation", async () => {
+        const w = await mountBlock(390);
+        await openRow(w, team.channel_id);
+        await openThreadsPanel(w);
+        expect(paneOf(w)).toBe("panel");
+        expect(depthNow()).toBe(2);
+
+        await systemBack();
+
+        expect(paneOf(w)).toBe("conversation");
+        expect(depthNow()).toBe(1);
+        expect(isPaneHidden(w, "frame-main")).toBe(false);
+    });
+
+    test("a conversation opened from Activity goes over it, and Back shows Activity as it was, focus on its current row", async () => {
+        const w = await mountBlock(390);
+        timelineOf(dmAnna.channel_id).messages.push(storedMessage(30));
+        await openActivity(w, [channelMention(dmAnna.channel_id, 30)]);
+        await historyMoved();
+        expect(paneOf(w)).toBe("panel");
+        expect(depthNow()).toBe(1);
+
+        await w.get("[data-testid='mention-row-open']").trigger("click");
+        await historyMoved();
+        expect(paneOf(w)).toBe("conversation");
+        expect(depthNow()).toBe(2);
+        // Activity stays as it was under the conversation, out of reach
+        expect((mockShell!.mentions as { closeInbox: jest.Mock }).closeInbox).not.toHaveBeenCalled();
+        expect(w.get("[data-testid='chat-frame']").attributes("data-under")).toBe("panel");
+
+        await systemBack();
+
+        expect(paneOf(w)).toBe("panel");
+        expect(depthNow()).toBe(1);
+        expect(isPaneHidden(w, "frame-panel")).toBe(false);
+        expect(document.activeElement).toBe(w.get("[data-testid='frame-panel'] [data-testid='mention-row-open']").element);
+
+        await systemBack();
+
+        expect(paneOf(w)).toBe("list");
+        expect(depthNow()).toBe(0);
+    });
+
+    test("a channel mention in the conversation open behind the list brings that conversation over Activity", async () => {
+        const w = await mountBlock(390);
+        timelineOf(team.channel_id).messages.push(storedMessage(31));
+        await openRow(w, team.channel_id);
+        await w.get("[data-testid='header-back']").trigger("click");
+        await settle();
+        await openActivity(w, [channelMention(team.channel_id, 31)]);
+
+        await w.get("[data-testid='mention-row-open']").trigger("click");
+        await historyMoved();
+
+        expect(paneOf(w)).toBe("conversation");
+        expect(depthNow()).toBe(2);
+    });
+
+    test("Browse and its preview are each an entry, and Back closes the preview, then the view", async () => {
+        const w = await mountBlock(390);
+        await w.get("[data-testid='sidebar-browse']").trigger("click");
+        await historyMoved();
+        expect(paneOf(w)).toBe("conversation");
+        expect(depthNow()).toBe(1);
+
+        w.findComponent(ChannelDirectoryComponent).vm.$emit("preview", team.channel_id);
+        await historyMoved();
+        expect(depthNow()).toBe(2);
+
+        await systemBack();
+        expect(w.find("[data-testid='main-view']").exists()).toBe(true);
+        expect(w.findComponent(ChannelDirectoryComponent).props("previewId")).toBeNull();
+        expect(depthNow()).toBe(1);
+
+        await systemBack();
+        expect(paneOf(w)).toBe("list");
+        expect(depthNow()).toBe(0);
+    });
+
+    test("the full view's chevron over a conversation shows the conversation, one entry back, as the system Back does", async () => {
+        const w = await mountBlock(1200);
+        await openRow(w, team.channel_id);
+        await w.get("[data-testid='sidebar-browse']").trigger("click");
+        await settle();
+        FakeResizeObserver.resize(390);
+        await historyMoved();
+        expect(depthNow()).toBe(2);
+
+        await w.get("[data-testid='directory-back']").trigger("click");
+        await historyMoved();
+
+        expect(w.find("[data-testid='main-view']").exists()).toBe(false);
+        expect(paneOf(w)).toBe("conversation");
+        expect(depthNow()).toBe(1);
+    });
+
+    test("a Back two entries deep at once steps back two screens", async () => {
+        const w = await mountBlock(390);
+        await openRow(w, team.channel_id);
+        await openThreadsPanel(w);
+        expect(depthNow()).toBe(2);
+
+        window.history.go(-2);
+        await historyMoved();
+
+        expect(paneOf(w)).toBe("list");
+        expect(w.get("[data-testid='chat-frame']").attributes("data-panel-open")).toBe("false");
+        expect(depthNow()).toBe(0);
+    });
+
+    test("a Back the browser drew itself moves the panes at once, and the next Back button slides", async () => {
+        const w = await mountBlock(390);
+        await openRow(w, team.channel_id);
+        await historyMoved();
+        expect(w.get("[data-testid='chat-frame']").classes()).toContain("is-pane-motion-on");
+
+        // a popstate the browser's own swipe drew, at the list's depth
+        const event = new PopStateEvent("popstate", { state: { rockChat: { depth: 0 } } });
+        Object.defineProperty(event, "hasUAVisualTransition", { value: true });
+        window.dispatchEvent(event);
+        await settle();
+
+        expect(paneOf(w)).toBe("list");
+        expect(w.get("[data-testid='chat-frame']").classes()).not.toContain("is-pane-motion-on");
+
+        await openRow(w, team.channel_id);
+        await w.get("[data-testid='header-back']").trigger("click");
+        await settle();
+
+        expect(w.get("[data-testid='chat-frame']").classes()).toContain("is-pane-motion-on");
+    });
+
+    test("off a phone, nothing is pushed", async () => {
+        const w = await mountBlock(1200);
+        await openRow(w, team.channel_id);
+        await w.get("[data-testid='header-threads']").trigger("click");
+        await historyMoved();
+
+        expect(depthNow()).toBe(0);
+    });
+
+    test("a page opened on a conversation draws it over the list before sign-in, and Back shows the list", async () => {
+        mockConfig.channelGuid = team.channel_id.toUpperCase();
+        mockStarting = true;
+        const w = await mountBlock(390);
+        await historyMoved();
+
+        expect(mockPaneAtStart).toBe("conversation");
+        expect(paneOf(w)).toBe("conversation");
+        expect(w.get("[data-testid='chat-frame']").classes()).not.toContain("is-pane-motion-on");
+        expect(depthNow()).toBe(1);
+
+        await systemBack();
+        expect(paneOf(w)).toBe("list");
+    });
+
+    test("a page whose linked conversation cannot open ends on the list, nothing deep", async () => {
+        mockConfig.channelGuid = "c0000099-0000-4000-8000-000000000000";
+        mockOpenRefused = true;
+        const w = await mountBlock(390);
+        await historyMoved();
+
+        expect(paneOf(w)).toBe("list");
+        expect(depthNow()).toBe(0);
+    });
+
+    // The pane under the front one waits a quarter left; Activity under a conversation opened
+    // from it is drawn under the conversation, which slides over it.
+    test("Activity under a conversation waits a quarter left, under the conversation", () => {
+        const block = join(shellFolder, "../chatShell.obs");
+
+        const under = styleRules(block, /\[data-phone="true"\] \.chat-frame\[data-under="panel"\] \.chat-frame-panel$/).join(";");
+        expect(under).toMatch(/opacity:\s*0;/);
+        expect(under).toMatch(/transform:\s*translateX\(calc\(var\(--chat-rise-sheet\) \/ -4\)\)/);
+
+        const over = styleRules(block, /\[data-phone="true"\] \.chat-frame\[data-main-over="true"\] \.chat-frame-main$/).join(";");
+        expect(over).toMatch(/z-index:\s*calc\(var\(--chat-z-panel\) \+ 1\)/);
+    });
+});
+
+describe("focus moved late, through the frame's one settle", () => {
+    // A move made after the patch, as a join landing or a room opening in focus's place, asks the
+    // frame, so the last ask of a tick wins and none lands on a part going away.
+    test("the shell and the frame ask the one settle for focus, never put it themselves a tick late", () => {
+        const shellSource = readFileSync(join(shellFolder, "../chatShell.obs"), "utf8");
+        const frameSource = readFileSync(join(shellFolder, "composables/useFrameView.partial.ts"), "utf8");
+
+        expect(shellSource).not.toMatch(/nextTick\(\(\) => focusStop\(/);
+        expect(frameSource).not.toMatch(/firstDrawn\([^)]*\)\?\.focus\(/);
+    });
+
+    test("a panel the room change closes leaves focus the person put outside the chat where it is", async () => {
+        const w = await mountBlock(1200);
+        await openRow(w, team.channel_id);
+        await w.get("[data-testid='frame-main'] [data-testid='header-members']").trigger("click");
+        await settle();
+        const outside = document.createElement("input");
+        document.body.appendChild(outside);
+        outside.focus();
+
+        await openRow(w, dmAnna.channel_id);
+
+        expect(w.get("[data-testid='chat-frame']").attributes("data-panel-open")).toBe("false");
+        expect(document.activeElement).toBe(outside);
     });
 });
 
