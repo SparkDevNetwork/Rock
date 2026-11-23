@@ -308,3 +308,99 @@ describe("a dialog on a phone's Back", () => {
         expect(recorded.held).toHaveLength(0);
     });
 });
+
+// A phone's panel drawn as a sheet is held at the frame's bottom, so a change of its content's
+// height within a page, a list loading, an ask opening or a row leaving, moves its top edge and
+// head. The sheet glides its edge with the content's own move instead of jumping; a frame change,
+// as a keyboard rising, changes the height at once.
+describe("a panel drawn as a sheet following its content's height", () => {
+    type Observed = { callback: ResizeObserverCallback, targets: Element[] };
+    let observers: Observed[] = [];
+    const originalObserver = (globalThis as { ResizeObserver?: unknown }).ResizeObserver;
+
+    beforeEach(() => {
+        observers = [];
+        (globalThis as { ResizeObserver?: unknown }).ResizeObserver = class {
+            private readonly entry: Observed;
+            constructor(callback: ResizeObserverCallback) {
+                this.entry = { callback, targets: [] };
+                observers.push(this.entry);
+            }
+            observe(target: Element): void {
+                this.entry.targets.push(target);
+            }
+            unobserve(target: Element): void {
+                this.entry.targets = this.entry.targets.filter(t => t !== target);
+            }
+            disconnect(): void {
+                this.entry.targets = [];
+            }
+        };
+    });
+
+    afterEach(() => {
+        (globalThis as { ResizeObserver?: unknown }).ResizeObserver = originalObserver;
+    });
+
+    /** Tells the observers a box changed size, as the browser's layout would. */
+    function resized(target: Element, height: number): void {
+        observers.filter(o => o.targets.includes(target)).forEach(o => o.callback([{ target, contentRect: { height } as DOMRectReadOnly } as ResizeObserverEntry], {} as ResizeObserver));
+    }
+
+    async function drawSheet(isPhone: boolean): Promise<{ dialog: HTMLElement, content: HTMLElement | null, heights: ReturnType<typeof standInHeights>, setHeight: (h: number) => void }> {
+        const heights = standInHeights();
+        let height = 300;
+        wrapper = mount(Dialog, {
+            props: { isOpen: true, title: "Chat settings", isPanel: true, sheet: "phone" },
+            slots: { default: () => h("div", { "data-testid": "rows" }, "rows") },
+            global: { provide: { ...providedSession({ isPhone }) } },
+            attachTo: document.body
+        });
+        await nextTick();
+        await nextTick();
+        const dialog = wrapper.get("[data-testid='dialog']").element as HTMLElement;
+        heights.size(dialog, () => height);
+        dialog.style.setProperty("--chat-d-move", "240ms");
+        const content = document.querySelector<HTMLElement>("[data-testid='rows']")?.parentElement ?? null;
+        return { dialog, content, heights, setHeight: h => {
+            height = h;
+        } };
+    }
+
+    test("glides from its old height to its content's new one, over the content's own move", async () => {
+        const { dialog, content, heights, setHeight } = await drawSheet(true);
+        try {
+            resized(dialog.parentElement as Element, 800);
+            setHeight(360);
+            resized(content as Element, 300);
+
+            expect(heights.played).toEqual([expect.objectContaining({ element: dialog, from: "300px", to: "360px", duration: 240 })]);
+        }
+        finally {
+            heights.restore();
+        }
+    });
+
+    test("changes at once for a frame change, and the next content change glides from there", async () => {
+        const { dialog, content, heights, setHeight } = await drawSheet(true);
+        try {
+            setHeight(250);
+            resized(dialog.parentElement as Element, 500);
+            expect(heights.played).toEqual([]);
+
+            setHeight(290);
+            resized(content as Element, 280);
+            expect(heights.played).toEqual([expect.objectContaining({ from: "250px", to: "290px" })]);
+        }
+        finally {
+            heights.restore();
+        }
+    });
+
+    test("a desktop panel observes nothing", async () => {
+        const { heights } = await drawSheet(false);
+        heights.restore();
+
+        expect(observers.flatMap(o => o.targets)).toEqual([]);
+    });
+});
