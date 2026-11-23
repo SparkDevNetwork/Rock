@@ -439,7 +439,38 @@ describe("stopping", () => {
 
         expect(members.state.rows).toEqual([]);
         expect(members.state.channelId).toBeNull();
-        expect(members.state.isLoading).toBe(false);
+        // the panel leaving mid-load keeps its loading rows, never an empty roster, until the next open
+        expect(members.state.isLoading).toBe(true);
+    });
+
+    // The panel slides out drawing what it showed, so closing keeps the roster, its filter and its
+    // search while dropping everything on its way; the next open starts from nothing.
+    test("closing keeps the roster the panel drew, its filter and its search, until the next open", async () => {
+        jest.useFakeTimers();
+        try {
+            const { members } = harness(page([tom, anna]), page([anna]), page([ben]));
+            await members.open(channel);
+            members.setQuery("an");
+            jest.advanceTimersByTime(searchPause);
+            await settle();
+            const drawn = { rows: members.state.rows, query: members.state.query, search: members.state.search.rows };
+
+            members.close();
+
+            expect(members.state.channelId).toBeNull();
+            expect(members.state.rows).toEqual(drawn.rows);
+            expect(members.state.query).toBe(drawn.query);
+            expect(members.state.search.rows).toEqual(drawn.search);
+            expect(members.state.search.isSearching).toBe(false);
+
+            await members.open(otherChannel);
+            expect(members.state.query).toBe("");
+            await settle();
+            expect(members.state.rows.map(row => row.person_alias_guid)).toEqual([ben.person_alias_guid]);
+        }
+        finally {
+            jest.useRealTimers();
+        }
     });
 });
 
