@@ -20,6 +20,7 @@
 import { mount } from "@vue/test-utils";
 import { computed, defineComponent, h, nextTick, ref } from "vue";
 import { ChatMe, SessionContext, provideChatSession, useChatSession } from "../../../../src/Communication/Chat/ChatShell/chatSession.partial";
+import { noBackStack } from "../../../../src/Communication/Chat/ChatShell/composables/useBackStack.partial";
 
 describe("the session context", () => {
     let read: SessionContext;
@@ -37,7 +38,7 @@ describe("the session context", () => {
         const Middle = defineComponent({ setup: () => () => h("div", [h(Deep)]) });
         const Shell = defineComponent({
             setup() {
-                provideChatSession({ isPhone, me: computed(() => me.value), church: { name: "Grace" }, emojiSource: null, mentionSource: () => null });
+                provideChatSession({ isPhone, me: computed(() => me.value), church: { name: "Grace" }, emojiSource: null, mentionSource: () => null, backStack: noBackStack });
                 return () => h(Middle);
             }
         });
