@@ -1020,6 +1020,7 @@ namespace RockWeb.Blocks.Connection
                     ddlTransferOpportunity.Items.Clear();
 
                     // Filter opportunities to only those associated with the current request's campus
+                    // Only offer opportunities the person can view. The request's own opportunity stays so the list can preselect it.
                     var currentCampusId = connectionRequest.CampusId;
                     var associatedCampusOpportunities = connectionRequest.ConnectionOpportunity.ConnectionType.ConnectionOpportunities
                         .Where(
@@ -1029,6 +1030,7 @@ namespace RockWeb.Blocks.Connection
                                 || o.ConnectionOpportunityCampuses.Any( c => currentCampusId.HasValue && c.CampusId == currentCampusId.Value )
                             )
                         )
+                        .Where( o => o.Id == connectionRequest.ConnectionOpportunityId || o.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                         .OrderBy( o => o.Order )
                         .ThenBy( o => o.Name );
 
@@ -1258,12 +1260,13 @@ namespace RockWeb.Blocks.Connection
 
                         // The target must be one of the opportunities lbTransfer_Click offers: an active opportunity
                         // of the same connection type that serves the request's campus, or any campus when the
-                        // request has none.
+                        // request has none, and one the current person can view.
                         var currentCampusId = connectionRequest.CampusId;
                         if ( newOpportunity == null
                             || !newOpportunity.IsActive
                             || newOpportunity.ConnectionTypeId != connectionRequest.ConnectionOpportunity.ConnectionTypeId
-                            || ( currentCampusId.HasValue && !newOpportunity.ConnectionOpportunityCampuses.Any( c => c.CampusId == currentCampusId.Value ) ) )
+                            || ( currentCampusId.HasValue && !newOpportunity.ConnectionOpportunityCampuses.Any( c => c.CampusId == currentCampusId.Value ) )
+                            || !newOpportunity.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                         {
                             nbTranferFailed.Visible = true;
                             return;
@@ -1368,7 +1371,10 @@ namespace RockWeb.Blocks.Connection
                     BindAttributes();
                     AddDynamicControls();
 
-                    rptSearchResult.DataSource = connectionRequest.ConnectionOpportunity.ConnectionType.ConnectionOpportunities.ToList();
+                    // Only list opportunities the person can view.
+                    rptSearchResult.DataSource = connectionRequest.ConnectionOpportunity.ConnectionType.ConnectionOpportunities
+                        .Where( o => o.Id == connectionRequest.ConnectionOpportunityId || o.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                        .ToList();
                     rptSearchResult.DataBind();
                     ShowDialog( "Search", true );
                 }
@@ -1418,7 +1424,10 @@ namespace RockWeb.Blocks.Connection
                         }
                     }
 
-                    rptSearchResult.DataSource = qrySearch.ToList();
+                    // Only list opportunities the person can view. This runs after ToList() because it cannot be translated to SQL.
+                    rptSearchResult.DataSource = qrySearch.ToList()
+                        .Where( o => o.Id == connectionRequest.ConnectionOpportunityId || o.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                        .ToList();
                     rptSearchResult.DataBind();
                 }
             }
