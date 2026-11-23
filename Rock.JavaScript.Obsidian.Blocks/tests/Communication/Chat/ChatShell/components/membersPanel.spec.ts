@@ -45,6 +45,7 @@ import MembersPanel from "../../../../../src/Communication/Chat/ChatShell/compon
 import { RosterMember } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 import StatusBadge from "../../../../../src/Communication/Chat/ChatShell/ui/statusBadge.partial.obs";
 import ListRow from "../../../../../src/Communication/Chat/ChatShell/ui/listRow.partial.obs";
+import Avatar from "../../../../../src/Communication/Chat/ChatShell/ui/avatar.partial.obs";
 import { providedSession } from "../sessionShapes";
 
 // #region Fixtures
@@ -918,6 +919,15 @@ describe("the shared list row", () => {
         expect(drawn[2].props("dimmed")).toBe(true);
         expect(drawn[2].props("actionsShown")).toBe(true);
         expect(drawn[0].props("dimmed")).toBe(false);
+    });
+
+    // The quiet Members row the design picked draws a 32px face; the row's height is the list row's.
+    test("draws each member's face at 32px", () => {
+        const w = draw();
+
+        const faces = w.findAll("[data-testid='member-row']").map(r => r.findComponent(Avatar));
+        expect(faces.length).toBeGreaterThan(0);
+        expect(faces.every(face => face.props("size") === 32)).toBe(true);
     });
 
     test("reaches into no part from its styles", () => {

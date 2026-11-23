@@ -45,7 +45,9 @@ import MessageBody from "../../../../../src/Communication/Chat/ChatShell/compone
 import Icon from "../../../../../src/Communication/Chat/ChatShell/ui/icon.partial.obs";
 import ListRow from "../../../../../src/Communication/Chat/ChatShell/ui/listRow.partial.obs";
 import { ChatError, MentionRow, TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
+import { join } from "path";
 import { providedSession } from "../sessionShapes";
+import { shellFolder, styleRules } from "../statusStore";
 
 // #region Fixtures
 
@@ -469,5 +471,18 @@ describe("the shared list row", () => {
         expect(w.findAll("[data-testid='mention-row-open']").every(b => b.classes().includes("chat-lrow-hit"))).toBe(true);
         expect(drawn.map(r => r.props("selected"))).toEqual([false, true]);
         expect(drawn[0].findComponent(MessageBody).element.closest(".chat-lrow-detail")).not.toBeNull();
+    });
+});
+
+// A day heading sits on the clean bar's plain surface, as the panel's other headings do: the rows
+// pass under it with no blur and no see-through fill.
+describe("a day heading", () => {
+    test("stays in view on the panel's plain surface, with no blur", () => {
+        const rules = styleRules(join(shellFolder, "components/mentionsPanel.partial.obs"), /^\.chat-ls-day$/).join(";");
+
+        expect(rules).toMatch(/position:\s*sticky/);
+        expect(rules).toMatch(/background:\s*var\(--chat-surface\)/);
+        expect(rules).not.toMatch(/backdrop-filter/);
+        expect(rules).not.toMatch(/color-mix/);
     });
 });
