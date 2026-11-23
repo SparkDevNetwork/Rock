@@ -1475,8 +1475,12 @@ describe("Rock's admin footer", () => {
 describe("the tip and the focus ring", () => {
     const shell = resolve(__dirname, "../../../../../src/Communication/Chat/ChatShell");
 
-    /** The parts this pass moved onto the shared tip; the rest move with their owners. */
-    const tipHolders = ["ui/iconButton.partial.obs", "ui/statusBadge.partial.obs", "components/threadSummary.partial.obs", "components/emojiPicker.partial.obs"];
+    /** Every part that shows a plain tip; the reaction card is a surface of its own, not a tip. */
+    const tipHolders = [
+        "ui/iconButton.partial.obs", "ui/statusBadge.partial.obs", "components/threadSummary.partial.obs", "components/emojiPicker.partial.obs",
+        "components/chatHeader.partial.obs", "components/channelSidebar.partial.obs", "components/composer.partial.obs", "components/messageBody.partial.obs",
+        "components/messageRowCommunity.partial.obs", "components/threadDrawer.partial.obs", "components/attachments.partial.obs"
+    ];
 
     /** A part's template, without its styles or script. */
     function templateOf(path: string): string {
@@ -1514,6 +1518,19 @@ describe("the tip and the focus ring", () => {
         for (const rule of focusRules) {
             const outline = normalize(rule.declarations.get("outline") ?? "var(--chat-focus-ring)");
             expect({ selector: rule.selector, outline, shadow: rule.declarations.has("box-shadow") }).toEqual({ selector: rule.selector, outline: "var(--chat-focus-ring)", shadow: false });
+        }
+    });
+
+    // These parts draw the ring away from the focused element (a row's bubble, a quote's body) or
+    // take a click's ring back, so a focus rule may say none; any ring it draws is the token, set
+    // apart only by its offset, and never a shadow.
+    test.each(["components/attachments.partial.obs", "components/messageQuote.partial.obs", "components/messageRow.partial.obs", "components/messageRowBubble.partial.obs"])("%s draws any focus ring only with the shared ring", file => {
+        const focusRules = readSheet(resolve(shell, file)).rules.filter(r => /:focus-visible|:focus(?![-\w])/.test(r.selector));
+
+        expect(focusRules.some(rule => normalize(rule.declarations.get("outline") ?? "") === "var(--chat-focus-ring)")).toBe(true);
+        for (const rule of focusRules) {
+            const outline = normalize(rule.declarations.get("outline") ?? "none");
+            expect({ selector: rule.selector, ring: outline === "none" || outline === "var(--chat-focus-ring)", shadow: rule.declarations.has("box-shadow") }).toEqual({ selector: rule.selector, ring: true, shadow: false });
         }
     });
 });
