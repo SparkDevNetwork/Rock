@@ -287,9 +287,17 @@ namespace RockWeb.Blocks.Core
             dl.Add( "Description", baseException.Description.EncodeHtml().Truncate( 255, true ) );
             dl.Add( "Site", baseException.Site != null ? baseException.Site.Name : string.Empty );
 
-            if ( baseException.Page != null || !string.IsNullOrWhiteSpace( baseException.PageUrl ) )
+            // Only absolute http or https addresses are shown as a link.
+            var isSafePageUrl = Uri.TryCreate( baseException.PageUrl, UriKind.Absolute, out var pageUri ) && ( pageUri.Scheme == Uri.UriSchemeHttp || pageUri.Scheme == Uri.UriSchemeHttps );
+
+            if ( isSafePageUrl )
             {
                 dl.Add( "Page", string.Format( "<a href=\"{1}\" target=\"_blank\">{0}</a>", baseException.Page != null ? baseException.Page.InternalName : baseException.PageUrl.EncodeHtml(), baseException.PageUrl.EncodeHtml() ) );
+            }
+            else if ( baseException.Page != null || !string.IsNullOrWhiteSpace( baseException.PageUrl ) )
+            {
+                var pageName = baseException.Page != null ? baseException.Page.InternalName : baseException.PageUrl;
+                dl.Add( "Page", pageName.EncodeHtml() );
             }
 
             // If query string is not empty build query string list
