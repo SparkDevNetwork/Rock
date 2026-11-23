@@ -32,7 +32,8 @@ internal class ExceptionInstanceResult : EntityResultBase
     public string ExceptionType { get; set; }
 
     /// <summary>
-    /// The exception message.
+    /// The first 255 characters of the exception message, ending in "..." when
+    /// the message was cut.
     /// </summary>
     public string Description { get; set; }
 

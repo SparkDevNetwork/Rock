@@ -15,6 +15,7 @@
 // </copyright>
 
 using System.ComponentModel;
+using System.Globalization;
 using System.Linq;
 
 using Rock.AI.Agent.Annotations;
@@ -28,6 +29,18 @@ namespace Rock.AI.Agent.Skills;
 
 internal sealed partial class CoreAdministrationSkill
 {
+    #region Fields
+
+    /// <summary>
+    /// The most description characters <see cref="GetException"/> returns. A
+    /// description can run to hundreds of thousands of characters (one real row
+    /// held 771,362), which overflows an MCP response. Ten thousand characters
+    /// keeps the useful head of the message and fits comfortably in a response.
+    /// </summary>
+    private static readonly int MaxExceptionDescriptionLength = 10000;
+
+    #endregion
+
     #region Tool(s)
 
     /// <summary>
@@ -38,9 +51,10 @@ internal sealed partial class CoreAdministrationSkill
     /// This is the only exception tool that returns the stack trace, which is why
     /// the list tools omit it. The inner exceptions are returned as references
     /// rather than inline, so a caller walks the chain one call at a time rather
-    /// than receiving an unbounded tree.
+    /// than receiving an unbounded tree. The description is cut at
+    /// <see cref="MaxExceptionDescriptionLength"/> characters, with a note saying so.
     /// </remarks>
-    [Description( "Gets a single logged exception in full detail, including its stack trace and any inner exceptions." )]
+    [Description( "Gets a single logged exception in detail, including its stack trace and any inner exceptions. A description longer than 10,000 characters is cut, and ends with a note giving its full length." )]
     [AgentPurpose( "Reads one exception's stack trace and details to diagnose it." )]
     [AgentToolPrerequisite( "Call ListExceptions or ListExceptionInstances to determine the exceptionIdKey." )]
     [AgentToolGuid( "257A4CE8-3ED9-42F5-BFA1-AB11805261A6" )]
@@ -95,7 +109,7 @@ internal sealed partial class CoreAdministrationSkill
             Guid = exceptionLog.Guid,
             CreatedDateTime = exceptionLog.CreatedDateTime,
             ExceptionType = exceptionLog.ExceptionType,
-            Description = exceptionLog.Description,
+            Description = LimitExceptionDescription( exceptionLog.Description ),
             Source = exceptionLog.Source,
             StatusCode = exceptionLog.StatusCode,
             StackTrace = exceptionLog.StackTrace,
@@ -111,6 +125,30 @@ internal sealed partial class CoreAdministrationSkill
 
         return Success( result )
             .WithHistoryContent( new KeyNameResult( exceptionLog.Id, exceptionLog.Guid, exceptionLog.ExceptionType ) );
+    }
+
+    #endregion
+
+    #region Helper Methods
+
+    /// <summary>
+    /// Cuts an exception description to <see cref="MaxExceptionDescriptionLength"/>
+    /// characters, adding a note with the full length so the caller knows text
+    /// was left out.
+    /// </summary>
+    /// <param name="description">The full exception description.</param>
+    /// <returns>The description, cut and noted when it was too long.</returns>
+    private static string LimitExceptionDescription( string description )
+    {
+        if ( description == null || description.Length <= MaxExceptionDescriptionLength )
+        {
+            return description;
+        }
+
+        var maxLengthText = MaxExceptionDescriptionLength.ToString( "N0", CultureInfo.InvariantCulture );
+        var fullLengthText = description.Length.ToString( "N0", CultureInfo.InvariantCulture );
+
+        return $"{description.Substring( 0, MaxExceptionDescriptionLength )}... [cut at {maxLengthText} of {fullLengthText} characters]";
     }
 
     #endregion

@@ -36,12 +36,17 @@ internal sealed partial class CoreAdministrationSkill
     /// <remarks>
     /// This is the drill-down partner of <see cref="ListExceptions"/>. Pass the
     /// exceptionType and description from a summary row to see that group's
-    /// occurrences. Only outermost exceptions are listed; the stack trace and the
+    /// occurrences. The description is a "begins with" match, so it also returns
+    /// other groups whose description starts with the same text. Only outermost exceptions are listed; the stack trace and the
     /// inner exception chain of one occurrence come from <see cref="GetException"/>.
+    /// Each description is cut to its first
+    /// <see cref="ExceptionLogService.DescriptionGroupingPrefixLength"/> characters,
+    /// because a single description can run to hundreds of thousands of characters
+    /// and a full page of them overflows an MCP response.
     /// </remarks>
-    [Description( "Lists the individual occurrences of an exception, filtered by type and description, over a date range." )]
+    [Description( "Lists the individual occurrences of an exception, filtered by type and description, over a date range. Each description is cut to its first 255 characters and ends in \"...\" when cut." )]
     [AgentPurpose( "Sees when and where a specific error has occurred." )]
-    [AgentUsage( "The date range defaults to the last 7 days and cannot exceed 30 days. Pass the exceptionType and description from a ListExceptions summary row to narrow to one group, then call GetException for a full stack trace." )]
+    [AgentUsage( "The date range defaults to the last 7 days and cannot exceed 30 days. Pass the exceptionType and description from a ListExceptions summary row to see that group's occurrences. The description matches by prefix, so other groups whose description starts with the same text are included, and the count can be higher than the summary row's. Call GetException for the full description and stack trace." )]
     [AgentToolPrerequisite( "Call ListExceptions to determine the exception type and description to drill into." )]
     [AgentToolGuid( "7B28303B-1081-4F93-9D5A-56F5CB98CDC7" )]
     public AgentToolResult ListExceptionInstances(
@@ -49,7 +54,7 @@ internal sealed partial class CoreAdministrationSkill
         DateTime? endDateTime = null,
         [Description( "Narrows to exception types whose name contains this text." )]
         string exceptionType = null,
-        [Description( "Narrows to occurrences whose description begins with this text, matching the description shown by ListExceptions." )]
+        [Description( "Narrows to occurrences whose description begins with this text. Any leading part of the description works, such as a ListExceptions description, or a ListExceptionInstances description without its trailing \"...\"." )]
         string description = null,
         string siteIdKey = null,
         string pageIdKey = null,
@@ -76,7 +81,22 @@ internal sealed partial class CoreAdministrationSkill
             .Where( e => e.CreatedDateTime >= start && e.CreatedDateTime < end );
 
         query = exceptionLogService.FilterByOutermost( query );
-        query = exceptionLogService.FilterByDescriptionPrefix( query, description );
+
+        /*
+            11/23/26 - CLAUDE
+
+            ExceptionLogService.FilterByDescriptionPrefix is not used here. It compares
+            the first 255 characters of the description for equality, which is the
+            group match the Exception List block needs, but it means any shorter text
+            matches nothing. The agent passes partial text, so this is a true "begins
+            with" match instead. StartsWith translates to a SQL LIKE 'text%'.
+
+            Reason: The description filter must match by prefix, not by exact group.
+        */
+        if ( description.IsNotNullOrWhiteSpace() )
+        {
+            query = query.Where( e => e.Description.StartsWith( description ) );
+        }
 
         if ( exceptionType.IsNotNullOrWhiteSpace() )
         {
@@ -95,13 +115,18 @@ internal sealed partial class CoreAdministrationSkill
 
         // Project the lightweight columns before paging so the large fields (stack
         // trace, form, cookies, server variables) are never pulled for a list.
+        // The description is cut in SQL for the same reason: one description can
+        // be hundreds of thousands of characters. The length check, rather than a
+        // bare Substring, keeps short and null descriptions as they are.
         var projected = query
             .Select( e => new
             {
                 e.Id,
                 e.Guid,
                 e.ExceptionType,
-                e.Description,
+                Description = e.Description != null && e.Description.Length > ExceptionLogService.DescriptionGroupingPrefixLength
+                    ? e.Description.Substring( 0, ExceptionLogService.DescriptionGroupingPrefixLength )
+                    : e.Description,
                 e.Source,
                 e.StatusCode,
                 e.CreatedDateTime,
@@ -125,7 +150,7 @@ internal sealed partial class CoreAdministrationSkill
                 Guid = e.Guid,
                 CreatedDateTime = e.CreatedDateTime,
                 ExceptionType = e.ExceptionType,
-                Description = e.Description,
+                Description = ExceptionLogService.GetDisplayDescription( e.Description ),
                 Source = e.Source,
                 StatusCode = e.StatusCode,
                 HasInnerException = e.HasInnerException,

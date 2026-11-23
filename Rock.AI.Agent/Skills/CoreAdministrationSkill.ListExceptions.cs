@@ -59,7 +59,7 @@ internal sealed partial class CoreAdministrationSkill
     /// </remarks>
     [Description( "Lists logged exceptions grouped by the error they represent, with a count of how many times each occurred, over a date range." )]
     [AgentPurpose( "Finds what has been failing recently and how often." )]
-    [AgentUsage( "The date range defaults to the last 7 days and cannot exceed 30 days. Use ListExceptionInstances to see the individual occurrences of one group." )]
+    [AgentUsage( "The date range defaults to the last 7 days and cannot exceed 30 days. Each description is the first 255 characters the group shares. Use ListExceptionInstances to see the individual occurrences of one group, and GetException for one occurrence's full description." )]
     [AgentToolGuid( "B7783D9B-E062-46A9-A47F-14D741F7B868" )]
     public AgentToolResult ListExceptions(
         DateTime? startDateTime = null,
@@ -108,14 +108,18 @@ internal sealed partial class CoreAdministrationSkill
 
         // Materialize the minimal columns and group in memory. The description
         // prefix grouping does not translate cleanly to SQL, which is why the core
-        // Exception List block pulls the rows down before summarizing them.
+        // Exception List block pulls the rows down before summarizing them. Only the
+        // grouping prefix of each description is read, cut in SQL, because one
+        // description can be hundreds of thousands of characters.
         var occurrences = query
             .Select( e => new
             {
                 e.Id,
                 e.Guid,
                 e.ExceptionType,
-                e.Description,
+                DescriptionPrefix = e.Description != null && e.Description.Length > ExceptionLogService.DescriptionGroupingPrefixLength
+                    ? e.Description.Substring( 0, ExceptionLogService.DescriptionGroupingPrefixLength )
+                    : e.Description,
                 e.CreatedDateTime
             } )
             .ToList();
@@ -124,7 +128,7 @@ internal sealed partial class CoreAdministrationSkill
             .GroupBy( e => new
             {
                 e.ExceptionType,
-                DescriptionPrefix = ( e.Description ?? string.Empty ).Truncate( ExceptionLogService.DescriptionGroupingPrefixLength, false )
+                DescriptionPrefix = e.DescriptionPrefix ?? string.Empty
             } )
             .Select( g =>
             {

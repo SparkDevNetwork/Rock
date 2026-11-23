@@ -19,6 +19,7 @@ using System;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.AI.Agent.Classes.Skills.CoreAdministrationSkill;
 using Rock.Configuration;
 using Rock.Enums.AI.Agent;
 using Rock.Model;
@@ -146,6 +147,61 @@ public partial class CoreAdministrationSkillTests
         var result = skill.GetException( IdHasher.Instance.GetHash( 999 ) );
 
         Assert.AreEqual( ToolStatus.Error, result.GetStatus() );
+    }
+
+    [TestMethod]
+    public void GetException_WithDescriptionOverLimit_ReturnsCutDescriptionWithNote()
+    {
+        using var scope = TestHelper.CreateScopedRockApp();
+        var rockContext = scope.App.CreateRockContext();
+
+        var longDescription = new string( 'x', 25000 );
+
+        var exceptionLog = new ExceptionLog
+        {
+            Id = 50,
+            Guid = new Guid( "7a000021-0000-4000-8000-000000000021" ),
+            ExceptionType = "System.InvalidOperationException",
+            Description = longDescription,
+            CreatedDateTime = RockDateTime.Now.AddDays( -1 )
+        };
+
+        rockContext.Set<ExceptionLog>().Add( exceptionLog );
+
+        var skill = CreateSkill( scope.App, CreateRequestContext( rockContext ) );
+
+        var result = skill.GetException( IdHasher.Instance.GetHash( exceptionLog.Id ) );
+
+        Assert.AreEqual( ToolStatus.Success, result.GetStatus() );
+
+        var description = ( ( ExceptionDetailResult ) result.GetContent() ).Description;
+
+        Assert.AreEqual( longDescription.Substring( 0, 10000 ) + "... [cut at 10,000 of 25,000 characters]", description );
+    }
+
+    [TestMethod]
+    public void GetException_WithShortDescription_ReturnsDescriptionUnchanged()
+    {
+        using var scope = TestHelper.CreateScopedRockApp();
+        var rockContext = scope.App.CreateRockContext();
+
+        var exceptionLog = new ExceptionLog
+        {
+            Id = 50,
+            Guid = new Guid( "7a000022-0000-4000-8000-000000000022" ),
+            ExceptionType = "System.InvalidOperationException",
+            Description = "Something went wrong.",
+            CreatedDateTime = RockDateTime.Now.AddDays( -1 )
+        };
+
+        rockContext.Set<ExceptionLog>().Add( exceptionLog );
+
+        var skill = CreateSkill( scope.App, CreateRequestContext( rockContext ) );
+
+        var result = skill.GetException( IdHasher.Instance.GetHash( exceptionLog.Id ) );
+
+        Assert.AreEqual( ToolStatus.Success, result.GetStatus() );
+        Assert.AreEqual( "Something went wrong.", ( ( ExceptionDetailResult ) result.GetContent() ).Description );
     }
 
     #endregion

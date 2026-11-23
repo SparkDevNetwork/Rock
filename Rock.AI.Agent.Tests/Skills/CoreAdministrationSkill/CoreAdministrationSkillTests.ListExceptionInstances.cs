@@ -16,10 +16,15 @@
 //
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.AI.Agent.Classes.Common;
+using Rock.AI.Agent.Classes.Skills.CoreAdministrationSkill;
 using Rock.Configuration;
+using Rock.Data;
 using Rock.Enums.AI.Agent;
 using Rock.Model;
 using Rock.Tests.Shared.TestAccess.AI.Agent;
@@ -74,10 +79,6 @@ public partial class CoreAdministrationSkillTests
 
         var skill = CreateSkill( scope.App, CreateRequestContext( rockContext ) );
 
-        // The type, site, and page filters are exercised here. The description
-        // filter is omitted: it runs a SUBSTRING that SQL tolerates but an
-        // in-memory mock throws on for a description shorter than the grouping
-        // prefix, so it is not exercised against the mock.
         var result = skill.ListExceptionInstances(
             exceptionType: "InvalidOperation",
             siteIdKey: IdHasher.Instance.GetHash( site.Id ),
@@ -114,6 +115,131 @@ public partial class CoreAdministrationSkillTests
             endDateTime: RockDateTime.Now );
 
         Assert.AreEqual( ToolStatus.Error, result.GetStatus() );
+    }
+
+    // Descriptions are kept in the same case as the filter text. SQL matches
+    // without regard to case by collation, but the in-memory mock does not.
+    private const string ModifyStepDescription = "Unable to save the record during modifystep processing.";
+
+    [TestMethod]
+    public void ListExceptionInstances_WithPartialDescriptionPrefix_ReturnsMatchingInstance()
+    {
+        using var scope = TestHelper.CreateScopedRockApp();
+        var rockContext = scope.App.CreateRockContext();
+
+        SeedExceptionInstance( rockContext, 50, ModifyStepDescription );
+        SeedExceptionInstance( rockContext, 51, "Something else went wrong." );
+
+        var skill = CreateSkill( scope.App, CreateRequestContext( rockContext ) );
+
+        var result = skill.ListExceptionInstances( description: "Unable to save" );
+
+        CollectionAssert.AreEqual( new[] { 50 }, GetExceptionInstanceItems( result ).Select( e => e.Id ).ToArray() );
+    }
+
+    [TestMethod]
+    public void ListExceptionInstances_WithFullDescription_ReturnsMatchingInstance()
+    {
+        using var scope = TestHelper.CreateScopedRockApp();
+        var rockContext = scope.App.CreateRockContext();
+
+        SeedExceptionInstance( rockContext, 50, ModifyStepDescription );
+        SeedExceptionInstance( rockContext, 51, "Something else went wrong." );
+
+        var skill = CreateSkill( scope.App, CreateRequestContext( rockContext ) );
+
+        var result = skill.ListExceptionInstances( description: ModifyStepDescription );
+
+        CollectionAssert.AreEqual( new[] { 50 }, GetExceptionInstanceItems( result ).Select( e => e.Id ).ToArray() );
+    }
+
+    [TestMethod]
+    public void ListExceptionInstances_WithTextNotAtStartOfDescription_ReturnsNoData()
+    {
+        using var scope = TestHelper.CreateScopedRockApp();
+        var rockContext = scope.App.CreateRockContext();
+
+        SeedExceptionInstance( rockContext, 50, ModifyStepDescription );
+
+        var skill = CreateSkill( scope.App, CreateRequestContext( rockContext ) );
+
+        var result = skill.ListExceptionInstances( description: "modifystep" );
+
+        Assert.AreEqual( ToolStatus.NoData, result.GetStatus() );
+    }
+
+    [TestMethod]
+    public void ListExceptionInstances_WithLongDescription_ReturnsCutDescription()
+    {
+        using var scope = TestHelper.CreateScopedRockApp();
+        var rockContext = scope.App.CreateRockContext();
+
+        var longDescription = new string( 'x', 1000 );
+        SeedExceptionInstance( rockContext, 50, longDescription );
+
+        var skill = CreateSkill( scope.App, CreateRequestContext( rockContext ) );
+
+        var result = skill.ListExceptionInstances();
+        var description = GetExceptionInstanceItems( result ).Single().Description;
+
+        Assert.AreEqual( 258, description.Length );
+        Assert.AreEqual( longDescription.Substring( 0, 255 ) + "...", description );
+    }
+
+    [TestMethod]
+    public void ListExceptionInstances_WithShortDescription_ReturnsDescriptionUnchanged()
+    {
+        using var scope = TestHelper.CreateScopedRockApp();
+        var rockContext = scope.App.CreateRockContext();
+
+        SeedExceptionInstance( rockContext, 50, ModifyStepDescription );
+
+        var skill = CreateSkill( scope.App, CreateRequestContext( rockContext ) );
+
+        var result = skill.ListExceptionInstances();
+
+        Assert.AreEqual( ModifyStepDescription, GetExceptionInstanceItems( result ).Single().Description );
+    }
+
+    /// <summary>
+    /// Seeds an outermost exception from yesterday with the given description.
+    /// </summary>
+    /// <remarks>
+    /// The Site and Page navigation are set because the tool projects their Guid
+    /// and Name, which an in-memory mock evaluates eagerly.
+    /// </remarks>
+    private static void SeedExceptionInstance( RockContext rockContext, int id, string description )
+    {
+        var site = new Site { Id = id, Guid = Guid.NewGuid(), Name = "Main Site" };
+        var page = new Page { Id = id, Guid = Guid.NewGuid(), InternalName = "Home" };
+
+        rockContext.Set<Site>().Add( site );
+        rockContext.Set<Page>().Add( page );
+        rockContext.Set<ExceptionLog>().Add( new ExceptionLog
+        {
+            Id = id,
+            Guid = Guid.NewGuid(),
+            ExceptionType = "System.InvalidOperationException",
+            Description = description,
+            CreatedDateTime = RockDateTime.Now.AddDays( -1 ),
+            ParentId = null,
+            SiteId = site.Id,
+            Site = site,
+            PageId = page.Id,
+            Page = page
+        } );
+    }
+
+    /// <summary>
+    /// Gets the exception instances in a successful list result.
+    /// </summary>
+    private static ExceptionInstanceResult[] GetExceptionInstanceItems( AgentToolResult result )
+    {
+        Assert.AreEqual( ToolStatus.Success, result.GetStatus(), string.Join( " ", result.GetErrorMessages() ?? new List<string>() ) );
+
+        var page = ( PaginatedResult<ExceptionInstanceResult> ) result.GetContent();
+
+        return page.Items.ToArray();
     }
 
     #endregion
