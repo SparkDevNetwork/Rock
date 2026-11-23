@@ -1529,9 +1529,9 @@ describe("the composer's GIFs", () => {
     });
 });
 
-// The line over the box while the other person of a direct message is Busy: it says what sending
-// does, names her, takes no space and fades only with her revision, so a room switch draws it as
-// state. It reads the status store's own answer, so it shows exactly while her faces draw Busy.
+// The note above the box while the other person of a direct message is Busy: it says what sending
+// does, names her, is the chat's one soft inline notice in the composer's flow, and fades only
+// with her revision, so a room switch draws it as state. It reads the status store's own answer, so it shows exactly while her faces draw Busy.
 describe("the composer's Busy note", () => {
     const cindy = "c1d1c1d1-0000-4000-8000-000000000000";
     const grace = "a9ace000-0000-4000-8000-000000000000";
@@ -1779,18 +1779,29 @@ describe("the composer's Busy note", () => {
         const style = composerStyle().replace(/\r\n/g, "\n");
         const rule = (selector: string): string => new RegExp(`(?:^|\\n)${selector.replace(/\./g, "\\.")}\\s*\\{([^}]*)\\}`).exec(style)?.[1] ?? "";
 
-        test("stands over the composer's top edge at 16px and takes no space, so the title and the box never move", () => {
-            expect(rule(".chat-composer")).toMatch(/position: relative;/);
-            const note = rule(".chat-composer-note");
-            expect(note).toMatch(/position: absolute;/);
-            expect(note).toMatch(/bottom: 100%;/);
-            expect(note).toMatch(/height: 16px;/);
-            expect(note).toMatch(/font-size: var\(--chat-fs-small\);/);
-            expect(note).toMatch(/color: var\(--chat-muted\);/);
-            expect(note).toMatch(/white-space: nowrap;/);
-            expect(note).toMatch(/overflow: hidden;/);
-            // over the feed for as long as she is Busy, so a wheel, a hover or a drag there reaches the rows under it
-            expect(note).toMatch(/pointer-events: none;/);
+        // One soft inline notice, the chat's own, not a line of its own make: it sits in the
+        // composer's flow above the box, its edges the box's, at the secondary text size.
+        test("is the inline notice, an info note in the composer's flow, at the secondary text size", () => {
+            const store = createStatusStore({ isSeeded: false, clock: "page" });
+            store.store.told([told(cindy, busyNow(threePm))]);
+            const wrapper = mountWith(store, { busyPerson: person(cindy, "Cindy") });
+            const note = noteOf(wrapper)!;
+
+            expect(note.classList.contains("chat-set-note")).toBe(true);
+            expect(note.dataset.kind).toBe("info");
+            // a child of the composer, so its edges are the composer's padding, as the box's are
+            expect(note.parentElement).toBe(wrapper.element);
+
+            const look = rule(".chat-composer .chat-composer-note");
+            expect(look).toMatch(/font-size: var\(--chat-fs-small\);/);
+            expect(look).not.toMatch(/position: absolute|bottom: 100%|pointer-events/);
+            expect(style).not.toMatch(/\.chat-composer\.is-(thread|phone) \.chat-composer-note\s*\{/);
+            // the parts shorten on one line inside the notice's words
+            const line = rule(".chat-composer-note-line");
+            expect(line).toMatch(/display: flex;/);
+            expect(line).toMatch(/min-width: 0;/);
+            expect(line).toMatch(/overflow: hidden;/);
+            expect(line).toMatch(/white-space: nowrap;/);
         });
 
         test("shortens the name first, then the time, and never 'is busy' or 'and won't be notified'", () => {
@@ -1821,7 +1832,9 @@ describe("the composer's Busy note", () => {
         test("only fades, over the fast state time, and nothing moves it", () => {
             expect(rule(".chat-note-enter-active,\n.chat-note-leave-active")).toMatch(/transition: opacity var\(--chat-t-fast\) var\(--chat-ease-state\);/);
             expect(rule(".chat-note-enter-from,\n.chat-note-leave-to")).toMatch(/opacity: 0;/);
-            expect(rule(".chat-composer-note")).not.toMatch(/transform|animation|transition/);
+            // the notice's own entrance rise is off, so a room switch draws it as state
+            expect(rule(".chat-composer .chat-composer-note")).toMatch(/animation: none;/);
+            expect(rule(".chat-composer .chat-composer-note")).not.toMatch(/transform|transition/);
         });
     });
 });
