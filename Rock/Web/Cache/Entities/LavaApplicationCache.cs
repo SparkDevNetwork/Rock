@@ -229,6 +229,12 @@ namespace Rock.Web.Cache
             }
         }
 
+        /// <inheritdoc/>
+        public override bool IsAllowedByDefault( string action )
+        {
+            return action != Authorization.VIEW && base.IsAllowedByDefault( action );
+        }
+
         /// <summary>
         /// Provides custom security authorization logic. 
         /// </summary>
