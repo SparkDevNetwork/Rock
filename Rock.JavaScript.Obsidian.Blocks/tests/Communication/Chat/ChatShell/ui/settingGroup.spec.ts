@@ -132,10 +132,11 @@ describe("a settings group", () => {
             expect(wrapper.getComponent(SettingGroup).emitted("empty")).toHaveLength(1);
         });
 
-        // A sheet held at the screen's bottom closes from its top: as the box closes by the row,
-        // the list's top comes down by it and the rows below stay where they are seen, so nothing
-        // is drawn away from its place to glide back.
-        test("in a surface held at its bottom, the rows below a row that has gone stay where they are seen and do not glide", async () => {
+        // A sheet held at the screen's bottom glides its own edge as its content closes, over the
+        // same move, so the rows below hold on the screen while the edge and the rows above come
+        // down. The surface owns that screen motion; the list measures its rows in its own box
+        // alone, and the rows below glide up in it however the list's top moves on the screen.
+        test("in a surface held at its bottom, the rows below a row that has gone glide up in the list, whatever its top does on the screen", async () => {
             const { names, wrapper } = mountList(["Sam", "Ben", "Ana"]);
             const list = wrapper.get("[role='list']").element as HTMLElement;
             jest.spyOn(list, "getBoundingClientRect").mockImplementation(() => {
@@ -147,10 +148,9 @@ describe("a settings group", () => {
             await nextTick();
             await leaveEnds();
 
-            const ana = rowOf(wrapper, "Ana") as HTMLElement;
             expect(rowOf(wrapper, "Ben")).toBeNull();
-            expect(ana.classList).not.toContain("chat-move");
-            expect(ana.style.transform).toBe("");
+            expect(rowOf(wrapper, "Ana")?.classList).toContain("chat-move");
+            expect(rowOf(wrapper, "Sam")?.classList).not.toContain("chat-move");
         });
 
         describe("on a page busy with other work", () => {
