@@ -74,7 +74,7 @@ export function useLongPress(element: Ref<HTMLElement | undefined | null>, optio
     function isTaken(event: PointerEvent): boolean {
         return options.isPointerTaken
             ? options.isPointerTaken(event)
-            : event.isPrimary && (event.pointerType !== "mouse" || event.button === 0);
+            : event.isPrimary !== false && (event.pointerType !== "mouse" || event.button === 0);
     }
 
     /** Swallows the next click once, unless a press comes first. */
@@ -180,7 +180,7 @@ export function useLongPress(element: Ref<HTMLElement | undefined | null>, optio
             }
             press?.end();
         });
-    }, { immediate: true, flush: "post" });
+    }, { immediate: true, flush: "sync" });
 
     // A press held as its element goes, as when the feed switches room, fires nothing. A swallow
     // already armed stays, since the release it waits for still comes, and goes on its own.

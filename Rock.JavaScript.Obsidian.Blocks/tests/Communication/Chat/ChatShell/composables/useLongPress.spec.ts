@@ -55,7 +55,7 @@ describe("a long press", () => {
 
     /** A held element with a link and a plain word inside it, and an inner element that holds its own presses. */
     function held(options: { isPointerTaken?: (event: PointerEvent) => boolean } = {}): VueWrapper {
-        const Held = defineComponent({
+        const heldPart = defineComponent({
             setup() {
                 const element = ref<HTMLElement>();
                 const { isPressing } = useLongPress(element, { isOn: () => isOn.value, onPress, ...options });
@@ -67,7 +67,7 @@ describe("a long press", () => {
                 ]);
             }
         });
-        wrapper = mount(Held, { attachTo: document.body });
+        wrapper = mount(heldPart, { attachTo: document.body });
         const element = wrapper.element as HTMLElement;
         const add = element.addEventListener.bind(element);
         element.addEventListener = ((type: string, ...rest: never[]) => {

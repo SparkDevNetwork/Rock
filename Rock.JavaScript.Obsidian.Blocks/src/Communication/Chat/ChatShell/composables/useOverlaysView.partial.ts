@@ -357,7 +357,7 @@ export function useOverlaysView(dependencies: OverlaysViewDependencies) {
                 break;
 
             case "copy":
-                void actions.copy(request.message);
+                void actions.copy(request.message, request.text);
                 break;
 
             case "delete":

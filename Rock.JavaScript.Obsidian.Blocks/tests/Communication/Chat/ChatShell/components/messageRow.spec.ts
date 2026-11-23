@@ -1495,8 +1495,10 @@ describe("the phone's action sheet", () => {
             jest.useRealTimers();
         }
         const style = rowStyles().replace(/\/\*[\s\S]*?\*\//g, "");
-        expect(style).toMatch(/\.chat-msg\.is-community\.is-flashing:not\(\.is-pressing\)::before/);
-        expect(style).toMatch(/\.chat-msg\.is-pressing::before\s*\{[^}]*background:\s*var\(--chat-press\)/);
+        const press = /\.chat-msg\.is-community\.is-pressing::before\s*\{([^}]*)\}/.exec(style);
+        expect(press?.[1]).toMatch(/background:\s*var\(--chat-press\)/);
+        expect(press?.[1]).toMatch(/animation:\s*none/);
+        expect(press?.index ?? 0).toBeGreaterThan(style.indexOf(".chat-msg.is-community.is-flashing::before"));
     });
 
     describe("held on a link or a photo", () => {

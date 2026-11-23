@@ -1,11 +1,12 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div ref="rowElement"
+    <div :ref="setRowElement"
          class="chat-msg"
          :class="rootClasses"
          :role="state === 'system' ? 'note' : 'article'"
          :aria-label="ariaLabel"
-         :tabindex="isTabStop ? 0 : -1"
+         :aria-haspopup="isSheetSurface ? 'dialog' : undefined"
+         v-bind="listAttrs"
          :data-testid="pending ? 'pending-row' : 'message-row'"
          :data-status="pending ? pending.status : undefined"
          :data-state="state"
@@ -13,7 +14,6 @@
          :data-position="position"
          :data-message-id="message?.id"
          :data-hot-id="isBarOffered ? message?.id : undefined"
-         @click="onRowClick"
          @keydown.enter="onRowEnter"
          @animationend="onAnimationEnd">
 
@@ -45,12 +45,14 @@
         <MessageRowBubble v-else :view="view" :on="on" :isDirectMessage="isDirectMessage" :position="position" :isTypingNext="isTypingNext" :groupKey="groupKey" />
 
         <!--
-            A phone's actions, from a tap on the message: the bar's and the menu's choices as a sheet
-            over the whole chat. The phone has no hover bar, so the sheet carries the quick
-            reactions, first, at a finger's size. A tap's open lands focus on their row, so none
-            is ringed as if chosen; a keyboard's starts on the first.
+            A touch screen's actions, from a long press on the message: the bar's and the menu's
+            choices as a sheet over the whole chat. A touch screen has no hover bar, so the sheet
+            carries the quick reactions, first, at a finger's size. A hold's open lands focus on
+            their row, so none is ringed as if chosen; a keyboard's starts on the first. Focus comes
+            back to the message on close, never to what held it before, the composer above all,
+            which would raise a phone's keyboard again.
         -->
-        <Sheet v-if="isSheetSurface" ref="sheet" :isOpen="isSheetOpen && !!message" label="Message actions" @dismiss="onSheetClose">
+        <Sheet v-if="isSheetSurface" ref="sheet" :isOpen="isSheetOpen && !!message" label="Message actions" isFocusReturnedByOwner @dismiss="onSheetClose">
             <div class="chat-sheet-react"
                  role="group"
                  aria-label="Quick reactions"
@@ -166,6 +168,43 @@
     inset: 0;
 }
 
+/*
+    A finger held on a message: the press fill on the row's own layer, stood in from the feed's edges
+    with the same space above and below, as the flash is, which it takes over while held, written
+    after the flash and the greeting so it wins over both. Shown at once, with no fade, so reduced
+    motion draws it the same.
+*/
+.chat-msg.is-pressing {
+    isolation: isolate;
+}
+
+.chat-msg.is-pressing::before,
+.chat-msg.is-community.is-pressing::before {
+    position: absolute;
+    inset: 1px var(--chat-cm-inset, 4px);
+    z-index: -1;
+    pointer-events: none;
+    content: "";
+    background: var(--chat-press);
+    border-radius: var(--chat-r-row);
+    animation: none;
+}
+
+/*
+    A long press on a touch screen is the message's own, so the phone's callout, its text selection
+    and a link's or photo's drag lift stay off the message; Copy text covers copying. An open editor
+    keeps them, being where the person types.
+*/
+.chat-msg.is-touch:not(.is-editing) {
+    -webkit-touch-callout: none;
+    user-select: none;
+}
+
+.chat-msg.is-touch :deep(a),
+.chat-msg.is-touch :deep(img) {
+    -webkit-user-drag: none;
+}
+
 /* Conversational. */
 .chat-msg.is-conversational {
     align-items: flex-start;
@@ -228,9 +267,13 @@
     border-radius: var(--chat-r-control);
 }
 
-/* Tinted while the column's bar is on the row, not under any pointer, so one message is lit at a time. */
+/*
+    Tinted while the column's bar is on the row, not under any pointer, so one message is lit at a
+    time; on a pointer screen also while focus is inside it, an open editor above all, which has no
+    bar. A touch screen's tap focuses what it lands on, so there a focus inside lights nothing.
+*/
 .chat-msg.is-community.is-hot,
-.chat-msg.is-community:focus-within {
+.chat-msg.is-community:not(.is-touch):focus-within {
     background-image: linear-gradient(var(--chat-hover), var(--chat-hover));
 }
 
@@ -392,7 +435,7 @@ img.chat-sheet-glyph {
 </style>
 
 <script setup lang="ts">
-    import { computed, PropType, proxyRefs, ref, toRaw, toRef, watch } from "vue";
+    import { computed, inject, PropType, proxyRefs, ref, toRaw, toRef, watch } from "vue";
     import MessageBody from "./messageBody.partial.obs";
     import MessageRowBubble from "./messageRowBubble.partial.obs";
     import MessageRowCommunity from "./messageRowCommunity.partial.obs";
@@ -402,6 +445,9 @@ img.chat-sheet-glyph {
     import { isHoverless } from "../ui/viewport.partial";
     import { MessageRowHandlers, MessageRowReactionsProps, MessageRowSurface, MessageRowView, useMessageRowView } from "../composables/useMessageRowView.partial";
     import { ActionBarDock, useColumnActionBar } from "../composables/useActionBar.partial";
+    import { attachmentViewsKey } from "../composables/useAttachments.partial";
+    import { ListItemAttrs, useRowKeys } from "../composables/useListKeys.partial";
+    import { useLongPress } from "../composables/useLongPress.partial";
     import { isEditableMessage, isSenderBlockable, MessageActionRequest, messageRowRequests } from "../composables/useMessageActions.partial";
     import { ThreadPlace, threadPlaceOf } from "../composables/useThreads.partial";
     import { ReactionHost } from "../composables/useReactions.partial";
@@ -539,6 +585,15 @@ img.chat-sheet-glyph {
         blockedRun: {
             type: Array as PropType<TimelineMessage[] | null>,
             default: null
+        },
+
+        /**
+         * The row's key in its column's list, which holds the column's one tab stop. Given by the
+         * column, since a folded blocked line is keyed by its first message but handed its last.
+         */
+        rowKey: {
+            type: String,
+            default: ""
         }
     });
 
@@ -564,6 +619,16 @@ img.chat-sheet-glyph {
     };
 
     const rowElement = ref<HTMLElement>();
+
+    /** The column's list of rows, which says whether this row holds the tab stop; null for a row drawn alone. */
+    const rowKeys = useRowKeys();
+
+    /** The link or the photo a long press was on, which the sheet then offers first. */
+    const heldLink = ref<HTMLAnchorElement | null>(null);
+    const heldPhotoId = ref<string | null>(null);
+
+    /** The session's links to the message's files, which Save photo asks for a fresh one; null where none are provided. */
+    const attachmentViews = inject(attachmentViewsKey, null);
 
     /** Where the column's one bar is drawn while it is on this message. */
     const barDock = ref<HTMLElement>();
@@ -675,10 +740,12 @@ img.chat-sheet-glyph {
     const isBarOffered = computed((): boolean => canAct.value && !isTouchLayout.value);
 
     /**
-     * The person's own message has no name or face to press, so the row itself is a Tab stop while
-     * it offers a bar: a keyboard reaching it shows the bar, as a pointer resting on it does.
+     * The row's place in its column's one tab stop: Up and Down move between every message drawn,
+     * other people's too, the stop held by the one last focused. A row drawn alone is focusable
+     * only, as a jump does. Focus shows the bar on a pointer screen; on a touch screen Enter opens
+     * the sheet.
      */
-    const isTabStop = computed((): boolean => props.isOwn && isBarOffered.value);
+    const listAttrs = computed((): ListItemAttrs | { tabindex: number } => rowKeys && props.rowKey ? rowKeys.itemAttrs(props.rowKey) : { tabindex: -1 });
 
     /**
      * Whether the column's bar is shown on this row. The row's hover tint follows it rather than the
@@ -690,7 +757,7 @@ img.chat-sheet-glyph {
     /** The rows that hold a sheet at all, kept while it slides away whatever the message became. */
     const isSheetSurface = computed((): boolean => !!props.message && !props.pending && isTouchLayout.value);
 
-    /** Whether a tap opens the sheet now: as the bar would show, never on a previewed room or an open editor. */
+    /** Whether a long press opens the sheet now: as the bar would show, never on a previewed room or an open editor. */
     const isSheetOffered = computed((): boolean => isSheetSurface.value && canAct.value);
 
     /** The editor takes the text's place while the message is live; a delete that lands meanwhile shows its tombstone. */
@@ -705,6 +772,15 @@ img.chat-sheet-glyph {
         const list: SheetItem[] = [];
         if (!message) {
             return list;
+        }
+
+        // What the finger was on comes first: a link's own choices, or a photo's.
+        if (heldLink.value) {
+            list.push({ key: "openLink", label: "Open link", icon: "right" });
+            list.push({ key: "copyLink", label: "Copy link", icon: "copy" });
+        }
+        else if (heldPhotoId.value) {
+            list.push({ key: "savePhoto", label: "Save photo", icon: "download" });
         }
 
         if (!props.isInThread) {
@@ -764,6 +840,9 @@ img.chat-sheet-glyph {
         [`is-${state.value}`]: true,
         "is-own": props.isOwn,
         "is-phone": session.isPhone.value,
+        "is-touch": isTouchLayout.value,
+        "is-pressing": isPressing.value,
+        "is-editing": isEditorShown.value,
         "is-head": isHead.value,
         "is-announcement": isAnnouncement.value,
         "is-jumbo": isJumbo.value,
@@ -852,7 +931,9 @@ img.chat-sheet-glyph {
 
     /**
      * Where the picker is placed. The sheet's plus closes with the sheet, so a picker asked for
-     * from it is placed on the message, as the bar's own button would be.
+     * from it is placed on the message, as the bar's own button would be: at the box's own place
+     * in the row, the dock, where a touch screen that is no phone grows it beside the message. A
+     * phone's picker is a sheet of its own, placed on the message.
      */
     function pickerAnchor(anchor: HTMLElement): HTMLElement {
         const row = rowElement.value;
@@ -861,7 +942,7 @@ img.chat-sheet-glyph {
             return anchor;
         }
 
-        return messageAnchor() ?? row;
+        return (session.isPhone.value ? null : barDock.value) ?? messageAnchor() ?? row;
     }
 
     /**
@@ -873,16 +954,23 @@ img.chat-sheet-glyph {
     }
 
 
-    /**
-     * A tap on the message opens the sheet on a phone. A tap on something of its own, a link, a
-     * button or the sheet itself where it is drawn in place, does what that thing does instead.
-     */
-    function onRowClick(event: MouseEvent): void {
-        const target = event.target as Element | null;
-        if (!isSheetOffered.value || target?.closest("button, a, input, label, [contenteditable='true'], .chat-scrim") || sheet.value?.element?.contains(target)) {
-            return;
+    /** The row's element, which its column's list moves focus to as well. */
+    function setRowElement(element: unknown): void {
+        rowElement.value = element instanceof HTMLElement ? element : undefined;
+        if (rowKeys && props.rowKey) {
+            rowKeys.itemRef(props.rowKey)(element);
         }
+    }
 
+    /**
+     * A long press opens the sheet on a touch screen, with what the finger was on offered first. A
+     * tap does what it lands on, a link, a name, a face, a photo or a chip, and nothing on text.
+     */
+    function onHold(target: Element): void {
+        const link = target.closest<HTMLAnchorElement>("a[href]");
+        const photo = target.closest<HTMLElement>("[data-attachment-id]");
+        heldLink.value = link && rowElement.value?.contains(link) ? link : null;
+        heldPhotoId.value = photo && rowElement.value?.contains(photo) ? photo.dataset.attachmentId ?? null : null;
         isSheetFromKeyboard.value = false;
         isSheetOpen.value = true;
     }
@@ -894,8 +982,28 @@ img.chat-sheet-glyph {
         }
 
         event.preventDefault();
+        heldLink.value = null;
+        heldPhotoId.value = null;
         isSheetFromKeyboard.value = true;
         isSheetOpen.value = true;
+    }
+
+    /**
+     * Save photo follows a link to the photo signed afresh, never the one drawn, which may have
+     * ended while the message sat on screen. The link names the file, since a download attribute
+     * is ignored on another origin.
+     */
+    async function savePhoto(attachmentId: string): Promise<void> {
+        const item = facts.files.value.find(file => file.id === attachmentId);
+        const link = item && attachmentViews ? await attachmentViews.links.fresh(item) : null;
+        if (!link?.downloadUrl) {
+            return;
+        }
+
+        const anchor = document.createElement("a");
+        anchor.href = link.downloadUrl;
+        anchor.rel = "noopener";
+        anchor.click();
     }
 
     /** Focus comes back to the message, unless the choice made moves it on, as a quote or an edit does. */
@@ -937,8 +1045,25 @@ img.chat-sheet-glyph {
             return;
         }
 
+        // Read before the sheet closes; the sheet keeps them as it slides away.
+        const link = heldLink.value;
+        const photoId = heldPhotoId.value;
         onSheetClose();
-        if (key === "reply") {
+        if (key === "openLink") {
+            // The anchor's own click, exactly as a tap on it.
+            link?.click();
+        }
+        else if (key === "copyLink") {
+            if (link) {
+                emit("messageAction", { kind: "copy", message, text: link.href });
+            }
+        }
+        else if (key === "savePhoto") {
+            if (photoId) {
+                void savePhoto(photoId);
+            }
+        }
+        else if (key === "reply") {
             actionHandlers.replyInThread(message);
         }
         else if (key === "quote" || key === "edit" || key === "copy" || key === "delete" || key === "block") {
@@ -973,6 +1098,9 @@ img.chat-sheet-glyph {
     }
 
     // #endregion Event Handlers
+
+    /** The long press that opens the sheet, on a touch screen while the message can be acted on. */
+    const { isPressing } = useLongPress(rowElement, { isOn: () => isSheetOffered.value, onPress: onHold });
 
     // #region Watchers
 

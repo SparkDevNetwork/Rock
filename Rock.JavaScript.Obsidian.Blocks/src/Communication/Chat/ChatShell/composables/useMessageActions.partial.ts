@@ -51,7 +51,8 @@ export type ActionNotice = {
  * card stands: under the row for the author, at the chip for a chip.
  */
 export type MessageActionRequest =
-    | { kind: "quote" | "edit" | "copy" | "delete" | "cancelEdit" | "block", message: TimelineMessage }
+    | { kind: "quote" | "edit" | "delete" | "cancelEdit" | "block", message: TimelineMessage }
+    | { kind: "copy", message: TimelineMessage, text?: string }
     | { kind: "saveEdit", message: TimelineMessage, body: string }
     | { kind: "server", message: TimelineMessage, action: MessageAction, onSettled?: () => void }
     | { kind: "react", message: TimelineMessage, code: string }
@@ -134,8 +135,8 @@ export type MessageActions = {
     /** Runs an action the server listed on a message and toasts its sentence. */
     runAction: (channelId: string, messageId: number, action: MessageAction) => Promise<void>;
 
-    /** Copies a message's text to the clipboard. */
-    copy: (message: TimelineMessage) => Promise<void>;
+    /** Copies a message's text to the clipboard, or other words from it, as a link held in it. */
+    copy: (message: TimelineMessage, text?: string) => Promise<void>;
 
     /** Quotes a message into the next send of a conversation or thread. */
     startQuote: (key: string, message: TimelineMessage) => void;
@@ -500,7 +501,7 @@ export function createMessageActions(dependencies: MessageActionsDependencies): 
             }
         },
 
-        copy: async (message: TimelineMessage): Promise<void> => {
+        copy: async (message: TimelineMessage, text: string = copyText(message)): Promise<void> => {
             if (isStopped) {
                 return;
             }
@@ -512,7 +513,7 @@ export function createMessageActions(dependencies: MessageActionsDependencies): 
             }
 
             try {
-                await dependencies.writeText(copyText(message));
+                await dependencies.writeText(text);
             }
             catch {
                 // The browser refused the clipboard, as it does outside a secure page or without focus.
