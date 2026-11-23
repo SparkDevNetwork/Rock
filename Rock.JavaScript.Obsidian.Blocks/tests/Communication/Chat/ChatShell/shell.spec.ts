@@ -5901,6 +5901,19 @@ describe("a start the platform cannot answer yet", () => {
         expect(h.shell.state.activeChannelId).toBe(channelC);
     });
 
+    // The frame draws the conversation over the list at first paint from this, before sign-in.
+    test("names the room its page load opens first before sign-in: a link's or an early tap's, else the one remembered", () => {
+        const key = rememberedChannelKey(tenant, person);
+        expect(build({ linkedChannelId: null }).shell.openingRoom()).toBeNull();
+        expect(build({ linkedChannelId: null, stored: { [key]: channelB } }).shell.openingRoom()).toBe(channelB);
+
+        const linked = build({ linkedChannelId: channelA.toUpperCase(), stored: { [key]: channelB } });
+        expect(linked.shell.openingRoom()).toBe(channelA);
+
+        linked.shell.relink(channelC);
+        expect(linked.shell.openingRoom()).toBe(channelC);
+    });
+
     test("a start that waited tells the platform once, at ready, how long it took, how many tries and the words it reached; a start that did not tells nothing", async () => {
         const h = build();
         h.exchangeAnswers.value = [busy(4), busy(4)];
