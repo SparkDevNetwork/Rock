@@ -1072,7 +1072,7 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
 
         const message = mainElement.value?.querySelector<HTMLElement>(`[data-message-id='${rootId}']`);
         const pill = message ? stopElement({ stop: "thread-summary", within: message }, mainElement.value, {}) : null;
-        void askFocus([opener, inFeedView(pill), inFeedView(message), "header"], { within: "main", preventScroll: true });
+        void askFocus([inFeedView(opener), inFeedView(pill), inFeedView(message), "header"], { within: "main", preventScroll: true });
     }
 
     /**
@@ -1090,8 +1090,9 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
             return active.closest("[data-message-id]") ? active : null;
         }
 
-        // The bar's box carries the id of the message it is on, as that message's row does.
-        const id = active.closest<HTMLElement>("[data-hot-id]")?.dataset.hotId;
+        // The bar's box carries the id of the message it is on. A drawer's rows carry the same mark,
+        // so only the box is read: a part of a drawer row is never an opener in the conversation.
+        const id = active.closest<HTMLElement>("[data-testid='message-box'][data-hot-id]")?.dataset.hotId;
         return id ? main.querySelector<HTMLElement>(`[data-message-id='${id}']`) : null;
     }
 
@@ -1143,7 +1144,7 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
      * @param order The places to try, first to last.
      * @param options Where the stops are looked for and how focus is put there.
      *
-     * @returns The element focused, or null when nothing in the order is drawn.
+     * @returns The element focused, or null when nothing in the order is drawn and takes focus.
      */
     function focusStop(order: FocusTarget[], options: FocusStopOptions = {}): HTMLElement | null {
         const place = options.within === "main" ? mainElement.value : options.within === "panel" ? panelElement.value : rootElement.value;
@@ -1162,7 +1163,11 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
             else {
                 element.focus(focusOptions);
             }
-            return element;
+
+            // A place that cannot hold focus, as a plain box, is not where focus went.
+            if (document.activeElement === element) {
+                return element;
+            }
         }
 
         return null;
