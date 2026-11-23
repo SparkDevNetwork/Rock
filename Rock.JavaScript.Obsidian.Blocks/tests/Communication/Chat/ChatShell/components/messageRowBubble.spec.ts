@@ -18,6 +18,8 @@
 // while the message is not stored is what it draws once it is, so the answer moves nothing. The
 // row is drawn whole, as the feed draws it, and given its stored copy in place of its pending one,
 // as the feed does when the send settles under the same key.
+import { readFileSync } from "fs";
+import { resolve } from "path";
 import { mount, VueWrapper } from "@vue/test-utils";
 import MessageRow from "../../../../../src/Communication/Chat/ChatShell/components/messageRow.partial.obs";
 import { providedSession } from "../sessionShapes";
@@ -132,5 +134,36 @@ describe("files sent alone", () => {
         await row.setProps({ pending: null, message: stored({ body: null, attachments: [photo] }), isJustSent: true });
 
         expect(row.get(".chat-meta").find("[data-testid='message-state']").text()).toBe("Sent");
+    });
+});
+
+// A jump's flash stands 4px clear of the bubble, so its corners are the bubble's grown by that
+// gap: concentric with each corner, the run's tighter tail corners too.
+describe("the jump flash", () => {
+    const style = readFileSync(resolve(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/messageRowBubble.partial.obs"), "utf8").replace(/\r\n/g, "\n");
+    const flash = /\n\.chat-msg\.is-flashing \.chat-bub-anchor::before\s*\{([^}]*)\}/.exec(style)?.[1] ?? "";
+
+    test("stands its gap clear of the bubble with the bubble's radius plus that gap", () => {
+        expect(flash).toMatch(/--chat-flash-gap: 4px;/);
+        expect(flash).toMatch(/inset: calc\(-1 \* var\(--chat-flash-gap\)\);/);
+        expect(flash).toMatch(/border-radius: calc\(var\(--chat-r-bubble\) \+ var\(--chat-flash-gap\)\);/);
+    });
+
+    test.each([
+        ["", "first", "border-bottom-left-radius"],
+        ["", "middle", "border-top-left-radius"],
+        ["", "last", "border-top-left-radius"],
+        [".is-own", "first", "border-bottom-right-radius"],
+        [".is-own", "middle", "border-top-right-radius"],
+        [".is-own", "last", "border-top-right-radius"]
+    ])("in a run%s, a %s message's tail corners are the flash's too, grown by the gap", (own, position, corner) => {
+        const row = `\\.is-conversational${own.replace(".", "\\.")}\\[data-position="${position}"\\]`;
+        const rule = new RegExp(`${row} \\.chat-bubble,\\n${row} \\.chat-bub-anchor::before\\s*\\{([^}]*)\\}`).exec(style)?.[1] ?? "";
+        expect(rule).toMatch(new RegExp(`${corner}: calc\\(var\\(--chat-r-tail\\) \\+ var\\(--chat-flash-gap, 0px\\)\\);`));
+    });
+
+    test("the person's own run takes its corners back on the flash as on the bubble", () => {
+        const rule = /\n\.is-conversational\.is-own\[data-position\] \.chat-bubble,\n\.is-conversational\.is-own\[data-position\] \.chat-bub-anchor::before\s*\{([^}]*)\}/.exec(style)?.[1] ?? "";
+        expect(rule).toMatch(/border-radius: calc\(var\(--chat-r-bubble\) \+ var\(--chat-flash-gap, 0px\)\);/);
     });
 });
