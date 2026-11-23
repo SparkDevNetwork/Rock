@@ -378,6 +378,8 @@ const namedLiterals: Named[] = [
     { name: "w-side", value: "296px" },
     { name: "w-panel", value: "392px" },
     { name: "w-main-min", value: "480px" },
+    // The conversation's least width beside the sidebar alone, below which the frame shows one pane.
+    { name: "w-conversation-min", value: "364px" },
     { name: "d-row-collapse", value: "200ms", reduced: "0ms" },
     { name: "d-sent-hold", value: "2.2s" },
     { name: "d-read-fade", value: "400ms" },

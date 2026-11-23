@@ -1037,6 +1037,41 @@ describe("the inbox", () => {
         expect(h.mentions.state.inbox.isRefreshing).toBe(false);
     });
 
+    // Closed while its first page was on its way, the panel slid out saying there were no
+    // mentions: closing ended the loading, which drew the empty words for the leave. The leaving
+    // panel holds the look it had, and the dropped page never lands.
+    test("closed during its first load, keeps its loading look for the panel leaving, and the page never lands", async () => {
+        const h = setup();
+        const page = deferred<CallResult>();
+        h.answers.chat_list_mentions = [page];
+        const opening = h.mentions.openInbox();
+
+        h.mentions.closeInbox();
+        page.resolve(inboxAnswer([mentionRow(50, "2026-10-18T09:00:00Z")]));
+        await opening;
+
+        expect(h.mentions.state.inbox.isLoading).toBe(true);
+        expect(h.mentions.state.inbox.rows).toEqual([]);
+    });
+
+    // Held loading flags never outlive the next opening, which starts from nothing.
+    test("closed during an older page, opened again, reads older pages again", async () => {
+        const h = setup();
+        const older = deferred<CallResult>();
+        h.answers.chat_list_mentions = [inboxAnswer([mentionRow(50, "2026-10-18T09:00:00Z")], true), older, inboxAnswer([mentionRow(50, "2026-10-18T09:00:00Z")], true), inboxAnswer([mentionRow(40, "2026-10-17T09:00:00Z")])];
+        await h.mentions.openInbox();
+        const loading = h.mentions.loadOlder();
+        h.mentions.closeInbox();
+        older.resolve(inboxAnswer([]));
+        await loading;
+
+        await h.mentions.openInbox();
+        await h.mentions.loadOlder();
+
+        expect(h.mentions.state.inbox.isLoadingOlder).toBe(false);
+        expect(h.mentions.state.inbox.rows.map(r => r.message.id)).toEqual([50, 40]);
+    });
+
     test("opened again, afresh as at its first opening: nothing held is drawn until the first page lands", async () => {
         const h = setup();
         const page = deferred<CallResult>();

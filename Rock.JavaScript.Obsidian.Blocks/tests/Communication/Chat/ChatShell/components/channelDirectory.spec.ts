@@ -29,6 +29,7 @@ import { nextTick, reactive } from "vue";
 import ChannelDirectory from "../../../../../src/Communication/Chat/ChatShell/components/channelDirectory.partial.obs";
 import ChannelMark from "../../../../../src/Communication/Chat/ChatShell/ui/channelMark.partial.obs";
 import JoinBar from "../../../../../src/Communication/Chat/ChatShell/components/joinBar.partial.obs";
+import ListRow from "../../../../../src/Communication/Chat/ChatShell/ui/listRow.partial.obs";
 import LoadMoreRow from "../../../../../src/Communication/Chat/ChatShell/ui/loadMoreRow.partial.obs";
 import { DirectoryState, JoinState, LeaveState } from "../../../../../src/Communication/Chat/ChatShell/composables/useRooms.partial";
 import { DirectoryRow } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
@@ -625,6 +626,25 @@ describe("a row", () => {
 
         expect(w.get("[data-testid='directory-list']").element.tagName).toBe("UL");
         expect(w.get("[data-testid='directory-list']").attributes("aria-label")).toBe("Channels");
+    });
+
+    // A Browse row drew its own hover, chosen fill and rules between rows, so it looked and moved
+    // unlike every other list row. The one list row draws it now: its hover, its press, its ring,
+    // and the brand wash as the chosen fill.
+    test("is the one list row, the previewed one chosen, with no fill or rule of its own", () => {
+        const w = mountDirectory({ previewId: volunteers.channel_id });
+
+        const chosen = rowOf(w, volunteers.channel_id).getComponent(ListRow);
+        expect(chosen.element.tagName).toBe("LI");
+        expect(chosen.props("interactive")).toBe(true);
+        expect(chosen.props("selected")).toBe(true);
+        expect(rowOf(w, worship.channel_id).getComponent(ListRow).props("selected")).toBe(false);
+        expect(chosen.get("[data-testid='directory-row-open']").classes()).toContain("chat-lrow-hit");
+
+        const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/channelDirectory.partial.obs"), "utf8");
+        const style = source.slice(source.indexOf("<style"), source.indexOf("</style>"));
+        expect(style).not.toMatch(/\.chat-fd-row/);
+        expect(style).not.toMatch(/\.chat-fd-open/);
     });
 });
 

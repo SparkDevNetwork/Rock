@@ -139,23 +139,25 @@
 
                             <!-- One tab stop for the list; a row shows its preview, which in a wide view follows the arrows. -->
                             <ul v-else class="chat-fd-list" aria-label="Channels" data-testid="directory-list">
-                                <li v-for="row in drawnRows"
-                                    :key="row.id"
-                                    class="chat-fd-row"
-                                    :class="{ 'is-member': row.isMember, 'is-current': row.id === previewRow?.id }"
-                                    data-testid="directory-row"
-                                    :data-channel-id="row.id"
-                                    :data-member="row.isMember ? 'true' : 'false'">
-                                    <button :ref="listKeys.itemRef(row.id)"
-                                            type="button"
-                                            class="chat-fd-open"
-                                            data-testid="directory-row-open"
-                                            :aria-label="row.label"
-                                            :aria-current="row.id === previewRow?.id ? 'true' : undefined"
-                                            v-bind="listKeys.itemAttrs(row.id)"
-                                            @focus="onRowFocus(row.id)"
-                                            @click="choose(row.id)">
+                                <!-- The one list row draws its hover, press, ring and the chosen wash; the row lays out only what it says. -->
+                                <ListRow v-for="row in drawnRows"
+                                         :key="row.id"
+                                         as="li"
+                                         interactive
+                                         class="chat-fd-item"
+                                         :class="{ 'is-member': row.isMember }"
+                                         :selected="row.id === previewRow?.id"
+                                         :label="row.label"
+                                         :hitAttrs="rowHitAttrs(row.id)"
+                                         :hitRef="listKeys.itemRef(row.id)"
+                                         data-testid="directory-row"
+                                         :data-channel-id="row.id"
+                                         :data-member="row.isMember ? 'true' : 'false'"
+                                         @press="choose(row.id)">
+                                    <template #lead>
                                         <ChannelMark class="chat-fd-ic" isPublic :imageUrl="row.iconUrl" :tileName="row.name" />
+                                    </template>
+                                    <span class="chat-fd-body">
                                         <span class="chat-fd-main">
                                             <span class="chat-fd-name" data-testid="directory-row-name"><MatchText :text="row.name" :query="directory.query" /></span>
                                             <span v-if="row.description" class="chat-fd-desc" data-testid="directory-row-desc">{{ row.description }}</span>
@@ -168,8 +170,8 @@
                                               :class="{ 'is-fresh': row.join.kind === 'joined' && row.join.isFresh }"
                                               title="Joined"
                                               data-testid="directory-row-joined"><Icon name="check" size="sm" /></span>
-                                    </button>
-                                </li>
+                                    </span>
+                                </ListRow>
                             </ul>
 
                             <LoadMoreRow v-if="!empty && directory.hasMore"
@@ -286,7 +288,7 @@
     padding: 6px 8px 16px;
 }
 
-.chat-fd.is-split .chat-fd-open {
+.chat-fd.is-split .chat-fd-list > .chat-fd-item {
     gap: 12px;
     padding: 10px;
 }
@@ -556,66 +558,25 @@
     list-style: none;
 }
 
-.chat-fd-row {
-    position: relative;
-    display: flex;
-    align-items: center;
-    border-radius: var(--chat-r-row);
-    transition: background-color var(--chat-t-fast) var(--chat-ease-state);
-}
-
-/* A rule between rows from the text's edge, hidden beside a row under the pointer or focus. */
-.chat-fd-row + .chat-fd-row::before {
-    position: absolute;
-    top: 0;
-    right: 14px;
-    left: 66px;
-    height: 1px;
-    content: "";
-    background: var(--chat-line);
-    transition: opacity var(--chat-t-fast) var(--chat-ease-state);
-}
-
-.chat-fd-row:hover,
-.chat-fd-row:focus-within {
-    background: var(--chat-hover);
-}
-
-/* The row previewed, in the wash a chosen list row has everywhere. */
-.chat-fd-row.is-current,
-.chat-fd-row.is-current:hover {
-    background: var(--chat-brand-wash);
-}
-
-.chat-fd-row.is-current::before,
-.chat-fd-row.is-current + .chat-fd-row::before {
-    opacity: 0;
-}
-
-.chat-fd-row:hover::before,
-.chat-fd-row:hover + .chat-fd-row::before,
-.chat-fd-row:focus-within::before,
-.chat-fd-row:focus-within + .chat-fd-row::before {
-    opacity: 0;
-}
-
-.chat-fd-open {
-    display: flex;
-    flex: 1;
+/*
+    A Browse row is the one list row, which draws its fill, press and ring. It says more than most
+    rows (a name, a description and a meta line beside a 40px mark), so it keeps its taller box,
+    the one the loading rows hold, with the mark at the top beside the first line. The list's own
+    selector outranks the row's base rule whatever order the two sheets load in.
+*/
+.chat-fd-list > .chat-fd-item {
     gap: 14px;
     align-items: flex-start;
-    min-width: 0;
     padding: 13px 8px 13px 12px;
-    font: inherit;
-    color: inherit;
-    text-align: left;
-    background: none;
-    border: 0;
-    border-radius: var(--chat-r-row);
 }
 
-.chat-fd-open:focus-visible {
-    outline-offset: -2px;
+/* The words run on to their own lines, with Joined's check beside them all, at their middle. */
+.chat-fd-body {
+    display: flex;
+    gap: 14px;
+    align-items: center;
+    min-width: 0;
+    white-space: normal;
 }
 
 /* The channel's mark as the sidebar draws it, its photo or its letter tile, in the row's 40px box. */
@@ -669,7 +630,7 @@
     flex-wrap: wrap;
 }
 
-.chat-fd.is-phone .chat-fd-open {
+.chat-fd.is-phone .chat-fd-list > .chat-fd-item {
     gap: 12px;
     padding-left: 10px;
 }
@@ -761,6 +722,7 @@
     import Menu, { MenuItem } from "../ui/menu.partial.obs";
     import Pill from "../ui/pill.partial.obs";
     import IconButton from "../ui/iconButton.partial.obs";
+    import ListRow from "../ui/listRow.partial.obs";
     import LoadMoreRow from "../ui/loadMoreRow.partial.obs";
     import Segmented, { SegmentedOption } from "../ui/segmented.partial.obs";
     import JoinBar from "./joinBar.partial.obs";
@@ -1135,9 +1097,26 @@
         return id ? props.campuses.find(campus => campus.guid.toLowerCase() === id)?.name ?? null : null;
     }
 
+    /**
+     * What a row's button carries: the list's tab stop and keys, and its focus, which both marks the
+     * list's current row and, in a wide view, shows that row's preview.
+     */
+    function rowHitAttrs(channelId: string): Record<string, unknown> {
+        const keys = listKeys.itemAttrs(channelId);
+        return {
+            ...keys,
+            class: "chat-fd-open",
+            "data-testid": "directory-row-open",
+            onFocus: (): void => {
+                keys.onFocus();
+                onRowFocus(channelId);
+            }
+        };
+    }
+
     /** A row's button, while the list draws it. */
     function rowButtonOf(channelId: string | null): HTMLElement | null {
-        return channelId ? viewElement.value?.querySelector<HTMLElement>(`.chat-fd-row[data-channel-id="${channelId}"] .chat-fd-open`) ?? null : null;
+        return channelId ? viewElement.value?.querySelector<HTMLElement>(`.chat-fd-item[data-channel-id="${channelId}"] .chat-fd-open`) ?? null : null;
     }
 
     /** Whether a choice is the campus the rooms hold. */
