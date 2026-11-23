@@ -458,10 +458,13 @@ namespace Rock.Model
             // Add contact info if it exists.
             if ( eventItemOccurrence.ContactPersonAlias != null )
             {
-                iCalEvent.Organizer = new Organizer( $"MAILTO:{eventItemOccurrence.ContactPersonAlias.Person.Email}" )
+                if ( eventItemOccurrence.ContactEmail.IsNotNullOrWhiteSpace() )
                 {
-                    CommonName = eventItemOccurrence.ContactPersonAlias.Person.FullName
-                };
+                    iCalEvent.Organizer = new Organizer( $"MAILTO:{eventItemOccurrence.ContactEmail}" )
+                    {
+                        CommonName = eventItemOccurrence.ContactPersonAlias.Person.FullName
+                    };
+                }
 
                 // Outlook doesn't seem to use Contacts or Comments.
                 var contactName = !string.IsNullOrEmpty( eventItemOccurrence.ContactPersonAlias.Person.FullName ) ? $"Name: {eventItemOccurrence.ContactPersonAlias.Person.FullName}" : string.Empty;
