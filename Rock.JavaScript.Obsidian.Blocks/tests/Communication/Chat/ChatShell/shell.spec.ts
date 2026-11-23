@@ -25,6 +25,7 @@ import { rememberedChannelKey, revealCeilingMs } from "../../../../src/Communica
 import { computed, toRaw, watch, watchEffect } from "vue";
 import { HistoryPage, MentionRow, SidebarRow, TimelineMessage, UnreadMention } from "../../../../src/Communication/Chat/ChatShell/types.partial";
 import { DoorResult } from "../../../../src/Communication/Chat/ChatShell/composables/useDirectMessage.partial";
+import type { StatusChannel } from "../../../../src/Communication/Chat/ChatShell/composables/statusTabs.partial";
 import { lockedReason, noKeySentence } from "../../../../src/Communication/Chat/ChatShell/composables/useSend.partial";
 import { quoteKey } from "../../../../src/Communication/Chat/ChatShell/composables/useMessageActions.partial";
 import { messageForError } from "../../../../src/Communication/Chat/ChatShell/errors.partial";
@@ -2106,8 +2107,8 @@ describe("the tab's title", () => {
         return { channel_id: channelId, name: channelId, room_kind: roomKind, is_member: true, is_unread: false, unread_count: 0, mention_count: 0, all_mention_count: 0, read_cursor: 10, last_message_id: 10, ...extra };
     }
 
-    async function startedWith(rows: Partial<SidebarRow>[]): Promise<ReturnType<typeof build>> {
-        const h = build();
+    async function startedWith(rows: Partial<SidebarRow>[], channel?: ShellOptions["channel"]): Promise<ReturnType<typeof build>> {
+        const h = build({ channel });
         h.bootstrap.value = { channels: rows };
         const starting = h.shell.start();
         await settle();
@@ -2206,6 +2207,30 @@ describe("the tab's title", () => {
         await settle();
 
         expect(h.pageDocument.title).toBe("Chat | Rock");
+    });
+
+    // A session Rock refuses, or one whose token ran out, ends chat as signing out does: the tab
+    // gets Rock's title back at once, not when it is next seen, and stops hearing her other tabs' reads.
+    test("a session Rock refuses gives Rock's title back and stops hearing other tabs' reads", async () => {
+        const lines: Array<{ name: string, isClosed: boolean }> = [];
+        const channel = (name: string): StatusChannel => {
+            const line = { name, isClosed: false };
+            lines.push(line);
+            return { postMessage: () => undefined, close: () => line.isClosed = true, onmessage: null };
+        };
+        const h = await startedWith([titleRow(channelA, "channel"), titleRow(ben, "person", { is_unread: true })], channel);
+        await hide(h);
+        expect(h.pageDocument.title).toBe("(1) Chat | Rock");
+
+        h.mintGate.value = "banned";
+        personal(h, "session.recheck", {});
+        await settle();
+
+        expect(h.shell.state.phase).toBe("refused");
+        expect(h.pageDocument.title).toBe("Chat | Rock");
+        const reads = lines.filter(line => line.name.startsWith("rock-chat:reads:"));
+        expect(reads.length).toBe(1);
+        expect(reads[0].isClosed).toBe(true);
     });
 });
 
