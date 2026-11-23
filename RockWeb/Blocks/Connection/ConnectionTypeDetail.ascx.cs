@@ -270,7 +270,12 @@ namespace RockWeb.Blocks.Connection
                 ConnectionType connectionType = new ConnectionTypeService( new RockContext() ).Get( connectionTypeId.Value );
                 if ( connectionType != null )
                 {
-                    breadCrumbs.Add( new BreadCrumb( connectionType.Name, pageReference ) );
+                    // Only show the name to people who can view the connection type.
+                    var breadCrumbText = connectionType.IsAuthorized( Authorization.VIEW, CurrentPerson )
+                        ? connectionType.Name
+                        : ConnectionType.FriendlyTypeName;
+
+                    breadCrumbs.Add( new BreadCrumb( breadCrumbText, pageReference ) );
                 }
                 else
                 {
@@ -301,15 +306,14 @@ namespace RockWeb.Blocks.Connection
 
                 // Copy creates a new connection type, so it needs the same rights as adding or editing one,
                 // and the type copied must be the one this page is showing.
-                var connectionTypeId = hfConnectionTypeId.Value.AsInteger();
-                var connectionType = connectionTypeService.Get( connectionTypeId );
-                if ( connectionType == null || connectionTypeId != PageParameter( "ConnectionTypeId" ).AsInteger() || !IsAdminAllowed( connectionType ) )
+                var connectionType = GetConnectionTypeFromHiddenField( rockContext );
+                if ( connectionType == null || connectionType.Id != PageParameter( "ConnectionTypeId" ).AsInteger() || !IsAdminAllowed( connectionType ) )
                 {
                     mdCopy.Show( "You are not authorized to copy this connection type.", ModalAlertType.Warning );
                     return;
                 }
 
-                newConnectionTypeId = connectionTypeService.Copy( connectionTypeId );
+                newConnectionTypeId = connectionTypeService.Copy( connectionType.Id );
 
                 var newConnectionType = connectionTypeService.Get( newConnectionTypeId );
                 if ( newConnectionType != null )
@@ -338,9 +342,9 @@ namespace RockWeb.Blocks.Connection
         protected void btnEdit_Click( object sender, EventArgs e )
         {
             var rockContext = new RockContext();
-            var connectionType = new ConnectionTypeService( rockContext ).Get( hfConnectionTypeId.Value.AsInteger() );
+            var connectionType = GetConnectionTypeFromHiddenField( rockContext );
 
-            // The id comes from a hidden field, so apply the same rule ShowDetail used to show the edit button.
+            // Apply the same rule ShowDetail used to show the edit button.
             if ( connectionType == null || !IsAdminAllowed( connectionType ) )
             {
                 return;
@@ -363,7 +367,7 @@ namespace RockWeb.Blocks.Connection
                 ConnectionWorkflowService connectionWorkflowService = new ConnectionWorkflowService( rockContext );
                 ConnectionTypeService connectionTypeService = new ConnectionTypeService( rockContext );
                 AuthService authService = new AuthService( rockContext );
-                ConnectionType connectionType = connectionTypeService.Get( int.Parse( hfConnectionTypeId.Value ) );
+                ConnectionType connectionType = GetConnectionTypeFromHiddenField( rockContext );
 
                 if ( connectionType != null )
                 {
@@ -479,9 +483,9 @@ namespace RockWeb.Blocks.Connection
                 }
                 else
                 {
-                    connectionType = connectionTypeService.Queryable( "ConnectionActivityTypes, ConnectionWorkflows" ).Where( c => c.Id == connectionTypeId ).FirstOrDefault();
+                    connectionType = GetConnectionTypeFromHiddenField( rockContext );
 
-                    // The id comes from a hidden field, so apply the same rule ShowDetail used to show the edit panel.
+                    // Apply the same rule ShowDetail used to show the edit panel.
                     if ( connectionType == null || !IsAdminAllowed( connectionType ) )
                     {
                         nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( ConnectionType.FriendlyTypeName );
@@ -666,7 +670,11 @@ namespace RockWeb.Blocks.Connection
             }
             else
             {
-                ShowReadonlyDetails( GetConnectionType( hfConnectionTypeId.ValueAsInt(), new RockContext() ) );
+                var connectionType = GetConnectionTypeFromHiddenField( new RockContext() );
+                if ( connectionType != null )
+                {
+                    ShowReadonlyDetails( connectionType );
+                }
             }
         }
 
@@ -677,7 +685,7 @@ namespace RockWeb.Blocks.Connection
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
-            var currentConnectionType = GetConnectionType( hfConnectionTypeId.Value.AsInteger() );
+            var currentConnectionType = GetConnectionTypeFromHiddenField( new RockContext() );
             if ( currentConnectionType != null )
             {
                 ShowReadonlyDetails( currentConnectionType );
@@ -1177,11 +1185,7 @@ namespace RockWeb.Blocks.Connection
             if ( connectionActivityType == null )
             {
                 connectionActivityType = new ConnectionActivityType();
-                var connectionTypeId = hfConnectionTypeId.Value.AsIntegerOrNull();
-                if ( connectionTypeId.HasValue )
-                {
-                    connectionActivityType.ConnectionTypeId = connectionTypeId;
-                }
+                connectionActivityType.ConnectionTypeId = GetConnectionTypeFromHiddenField( new RockContext() )?.Id ?? 0;
             }
 
             connectionActivityType.Name = tbConnectionActivityTypeName.Text;
@@ -1253,7 +1257,7 @@ namespace RockWeb.Blocks.Connection
                 cbActivityTypeIsActive.Checked = true;
             }
 
-            int connectionTypeId = int.Parse( hfConnectionTypeId.Value );
+            int connectionTypeId = GetConnectionTypeFromHiddenField( new RockContext() )?.Id ?? 0;
             avcActivityAttributes.AddEditControls( connectionActivityType ?? new ConnectionActivityType() { ConnectionTypeId = connectionTypeId }, Rock.Security.Authorization.EDIT, CurrentPerson );
             hfConnectionTypeAddConnectionActivityTypeGuid.Value = connectionActivityTypeGuid.ToString();
             ShowDialog( "ConnectionActivityTypes", connectionActivityType != null );
@@ -1909,7 +1913,7 @@ namespace RockWeb.Blocks.Connection
                 String[] qualifierValues = new String[2];
                 ConnectionWorkflow connectionWorkflow = WorkflowsState.FirstOrDefault( l => l.Guid.Equals( hfAddConnectionWorkflowGuid.Value.AsGuid() ) );
                 ConnectionWorkflowTriggerType connectionWorkflowTriggerType = ddlTriggerType.SelectedValueAsEnum<ConnectionWorkflowTriggerType>();
-                int connectionTypeId = int.Parse( hfConnectionTypeId.Value );
+                int connectionTypeId = GetConnectionTypeFromHiddenField( rockContext )?.Id ?? 0;
                 switch ( connectionWorkflowTriggerType )
                 {
                     case ConnectionWorkflowTriggerType.RequestStarted:
@@ -2087,6 +2091,7 @@ namespace RockWeb.Blocks.Connection
         public void ShowDetail( int connectionTypeId )
         {
             pnlDetails.Visible = false;
+            nbNotAuthorizedToView.Visible = false;
 
             ConnectionType connectionType = null;
             using ( var rockContext = new RockContext() )
@@ -2102,6 +2107,21 @@ namespace RockWeb.Blocks.Connection
                     connectionType = new ConnectionType { Id = 0 };
                     // hide the panel drawer that show created and last modified dates
                     pdAuditDetails.Visible = false;
+                }
+
+                /*
+                    11/23/2026 - MSE
+
+                    Block VIEW only lets a person open this page. They must also be able
+                    to VIEW the specific connection type before any of its details are shown.
+
+                    Reason: Hide connection type details from people denied VIEW on that type.
+                */
+                if ( connectionType.Id != 0 && !connectionType.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                {
+                    nbNotAuthorizedToView.Text = EditModeMessage.NotAuthorizedToView( ConnectionType.FriendlyTypeName );
+                    nbNotAuthorizedToView.Visible = true;
+                    return;
                 }
 
                 // Admin rights are needed to edit a connection type ( Edit rights only allow adding/removing items )
@@ -2277,6 +2297,35 @@ namespace RockWeb.Blocks.Connection
                     .Where( c => c.Id == connectionTypeId )
                     .FirstOrDefault();
                 RockPage.SaveSharedItem( key, connectionType );
+            }
+
+            return connectionType;
+        }
+
+        /// <summary>
+        /// Gets the existing connection type whose id is in the hidden field.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns>The connection type, or <c>null</c> if it does not exist or the current person cannot view it.</returns>
+        private ConnectionType GetConnectionTypeFromHiddenField( RockContext rockContext )
+        {
+            var connectionType = new ConnectionTypeService( rockContext ).Get( hfConnectionTypeId.ValueAsInt() );
+
+            /*
+                11/23/2026 - MSE
+
+                Postback handlers read the connection type id from a hidden field, which the
+                browser can change. Every handler that acts on the type loads it here, so the
+                type VIEW check ShowDetail does on first load also applies to every postback.
+
+                Reason: Hide connection type details from people denied VIEW on that type.
+            */
+            if ( connectionType != null && !connectionType.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+            {
+                pnlDetails.Visible = false;
+                nbNotAuthorizedToView.Text = EditModeMessage.NotAuthorizedToView( ConnectionType.FriendlyTypeName );
+                nbNotAuthorizedToView.Visible = true;
+                return null;
             }
 
             return connectionType;

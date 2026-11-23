@@ -3325,6 +3325,17 @@ ORDER BY ct.[Name], cs.[Name]",
                     {
                         var newOpportunity = new ConnectionOpportunityService( rockContext ).Get( newOpportunityId.Value );
 
+                        // The target must be one of the opportunities the transfer list offers: an active opportunity
+                        // of the same connection type that the current person can view.
+                        if ( newOpportunity == null
+                            || !newOpportunity.IsActive
+                            || newOpportunity.ConnectionTypeId != connectionRequest.ConnectionOpportunity.ConnectionTypeId
+                            || !GetConnectionOpportunities().Any( o => o.Id == newOpportunity.Id ) )
+                        {
+                            nbTranferFailed.Visible = true;
+                            return;
+                        }
+
                         connectionRequest.ConnectionOpportunityId = newOpportunityId.Value;
                         connectionRequest.ConnectionTypeId = newOpportunity.ConnectionTypeId;
                         if ( newOpportunity.ShowStatusOnTransfer && ddlRequestModalViewModeTransferModeStatus.Visible )
@@ -3497,7 +3508,11 @@ ORDER BY ct.[Name], cs.[Name]",
                         }
                     }
 
-                    rptSearchModalResult.DataSource = qrySearch.ToList();
+                    // Only list opportunities the transfer list offers, which are the ones the current person can view.
+                    var viewableOpportunityIds = GetConnectionOpportunities().Select( o => o.Id ).ToList();
+                    rptSearchModalResult.DataSource = qrySearch.ToList()
+                        .Where( o => viewableOpportunityIds.Contains( o.Id ) )
+                        .ToList();
                     rptSearchModalResult.DataBind();
                 }
             }
