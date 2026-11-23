@@ -94,7 +94,7 @@
                     data-testid="push-offer"
                     @click="emit('turnOnPush')">Turn on notifications</Button>
 
-            <!-- The room's notify menu, the bell drawn as its mode and named by it; kept on a phone, where Star moves into More. -->
+            <!-- The room's notify menu, the bell drawn as its mode and named by it; kept on a phone, where the star moves into More. -->
             <span v-if="isPrefsOffered" class="chat-header-menu" data-testid="header-notify">
                 <Menu :icon="notifyIcon"
                       :label="notifyWords"
@@ -105,7 +105,7 @@
 
             <IconButton v-if="isPrefsOffered && !isPhone"
                         :icon="isStarred ? 'star-f' : 'star'"
-                        :label="isStarred ? 'Unstar' : 'Star'"
+                        :label="starWords"
                         :aria-pressed="isStarred ? 'true' : 'false'"
                         data-testid="header-star"
                         @click="emit('star')" />
@@ -512,7 +512,7 @@ button.chat-header-name-row:hover .chat-header-chev {
         (e: "details"): void,
         /** A notify mode other than the room's own was chosen from the bell's menu. */
         (e: "notify", mode: NotifyMode): void,
-        /** Star or Unstar, from the header or the phone's More. */
+        /** Add to or remove from favorites, from the header or the phone's More. */
         (e: "star"): void,
         /** The sidebar folded away while a panel is open is asked back over the conversation. */
         (e: "sidebar"): void
@@ -605,7 +605,7 @@ button.chat-header-name-row:hover .chat-header-chev {
             default: false
         },
 
-        /** Whether the room is the person's own, so its notify menu and Star are offered. */
+        /** Whether the room is the person's own, so its notify menu and the star are offered. */
         isPrefsOffered: {
             type: Boolean,
             default: false
@@ -617,7 +617,7 @@ button.chat-header-name-row:hover .chat-header-chev {
             default: null
         },
 
-        /** Whether the room is in the person's Starred, which presses Star. */
+        /** Whether the room is among the person's Favorites, which presses the star. */
         isStarred: {
             type: Boolean,
             default: false
@@ -785,6 +785,9 @@ button.chat-header-name-row:hover .chat-header-chev {
     /** This room's threads, as Threads names them. */
     const threadsWords = computed((): string => `Threads in ${props.title}`);
 
+    /** What the star does, the same words on the header's button and in the phone's More; the sidebar's section is Favorites. */
+    const starWords = computed((): string => props.isStarred ? "Remove from favorites" : "Add to favorites");
+
     /** The title button's name and role, for a room; the plain title of no room has none. */
     const detailsAttributes = computed((): Record<string, string> => props.kind
         ? {
@@ -816,7 +819,7 @@ button.chat-header-name-row:hover .chat-header-chev {
         }
 
         if (props.isPrefsOffered) {
-            items.push({ key: "star", label: props.isStarred ? "Unstar" : "Star", icon: props.isStarred ? "star-f" : "star" });
+            items.push({ key: "star", label: starWords.value, icon: props.isStarred ? "star-f" : "star" });
         }
 
         // Last, as the title opens the same details on a phone too.

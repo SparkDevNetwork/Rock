@@ -461,7 +461,7 @@ export function createPrefs(dependencies: PrefsDependencies): Prefs {
             delete notes.star;
             delete notes.hide;
             if (isUnhiding && !isFromMenu) {
-                notes.star = { kind: "info", text: "Starred, so it's back in your list." };
+                notes.star = { kind: "info", text: "Added to favorites, so it's back in your list." };
             }
 
             // Star and hide are one save's two halves, so they share one newest, and each save asks
@@ -491,7 +491,7 @@ export function createPrefs(dependencies: PrefsDependencies): Prefs {
                 return;
             }
 
-            // hiding a starred room takes it out of Starred, in the same one save
+            // hiding a starred room takes it out of Favorites, in the same one save
             const isUnstarring = isHidden && row.is_favorite === true;
             const patch: Record<string, boolean> = isUnstarring ? { hidden: true, is_favorite: false } : { hidden: isHidden };
             const notes = room(channelId).notes;
@@ -499,7 +499,7 @@ export function createPrefs(dependencies: PrefsDependencies): Prefs {
             delete notes.hide;
             if (isHidden) {
                 // what hiding means is said with the change, since the room stays until another opens
-                notes.hide = { kind: "info", text: `${isUnstarring ? "Hidden, and taken out of Starred." : "Hidden."} ${leavesListSentence}` };
+                notes.hide = { kind: "info", text: `${isUnstarring ? "Hidden, and taken out of Favorites." : "Hidden."} ${leavesListSentence}` };
             }
 
             const was = { is_favorite: row.is_favorite, hidden: row.hidden ?? false };

@@ -107,7 +107,7 @@
             <SettingGroup label="Sidebar" data-testid="details-sidebar">
                 <SettingSwitch name="star"
                                icon="star"
-                               title="Star"
+                               title="Favorite"
                                :isOn="isStarred"
                                :note="prefsNotes.star ?? null"
                                @toggle="emit('star', $event)" />
@@ -437,7 +437,7 @@
             default: null
         },
 
-        /** Whether the room is in the person's Starred, and whether they hid it from this screen. */
+        /** Whether the room is among the person's Favorites, and whether they hid it from this screen. */
         isStarred: {
             type: Boolean,
             default: false
@@ -464,7 +464,7 @@
         /** A notify mode was chosen other than the room's own. */
         (e: "notify", mode: NotifyMode): void;
 
-        /** The Star or Hide switch, with the value it asks for. */
+        /** The Favorite or Hide switch, with the value it asks for. */
         (e: "star", isStarred: boolean): void;
         (e: "hide", isHidden: boolean): void;
 

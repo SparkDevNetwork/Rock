@@ -114,7 +114,7 @@
                     <!--
                         A room a message moves glides to its place by the list's one move, keeping
                         its element and its face; its bold, dot and badge say what is new. The move is
-                        the list's only motion: a row leaving its section, starred or hidden, goes in
+                        the list's only motion: a row leaving its section, a favorite or hidden, goes in
                         the same frame, so the rows under it glide into its place and no copy lingers.
                         After every channel, a room only previewed included, comes the way to the ones
                         not listed.
@@ -671,7 +671,7 @@
 
     /** One of the sidebar's sections and the rooms under it. */
     type SidebarSection = {
-        key: "starred" | "channels" | "dms";
+        key: "favorites" | "channels" | "dms";
         title: string;
         rows: SidebarRow[];
     };
@@ -846,7 +846,7 @@
     // #region Computed Values
 
     /**
-     * The rooms by section, filtered by the search over the names they are drawn under. Starred
+     * The rooms by section, filtered by the search over the names they are drawn under. Favorites
      * shows only while it holds a room; a channel the person has not joined follows the ones they
      * have, as the design lists a pinned room after the person's own.
      */
@@ -856,9 +856,9 @@
         const channels = shown.filter(row => !row.is_favorite && row.room_kind === "channel");
 
         const list: SidebarSection[] = [];
-        const starred = shown.filter(row => row.is_favorite);
-        if (starred.length > 0) {
-            list.push({ key: "starred", title: "Starred", rows: starred });
+        const favorites = shown.filter(row => row.is_favorite);
+        if (favorites.length > 0) {
+            list.push({ key: "favorites", title: "Favorites", rows: favorites });
         }
 
         // Channels stays under a search, holding Browse channels as the way to one not listed;
