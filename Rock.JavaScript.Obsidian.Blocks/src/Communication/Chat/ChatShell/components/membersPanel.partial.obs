@@ -99,7 +99,7 @@
                                      :dimmed="row.isRemoving"
                                      @press="onWho(row)">
                                 <template #lead>
-                                    <Avatar :people="[{ name: row.name, photoUrl: row.photoUrl }]" :size="36" :status="statusOf(row.guid)" />
+                                    <Avatar :people="[{ name: row.name, photoUrl: row.photoUrl }]" :size="32" :status="statusOf(row.guid)" />
                                 </template>
                                 <span class="chat-mb-name">
                                     <b data-testid="member-name">{{ row.name }}</b>
