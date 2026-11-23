@@ -121,7 +121,7 @@ namespace RockWeb.Blocks.Connection
             if ( opportunityId != null )
             {
                 var connectionOpportunity = new ConnectionOpportunityService( new RockContext() ).Get( opportunityId.Value );
-                if ( connectionOpportunity != null )
+                if ( connectionOpportunity != null && connectionOpportunity.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                 {
                     breadCrumbs.Add( new BreadCrumb( connectionOpportunity.Name, pageReference ) );
                 }
@@ -159,7 +159,7 @@ namespace RockWeb.Blocks.Connection
 
             var connectionOpportunity = new ConnectionOpportunityService( new RockContext() ).Get( opportunityId.Value );
 
-            if ( connectionOpportunity != null )
+            if ( connectionOpportunity != null && connectionOpportunity.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
             {
                 var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
 
