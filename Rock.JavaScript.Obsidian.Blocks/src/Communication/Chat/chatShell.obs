@@ -914,6 +914,7 @@
     import { ChatCampusBag } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatShell/chatCampusBag";
     import { applyChatTheme } from "./ChatShell/ui/brand.partial";
     import { provideChatSession } from "./ChatShell/chatSession.partial";
+    import { createBackStack } from "./ChatShell/composables/useBackStack.partial";
     import { Announcer, provideAnnouncer } from "./ChatShell/ui/announcer.partial";
     import Dialog from "./ChatShell/ui/dialog.partial.obs";
     import EmptyState from "./ChatShell/ui/emptyState.partial.obs";
@@ -1098,6 +1099,10 @@
         threadList, drawerFollowError, listFollowError, onThreadsRefresh, loadMoreThreads, onFollowFromList, onFollowThread
     } = frame;
 
+    // The phone's history entries, one per step deep: every layer opened over the frame holds one
+    // through the session, so the system Back takes one step.
+    const backStack = createBackStack(() => isPhone.value);
+
     /** Activity's two lists, in the Segmented over whichever is shown. */
     const activityTabs: SegmentedOption[] = [{ value: "mentions", label: "Mentions" }, { value: "threads", label: "Threads" }];
 
@@ -1187,7 +1192,8 @@
         me: computed(() => ({ personAliasGuid: personAliasGuid.value, name: personName.value, photoUrl: personPhotoUrl.value })),
         church: { name: organizationName },
         emojiSource,
-        mentionSource: mentionSourceFor
+        mentionSource: mentionSourceFor,
+        backStack
     });
 
     // The chat's one voice for a screen reader, speaking from its root; the shell's rooms and
