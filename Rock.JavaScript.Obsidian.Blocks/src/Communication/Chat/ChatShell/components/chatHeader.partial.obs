@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <header v-if="!isEmpty" ref="headerElement" class="chat-header" :class="{ 'is-phone': isPhone }" data-testid="chat-header">
+    <header v-if="!isEmpty" class="chat-header" :class="{ 'is-phone': isPhone }" data-testid="chat-header">
         <!--
             The sidebar folded away while a panel is open in a narrow window comes back from here,
             and focus comes back here as it is put away again.
@@ -118,18 +118,8 @@
         </div>
     </header>
 
-    <Teleport :to="tipHost ?? 'body'" :disabled="!tipHost">
-        <div v-if="isTitleTipShown"
-             ref="titleTipElement"
-             class="chat-tip"
-             role="tooltip"
-             :style="titleTip.floatingStyles.value">{{ detailsWords }}</div>
-        <div v-if="isPileTipShown"
-             ref="pileTipElement"
-             class="chat-tip"
-             role="tooltip"
-             :style="pileTip.floatingStyles.value">{{ membersButton?.tip }}</div>
-    </Teleport>
+    <Tip :tip="titleTip">{{ detailsWords }}</Tip>
+    <Tip :tip="pileTip">{{ membersButton?.tip }}</Tip>
 
     <Transition name="chat-banner" @enter="onBannerEnter" @afterEnter="onBannerSettled" @leave="onBannerLeave">
         <div v-if="connectionBanner"
@@ -479,7 +469,7 @@ button.chat-header-name-row:hover .chat-header-chev {
 </style>
 
 <script setup lang="ts">
-    import { computed, onMounted, PropType, ref, watch } from "vue";
+    import { computed, PropType, ref, watch } from "vue";
     import { NotifyMode, notifyIconFor, notifyOptionsFor } from "../composables/usePrefs.partial";
     import { useFaceStatus } from "../composables/usePresenceStatus.partial";
     import { ChannelFacts, ChatError, ChatPerson, RoomKind } from "../types.partial";
@@ -494,7 +484,8 @@ button.chat-header-name-row:hover .chat-header-chev {
     import IconButton from "../ui/iconButton.partial.obs";
     import Menu, { MenuItem } from "../ui/menu.partial.obs";
     import { useAnnouncer } from "../ui/announcer.partial";
-    import { overlayHostOf, useTooltip } from "../ui/tooltip.partial";
+    import Tip from "../ui/tip.partial.obs";
+    import { useTooltip } from "../ui/tooltip.partial";
 
     // #region Types
 
@@ -672,18 +663,12 @@ button.chat-header-name-row:hover .chat-header-chev {
 
     const { announce } = useAnnouncer();
 
-    const headerElement = ref<HTMLElement>();
     const titleElement = ref<HTMLElement>();
     const pileElement = ref<HTMLElement>();
 
     // The title's and the members button's tooltips, which the icon buttons draw for themselves.
     const titleTip = useTooltip(titleElement, () => !props.kind);
     const pileTip = useTooltip(pileElement);
-    const { tipElement: titleTipElement, isTipShown: isTitleTipShown } = titleTip;
-    const { tipElement: pileTipElement, isTipShown: isPileTipShown } = pileTip;
-
-    /** The chat's root, which the tips are drawn in; null where the header is drawn alone. */
-    const tipHost = ref<HTMLElement | null>(null);
 
     // #endregion Values
 
@@ -1008,8 +993,4 @@ button.chat-header-name-row:hover .chat-header-chev {
     });
 
     // #endregion Watchers
-
-    onMounted(() => {
-        tipHost.value = overlayHostOf(headerElement.value);
-    });
 </script>

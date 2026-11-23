@@ -204,13 +204,7 @@
             </template>
         </nav>
 
-        <Teleport :to="tipHost ?? 'body'" :disabled="!tipHost">
-            <div v-if="isNameTipShown"
-                 ref="nameTipElement"
-                 class="chat-tip"
-                 role="tooltip"
-                 :style="nameTip.floatingStyles.value">{{ nameTipText }}</div>
-        </Teleport>
+        <Tip :tip="nameTip">{{ nameTipText }}</Tip>
 
         <!--
             Who the person is, and their settings; with online status, their face sets their status.
@@ -658,7 +652,7 @@
 </style>
 
 <script setup lang="ts">
-    import { computed, onMounted, PropType, ref, watch } from "vue";
+    import { computed, PropType, ref, watch } from "vue";
     import Avatar, { AvatarPerson } from "../ui/avatar.partial.obs";
     import StatusMenu from "./statusMenu.partial.obs";
     import Badge from "../ui/badge.partial.obs";
@@ -678,7 +672,8 @@
     import { useFaceStatus } from "../composables/usePresenceStatus.partial";
     import { SidebarLoadState } from "../stores/channelStore.partial";
     import { FaceStatus, SidebarRow } from "../types.partial";
-    import { isCutShort, overlayHostOf, useTooltip } from "../ui/tooltip.partial";
+    import Tip from "../ui/tip.partial.obs";
+    import { isCutShort, useTooltip } from "../ui/tooltip.partial";
     import { useChatSession } from "../chatSession.partial";
 
     // #region Types
@@ -844,10 +839,6 @@
     const nameAnchor = ref<HTMLElement>();
     const nameTipText = ref("");
     const nameTip = useTooltip(nameAnchor, () => !isCutShort(nameAnchor.value));
-    const { tipElement: nameTipElement, isTipShown: isNameTipShown } = nameTip;
-
-    /** The chat's root, which the tip is drawn in; null where the sidebar is drawn alone. */
-    const tipHost = ref<HTMLElement | null>(null);
 
     /** A muted room's mark, the glyph Off is drawn with everywhere. */
     const mutedIcon = notifyIconFor("silent");
@@ -1033,8 +1024,4 @@
     }, { immediate: true });
 
     // #endregion Watchers
-
-    onMounted(() => {
-        tipHost.value = overlayHostOf(listElement.value);
-    });
 </script>
