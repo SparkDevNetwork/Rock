@@ -636,6 +636,11 @@ export function createChatShell(options: ShellOptions): ChatShell {
         blocks.stop();
         presence.stop();
         session.stop();
+        // Chat has ended for this tab as a sign-out ends it: her other tabs' reads are no longer
+        // heard, and the tab takes Rock's own title back now, not when it is next seen.
+        tabReads?.close();
+        detachTitle?.();
+        drawTitle();
         state.gate = session.state.gate;
         state.phase = session.state.gate === "ok" ? "failed" : "refused";
         await hub?.stop();
