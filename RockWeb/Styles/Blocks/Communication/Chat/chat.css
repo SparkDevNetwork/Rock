@@ -22,6 +22,9 @@
         element, as a row around its hidden radio, names this and sets only its offset.
     */
     --chat-focus-ring: 2px solid var(--chat-brand-ink);
+
+    /* What Rock draws over the window's foot, which the chat's height leaves room for; none by default. */
+    --chat-page-foot: 0px;
     --chat-brand-tint: var(--chat-brand-tint-light, #FDECE0);
     --chat-brand-wash: var(--chat-brand-wash-light, #F9EBE6);
     --chat-brand-ring: var(--chat-brand-ring-light, rgba(255, 121, 29, .32));
@@ -785,6 +788,16 @@
 */
 .full-work-surface:has(.chat-shell) {
     padding: 0;
+}
+
+/*
+    Rock's admin footer, drawn for a person who can edit the page, is fixed to the window's foot,
+    36px tall, and see-through until hovered on a wide screen, so it took the presses meant for
+    the sidebar's foot and the drawer's last row. The chat ends above it; Rock's footer keeps its
+    own look.
+*/
+body:has(#cms-admin-footer) .chat-shell {
+    --chat-page-foot: 36px;
 }
 
 .full-work-surface:has(.chat-shell) > .row:not(:has(.block-instance)),
