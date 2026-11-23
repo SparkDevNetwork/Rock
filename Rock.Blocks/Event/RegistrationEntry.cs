@@ -578,7 +578,7 @@ namespace Rock.Blocks.Event
                     return ActionBadRequest( errorMessage );
                 }
 
-                if ( !Uri.TryCreate( returnUrl, UriKind.Absolute, out var uri ) )
+                if ( !Uri.TryCreate( returnUrl, UriKind.Absolute, out var uri ) || !PageCache.Layout.Site.IsSafeRedirectUrl( returnUrl, RequestContext.RequestUri ) )
                 {
                     return ActionBadRequest( "Invalid return URL specified." );
                 }
