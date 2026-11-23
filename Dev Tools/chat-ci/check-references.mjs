@@ -1,8 +1,8 @@
 // Comments explain in place. This gate fails when a chat file refers to planning material that
 // lives outside this repository: decision, guardrail or open-item numbers (D-12, G-03, BP-07,
-// SY-17), work-item ids (P0-S1), the planning file names, section signs, or the lane names the
-// plan gave the two syncs. A reader of this repository has none of those to open, so the reason
-// belongs in the comment itself.
+// SY-17), work-item, fix-pass, findings and design pick ids (P0-S1, M0-S4, FP-W1, J-08, E1-A),
+// the planning file names, section signs, or the lane names the plan gave the two syncs. A reader
+// of this repository has none of those to open, so the reason belongs in the comment itself.
 //
 // It scans the chat paths rather than every tracked file, because this is a branch of Rock and
 // almost nothing in it is ours to hold to this rule. The gate skips itself and its test, which
@@ -69,6 +69,8 @@ export const CHAT_PATHS = [
   'Rock.JavaScript.Obsidian.Blocks/src/Administration/SparkConnectedServices/chat.partial.obs',
   'Rock.JavaScript.Obsidian.Blocks/src/Administration/SparkConnectedServices/chatViewModel.partial.ts',
   'Rock.JavaScript.Obsidian.Blocks/tests/Administration/sparkConnectedServices.spec.ts',
+  // The chat shell, which holds the chat client's own source.
+  'Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/',
   'Rock.JavaScript.Obsidian.Blocks/tests/Communication/Chat/',
   'Rock.Tests/Communication/Chat/',
   'Rock.Tests.Integration/Communication/Chat/',
@@ -85,8 +87,18 @@ const SKIP = new Set([
 const BINARY = /\.(png|jpe?g|gif|ico|woff2?|ttf|otf|pdf|zip|wasm|dll|exe)$/i;
 
 export const PATTERNS = [
-  { name: 'decision, guardrail or open-item number', re: /\b(?:D|BP|G|SY|OQ)-\d{1,3}\b/ },
-  { name: 'work-item id', re: /\bP\d{1,2}-S\d{1,2}\b/ },
+  // Decision numbers pass three digits, so the count is open ended.
+  { name: 'decision, guardrail or open-item number', re: /\b(?:D|BP|G|SY|OQ)-\d+\b/ },
+  // Phase work items (P0-S1) and mobile work items (M0-S4) share one shape.
+  { name: 'work-item id', re: /\b[PM]\d{1,2}-S\d{1,2}\b/ },
+  // A fix pass is named by its milestone (FP-W1). Three-letter families are not matched
+  // generally, because that shape also spells UTF-16 and ISO-8859-1.
+  { name: 'fix-pass id', re: /\bFP-W\d{1,2}\b/ },
+  // The findings list and the design picks name a row or a variant the same way (J-08, A-22,
+  // E1-A). Specs carried them in comments, so a cell's reason was a code only the ledger could
+  // read. One or two capitals and two digits, or a capital, a digit and a pick letter; the
+  // numbered families above are matched by their own pattern and left out here.
+  { name: 'finding or design pick id', re: /\b(?!(?:D|BP|G|SY|OQ)-)[A-Z]{1,2}-\d{2}\b|\b[A-Z]\d-[A-Z]\b/ },
   {
     name: 'planning file name',
     re: /\b(?:STRUCTURE|PHASES|DECISIONS|OPEN|GUARDRAILS|EVIDENCE|PROVENANCE)\.md\b/,

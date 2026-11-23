@@ -5,7 +5,7 @@ import { execFileSync } from 'node:child_process';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 
-import { scan } from './check-references.mjs';
+import { chatFiles, scan } from './check-references.mjs';
 
 const here = fileURLToPath(new URL('.', import.meta.url));
 
@@ -53,6 +53,58 @@ test('it passes prose that explains itself in place', () => {
   ].join('\n');
 
   assert.deepEqual(scan('Rock/Communication/Chat/Platform/Example.cs', clean), []);
+});
+
+test('it refuses a findings id or a design pick id in a spec comment, and keeps ordinary prose', () => {
+  const planted = [
+    '    // J-08: the row keeps its hover after the menu closes',
+    '    // E1-A: the quick reactions open on the first tray',
+    '    // The clean bar (F8-A): a list that has no more simply ends.',
+    '    // UTF-16 text, an X-Frame-Options header and a 4-up grid are plain words',
+  ].join('\n');
+
+  const hits = scan('Rock.JavaScript.Obsidian.Blocks/tests/Communication/Chat/ChatShell/frame.spec.ts', planted);
+
+  assert.equal(hits.length, 3, `expected one hit per planted id, got ${hits.length}: ${hits.join(' | ')}`);
+  assert.match(hits[0], /:1:.*J-08/);
+  assert.match(hits[1], /:2:.*E1-A/);
+  assert.match(hits[2], /:3:.*F8-A/);
+});
+
+test('it refuses a four-digit decision id, a mobile work-item id and a fix-pass id', () => {
+  const planted = [
+    '// this cites D-1042, which a reader here cannot open',
+    '// this one names the mobile item M0-S4',
+    '// this one names the fix pass FP-W1',
+    '// UTF-16 text and ISO-8859-1 are plain words',
+  ].join('\n');
+
+  const hits = scan('Rock/Communication/Chat/Platform/Example.cs', planted);
+
+  assert.equal(hits.length, 3, `expected one hit per planted id, got ${hits.length}: ${hits.join(' | ')}`);
+  assert.match(hits[0], /:1:.*D-1042/);
+  assert.match(hits[1], /:2:.*M0-S4/);
+  assert.match(hits[2], /:3:.*FP-W1/);
+});
+
+test('it reads the chat shell source', () => {
+  assert.ok(
+    chatFiles().some((file) => file.startsWith('Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/')),
+    'a chat shell source file is among the files read',
+  );
+});
+
+test('it reads the chat specs this branch tracks and no file of the outer ledger', () => {
+  const files = chatFiles();
+
+  assert.ok(
+    files.some((file) => /Chat\/.*\.spec\.ts$/.test(file)),
+    'a chat spec is among the files read',
+  );
+  assert.ok(
+    files.every((file) => !file.startsWith('docs/')),
+    'no ledger file is read',
+  );
 });
 
 test('the chat files in this branch are clean today', () => {
