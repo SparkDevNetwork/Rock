@@ -275,6 +275,11 @@
     --chat-w-side: 296px;
     --chat-w-panel: 392px;
     --chat-w-main-min: 480px;
+    /*
+        The least the conversation keeps beside the sidebar alone. Below the sidebar and this the
+        frame shows one pane at a time: from 660px a tablet held upright keeps two columns.
+    */
+    --chat-w-conversation-min: 364px;
 
     /* Every other timing the design writes once. Timers in script read these too. */
     --chat-d-flash: 2.2s;
