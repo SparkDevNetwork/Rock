@@ -388,7 +388,7 @@ describe("the notify modes' words", () => {
 });
 
 describe("star and hide", () => {
-    test("starring writes the room's whole sidebar setting and moves the room into Starred at once", async () => {
+    test("starring writes the room's whole sidebar setting and moves the room into Favorites at once", async () => {
         const s = setup();
 
         void s.prefs.setStarred(prayer, true, false);
@@ -415,12 +415,12 @@ describe("star and hide", () => {
         expect(rowOf(s, team)?.is_favorite).toBe(false);
         expect(rowOf(s, team)?.hidden).toBe(true);
         // What hiding means is said with the change, not after its save.
-        expect(s.prefs.roomOf(team).notes.hide).toEqual({ kind: "info", text: "Hidden, and taken out of Starred. It leaves your list when you open another conversation." });
+        expect(s.prefs.roomOf(team).notes.hide).toEqual({ kind: "info", text: "Hidden, and taken out of Favorites. It leaves your list when you open another conversation." });
 
         s.prefCalls[0].answer.resolve(written(team, { hidden: true }));
         await settle();
 
-        expect(s.prefs.roomOf(team).notes.hide).toEqual({ kind: "info", text: "Hidden, and taken out of Starred. It leaves your list when you open another conversation." });
+        expect(s.prefs.roomOf(team).notes.hide).toEqual({ kind: "info", text: "Hidden, and taken out of Favorites. It leaves your list when you open another conversation." });
         expect(s.lastSaid()).toBeNull();
     });
 
@@ -459,7 +459,7 @@ describe("star and hide", () => {
 
         expect(s.prefCalls[1].changes).toEqual({ is_favorite: true, hidden: false });
         expect(rowOf(s, team)?.hidden).toBe(false);
-        expect(s.prefs.roomOf(team).notes.star).toEqual({ kind: "info", text: "Starred, so it's back in your list." });
+        expect(s.prefs.roomOf(team).notes.star).toEqual({ kind: "info", text: "Added to favorites, so it's back in your list." });
         expect(s.prefs.roomOf(team).notes.hide).toBeUndefined();
     });
 

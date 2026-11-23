@@ -407,7 +407,7 @@ describe("the header on a phone", () => {
         await settle();
 
         const items = Array.from(document.querySelectorAll<HTMLElement>("[role='menu'] [role='menuitem']"));
-        expect(items.map(i => i.textContent?.trim())).toEqual(["Star", "Channel details"]);
+        expect(items.map(i => i.textContent?.trim())).toEqual(["Add to favorites", "Channel details"]);
 
         items[0].click();
         await settle();
@@ -463,7 +463,7 @@ describe("the Mentions button", () => {
         await more.trigger("click");
         await settle();
         const items = Array.from(document.querySelectorAll<HTMLElement>("[role='menu'] [role='menuitem']"));
-        expect(items.map(i => i.querySelector(".chat-menu-label")?.textContent?.trim())).toEqual(["Threads in worship-team", "Members", "Star", "Channel details"]);
+        expect(items.map(i => i.querySelector(".chat-menu-label")?.textContent?.trim())).toEqual(["Threads in worship-team", "Members", "Add to favorites", "Channel details"]);
     });
 
     test("leaves the phone's menu button plain while a mention is new", () => {
@@ -820,12 +820,12 @@ describe("the notify menu and Star", () => {
         const star = (): ReturnType<VueWrapper["get"]> => w.get("[data-testid='header-star']");
 
         expect(star().attributes("aria-pressed")).toBe("false");
-        expect(star().attributes("aria-label")).toBe("Star");
+        expect(star().attributes("aria-label")).toBe("Add to favorites");
         expect(hasIcon(w, star(), "star")).toBe(true);
 
         await w.setProps({ isStarred: true });
         expect(star().attributes("aria-pressed")).toBe("true");
-        expect(star().attributes("aria-label")).toBe("Unstar");
+        expect(star().attributes("aria-label")).toBe("Remove from favorites");
         expect(hasIcon(w, star(), "star-f")).toBe(true);
 
         await star().trigger("click");

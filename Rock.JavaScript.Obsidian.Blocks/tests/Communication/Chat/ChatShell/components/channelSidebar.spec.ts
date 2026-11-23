@@ -298,26 +298,26 @@ describe("the sidebar's top", () => {
 });
 
 describe("the sections", () => {
-    test("are Starred, Channels and Direct messages, in that order", () => {
+    test("are Favorites, Channels and Direct messages, in that order", () => {
         const w = mountSidebar();
 
         const sections = w.findAll("[data-testid='sidebar-section']");
-        expect(sections.map(s => s.attributes("data-section"))).toEqual(["starred", "channels", "dms"]);
-        expect(sections.map(s => s.get("[data-testid='section-heading']").text())).toEqual(["Starred", "Channels", "Direct messages"]);
+        expect(sections.map(s => s.attributes("data-section"))).toEqual(["favorites", "channels", "dms"]);
+        expect(sections.map(s => s.get("[data-testid='section-heading']").text())).toEqual(["Favorites", "Channels", "Direct messages"]);
     });
 
-    test("place a starred room under Starred only, and the rest by kind", () => {
+    test("place a starred room under Favorites only, and the rest by kind", () => {
         const w = mountSidebar();
 
-        expect(rowIdsIn(w, "starred")).toEqual([starred.channel_id]);
+        expect(rowIdsIn(w, "favorites")).toEqual([starred.channel_id]);
         expect(rowIdsIn(w, "channels")).toEqual([team.channel_id, youth.channel_id, muted.channel_id]);
         expect(rowIdsIn(w, "dms")).toEqual([dmAnna.channel_id, dmGroup.channel_id, dmBig.channel_id, dmRead.channel_id]);
     });
 
-    test("leave out Starred when nothing is starred", () => {
+    test("leave out Favorites when nothing is a favorite", () => {
         const w = mountSidebar({ rows: [team, dmAnna] });
 
-        expect(w.find("[data-testid='sidebar-section'][data-section='starred']").exists()).toBe(false);
+        expect(w.find("[data-testid='sidebar-section'][data-section='favorites']").exists()).toBe(false);
     });
 
     test("give Direct messages its own New message plus, with DM Access", async () => {
@@ -505,7 +505,7 @@ describe("a row's states", () => {
         expect(w.findAll(".is-flash")).toHaveLength(0);
     });
 
-    test("washes not even the room the person stars, which moves up into Starred keeping its element", async () => {
+    test("washes not even the room the person stars, which moves up into Favorites keeping its element", async () => {
         const prayer = { ...starred, is_favorite: false };
         const w = mountSidebar({ rows: [team, youth, prayer] });
 
@@ -519,7 +519,7 @@ describe("a row's states", () => {
 });
 
 describe("a row's look, by the room's kind", () => {
-    test("a channel draws the Community row and a direct message the Conversational row, in one list, Starred included", () => {
+    test("a channel draws the Community row and a direct message the Conversational row, in one list, Favorites included", () => {
         const starredDm = { ...dmRead, is_favorite: true };
         const w = mountSidebar({ rows: [team, youth, starred, muted, dmAnna, dmGroup, dmBig, starredDm] });
 
@@ -531,7 +531,7 @@ describe("a row's look, by the room's kind", () => {
             expect(rowOf(w, direct.channel_id).attributes("data-layout")).toBe("conversational");
             expect(rowOf(w, direct.channel_id).classes()).not.toContain("is-cs");
         }
-        expect(rowIdsIn(w, "starred")).toEqual([starred.channel_id, starredDm.channel_id]);
+        expect(rowIdsIn(w, "favorites")).toEqual([starred.channel_id, starredDm.channel_id]);
     });
 
     test("Conversational draws the line the platform sent under the title, and the time", () => {
@@ -609,7 +609,7 @@ describe("a channel's tile", () => {
         expect(title.element.children[1].getAttribute("data-testid")).toBe("row-lock");
     });
 
-    test("sits in the column a direct message's face does, in Starred beside one", () => {
+    test("sits in the column a direct message's face does, in Favorites beside one", () => {
         const w = mountSidebar({ rows: [starred, { ...dmRead, is_favorite: true }] });
 
         expect(rowOf(w, starred.channel_id).find(".chat-row-face .chat-ch-tile").exists()).toBe(true);
@@ -1023,7 +1023,7 @@ describe("a live message, which moves a row and never washes it", () => {
 
     // A list's only motion is the move: a row that leaves its section goes in the same frame, so
     // the rows under it glide into its place and no copy lingers where it was, starred or not.
-    test("a room starred goes from Channels in the same frame it arrives under Starred, no copy left behind", async () => {
+    test("a room starred goes from Channels in the same frame it arrives under Favorites, no copy left behind", async () => {
         wrapper = mount(ChannelSidebar, {
             props: { rows: [team, youth], activeChannelId: null, isNewMessageShown: true },
             global: { provide: providedSession({ isPhone: false, me: { personAliasGuid: "", name: "", photoUrl: null } }), stubs: { "transition-group": false } },
@@ -1033,7 +1033,7 @@ describe("a live message, which moves a row and never washes it", () => {
         await wrapper.setProps({ rows: [{ ...team, is_favorite: true }, youth] });
         await nextTick();
 
-        expect(rowIdsIn(wrapper, "starred")).toEqual([team.channel_id]);
+        expect(rowIdsIn(wrapper, "favorites")).toEqual([team.channel_id]);
         expect(rowIdsIn(wrapper, "channels")).toEqual([youth.channel_id]);
         expect(wrapper.findAll(`[data-testid='channel-row'][data-channel-id='${team.channel_id}']`)).toHaveLength(1);
     });
