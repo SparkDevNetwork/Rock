@@ -130,6 +130,28 @@ namespace Rock.Model
         /// <inheritdoc/>
         public override ISecured ParentAuthority => EventItem ?? base.ParentAuthority;
 
+        /// <inheritdoc/>
+        public override bool IsAuthorized( string action, Person person )
+        {
+            // For VIEW, use the occurrence's own rules when one matches.
+            // Otherwise use the event item's answer: its calendars, then its own
+            // rules and the event item entity type rules (denied when none match),
+            // or normal security when the item is on no calendar.
+            if ( action == Rock.Security.Authorization.VIEW && EventItem != null )
+            {
+                var occurrenceAuthorized = Rock.Security.Authorization.AuthorizedForEntity( this, action, person, false );
+
+                if ( occurrenceAuthorized.HasValue )
+                {
+                    return occurrenceAuthorized.Value;
+                }
+
+                return EventItem.IsAuthorized( action, person );
+            }
+
+            return base.IsAuthorized( action, person );
+        }
+
         #endregion
     }
 }
