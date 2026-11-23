@@ -24,7 +24,28 @@ namespace Rock.Model
         #region ISecured
 
         /// <inheritdoc/>
-        public override ISecured ParentAuthority => ConnectionStatus ?? base.ParentAuthority;
+        public override ISecured ParentAuthority => ConnectionRequest ?? ConnectionStatus ?? base.ParentAuthority;
+
+        /// <inheritdoc/>
+        public override bool IsAuthorized( string action, Person person )
+        {
+            /*
+                11/23/2026 - MSE
+
+                A status history row belongs to its connection request, so it must be
+                secured like the request. ParentAuthority alone walks the request's
+                opportunity and type but never calls ConnectionRequest.IsAuthorized, which
+                also grants the assigned connector access when the type has request
+                security turned on. A new row posted through REST v2 is still checked
+                against its request, because CrudEndpointHelper.Create makes it a proxy
+                and ConnectionRequest lazy-loads from ConnectionRequestId. Only a row with
+                no request, or one that is not a proxy attached to a context, falls back
+                to the old check through ParentAuthority.
+
+                Reason: Do not show or change history rows of requests the person cannot access.
+            */
+            return ConnectionRequest != null ? ConnectionRequest.IsAuthorized( action, person ) : base.IsAuthorized( action, person );
+        }
 
         #endregion
     }
