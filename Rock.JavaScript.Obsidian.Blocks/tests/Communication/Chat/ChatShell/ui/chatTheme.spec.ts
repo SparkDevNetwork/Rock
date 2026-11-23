@@ -1002,14 +1002,14 @@ describe("the components' own styles", () => {
     // main content area under the block, which left a gap and a scrolling page. The chat's sheet
     // takes them off pages that hold the chat, so the shell's height subtracts only the header and
     // the slicer; the shell itself draws no card.
-    test("a page holding the chat gives up its padding, empty row and main content area, and the shell subtracts only the header and slicer", () => {
+    test("a page holding the chat gives up its padding, empty row and main content area, and the shell subtracts only the header, the slicer and the admin footer's room", () => {
         const holder = ".full-work-surface:has(.chat-shell)";
         expect(declarationOf(sheetPath, holder, "padding")).toBe("0");
         expect(declarationOf(sheetPath, `${holder} > .row:not(:has(.block-instance))`, "display")).toBe("none");
         expect(declarationOf(sheetPath, `#content-wrapper ${holder} > .main-content`, "display")).toBe("none");
 
         const shellPath = resolve(components, "../../chatShell.obs");
-        expect(declarationOf(shellPath, ".chat-shell", "height")).toBe(normalize("calc(100vh - var(--top-header-height, 80px) - var(--context-slicer-height, 0px))"));
+        expect(declarationOf(shellPath, ".chat-shell", "height")).toBe(normalize("calc(100vh - var(--top-header-height, 80px) - var(--context-slicer-height, 0px) - var(--chat-page-foot, 0px))"));
         expect(declarationOf(shellPath, ".chat-shell", "border-radius")).toBe("");
         expect(declarationOf(shellPath, ".chat-shell", "box-shadow")).toBe("");
         expect(readFileSync(shellPath, "utf8")).not.toContain(":global(.full-work-surface");
