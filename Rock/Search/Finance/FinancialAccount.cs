@@ -22,6 +22,9 @@ using System.Linq;
 using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
+using Rock.Security;
+using Rock.Web.Cache;
 
 namespace Rock.Search.Finance
 {
@@ -52,20 +55,44 @@ namespace Rock.Search.Finance
             }
         }
 
-        /// <inheritdoc/>
-        public override IOrderedQueryable<object> SearchQuery( string searchTerm )
+        /// <summary>
+        /// Gets the financial accounts that match the search term and that the current person is allowed to view.
+        /// </summary>
+        /// <param name="searchTerm">The search term used to find results.</param>
+        /// <returns>The viewable matching accounts, in database order.</returns>
+        private List<Model.FinancialAccount> GetViewableSearchResults( string searchTerm )
         {
             if ( searchTerm.IsSingleSpecialCharacter() )
             {
-                return Enumerable.Empty<object>().AsQueryable().OrderBy( _ => true );
+                return new List<Model.FinancialAccount>();
             }
 
-            var rockContext = RockApp.Current.CreateRockContext();
-            var financialAccountService = new FinancialAccountService( rockContext );
-            var qry = financialAccountService.GetAccountsBySearchTerm( searchTerm );
+            var currentPerson = RockRequestContextAccessor.Current?.CurrentPerson;
+            var financialAccountService = new FinancialAccountService( RockApp.Current.CreateRockContext() );
 
-            return qry
-                .OrderBy( p => p.PublicName.IsNullOrWhiteSpace() ? p.Name : p.PublicName );
+            // VIEW can't be checked in SQL, so every match is loaded before the filter.
+            var accounts = financialAccountService.GetAccountsBySearchTerm( searchTerm )?.ToList()
+                ?? new List<Model.FinancialAccount>();
+
+            return accounts
+                .Where( a => a.IsAuthorized( Authorization.VIEW, currentPerson ) )
+                .ToList();
+        }
+
+        /// <inheritdoc/>
+        public override IOrderedQueryable<object> SearchQuery( string searchTerm )
+        {
+            var accounts = GetViewableSearchResults( searchTerm )
+                .OrderBy( a => a.PublicName.IsNullOrWhiteSpace() ? a.Name : a.PublicName )
+                .Cast<object>()
+                .ToList();
+
+            // This is a bit of a cheat. Since everything will have the same
+            // order .OrderBy() will return an IOrderedQueryable in the original
+            // order of the results.
+            return accounts
+                .AsQueryable()
+                .OrderBy( a => true );
         }
 
         /// <summary>
@@ -75,32 +102,29 @@ namespace Rock.Search.Finance
         /// <returns></returns>
         public override IQueryable<string> Search( string searchTerm )
         {
-            if ( searchTerm.IsSingleSpecialCharacter() )
-            {
-                return Enumerable.Empty<string>().AsQueryable();
-            }
-
-            var rockContext = RockApp.Current.CreateRockContext();
-            var financialAccountService = new FinancialAccountService( rockContext );
-
             /*
                 10/18/2026 - MSE
 
                 Smart Search renders each result string as HTML, so the account name, GL code and
                 campus values are HTML encoded. Encoding can't be done in SQL, so the results are
-                materialized (capped at 50) first.
+                materialized first and capped at 50 after the VIEW filter.
 
                 Reason: Prevent stored XSS through account names in Smart Search results.
             */
-            var accountItems = financialAccountService.GetAccountsBySearchTerm( searchTerm )
-                .Select( v => new
-                {
-                    AccountName = v.PublicName == null || v.PublicName.Length == 0 ? v.Name : v.PublicName,
-                    v.GlCode,
-                    HasCampus = v.Campus != null,
-                    CampusText = v.Campus.ShortCode != "" ? v.Campus.ShortCode : v.Campus.Name
-                } )
+            var accountItems = GetViewableSearchResults( searchTerm )
                 .Take( 50 )
+                .Select( v =>
+                {
+                    var campus = v.CampusId.HasValue ? CampusCache.Get( v.CampusId.Value ) : null;
+
+                    return new
+                    {
+                        AccountName = v.PublicName == null || v.PublicName.Length == 0 ? v.Name : v.PublicName,
+                        v.GlCode,
+                        HasCampus = campus != null,
+                        CampusText = campus?.ShortCode.IsNotNullOrWhiteSpace() == true ? campus.ShortCode : campus?.Name
+                    };
+                } )
                 .ToList();
 
             // Note: extra spaces intentional with the label span to keep the markup from showing in the search input on selection

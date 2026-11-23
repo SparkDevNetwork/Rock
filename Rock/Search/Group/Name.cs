@@ -22,6 +22,9 @@ using System.Linq;
 using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
+using Rock.Security;
+using Rock.Web.Cache;
 
 namespace Rock.Search.Group
 {
@@ -67,11 +70,33 @@ namespace Rock.Search.Group
                     && g.Name.Contains( searchTerm ) );
         }
 
+        /// <summary>
+        /// Gets the groups that match the search term and that the current person is allowed to view.
+        /// </summary>
+        /// <param name="searchTerm">The search term used to find results.</param>
+        /// <returns>The viewable matching groups, ordered by name.</returns>
+        private List<Model.Group> GetViewableSearchResults( string searchTerm )
+        {
+            var currentPerson = RockRequestContextAccessor.Current?.CurrentPerson;
+
+            // VIEW can't be checked in SQL, so every match is loaded before the filter.
+            return GetSearchResults( searchTerm )
+                .OrderBy( g => g.Name )
+                .ToList()
+                .Where( g => g.IsAuthorized( Authorization.VIEW, currentPerson ) )
+                .ToList();
+        }
+
         /// <inheritdoc/>
         public override IOrderedQueryable<object> SearchQuery( string searchTerm )
         {
-            return GetSearchResults( searchTerm )
-                .OrderBy( g => g.Name );
+            // This is a bit of a cheat. Since everything will have the same
+            // order .OrderBy() will return an IOrderedQueryable in the original
+            // order of the results.
+            return GetViewableSearchResults( searchTerm )
+                .Cast<object>()
+                .AsQueryable()
+                .OrderBy( g => true );
         }
 
         /// <summary>
@@ -81,26 +106,28 @@ namespace Rock.Search.Group
         /// <returns></returns>
         public override IQueryable<string> Search( string searchterm )
         {
-            var groupQry = ( IQueryable<Model.Group> ) SearchQuery( searchterm );
-
             /*
                 10/18/2026 - MSE
 
                 Smart Search renders each result string as HTML, so the group name and campus
                 values are HTML encoded. Encoding can't be done in SQL, so the results are
-                materialized (capped at 50) first.
+                materialized first and capped at 50 after the VIEW filter.
 
                 Reason: Prevent stored XSS through group names in Smart Search results.
             */
-            var groupItems = GetSearchResults( searchterm )
-                .OrderBy( g => g.Name )
-                .Select( g => new
-                {
-                    g.Name,
-                    HasCampus = g.Campus != null,
-                    CampusText = g.Campus.ShortCode != "" ? g.Campus.ShortCode : g.Campus.Name
-                } )
+            var groupItems = GetViewableSearchResults( searchterm )
                 .Take( 50 )
+                .Select( g =>
+                {
+                    var campus = g.CampusId.HasValue ? CampusCache.Get( g.CampusId.Value ) : null;
+
+                    return new
+                    {
+                        g.Name,
+                        HasCampus = campus != null,
+                        CampusText = campus?.ShortCode.IsNotNullOrWhiteSpace() == true ? campus.ShortCode : campus?.Name
+                    };
+                } )
                 .ToList();
 
             // Note: extra spaces intentional with the label span to keep the markup from showing in the search input on selection
