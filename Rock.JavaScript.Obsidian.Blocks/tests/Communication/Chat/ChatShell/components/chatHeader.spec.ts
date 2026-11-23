@@ -27,7 +27,7 @@ import ChatHeader from "../../../../../src/Communication/Chat/ChatShell/componen
 import { ChannelFacts, ChannelPerson, ChatError } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 import Icon from "../../../../../src/Communication/Chat/ChatShell/ui/icon.partial.obs";
 import { join } from "path";
-import { busy } from "../statusShapes";
+import { away, busy } from "../statusShapes";
 import { anna, badgesIn, ben, carl, createStatusStore, provideStatus, setsBothRings, shellFolder, StatusStore, styleRules, swaps } from "../statusStore";
 import { providedSession } from "../sessionShapes";
 
@@ -407,7 +407,7 @@ describe("the header on a phone", () => {
         await settle();
 
         const items = Array.from(document.querySelectorAll<HTMLElement>("[role='menu'] [role='menuitem']"));
-        expect(items.map(i => i.textContent?.trim())).toEqual(["Star", "Channel details"]);
+        expect(items.map(i => i.textContent?.trim())).toEqual(["Add to favorites", "Channel details"]);
 
         items[0].click();
         await settle();
@@ -463,7 +463,7 @@ describe("the Mentions button", () => {
         await more.trigger("click");
         await settle();
         const items = Array.from(document.querySelectorAll<HTMLElement>("[role='menu'] [role='menuitem']"));
-        expect(items.map(i => i.querySelector(".chat-menu-label")?.textContent?.trim())).toEqual(["Threads in worship-team", "Members", "Star", "Channel details"]);
+        expect(items.map(i => i.querySelector(".chat-menu-label")?.textContent?.trim())).toEqual(["Threads in worship-team", "Members", "Add to favorites", "Channel details"]);
     });
 
     test("leaves the phone's menu button plain while a mention is new", () => {
@@ -820,12 +820,12 @@ describe("the notify menu and Star", () => {
         const star = (): ReturnType<VueWrapper["get"]> => w.get("[data-testid='header-star']");
 
         expect(star().attributes("aria-pressed")).toBe("false");
-        expect(star().attributes("aria-label")).toBe("Star");
+        expect(star().attributes("aria-label")).toBe("Add to favorites");
         expect(hasIcon(w, star(), "star")).toBe(true);
 
         await w.setProps({ isStarred: true });
         expect(star().attributes("aria-pressed")).toBe("true");
-        expect(star().attributes("aria-label")).toBe("Unstar");
+        expect(star().attributes("aria-label")).toBe("Remove from favorites");
         expect(hasIcon(w, star(), "star-f")).toBe(true);
 
         await star().trigger("click");
@@ -1073,6 +1073,42 @@ describe("online status", () => {
 
         expect(badgesIn(w.element)).toEqual([{ state: "online", isMoving: false }]);
         expect(w.get("[data-testid='header-details']").attributes("aria-label")).toBe("Anna Reyes, online, conversation details");
+    });
+
+    // A two-person room says the person's status in words under the title, as their profile does,
+    // so Away or Busy is never a badge's colour alone. The title button's name already says it, so
+    // the line is not heard twice.
+    test("a two-person header says the person's status in words under the title, from the same store", async () => {
+        const w = mountHeader(personHeader(anna));
+
+        const line = w.get("[data-testid='header-status']");
+        expect(line.text()).toBe("Online");
+        expect(line.attributes("aria-hidden")).toBe("true");
+        expect(line.classes()).toContain("chat-header-sub");
+        expect(w.find("[data-testid='header-subtitle']").exists()).toBe(false);
+
+        status.tell({ [anna]: away() });
+        await nextTick();
+        expect(w.get("[data-testid='header-status']").text()).toBe("Away");
+
+        await w.setProps(personHeader(ben));
+        expect(w.get("[data-testid='header-status']").text()).toBe("Busy");
+    });
+
+    test("a two-person header draws no status line for a person the store holds nothing for, nor for a group or a channel", () => {
+        expect(mountHeader(personHeader(carl)).find("[data-testid='header-status']").exists()).toBe(false);
+        wrapper?.unmount();
+        const group = { title: "Anna, Ben", kind: "group", people: [anna, ben].map(alias => ({ person_alias_guid: alias, nick_name: "Anna", last_name: "Reyes", avatar_url: null })) };
+        expect(mountHeader(group).find("[data-testid='header-status']").exists()).toBe(false);
+        wrapper?.unmount();
+        expect(mountHeader({ kind: "channel" }).find("[data-testid='header-status']").exists()).toBe(false);
+    });
+
+    test("a lost connection takes the status line's place, as it does any line under the title", () => {
+        const w = mountHeader({ ...personHeader(anna), connection: lostConnection });
+
+        expect(w.find("[data-testid='connection-badge']").exists()).toBe(true);
+        expect(w.find("[data-testid='header-status']").exists()).toBe(false);
     });
 
     test("a group's face and the members pile draw no badge", () => {

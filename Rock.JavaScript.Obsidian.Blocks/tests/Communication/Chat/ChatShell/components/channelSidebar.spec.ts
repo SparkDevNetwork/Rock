@@ -32,7 +32,7 @@ import { avatarHue } from "../../../../../src/Communication/Chat/ChatShell/ui/br
 import { unveiledAttribute } from "../../../../../src/Communication/Chat/ChatShell/ui/imageReveal.partial";
 import { FaceStatus, SidebarRow } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 import { presenceStatusKey } from "../../../../../src/Communication/Chat/ChatShell/composables/usePresenceStatus.partial";
-import { anna, badgesIn, ben, createStatusStore, provideStatus, setsBothRings, shellFolder, StatusStore, viewer } from "../statusStore";
+import { anna, badgesIn, ben, createStatusStore, provideStatus, setsBothRings, shellFolder, StatusStore, styleRules, viewer } from "../statusStore";
 import { providedSession } from "../sessionShapes";
 
 // #region Fixtures
@@ -297,27 +297,115 @@ describe("the sidebar's top", () => {
     });
 });
 
+// The conversations are one list to the keyboard: one Tab stop for every row across the sections,
+// held by the row last focused and at first by the open conversation's, and the arrows, Home and End
+// between the rows. A row opens only on Enter or a click, so moving through the list opens nothing.
+// The search, the sections' plus buttons and the foot keep their own stops.
+describe("the keyboard", () => {
+    /** Every row the list draws, Browse channels included, in the order they are drawn. */
+    function listRows(w: VueWrapper): HTMLElement[] {
+        return Array.from(w.element.querySelectorAll<HTMLElement>("[data-testid='channel-row'], [data-testid='sidebar-browse']"));
+    }
+
+    /** The rows that are a Tab stop. */
+    function stops(w: VueWrapper): HTMLElement[] {
+        return listRows(w).filter(element => element.tabIndex === 0);
+    }
+
+    async function press(element: HTMLElement, key: string): Promise<void> {
+        element.dispatchEvent(new KeyboardEvent("keydown", { key, bubbles: true, cancelable: true }));
+        await nextTick();
+    }
+
+    beforeAll(() => {
+        // jsdom lays nothing out, so the scroll that keeps a row in view is a no-op here
+        Element.prototype.scrollIntoView ??= (): void => undefined;
+    });
+
+    test("is one Tab stop across every section, the open conversation's row", () => {
+        const w = mountSidebar({ activeChannelId: dmAnna.channel_id });
+
+        expect(listRows(w).length).toBe(9);
+        expect(stops(w)).toEqual([rowOf(w, dmAnna.channel_id).element]);
+    });
+
+    test("is the first row's stop when no conversation is open", () => {
+        const w = mountSidebar();
+
+        expect(stops(w)).toEqual([rowOf(w, starred.channel_id).element]);
+    });
+
+    test("moves with Down and Up across a section's end, through Browse channels, opening nothing", async () => {
+        const w = mountSidebar({ activeChannelId: muted.channel_id });
+
+        await press(rowOf(w, muted.channel_id).element as HTMLElement, "ArrowDown");
+        expect(document.activeElement).toBe(w.get("[data-testid='sidebar-browse']").element);
+
+        await press(document.activeElement as HTMLElement, "ArrowDown");
+        expect(document.activeElement).toBe(rowOf(w, dmAnna.channel_id).element);
+
+        await press(document.activeElement as HTMLElement, "ArrowUp");
+        await press(document.activeElement as HTMLElement, "ArrowUp");
+        expect(document.activeElement).toBe(rowOf(w, muted.channel_id).element);
+
+        expect(w.emitted("select")).toBeUndefined();
+        expect(w.emitted("browse")).toBeUndefined();
+    });
+
+    test("goes to the first and last rows with Home and End", async () => {
+        const w = mountSidebar({ activeChannelId: team.channel_id });
+
+        await press(rowOf(w, team.channel_id).element as HTMLElement, "End");
+        expect(document.activeElement).toBe(rowOf(w, dmRead.channel_id).element);
+
+        await press(document.activeElement as HTMLElement, "Home");
+        expect(document.activeElement).toBe(rowOf(w, starred.channel_id).element);
+    });
+
+    test("keeps the stop on the row last focused, until another conversation opens", async () => {
+        const w = mountSidebar({ activeChannelId: team.channel_id });
+
+        await press(rowOf(w, team.channel_id).element as HTMLElement, "ArrowDown");
+        (document.activeElement as HTMLElement).blur();
+        await nextTick();
+        expect(stops(w)).toEqual([rowOf(w, youth.channel_id).element]);
+
+        await w.setProps({ activeChannelId: dmGroup.channel_id });
+        expect(stops(w)).toEqual([rowOf(w, dmGroup.channel_id).element]);
+    });
+
+    test("leaves the search, the sections' plus buttons and the foot their own stops", () => {
+        const w = mountSidebar({ activeChannelId: team.channel_id });
+
+        for (const testId of ["sidebar-search", "section-browse", "section-new-message", "sidebar-me"]) {
+            const element = w.get(`[data-testid='${testId}']`).element;
+            const control = element.matches("input, button") ? element as HTMLElement : element.querySelector<HTMLElement>("input, button")!;
+            expect(control.tabIndex).toBe(0);
+        }
+    });
+});
+
 describe("the sections", () => {
-    test("are Starred, Channels and Direct messages, in that order", () => {
+    test("are Favorites, Channels and Direct messages, in that order", () => {
         const w = mountSidebar();
 
         const sections = w.findAll("[data-testid='sidebar-section']");
-        expect(sections.map(s => s.attributes("data-section"))).toEqual(["starred", "channels", "dms"]);
-        expect(sections.map(s => s.get("[data-testid='section-heading']").text())).toEqual(["Starred", "Channels", "Direct messages"]);
+        expect(sections.map(s => s.attributes("data-section"))).toEqual(["favorites", "channels", "dms"]);
+        expect(sections.map(s => s.get("[data-testid='section-heading']").text())).toEqual(["Favorites", "Channels", "Direct messages"]);
     });
 
-    test("place a starred room under Starred only, and the rest by kind", () => {
+    test("place a starred room under Favorites only, and the rest by kind", () => {
         const w = mountSidebar();
 
-        expect(rowIdsIn(w, "starred")).toEqual([starred.channel_id]);
+        expect(rowIdsIn(w, "favorites")).toEqual([starred.channel_id]);
         expect(rowIdsIn(w, "channels")).toEqual([team.channel_id, youth.channel_id, muted.channel_id]);
         expect(rowIdsIn(w, "dms")).toEqual([dmAnna.channel_id, dmGroup.channel_id, dmBig.channel_id, dmRead.channel_id]);
     });
 
-    test("leave out Starred when nothing is starred", () => {
+    test("leave out Favorites when nothing is a favorite", () => {
         const w = mountSidebar({ rows: [team, dmAnna] });
 
-        expect(w.find("[data-testid='sidebar-section'][data-section='starred']").exists()).toBe(false);
+        expect(w.find("[data-testid='sidebar-section'][data-section='favorites']").exists()).toBe(false);
     });
 
     test("give Direct messages its own New message plus, with DM Access", async () => {
@@ -330,6 +418,21 @@ describe("the sections", () => {
 
         await w.setProps({ isNewMessageShown: false });
         expect(w.find("[data-testid='section-new-message']").exists()).toBe(false);
+    });
+
+    // A heading's plus is drawn 26px. Under a finger the icon button reaches 44px around its
+    // middle, and that reach runs a few pixels into the first row under the heading, which comes
+    // later and would take them; so on a phone the plus lies over the row, its reach whole and its
+    // look and the rows' heights unchanged.
+    test("are an icon button's 26px plus whose reach on a phone lies over the row under it", () => {
+        const w = mountSidebar({ isPhone: true });
+
+        for (const plus of w.findAll(".chat-sec-btn")) {
+            expect(plus.classes()).toContain("chat-icon-btn");
+        }
+        const sidebar = join(shellFolder, "components/channelSidebar.partial.obs");
+        expect(styleRules(sidebar, /^\.chat-sec$/).join(";")).toMatch(/--chat-icon-btn-s:\s*26px/);
+        expect(styleRules(sidebar, /^\.is-phone \.chat-sec-btn$/).join(";")).toMatch(/z-index:\s*1/);
     });
 });
 
@@ -505,7 +608,7 @@ describe("a row's states", () => {
         expect(w.findAll(".is-flash")).toHaveLength(0);
     });
 
-    test("washes not even the room the person stars, which moves up into Starred keeping its element", async () => {
+    test("washes not even the room the person stars, which moves up into Favorites keeping its element", async () => {
         const prayer = { ...starred, is_favorite: false };
         const w = mountSidebar({ rows: [team, youth, prayer] });
 
@@ -519,7 +622,7 @@ describe("a row's states", () => {
 });
 
 describe("a row's look, by the room's kind", () => {
-    test("a channel draws the Community row and a direct message the Conversational row, in one list, Starred included", () => {
+    test("a channel draws the Community row and a direct message the Conversational row, in one list, Favorites included", () => {
         const starredDm = { ...dmRead, is_favorite: true };
         const w = mountSidebar({ rows: [team, youth, starred, muted, dmAnna, dmGroup, dmBig, starredDm] });
 
@@ -531,7 +634,7 @@ describe("a row's look, by the room's kind", () => {
             expect(rowOf(w, direct.channel_id).attributes("data-layout")).toBe("conversational");
             expect(rowOf(w, direct.channel_id).classes()).not.toContain("is-cs");
         }
-        expect(rowIdsIn(w, "starred")).toEqual([starred.channel_id, starredDm.channel_id]);
+        expect(rowIdsIn(w, "favorites")).toEqual([starred.channel_id, starredDm.channel_id]);
     });
 
     test("Conversational draws the line the platform sent under the title, and the time", () => {
@@ -609,7 +712,7 @@ describe("a channel's tile", () => {
         expect(title.element.children[1].getAttribute("data-testid")).toBe("row-lock");
     });
 
-    test("sits in the column a direct message's face does, in Starred beside one", () => {
+    test("sits in the column a direct message's face does, in Favorites beside one", () => {
         const w = mountSidebar({ rows: [starred, { ...dmRead, is_favorite: true }] });
 
         expect(rowOf(w, starred.channel_id).find(".chat-row-face .chat-ch-tile").exists()).toBe(true);
@@ -1023,7 +1126,7 @@ describe("a live message, which moves a row and never washes it", () => {
 
     // A list's only motion is the move: a row that leaves its section goes in the same frame, so
     // the rows under it glide into its place and no copy lingers where it was, starred or not.
-    test("a room starred goes from Channels in the same frame it arrives under Starred, no copy left behind", async () => {
+    test("a room starred goes from Channels in the same frame it arrives under Favorites, no copy left behind", async () => {
         wrapper = mount(ChannelSidebar, {
             props: { rows: [team, youth], activeChannelId: null, isNewMessageShown: true },
             global: { provide: providedSession({ isPhone: false, me: { personAliasGuid: "", name: "", photoUrl: null } }), stubs: { "transition-group": false } },
@@ -1033,7 +1136,7 @@ describe("a live message, which moves a row and never washes it", () => {
         await wrapper.setProps({ rows: [{ ...team, is_favorite: true }, youth] });
         await nextTick();
 
-        expect(rowIdsIn(wrapper, "starred")).toEqual([team.channel_id]);
+        expect(rowIdsIn(wrapper, "favorites")).toEqual([team.channel_id]);
         expect(rowIdsIn(wrapper, "channels")).toEqual([youth.channel_id]);
         expect(wrapper.findAll(`[data-testid='channel-row'][data-channel-id='${team.channel_id}']`)).toHaveLength(1);
     });

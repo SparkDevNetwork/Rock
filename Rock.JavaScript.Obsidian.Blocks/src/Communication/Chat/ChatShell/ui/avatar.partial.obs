@@ -7,7 +7,7 @@
               :class="{ 'is-photo': !!person.photoUrl }"
               data-testid="avatar"
               :style="faceStyle(person, index)">
-            <img v-if="person.photoUrl" v-reveal="reveal" class="chat-av-photo" :src="person.photoUrl" alt="" />
+            <img v-if="person.photoUrl && !brokenPhotos.has(person.photoUrl)" v-reveal="reveal" class="chat-av-photo" :src="person.photoUrl" alt="" @error="brokenPhotos.add(person.photoUrl)" />
             <template v-else-if="initialsOf(person.name, index)">{{ initialsOf(person.name, index) }}</template>
             <Icon v-else name="users" size="xs" />
         </span>
@@ -16,7 +16,7 @@
 </template>
 
 <script setup lang="ts">
-    import { computed, PropType } from "vue";
+    import { computed, PropType, reactive } from "vue";
     import Icon from "./icon.partial.obs";
     import StatusBadgeFade from "./statusBadgeFade.partial.obs";
     import { FaceStatus } from "../types.partial";
@@ -107,6 +107,9 @@
         }
         return shownStatus(status, props.own);
     });
+
+    /** Photos that would not load, as a removed file; those faces draw the person's letters instead. */
+    const brokenPhotos = reactive(new Set<string>());
 
     // #endregion Values
 

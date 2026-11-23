@@ -134,8 +134,9 @@
     opacity: 0;
 }
 
+/* The radio is hidden, so its row wears the chat's ring for it, inside the row's edge. */
 .chat-rm-opt:has(input:focus-visible) {
-    outline: 2px solid var(--chat-brand);
+    outline: var(--chat-focus-ring);
     outline-offset: -2px;
 }
 

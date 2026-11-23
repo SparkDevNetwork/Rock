@@ -133,6 +133,18 @@ describe("an initials avatar", () => {
 });
 
 describe("a photo avatar", () => {
+    // A photo that will not load, as a removed file or a broken link, leaves the person's letters,
+    // never a plain disc that names no one.
+    test("falls back to the person's initials when its photo fails to load", async () => {
+        const wrapper = draw([{ name: "Anna Lee", photoUrl: "https://church.example/gone.jpg" }], 34);
+
+        wrapper.get("img").element.dispatchEvent(new Event("error"));
+        await nextTick();
+
+        expect(wrapper.find("img").exists()).toBe(false);
+        expect(faces(wrapper)[0].textContent?.trim()).toBe("AL");
+    });
+
     test("draws the photo at the same size in place of the initials", () => {
         const [face] = faces(draw([{ name: "Anna Lee", photoUrl: "https://church.example/GetImage.ashx?id=12" }], 34));
 
@@ -454,6 +466,7 @@ describe("a face's status badge", () => {
         await nextTick();
 
         expect(document.querySelector("[role='tooltip']")?.textContent?.trim()).toBe("Busy until 3:00 PM");
+        expect(wrapper.findComponent({ name: "tip.partial" }).exists()).toBe(true);
         wrapper.unmount();
     });
 

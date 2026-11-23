@@ -20,6 +20,13 @@
 import { mount, VueWrapper } from "@vue/test-utils";
 import { defineComponent, h, nextTick, ref } from "vue";
 import { ChatTooltip, isCutShort, useTooltip } from "../../../../../src/Communication/Chat/ChatShell/ui/tooltip.partial";
+import { usePopover } from "../../../../../src/Communication/Chat/ChatShell/ui/popover.partial";
+
+// The real placing, watched, so a cell can tell whether a tip has made one yet.
+jest.mock("../../../../../src/Communication/Chat/ChatShell/ui/popover.partial", () => {
+    const actual = jest.requireActual("../../../../../src/Communication/Chat/ChatShell/ui/popover.partial");
+    return { ...actual, usePopover: jest.fn(actual.usePopover) };
+});
 
 /** A button with a plain tip, drawn where the tooltip places it. */
 const Host = defineComponent({
@@ -145,5 +152,60 @@ describe("whether words were cut short", () => {
 
     it("says no while nothing is drawn yet", () => {
         expect(isCutShort(undefined)).toBe(false);
+    });
+});
+
+// A long channel draws a tip anchor on every message's time and body, hundreds of them, and the
+// pointer rests on a handful. Each tip makes its placing only when one may show.
+describe("when a tip makes its placing", () => {
+    const placings = usePopover as jest.Mock;
+    const original = window.matchMedia;
+
+    beforeEach(() => {
+        placings.mockClear();
+        wrapper?.unmount();
+        wrapper = mount(Host, { attachTo: document.body });
+    });
+
+    afterEach(() => {
+        window.matchMedia = original;
+    });
+
+    it("makes none at mount", () => {
+        expect(placings).not.toHaveBeenCalled();
+    });
+
+    it("makes one on the pointer's first arrival, once, and still waits the delay", async () => {
+        const tip = (wrapper?.vm as unknown as { tip: ChatTooltip }).tip;
+        const anchor = placeAnchor(300);
+
+        anchor.dispatchEvent(new MouseEvent("mouseenter"));
+        expect(placings).toHaveBeenCalledTimes(1);
+        jest.advanceTimersByTime(100);
+        await nextTick();
+        expect(tip.isTipShown.value).toBe(false);
+
+        const shown = await showTip(anchor);
+        expect(shown.isTipShown.value).toBe(true);
+        expect(placings).toHaveBeenCalledTimes(1);
+    });
+
+    it("makes one for a keyboard's focus", () => {
+        const tip = (wrapper?.vm as unknown as { tip: ChatTooltip }).tip;
+
+        placeAnchor(300).focus();
+        tip.onFocus();
+
+        expect(placings).toHaveBeenCalledTimes(1);
+    });
+
+    it("makes none where nothing can hover", () => {
+        window.matchMedia = ((query: string) => ({ media: query, matches: query === "(hover: none)" })) as unknown as typeof window.matchMedia;
+        const tip = (wrapper?.vm as unknown as { tip: ChatTooltip }).tip;
+
+        tip.onPointerEnter();
+        tip.onFocus();
+
+        expect(placings).not.toHaveBeenCalled();
     });
 });

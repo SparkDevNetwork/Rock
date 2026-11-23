@@ -63,9 +63,7 @@
                         </button>
 
                         <!-- One tip for the tabs, moved to whichever the pointer rests on or a key reaches. -->
-                        <Teleport :to="tipHost ?? 'body'" :disabled="!tipHost">
-                            <div v-if="isTipShown" ref="tipElement" class="chat-tip" role="tooltip" :style="floatingStyles">{{ tipText }}</div>
-                        </Teleport>
+                        <Tip :tip="tabTip">{{ tipText }}</Tip>
                     </div>
                     <span v-if="isSearching" class="chat-picker-results chat-section-label" data-testid="emoji-results">{{ resultsLabel }}</span>
                 </div>
@@ -251,11 +249,15 @@ img.chat-picker-glyph {
     transition-duration: var(--chat-d-glyph-press);
 }
 
-/* The keyboard's cell, and the first search result, which Enter takes. */
-.chat-picker-cell:focus-visible,
+/* The keyboard's cell wears the chat's ring inside its edge, so its neighbours do not cover it. */
+.chat-picker-cell:focus-visible {
+    background: var(--chat-hover);
+    outline-offset: -2px;
+}
+
+/* The first search result, which Enter takes before any cell has focus. */
 .chat-picker-cell.is-first {
     background: var(--chat-hover);
-    outline: none;
     box-shadow: inset 0 0 0 2px var(--chat-brand-ring);
 }
 
@@ -263,10 +265,6 @@ img.chat-picker-glyph {
 .chat-picker-cell[aria-pressed="true"] {
     background: var(--chat-brand-tint);
     box-shadow: inset 0 0 0 1px var(--chat-brand-line);
-}
-
-.chat-picker-cell[aria-pressed="true"]:focus-visible {
-    box-shadow: inset 0 0 0 2px var(--chat-brand-ring), inset 0 0 0 1px var(--chat-brand-line);
 }
 
 /* The loading cells stand where a category's first rows will, under its label's line. */
@@ -376,11 +374,6 @@ img.chat-picker-glyph {
     border-radius: var(--chat-r-inline);
 }
 
-.chat-picker-tabs button:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 2px var(--chat-brand-ring);
-}
-
 .chat-picker-foot {
     display: flex;
     flex: none;
@@ -451,7 +444,8 @@ img.chat-picker-prev {
     import Icon from "../ui/icon.partial.obs";
     import IconButton from "../ui/iconButton.partial.obs";
     import Skeleton from "../ui/skeleton.partial.obs";
-    import { overlayHostOf, useTooltip } from "../ui/tooltip.partial";
+    import Tip from "../ui/tip.partial.obs";
+    import { useTooltip } from "../ui/tooltip.partial";
     import { useAnnouncer } from "../ui/announcer.partial";
     import { usePopover } from "../ui/popover.partial";
     import Popover from "../ui/popoverSurface.partial.obs";
@@ -608,8 +602,8 @@ img.chat-picker-prev {
     /** The tab the one tip names, moved to whichever the pointer rests on or a key reaches. */
     const tipAnchor = ref<HTMLElement>();
     const tipText = ref("");
-    const tipHost = computed((): HTMLElement | null => overlayHostOf(rootElement.value));
-    const { tipElement, isTipShown, floatingStyles, onPointerEnter: onTipEnter, onPointerLeave: onTabLeave, onPointerDown: onTabPointerDown, onFocus: onTipFocus, onBlur: onTabBlur } = useTooltip(tipAnchor);
+    const tabTip = useTooltip(tipAnchor);
+    const { onPointerEnter: onTipEnter, onPointerLeave: onTabLeave, onPointerDown: onTabPointerDown, onFocus: onTipFocus, onBlur: onTabBlur } = tabTip;
 
     /** Watches for what the picker is placed beside leaving the page, which nothing else would tell it. */
     let anchorObserver: MutationObserver | null = null;

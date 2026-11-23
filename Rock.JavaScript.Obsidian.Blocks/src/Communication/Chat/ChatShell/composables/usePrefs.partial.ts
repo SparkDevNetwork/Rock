@@ -250,11 +250,8 @@ export function notifyIconFor(mode: NotifyMode): string {
     return notifyWords[mode].icon;
 }
 
-/**
- * One notify mode as the header's menu draws it, by its title and description, and the details'
- * segmented control, by its short label and the one line said under it while it is chosen.
- */
-export type NotifyOption = { value: NotifyMode, title: string, description: string, label: string, caption: string, icon: string };
+/** One notify mode as the header's menu and the details' choice both draw it. */
+export type NotifyOption = { value: NotifyMode, title: string, description: string, icon: string };
 
 /**
  * The three notify modes in the one wording the details and the header's menu share, so the two
@@ -268,9 +265,9 @@ export type NotifyOption = { value: NotifyMode, title: string, description: stri
 export function notifyOptionsFor(kind: string | null): NotifyOption[] {
     const room = kind === "channel" ? "channel" : "conversation";
     return [
-        { value: "all", title: notifyWords.all.title, description: `Every new message in this ${room}.`, label: "All", caption: "Every new message.", icon: notifyWords.all.icon },
-        { value: "mentions", title: notifyWords.mentions.title, description: "When someone mentions you by name or uses @all.", label: "Mentions", caption: "Your name or @all.", icon: notifyWords.mentions.icon },
-        { value: "silent", title: notifyWords.silent.title, description: "Nothing, unless someone mentions you by name.", label: "Off", caption: "Only mentions of your name.", icon: notifyWords.silent.icon }
+        { value: "all", title: notifyWords.all.title, description: `Every new message in this ${room}.`, icon: notifyWords.all.icon },
+        { value: "mentions", title: notifyWords.mentions.title, description: "When someone mentions you by name or uses @all.", icon: notifyWords.mentions.icon },
+        { value: "silent", title: notifyWords.silent.title, description: "Nothing, unless someone mentions you by name.", icon: notifyWords.silent.icon }
     ];
 }
 
@@ -464,7 +461,7 @@ export function createPrefs(dependencies: PrefsDependencies): Prefs {
             delete notes.star;
             delete notes.hide;
             if (isUnhiding && !isFromMenu) {
-                notes.star = { kind: "info", text: "Starred, so it's back in your list." };
+                notes.star = { kind: "info", text: "Added to favorites, so it's back in your list." };
             }
 
             // Star and hide are one save's two halves, so they share one newest, and each save asks
@@ -494,7 +491,7 @@ export function createPrefs(dependencies: PrefsDependencies): Prefs {
                 return;
             }
 
-            // hiding a starred room takes it out of Starred, in the same one save
+            // hiding a starred room takes it out of Favorites, in the same one save
             const isUnstarring = isHidden && row.is_favorite === true;
             const patch: Record<string, boolean> = isUnstarring ? { hidden: true, is_favorite: false } : { hidden: isHidden };
             const notes = room(channelId).notes;
@@ -502,7 +499,7 @@ export function createPrefs(dependencies: PrefsDependencies): Prefs {
             delete notes.hide;
             if (isHidden) {
                 // what hiding means is said with the change, since the room stays until another opens
-                notes.hide = { kind: "info", text: `${isUnstarring ? "Hidden, and taken out of Starred." : "Hidden."} ${leavesListSentence}` };
+                notes.hide = { kind: "info", text: `${isUnstarring ? "Hidden, and taken out of Favorites." : "Hidden."} ${leavesListSentence}` };
             }
 
             const was = { is_favorite: row.is_favorite, hidden: row.hidden ?? false };

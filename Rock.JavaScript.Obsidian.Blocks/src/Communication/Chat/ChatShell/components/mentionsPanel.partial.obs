@@ -137,7 +137,10 @@
     color: var(--chat-muted);
 }
 
-/* Day headings stay in view while their rows scroll under them, the rows faintly showing through. */
+/*
+    Day headings stay in view while their rows scroll under them, on the panel's plain surface: the
+    clean bar has no glass, so nothing shows through and nothing blurs.
+*/
 .chat-ls-day {
     position: sticky;
     top: -4px;
@@ -149,9 +152,6 @@
     color: var(--chat-muted);
     letter-spacing: .01em;
     background: var(--chat-surface);
-    background: color-mix(in srgb, var(--chat-surface) 92%, transparent);
-    -webkit-backdrop-filter: blur(6px);
-    backdrop-filter: blur(6px);
 }
 
 </style>

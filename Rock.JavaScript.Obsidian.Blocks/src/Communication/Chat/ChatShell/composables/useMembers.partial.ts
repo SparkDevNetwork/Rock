@@ -256,7 +256,7 @@ function noSearch(): MemberSearchState {
     return { query: null, rows: [], hasMore: false, isSearching: false, error: null };
 }
 
-/** The roster of no room, which the panel starts from and every open and close returns to. */
+/** The roster of no room, which the panel starts from and every open returns to. */
 function emptyState(): MembersState {
     return {
         channelId: null,
@@ -696,6 +696,17 @@ export function createMembers(dependencies: MembersDependencies): Members {
         delete state.removals[personAliasGuid];
     }
 
+    /**
+     * The panel closed: no room is open and everything on its way is dropped, but what the panel
+     * draws stays, so it slides out showing its roster, its filter and its search, or its loading
+     * rows, rather than an empty list. The next open starts from nothing.
+     */
+    function close(): void {
+        const { rows, hasMore, isLoading, error, refusal, query, search, canManageMembers } = state;
+        reset();
+        Object.assign(state, { rows, hasMore, isLoading, error, refusal, query, search: { ...search, isSearching: false }, canManageMembers });
+    }
+
     /** Empties the roster and drops anything still on its way. */
     function reset(): void {
         rosterGeneration++;
@@ -794,7 +805,7 @@ export function createMembers(dependencies: MembersDependencies): Members {
             await asking.search;
         },
 
-        close: reset,
+        close,
 
         roomChanged: (channelId): void => {
             if (isStopped || !channelId) {

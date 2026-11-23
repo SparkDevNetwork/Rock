@@ -950,9 +950,9 @@ describe("Sidebar", () => {
         expect(document.getElementById(group.attributes("aria-labelledby") ?? "")?.textContent?.trim()).toBe("Sidebar");
         expect(switchOf(w, "star").attributes("aria-checked")).toBe("true");
         expect(switchOf(w, "hide").attributes("aria-checked")).toBe("false");
-        expect(plain(w.get("[data-testid='switch-star']").text())).toBe("Star");
+        expect(plain(w.get("[data-testid='switch-star']").text())).toBe("Favorite");
         expect(plain(w.get("[data-testid='switch-hide']").text())).toBe("Hide Until there's a new message");
-        expect(document.getElementById(switchOf(w, "star").attributes("aria-labelledby") ?? "")?.textContent).toBe("Star");
+        expect(document.getElementById(switchOf(w, "star").attributes("aria-labelledby") ?? "")?.textContent).toBe("Favorite");
     });
 
     test("keeps its help, with the notify line, Hide's and a group's name, to a few short lines", () => {
@@ -978,12 +978,12 @@ describe("Sidebar", () => {
             isStarred: false,
             isHidden: true,
             prefsNotes: {
-                hide: { kind: "info", text: "Hidden, and taken out of Starred. It leaves your list when you open another conversation." },
+                hide: { kind: "info", text: "Hidden, and taken out of Favorites. It leaves your list when you open another conversation." },
                 star: { kind: "error", text: "Chat is read only tonight." }
             }
         });
 
-        expect(w.get("[data-testid='switch-hide'] [data-testid='switch-note']").text()).toBe("Hidden, and taken out of Starred. It leaves your list when you open another conversation.");
+        expect(w.get("[data-testid='switch-hide'] [data-testid='switch-note']").text()).toBe("Hidden, and taken out of Favorites. It leaves your list when you open another conversation.");
         expect(w.get("[data-testid='switch-star'] [data-testid='switch-note']").attributes("data-kind")).toBe("error");
         expect(w.get("[data-testid='switch-star'] [data-testid='switch-note']").text()).toBe("Chat is read only tonight.");
     });

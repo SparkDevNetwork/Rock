@@ -23,7 +23,7 @@ import { resolve } from "path";
 import { Component, h, nextTick } from "vue";
 import Icon from "../../../../../src/Communication/Chat/ChatShell/ui/icon.partial.obs";
 import IconButton from "../../../../../src/Communication/Chat/ChatShell/ui/iconButton.partial.obs";
-import { partRuleBreaks, ruleOf, styleOf } from "./partStyle";
+import { mediaOf, outsideMedia, partRuleBreaks, ruleOf, styleOf } from "./partStyle";
 
 function tooltip(): Element | null {
     return document.querySelector("[role='tooltip']");
@@ -84,6 +84,17 @@ describe("the icon button", () => {
 
         jest.advanceTimersByTime(1);
         await nextTick();
+        expect(tooltip()?.textContent?.trim()).toBe("Turn on notifications");
+    });
+
+    // Every tip in the chat is drawn by the one Tip part, so they look and place alike.
+    test("draws its tooltip with the shared tip part", async () => {
+        const wrapper = draw();
+        await wrapper.get("button").trigger("mouseenter");
+        jest.advanceTimersByTime(500);
+        await nextTick();
+
+        expect(wrapper.findComponent({ name: "tip.partial" }).exists()).toBe(true);
         expect(tooltip()?.textContent?.trim()).toBe("Turn on notifications");
     });
 
@@ -279,6 +290,20 @@ describe("the icon button's look", () => {
         expect(ruleOf(style, ".chat-icon-btn.is-sm")).toMatch(/width:\s*22px/);
         expect(ruleOf(style, ".chat-icon-btn.is-sm")).toMatch(/height:\s*22px/);
         expect(ruleOf(style, ".chat-icon-btn.is-sm")).toMatch(/border-radius:\s*var\(--chat-r-full\)/);
+    });
+
+    // A finger needs about 44px. Under a coarse pointer every button's hit area reaches that from
+    // its middle, through a mark of no paint, so a 22px close or a 32px bar button keeps its size.
+    test("under a finger, its hit area reaches 44px around its middle and its drawn size does not change", () => {
+        const pad = ruleOf(mediaOf(style, "(pointer: coarse)"), ".chat-icon-btn::before");
+
+        expect(pad).toMatch(/position:\s*absolute/);
+        expect(pad).toMatch(/content:\s*""/);
+        expect(pad).toMatch(/min-width:\s*44px/);
+        expect(pad).toMatch(/min-height:\s*44px/);
+        expect(pad).not.toMatch(/background|border|box-shadow/);
+        expect(mediaOf(style, "(pointer: coarse)")).not.toMatch(/\.chat-icon-btn(\.is-\w+)?\s*\{/);
+        expect(ruleOf(outsideMedia(style), ".chat-icon-btn::before")).toBe("");
     });
 
     // A finger or a pointer needs 24 by 24 CSS pixels, and the words are one short line, so the

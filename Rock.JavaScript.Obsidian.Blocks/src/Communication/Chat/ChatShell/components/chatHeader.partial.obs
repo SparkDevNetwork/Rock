@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <header v-if="!isEmpty" ref="headerElement" class="chat-header" :class="{ 'is-phone': isPhone }" data-testid="chat-header">
+    <header v-if="!isEmpty" class="chat-header" :class="{ 'is-phone': isPhone }" data-testid="chat-header">
         <!--
             The sidebar folded away while a panel is open in a narrow window comes back from here,
             and focus comes back here as it is put away again.
@@ -52,6 +52,8 @@
                 <span v-else-if="isBehind" class="chat-header-sub" data-testid="catching-up-badge" data-tone="info">
                     <Dot class="chat-header-live" tone="info" pulse />Catching up on new messages…
                 </span>
+                <!-- The title button's name already says the status, so the line is for the eye alone. -->
+                <span v-else-if="statusWords" class="chat-header-sub" data-testid="header-status" aria-hidden="true">{{ statusWords }}</span>
                 <span v-else-if="shownSubtitle" class="chat-header-sub" data-testid="header-subtitle">{{ shownSubtitle }}</span>
             </span>
         </div>
@@ -94,7 +96,7 @@
                     data-testid="push-offer"
                     @click="emit('turnOnPush')">Turn on notifications</Button>
 
-            <!-- The room's notify menu, the bell drawn as its mode and named by it; kept on a phone, where Star moves into More. -->
+            <!-- The room's notify menu, the bell drawn as its mode and named by it; kept on a phone, where the star moves into More. -->
             <span v-if="isPrefsOffered" class="chat-header-menu" data-testid="header-notify">
                 <Menu :icon="notifyIcon"
                       :label="notifyWords"
@@ -105,7 +107,7 @@
 
             <IconButton v-if="isPrefsOffered && !isPhone"
                         :icon="isStarred ? 'star-f' : 'star'"
-                        :label="isStarred ? 'Unstar' : 'Star'"
+                        :label="starWords"
                         :aria-pressed="isStarred ? 'true' : 'false'"
                         data-testid="header-star"
                         @click="emit('star')" />
@@ -116,18 +118,8 @@
         </div>
     </header>
 
-    <Teleport :to="tipHost ?? 'body'" :disabled="!tipHost">
-        <div v-if="isTitleTipShown"
-             ref="titleTipElement"
-             class="chat-tip"
-             role="tooltip"
-             :style="titleTip.floatingStyles.value">{{ detailsWords }}</div>
-        <div v-if="isPileTipShown"
-             ref="pileTipElement"
-             class="chat-tip"
-             role="tooltip"
-             :style="pileTip.floatingStyles.value">{{ membersButton?.tip }}</div>
-    </Teleport>
+    <Tip :tip="titleTip">{{ detailsWords }}</Tip>
+    <Tip :tip="pileTip">{{ membersButton?.tip }}</Tip>
 
     <Transition name="chat-banner" @enter="onBannerEnter" @afterEnter="onBannerSettled" @leave="onBannerLeave">
         <div v-if="connectionBanner"
@@ -477,7 +469,7 @@ button.chat-header-name-row:hover .chat-header-chev {
 </style>
 
 <script setup lang="ts">
-    import { computed, onMounted, PropType, ref, watch } from "vue";
+    import { computed, PropType, ref, watch } from "vue";
     import { NotifyMode, notifyIconFor, notifyOptionsFor } from "../composables/usePrefs.partial";
     import { useFaceStatus } from "../composables/usePresenceStatus.partial";
     import { ChannelFacts, ChatError, ChatPerson, RoomKind } from "../types.partial";
@@ -487,12 +479,13 @@ button.chat-header-name-row:hover .chat-header-chev {
     import ChannelMark from "../ui/channelMark.partial.obs";
     import Dot from "../ui/dot.partial.obs";
     import GroupFace from "../ui/groupFace.partial.obs";
-    import { peopleCountWords, personFace } from "../ui/face.partial";
+    import { cardStatusWords, peopleCountWords, personFace, shownStatus } from "../ui/face.partial";
     import Icon from "../ui/icon.partial.obs";
     import IconButton from "../ui/iconButton.partial.obs";
     import Menu, { MenuItem } from "../ui/menu.partial.obs";
     import { useAnnouncer } from "../ui/announcer.partial";
-    import { overlayHostOf, useTooltip } from "../ui/tooltip.partial";
+    import Tip from "../ui/tip.partial.obs";
+    import { useTooltip } from "../ui/tooltip.partial";
 
     // #region Types
 
@@ -512,7 +505,7 @@ button.chat-header-name-row:hover .chat-header-chev {
         (e: "details"): void,
         /** A notify mode other than the room's own was chosen from the bell's menu. */
         (e: "notify", mode: NotifyMode): void,
-        /** Star or Unstar, from the header or the phone's More. */
+        /** Add to or remove from favorites, from the header or the phone's More. */
         (e: "star"): void,
         /** The sidebar folded away while a panel is open is asked back over the conversation. */
         (e: "sidebar"): void
@@ -605,7 +598,7 @@ button.chat-header-name-row:hover .chat-header-chev {
             default: false
         },
 
-        /** Whether the room is the person's own, so its notify menu and Star are offered. */
+        /** Whether the room is the person's own, so its notify menu and the star are offered. */
         isPrefsOffered: {
             type: Boolean,
             default: false
@@ -617,7 +610,7 @@ button.chat-header-name-row:hover .chat-header-chev {
             default: null
         },
 
-        /** Whether the room is in the person's Starred, which presses Star. */
+        /** Whether the room is among the person's Favorites, which presses the star. */
         isStarred: {
             type: Boolean,
             default: false
@@ -670,18 +663,12 @@ button.chat-header-name-row:hover .chat-header-chev {
 
     const { announce } = useAnnouncer();
 
-    const headerElement = ref<HTMLElement>();
     const titleElement = ref<HTMLElement>();
     const pileElement = ref<HTMLElement>();
 
     // The title's and the members button's tooltips, which the icon buttons draw for themselves.
     const titleTip = useTooltip(titleElement, () => !props.kind);
     const pileTip = useTooltip(pileElement);
-    const { tipElement: titleTipElement, isTipShown: isTitleTipShown } = titleTip;
-    const { tipElement: pileTipElement, isTipShown: isPileTipShown } = pileTip;
-
-    /** The chat's root, which the tips are drawn in; null where the header is drawn alone. */
-    const tipHost = ref<HTMLElement | null>(null);
 
     // #endregion Values
 
@@ -737,6 +724,16 @@ button.chat-header-name-row:hover .chat-header-chev {
 
     const otherStatus = computed(() => otherAlias.value ? statusOf(otherAlias.value) : null);
 
+    /**
+     * A two-person room's line under the title: the other person's status in the words their
+     * profile puts on its line, so Away or Busy is never the badge's colour alone. None while the
+     * store holds nothing for them, as the profile then says nothing either.
+     */
+    const statusWords = computed((): string | null => {
+        const status = shownStatus(otherStatus.value, false);
+        return status ? cardStatusWords(status, new Date()) : null;
+    });
+
     /** How many other people a group holds: the row's count, else the room's head count less the reader. */
     const groupOtherCount = computed((): number | null => props.otherCount ?? (props.facts ? props.facts.member_count - 1 : null));
 
@@ -785,6 +782,9 @@ button.chat-header-name-row:hover .chat-header-chev {
     /** This room's threads, as Threads names them. */
     const threadsWords = computed((): string => `Threads in ${props.title}`);
 
+    /** What the star does, the same words on the header's button and in the phone's More; the sidebar's section is Favorites. */
+    const starWords = computed((): string => props.isStarred ? "Remove from favorites" : "Add to favorites");
+
     /** The title button's name and role, for a room; the plain title of no room has none. */
     const detailsAttributes = computed((): Record<string, string> => props.kind
         ? {
@@ -816,7 +816,7 @@ button.chat-header-name-row:hover .chat-header-chev {
         }
 
         if (props.isPrefsOffered) {
-            items.push({ key: "star", label: props.isStarred ? "Unstar" : "Star", icon: props.isStarred ? "star-f" : "star" });
+            items.push({ key: "star", label: starWords.value, icon: props.isStarred ? "star-f" : "star" });
         }
 
         // Last, as the title opens the same details on a phone too.
@@ -993,8 +993,4 @@ button.chat-header-name-row:hover .chat-header-chev {
     });
 
     // #endregion Watchers
-
-    onMounted(() => {
-        tipHost.value = overlayHostOf(headerElement.value);
-    });
 </script>
