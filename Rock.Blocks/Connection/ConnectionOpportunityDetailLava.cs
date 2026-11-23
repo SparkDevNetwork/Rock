@@ -20,6 +20,8 @@ using System.ComponentModel;
 
 using Rock.Attribute;
 using Rock.Model;
+using Rock.Net;
+using Rock.Security;
 using Rock.ViewModels.Blocks.Connection.ConnectionOpportunityDetailLava;
 using Rock.ViewModels.Utility;
 using Rock.Web;
@@ -153,7 +155,7 @@ namespace Rock.Blocks.Connection
         /// Gets the connection opportunity identified by the supplied key (Id, IdKey, or Guid).
         /// </summary>
         /// <param name="opportunityKey">The opportunity identifier from the page parameter.</param>
-        /// <returns>The matching opportunity, or <c>null</c> when the key is empty or unmatched.</returns>
+        /// <returns>The matching opportunity, or <c>null</c> when the key is empty or unmatched or the current person cannot view it.</returns>
         private ConnectionOpportunity GetConnectionOpportunity( string opportunityKey )
         {
             if ( opportunityKey.IsNullOrWhiteSpace() )
@@ -161,8 +163,27 @@ namespace Rock.Blocks.Connection
                 return null;
             }
 
-            return new ConnectionOpportunityService( RockContext )
+            var connectionOpportunity = new ConnectionOpportunityService( RockContext )
                 .Get( opportunityKey, !PageCache.Layout.Site.DisablePredictableIds );
+
+            /*
+                11/23/2026 - MSE
+
+                The opportunity comes from a page parameter, so the current person must be allowed
+                to view it. Without this check anyone could read an opportunity's details, page title
+                and breadcrumb even when the opportunity or its connection type denies View.
+                GetBreadCrumbs calls this method on a block that was created without a request
+                context, so RequestContext is null there and the ambient request context is used instead.
+
+                Reason: Require View permission on the connection opportunity before it is shown.
+            */
+            var currentPerson = RequestContext?.CurrentPerson ?? RockRequestContextAccessor.Current?.CurrentPerson;
+            if ( connectionOpportunity == null || !connectionOpportunity.IsAuthorized( Authorization.VIEW, currentPerson ) )
+            {
+                return null;
+            }
+
+            return connectionOpportunity;
         }
 
         /// <inheritdoc/>
