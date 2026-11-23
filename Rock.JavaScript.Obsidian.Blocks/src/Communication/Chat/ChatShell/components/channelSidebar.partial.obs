@@ -114,10 +114,10 @@
                     <!--
                         A room a message moves glides to its place by the list's one move, keeping
                         its element and its face; its bold, dot and badge say what is new. The move is
-                        the list's only motion: a row leaving its section, a favorite or hidden, goes in
-                        the same frame, so the rows under it glide into its place and no copy lingers.
-                        After every channel, a room only previewed included, comes the way to the ones
-                        not listed.
+                        the list's only motion: a row leaving its section, made a favorite or hidden,
+                        goes in the same frame, so the rows under it glide into its place and no copy
+                        lingers. After every channel, a room only previewed included, comes the way to
+                        the ones not listed, a row of the list's keys like the rooms.
                     -->
                     <TransitionGroup moveClass="chat-move" :css="false">
                         <button v-for="row in section.rows"
@@ -127,6 +127,8 @@
                                 :class="rowClasses(row)"
                                 data-testid="channel-row"
                                 data-focus-stop="row"
+                                v-bind="listKeys.itemAttrs(row.channel_id)"
+                                :ref="listKeys.itemRef(row.channel_id)"
                                 :data-channel-id="row.channel_id"
                                 :data-layout="lookOf(row)"
                                 :data-unread="isUnread(row) ? 'true' : 'false'"
@@ -188,6 +190,8 @@
                                 class="chat-row is-cs is-browse"
                                 data-testid="sidebar-browse"
                                 data-layout="community"
+                                v-bind="listKeys.itemAttrs(browseKey)"
+                                :ref="listKeys.itemRef(browseKey)"
                                 :aria-current="isBrowseOpen ? 'true' : undefined"
                                 @click="emit('browse')">
                             <span class="chat-row-face" aria-hidden="true">
@@ -660,6 +664,7 @@
     import IconButton from "../ui/iconButton.partial.obs";
     import Skeleton from "../ui/skeleton.partial.obs";
     import { dayLabel, FeedLayout, timeLabel } from "../feedLayout.partial";
+    import { useListKeys } from "../composables/useListKeys.partial";
     import { notifyIconFor, StatusChoice } from "../composables/usePrefs.partial";
     import { useFaceStatus } from "../composables/usePresenceStatus.partial";
     import { SidebarLoadState } from "../stores/channelStore.partial";
@@ -838,6 +843,9 @@
     /** A muted room's mark, the glyph Off is drawn with everywhere. */
     const mutedIcon = notifyIconFor("silent");
 
+    /** Browse channels' place in the list's keys, which no room's id can be. */
+    const browseKey = "browse";
+
     // Every two-person row's other person, after the open conversation and any card, and before a panel's or a search's people, since these stay on screen.
     const statusOf = useFaceStatus(() => props.rows.filter(row => row.room_kind === "person").map(otherAliasOf).filter(alias => alias !== ""), 2);
 
@@ -875,7 +883,17 @@
     /** A search that matches nothing, which says so rather than leaving bare headings. */
     const isNoResults = computed((): boolean => query.value.trim() !== "" && sections.value.every(section => section.rows.length === 0));
 
+    /** Every row in the order the list draws them, across the sections, Browse channels after the channels. */
+    const rowKeys = computed((): string[] => sections.value.flatMap(section => section.key === "channels"
+        ? [...section.rows.map(row => row.channel_id), browseKey]
+        : section.rows.map(row => row.channel_id)));
+
     // #endregion Computed Values
+
+    // The conversations are one list to the keyboard, as every list of rows in chat is: one Tab stop,
+    // so Tab from the search reaches the conversation in a press or two rather than one per room, and
+    // the arrows between the rows. A row opens on Enter or a click, as the buttons they are.
+    const listKeys = useListKeys(() => rowKeys.value);
 
     // #region Event Handlers
 
@@ -995,6 +1013,15 @@
     // #endregion Functions
 
     // #region Watchers
+
+    // The stop is where the person is: the open conversation's row, so Tab from the search lands on
+    // it, and a conversation opened any other way takes the stop there too. Between openings it
+    // stays on the row the keyboard last left.
+    watch(() => props.activeChannelId, channelId => {
+        if (channelId) {
+            listKeys.current.value = channelId;
+        }
+    }, { immediate: true });
 
     // #endregion Watchers
 
