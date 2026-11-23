@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
@@ -166,6 +167,10 @@ namespace Rock.Blocks.Core
         /// <returns>The populated item bag.</returns>
         private ExceptionLogItemBag BuildExceptionLogItemBag( ExceptionLog exception )
         {
+            // Only absolute http or https addresses are sent to the client as a link.
+            var isSafePageUrl = Uri.TryCreate( exception.PageUrl, UriKind.Absolute, out var pageUri )
+                && ( pageUri.Scheme == Uri.UriSchemeHttp || pageUri.Scheme == Uri.UriSchemeHttps );
+
             return new ExceptionLogItemBag
             {
                 Id = exception.Id,
@@ -180,7 +185,7 @@ namespace Rock.Blocks.Core
                 PageName = exception.Page != null
                     ? exception.Page.InternalName
                     : exception.PageUrl,
-                PageUrl = exception.PageUrl,
+                PageUrl = isSafePageUrl ? exception.PageUrl : null,
                 QueryStringItems = ParseQueryString( exception.QueryString ),
                 PersonFullName = exception.CreatedByPersonAlias?.Person?.FullName,
                 PersonIdKey = exception.CreatedByPersonAlias?.Person?.IdKey
