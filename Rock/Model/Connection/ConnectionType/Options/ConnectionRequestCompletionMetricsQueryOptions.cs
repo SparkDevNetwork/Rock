@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 
 namespace Rock.Model.Connection.ConnectionType.Options
 {
@@ -40,5 +41,12 @@ namespace Rock.Model.Connection.ConnectionType.Options
         /// If this is not set then the metrics will not be filtered by connector.
         /// </summary>
         public Guid? ConnectorPersonAliasGuid { get; set; }
+
+        /// <summary>
+        /// Gets or sets the identifiers of the connection opportunities to limit the metrics to.
+        /// If this is <c>null</c> then the metrics will not be filtered by these identifiers.
+        /// An empty list means no connection opportunities, so nothing is included.
+        /// </summary>
+        public List<int> ConnectionOpportunityIds { get; set; }
     }
 }
