@@ -250,11 +250,8 @@ export function notifyIconFor(mode: NotifyMode): string {
     return notifyWords[mode].icon;
 }
 
-/**
- * One notify mode as the header's menu draws it, by its title and description, and the details'
- * segmented control, by its short label and the one line said under it while it is chosen.
- */
-export type NotifyOption = { value: NotifyMode, title: string, description: string, label: string, caption: string, icon: string };
+/** One notify mode as the header's menu and the details' choice both draw it. */
+export type NotifyOption = { value: NotifyMode, title: string, description: string, icon: string };
 
 /**
  * The three notify modes in the one wording the details and the header's menu share, so the two
@@ -268,9 +265,9 @@ export type NotifyOption = { value: NotifyMode, title: string, description: stri
 export function notifyOptionsFor(kind: string | null): NotifyOption[] {
     const room = kind === "channel" ? "channel" : "conversation";
     return [
-        { value: "all", title: notifyWords.all.title, description: `Every new message in this ${room}.`, label: "All", caption: "Every new message.", icon: notifyWords.all.icon },
-        { value: "mentions", title: notifyWords.mentions.title, description: "When someone mentions you by name or uses @all.", label: "Mentions", caption: "Your name or @all.", icon: notifyWords.mentions.icon },
-        { value: "silent", title: notifyWords.silent.title, description: "Nothing, unless someone mentions you by name.", label: "Off", caption: "Only mentions of your name.", icon: notifyWords.silent.icon }
+        { value: "all", title: notifyWords.all.title, description: `Every new message in this ${room}.`, icon: notifyWords.all.icon },
+        { value: "mentions", title: notifyWords.mentions.title, description: "When someone mentions you by name or uses @all.", icon: notifyWords.mentions.icon },
+        { value: "silent", title: notifyWords.silent.title, description: "Nothing, unless someone mentions you by name.", icon: notifyWords.silent.icon }
     ];
 }
 
