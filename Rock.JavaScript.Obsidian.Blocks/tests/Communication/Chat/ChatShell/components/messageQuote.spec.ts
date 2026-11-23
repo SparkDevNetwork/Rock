@@ -273,3 +273,18 @@ describe("a quote of someone the reader blocked", () => {
         expect(wrapper.find("[data-testid='quote-name']").exists()).toBe(false);
     });
 });
+
+// A quote reads as the message it quotes reads: a glyph as the glyph, a link as its short address.
+describe("the quote's words", () => {
+    const pieces = [
+        { type: "emoji", text: ":tada:", code: "tada", emoji: "🎉", label: "party popper" },
+        { type: "text", text: " see " },
+        { type: "link", text: "https://cedarhill.church/hike", url: "https://cedarhill.church/hike" }
+    ];
+
+    test.each([["a direct message", false], ["a channel", true]])("in %s read a glyph and a link as the message draws them", (_where, isCommunity) => {
+        const w = draw(reply(ben, quoted({ body: ":tada: see https://cedarhill.church/hike", pieces })), { isCommunity });
+
+        expect(w.get("[data-testid='quote-body']").text()).toBe("🎉 see cedarhill.church/hike");
+    });
+});

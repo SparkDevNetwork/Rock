@@ -1101,7 +1101,8 @@ describe("the thread's entrance", () => {
     function entered(w: VueWrapper): { isEntering: boolean, order: string[] } {
         return {
             isEntering: w.get(".chat-panel-body").classes().includes("is-entering"),
-            order: w.findAll(".chat-enter").map(e => (e.element as HTMLElement).style.getPropertyValue("--chat-enter-i"))
+            // the place the panel's cascade gives each row, the one the sheet spaces them by
+            order: w.findAll(".chat-enter").map(e => (e.element as HTMLElement).style.getPropertyValue("--chat-enter-at"))
         };
     }
 
@@ -1116,6 +1117,13 @@ describe("the thread's entrance", () => {
         expect(drawn.isEntering).toBe(true);
         expect(drawn.order).toEqual(["0", "1", "2", "3", "4"]);
         expect(w.get("[data-testid='thread-divider']").classes()).toContain("chat-enter");
+    });
+
+    test("no row carries an entrance index of its own, which no rule reads; the panel gives each its place", async () => {
+        const w = draw({ root: rootWith(1), replies: replies(1) });
+        await nextTick();
+
+        expect(w.findAll(".chat-enter").map(e => (e.element as HTMLElement).style.getPropertyValue("--chat-enter-i")).filter(value => value !== "")).toEqual([]);
     });
 
     test("a reply that arrives after the thread opened does not rise in, and the rest go on rising", async () => {

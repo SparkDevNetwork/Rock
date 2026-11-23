@@ -21,7 +21,7 @@
                 @click="on.openThread">
             <Icon name="thread" size="xs" class="chat-thread-label-ic" />Replied to a thread
         </button>
-        <MessageQuote v-if="view.isQuoteShown && view.message" :message="view.message" :isOwn="view.isOwn" @jump="on.jump" />
+        <MessageQuote v-if="view.isQuoteShown && view.quoting" :message="view.quoting" :isOwn="view.isOwn" @jump="on.jump" />
         <div class="chat-msg-line">
             <!-- The face a group draws is marked by the group, so the tail moves it only while her run continues. It hangs straight in its line, which carries it when its row steps: a wrapper here would change what carries it. -->
             <span v-if="!view.isOwn" class="chat-msg-face" :data-tail="isLastOfGroup && groupKey ? `face:${groupKey}` : undefined">
@@ -113,20 +113,23 @@
 /*
     A message jumped to flashes the row's highlight behind its bubble and files, 4px clear of them,
     held for most of its length and then let go; the box holds its own layers only while it
-    flashes. Reduced motion keeps it, being a fade only.
+    flashes. Reduced motion keeps it, being a fade only. Its corners are the bubble's grown by the
+    gap, so the two stay concentric; the run's corners below grow by the same gap on the flash.
 */
 .chat-msg.is-flashing .chat-bub-anchor {
     isolation: isolate;
 }
 
 .chat-msg.is-flashing .chat-bub-anchor::before {
+    /* the inset's gap, which its corners grow by */
+    --chat-flash-gap: 4px;
     position: absolute;
     inset: -4px;
     z-index: -1;
     pointer-events: none;
     content: "";
     background: var(--chat-flash);
-    border-radius: var(--chat-r-bubble);
+    border-radius: calc(var(--chat-r-bubble) + var(--chat-flash-gap));
     animation: chat-flash var(--chat-d-flash) var(--chat-ease-state) forwards;
 }
 
@@ -262,35 +265,46 @@
     background-image: linear-gradient(var(--chat-bubble-hover), var(--chat-bubble-hover));
 }
 
-/* Within a group the corners toward the sender's side tighten, so the bubbles read as one run. */
-.is-conversational[data-position="first"] .chat-bubble {
-    border-bottom-left-radius: var(--chat-r-tail);
+/*
+    Within a group the corners toward the sender's side tighten, so the bubbles read as one run.
+    The flash behind a jumped-to bubble takes the same corners grown by its gap; the bubble has no
+    gap, so its corners are the plain radii.
+*/
+.is-conversational[data-position="first"] .chat-bubble,
+.is-conversational[data-position="first"] .chat-bub-anchor::before {
+    border-bottom-left-radius: calc(var(--chat-r-tail) + var(--chat-flash-gap, 0px));
 }
 
-.is-conversational[data-position="middle"] .chat-bubble {
-    border-top-left-radius: var(--chat-r-tail);
-    border-bottom-left-radius: var(--chat-r-tail);
+.is-conversational[data-position="middle"] .chat-bubble,
+.is-conversational[data-position="middle"] .chat-bub-anchor::before {
+    border-top-left-radius: calc(var(--chat-r-tail) + var(--chat-flash-gap, 0px));
+    border-bottom-left-radius: calc(var(--chat-r-tail) + var(--chat-flash-gap, 0px));
 }
 
-.is-conversational[data-position="last"] .chat-bubble {
-    border-top-left-radius: var(--chat-r-tail);
+.is-conversational[data-position="last"] .chat-bubble,
+.is-conversational[data-position="last"] .chat-bub-anchor::before {
+    border-top-left-radius: calc(var(--chat-r-tail) + var(--chat-flash-gap, 0px));
 }
 
-.is-conversational.is-own[data-position] .chat-bubble {
-    border-radius: var(--chat-r-bubble);
+.is-conversational.is-own[data-position] .chat-bubble,
+.is-conversational.is-own[data-position] .chat-bub-anchor::before {
+    border-radius: calc(var(--chat-r-bubble) + var(--chat-flash-gap, 0px));
 }
 
-.is-conversational.is-own[data-position="first"] .chat-bubble {
-    border-bottom-right-radius: var(--chat-r-tail);
+.is-conversational.is-own[data-position="first"] .chat-bubble,
+.is-conversational.is-own[data-position="first"] .chat-bub-anchor::before {
+    border-bottom-right-radius: calc(var(--chat-r-tail) + var(--chat-flash-gap, 0px));
 }
 
-.is-conversational.is-own[data-position="middle"] .chat-bubble {
-    border-top-right-radius: var(--chat-r-tail);
-    border-bottom-right-radius: var(--chat-r-tail);
+.is-conversational.is-own[data-position="middle"] .chat-bubble,
+.is-conversational.is-own[data-position="middle"] .chat-bub-anchor::before {
+    border-top-right-radius: calc(var(--chat-r-tail) + var(--chat-flash-gap, 0px));
+    border-bottom-right-radius: calc(var(--chat-r-tail) + var(--chat-flash-gap, 0px));
 }
 
-.is-conversational.is-own[data-position="last"] .chat-bubble {
-    border-top-right-radius: var(--chat-r-tail);
+.is-conversational.is-own[data-position="last"] .chat-bubble,
+.is-conversational.is-own[data-position="last"] .chat-bub-anchor::before {
+    border-top-right-radius: calc(var(--chat-r-tail) + var(--chat-flash-gap, 0px));
 }
 
 /* The person's own: a soft tint of the church color, never solid, and chips one step deeper. */

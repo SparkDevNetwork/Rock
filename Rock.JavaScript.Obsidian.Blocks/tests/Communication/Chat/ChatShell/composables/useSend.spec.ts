@@ -18,7 +18,7 @@
 // keeps its text so it can be sent again.
 import { createSender, isComposerOpen, mediaArgs, useSlowSend, isInConversation, isOwnedByConversation, JoinResult, lockedReason, newLocalId, sendFailure, SendResult, SenderDependencies, textAfterSend } from "../../../../../src/Communication/Chat/ChatShell/composables/useSend.partial";
 import { mount } from "@vue/test-utils";
-import { defineComponent, reactive } from "vue";
+import { computed, defineComponent, reactive, ref } from "vue";
 import { sendingQuietMs } from "../../../../../src/Communication/Chat/ChatShell/feedLayout.partial";
 import { createTimelines } from "../../../../../src/Communication/Chat/ChatShell/composables/useHistory.partial";
 import { platformMask } from "../../../../../src/Communication/Chat/ChatShell/heldMessage.partial";
@@ -1208,6 +1208,29 @@ describe("a failed send's reason", () => {
         expect(sender.pending(channel)[0].reason).toEqual({ alone: "You're offline. Try again when you're back.", besideRetry: "You're offline.", canRetry: true });
     });
 
+    // The words follow the connection now, not as it was at the failure: offline words only
+    // while offline, and once back the plain failure, which offers Try again. Nothing resends
+    // by itself, since a send the person did not ask for again could surprise them.
+    test("nothing reached while offline says offline only while the connection stays lost", async () => {
+        const connection = ref<"lost" | "healthy">("lost");
+        const { sender, sent } = await setup([{ ok: false, error: { code: "rpc.transport", severity: "failed" } }], () => connection.value === "lost");
+        await sender.send(channel, "hello");
+        const strip = computed(() => sendFailure(sender.pending(channel)));
+        const marker = computed(() => sender.pending(channel)[0].reason?.alone ?? null);
+        expect(strip.value?.reason?.besideRetry).toBe("You're offline.");
+        expect(marker.value).toBe("You're offline. Try again when you're back.");
+
+        connection.value = "healthy";
+
+        expect(strip.value).toEqual({ count: 1, reason: null, canRetry: true, localIds: [sender.pending(channel)[0].localId] });
+        expect(marker.value).toBeNull();
+        expect(sent).toHaveLength(1);
+
+        connection.value = "lost";
+
+        expect(strip.value?.reason?.besideRetry).toBe("You're offline.");
+    });
+
     test("nothing reached while the connection holds is not called offline", async () => {
         const { sender } = await setup([{ ok: false, error: { code: "rpc.transport", severity: "failed" } }], () => false);
 
@@ -1968,5 +1991,70 @@ describe("a send refused in a room of a kind", () => {
         }
 
         expect(told).toEqual([]);
+    });
+});
+
+// What the person's send already knows when its row goes up: the message it quotes and the chips
+// picked into it. The row draws both at once, and the confirmed copy keeps the quote, so nothing
+// changes when the platform answers.
+describe("a send's row carries what it was sent with", () => {
+    const anna = "a0000002-0000-4000-8000-000000000000";
+    const original: TimelineMessage = {
+        id: 40,
+        person_alias_guid: anna,
+        sender_nick_name: "Anna",
+        sender_last_name: "Avery",
+        sender_avatar_url: null,
+        message_type: "text",
+        body: "Who is coming?",
+        pieces: null,
+        attachments: null,
+        created_at: "2026-10-15T09:00:00Z",
+        reactions: [{ code: "tada", count: 1, reacted: false }] as unknown as TimelineMessage["reactions"]
+    };
+
+    function sendQuoting(sender: ReturnType<typeof createSender>, body: string, quotedMessageId: number): Promise<boolean> {
+        return sender.send(channel, body, undefined, undefined, quotedMessageId);
+    }
+
+    test("a quoted send's row carries the quote at once, and its confirmed copy keeps it", async () => {
+        const answer = deferred<SendResult>();
+        const { sender, timelines } = await setup([answer], undefined, { quoteTaken: () => original });
+
+        const sending = sendQuoting(sender, "count me in", 40);
+
+        expect(sender.pending(channel)[0].quoted).toEqual({
+            id: 40,
+            person_alias_guid: anna,
+            sender_nick_name: "Anna",
+            sender_last_name: "Avery",
+            sender_avatar_url: null,
+            body: "Who is coming?",
+            pieces: null,
+            attachments: null,
+            created_at: "2026-10-15T09:00:00Z"
+        });
+
+        answer.resolve({ ok: true, id: 72, createdAt: "2026-10-15T10:02:00Z" });
+        await sending;
+
+        expect(timelines.state(channel).messages[0].quoted?.body).toBe("Who is coming?");
+    });
+
+    test("a quote taken for another message is not carried", async () => {
+        const { sender } = await setup([deferred<SendResult>()], undefined, { quoteTaken: () => original });
+
+        void sendQuoting(sender, "count me in", 41);
+
+        expect(sender.pending(channel)[0].quoted).toBeUndefined();
+    });
+
+    test("a send's row carries the chips picked into it", async () => {
+        const chip = { type: "mention", text: "@Anna Avery", person_alias_guid: anna };
+        const { sender } = await setup([deferred<SendResult>()], undefined, { mentionsTyped: () => [chip] });
+
+        void sender.send(channel, `hi <@${anna}>`);
+
+        expect(sender.pending(channel)[0].mentions).toEqual([chip]);
     });
 });

@@ -920,18 +920,19 @@ describe("the components' own styles", () => {
         expect(fade - (pillBottom + pillHeight)).toBe(16);
     });
 
-    // In a two-person conversation the composer's Busy note stands 16px over the feed's bottom
-    // edge, so there the pill stands 22px over it, clear of the note whether or not it shows, and
-    // the fade still starts 16px above the pill's top.
-    test("in a two-person conversation Jump to latest stands 22px over the feed's bottom, clear of the composer's Busy note", () => {
-        const note = parseFloat(declarationOf(resolve(components, "composer.partial.obs"), ".chat-composer-note", "height"));
+    // In a two-person conversation the pill stands 22px over the feed's bottom and the fade still
+    // starts 16px above the pill's top. The composer's Busy note is in the composer's own flow, so
+    // it never stands over the feed and the pill is clear of it wherever the pill stands.
+    test("in a two-person conversation Jump to latest stands 22px over the feed's bottom, and the composer's Busy note never stands over the feed", () => {
+        const composer = readFileSync(resolve(components, "composer.partial.obs"), "utf8").replace(/\r\n/g, "\n");
+        const note = /\n\.chat-composer \.chat-composer-note\s*\{([^}]*)\}/.exec(composer)?.[1] ?? "";
         const pillBottom = parseFloat(declarationOf(feedPath, ".chat-feed-frame.is-pair .chat-jump", "bottom"));
         const pillHeight = parseFloat(declarationOf(feedPath, ".chat-jump", "height"));
         const fade = parseFloat(declarationOf(feedPath, ".chat-feed-frame.is-pair.has-jump", "--chat-feed-bottom-mask"));
 
-        expect(note).toBe(16);
+        expect(note).not.toBe("");
+        expect(note).not.toMatch(/position|bottom:|height:/);
         expect(pillBottom).toBe(22);
-        expect(pillBottom).toBeGreaterThan(note);
         expect(fade - (pillBottom + pillHeight)).toBe(16);
     });
 

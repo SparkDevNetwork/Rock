@@ -1082,6 +1082,9 @@ export function createChatShell(options: ShellOptions): ChatShell {
         join: options.joinChannel,
         waitBeforeResend: attempt => new Promise(resolve => setTimeout(resolve,
             computeBackoff(attempt, session.settings().limits.reconnect_base_ms, session.settings().limits.reconnect_cap_ms, Math.random))),
+        // the quote and the chips of the place's box, read as the send's row goes up
+        quoteTaken: (channelId, parentId) => takenQuotes.get(quoteKey(channelId, parentId)),
+        mentionsTyped: (channelId, parentId) => drafts.of(quoteKey(channelId, parentId)).mentions,
         personAliasGuid,
         statusSaving: prefs.statusSaving,
         newLocalId,

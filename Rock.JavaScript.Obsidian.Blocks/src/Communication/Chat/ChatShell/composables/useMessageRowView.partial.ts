@@ -249,11 +249,12 @@ export function useMessageRowView(props: Readonly<MessageRowViewSource>) {
     });
 
     /**
-     * What the body draws. A send not stored yet has no pieces from the server, so its mention
-     * tokens are drawn as the names this client holds, never as chips and never raw.
+     * What the body draws. A send not stored yet draws the pieces the platform will store where the
+     * client can know them: its links, the catalog's glyphs and the chips picked into it, the chips
+     * drawn pending, never as admitted mentions and never raw.
      */
     const pieces = computed((): DisplayPiece[] | null => props.pending
-        ? pendingPieces(props.pending.body, props.senderNames)
+        ? pendingPieces(props.pending.body, props.senderNames, { mentions: props.pending.mentions, emoji: session.emojiSource?.value.catalog })
         : serverPieces.value);
 
     /** The sender's name from the message, else the reader's own name for their own message. */
@@ -372,10 +373,27 @@ export function useMessageRowView(props: Readonly<MessageRowViewSource>) {
     const isReactable = computed((): boolean => !!props.message && !isTomb.value && state.value !== "system" && state.value !== "card" && state.value !== "blocked");
 
     /** A reply also sent to the conversation, which says so above it and opens its thread. */
-    const isThreadReply = computed((): boolean => !props.isInThread && !!props.message?.parent_id && !!props.message.shown_in_channel);
+    const isThreadReply = computed((): boolean => !props.isInThread && (props.pending
+        ? typeof props.pending.parentId === "number" && props.pending.isShownInChannel === true
+        : !!props.message?.parent_id && !!props.message.shown_in_channel));
+
+    /**
+     * The message a quote is drawn for: the stored one, or a send not stored yet carrying the
+     * preview taken with its quote, so the quote is there from the first frame.
+     */
+    const quoting = computed((): TimelineMessage | null => {
+        if (props.message) {
+            return props.message;
+        }
+
+        const pending = props.pending;
+        return pending && typeof pending.quotedMessageId === "number"
+            ? { id: 0, quoted_message_id: pending.quotedMessageId, quoted: pending.quoted ?? null, person_alias_guid: personAliasGuid.value, message_type: "text", body: pending.body, created_at: at.value.toISOString() }
+            : null;
+    });
 
     /** A message that quotes another draws the quote above it, unless it is a tombstone itself. */
-    const isQuoteShown = computed((): boolean => !!props.message?.quoted_message_id && !isTomb.value
+    const isQuoteShown = computed((): boolean => !!quoting.value?.quoted_message_id && !isTomb.value
         && state.value !== "system" && state.value !== "card" && state.value !== "blocked");
 
     const tombIcon = computed((): string => state.value === "deleted" ? "trash" : "eye-off");
@@ -414,6 +432,7 @@ export function useMessageRowView(props: Readonly<MessageRowViewSource>) {
         isReactable,
         isThreadReply,
         isQuoteShown,
+        quoting,
         isSendingShown,
         failedReason,
         canRetryFailed
