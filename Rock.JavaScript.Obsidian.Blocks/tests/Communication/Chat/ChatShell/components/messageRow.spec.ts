@@ -1482,6 +1482,13 @@ describe("the phone's action sheet", () => {
         expect(tinted).not.toMatch(/is-community:focus-within/);
     });
 
+    test("a focus inside a touch row shows no channel gutter time", () => {
+        const style = rowStyles().replace(/\/\*[\s\S]*?\*\//g, "");
+        const shown = [...style.matchAll(/([^{}]+)\{[^}]*opacity:\s*1/g)].map(m => m[1]).filter(selectors => selectors.includes(".chat-cm-gutter-time")).join(",");
+        expect(shown).toContain(".chat-msg:not(.is-touch):focus-within .chat-cm-gutter-time");
+        expect(shown).not.toMatch(/\.chat-msg:focus-within/);
+    });
+
     test("shows the press fill while held, over a flash", async () => {
         const w = onPhone({ message: message(), isChannel: true, isFlashing: true } as RowProps);
         await nextTick();

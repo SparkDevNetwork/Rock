@@ -418,6 +418,23 @@ describe("the body", () => {
 
         expect(w.findAllComponents(MessageRow).every(r => r.props("isChannel") === false)).toBe(true);
     });
+
+    // The thread's messages are one Tab stop, as the conversation's are: the newest reply holds it
+    // until another is focused, and Up and Down move along the root and every reply, the person's own too.
+    test("its messages are one Tab stop, on the newest reply, and Up and Down move along them", async () => {
+        draw({ replies: [...replies(2), message(43, { parent_id: 40, person_alias_guid: me, sender_nick_name: "Jordan", sender_last_name: "Lee" })] });
+        await nextTick();
+        const rowOf = (id: number): HTMLElement => document.querySelector<HTMLElement>(`[data-message-id='${id}']`) as HTMLElement;
+
+        expect(document.querySelectorAll("[data-testid='message-row'][tabindex='0']").length).toBe(1);
+        expect(rowOf(43).tabIndex).toBe(0);
+
+        rowOf(40).focus();
+        const down = new KeyboardEvent("keydown", { key: "ArrowDown", bubbles: true, cancelable: true });
+        rowOf(40).dispatchEvent(down);
+        expect(down.defaultPrevented).toBe(true);
+        expect(document.activeElement).toBe(rowOf(41));
+    });
 });
 
 // A reply the person sends is one row from the moment it is sent, as in the conversation: the row
