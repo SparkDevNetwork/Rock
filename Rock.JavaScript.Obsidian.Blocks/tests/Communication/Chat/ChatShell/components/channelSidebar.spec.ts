@@ -32,7 +32,7 @@ import { avatarHue } from "../../../../../src/Communication/Chat/ChatShell/ui/br
 import { unveiledAttribute } from "../../../../../src/Communication/Chat/ChatShell/ui/imageReveal.partial";
 import { FaceStatus, SidebarRow } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 import { presenceStatusKey } from "../../../../../src/Communication/Chat/ChatShell/composables/usePresenceStatus.partial";
-import { anna, badgesIn, ben, createStatusStore, provideStatus, setsBothRings, shellFolder, StatusStore, viewer } from "../statusStore";
+import { anna, badgesIn, ben, createStatusStore, provideStatus, setsBothRings, shellFolder, StatusStore, styleRules, viewer } from "../statusStore";
 import { providedSession } from "../sessionShapes";
 
 // #region Fixtures
@@ -418,6 +418,21 @@ describe("the sections", () => {
 
         await w.setProps({ isNewMessageShown: false });
         expect(w.find("[data-testid='section-new-message']").exists()).toBe(false);
+    });
+
+    // A heading's plus is drawn 26px. Under a finger the icon button reaches 44px around its
+    // middle, and that reach runs a few pixels into the first row under the heading, which comes
+    // later and would take them; so on a phone the plus lies over the row, its reach whole and its
+    // look and the rows' heights unchanged.
+    test("are an icon button's 26px plus whose reach on a phone lies over the row under it", () => {
+        const w = mountSidebar({ isPhone: true });
+
+        for (const plus of w.findAll(".chat-sec-btn")) {
+            expect(plus.classes()).toContain("chat-icon-btn");
+        }
+        const sidebar = join(shellFolder, "components/channelSidebar.partial.obs");
+        expect(styleRules(sidebar, /^\.chat-sec$/).join(";")).toMatch(/--chat-icon-btn-s:\s*26px/);
+        expect(styleRules(sidebar, /^\.is-phone \.chat-sec-btn$/).join(";")).toMatch(/z-index:\s*1/);
     });
 });
 
