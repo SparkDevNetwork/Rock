@@ -607,6 +607,8 @@ namespace RockWeb.Blocks.Crm
 
                         personQry = personQry.Where( p =>
                             !optOutPersonIdQry.Contains( p.Id ) );
+
+                        dvPersonIdQry = dvPersonIdQry.Where( id => !optOutPersonIdQry.Contains( id ) );
                     }
 
                     if ( _showFamily )
