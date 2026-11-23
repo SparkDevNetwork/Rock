@@ -108,8 +108,18 @@ namespace Rock.Blocks.Engagement
         {
             var currentConnectionTypeId = GetInitialEntity()?.Id ?? 0;
 
+            /*
+                11/23/2026 - MSE
+
+                These options fill the "Show Additional Requests From" picker, which
+                sends each connection type's name to the browser. Only list the
+                types the current person can view.
+
+                Reason: Do not show the names of connection types the person is denied.
+            */
             var connectionTypes = ConnectionTypeCache.All()
                 .Where( ct => ct.Id != currentConnectionTypeId )
+                .Where( ct => ct.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
                 .OrderBy( ct => ct.Order )
                 .ThenBy( ct => ct.Name )
                 .ToListItemBagList();
@@ -549,7 +559,17 @@ namespace Rock.Blocks.Engagement
                 return;
             }
 
-            var isViewable = BlockCache.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson );
+            /*
+                11/23/2026 - MSE
+
+                Block VIEW only lets the person open the page. The connection type
+                comes from the page parameter, so an existing type also needs VIEW
+                on the type itself before its details are shown.
+
+                Reason: Do not show a connection type the person is denied.
+            */
+            var isViewable = BlockCache.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson )
+                && ( entity.Id == 0 || entity.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) );
 
             // Match the WebForms behavior: editing is allowed by block-level Administrate rights or
             // Administrate rights on the connection type itself.
@@ -810,11 +830,21 @@ namespace Rock.Blocks.Engagement
             var key = pageReference.GetPageParameter( PageParameterKey.ConnectionTypeId );
             var pageParameters = new Dictionary<string, string>();
 
-            var name = new ConnectionTypeService( RockContext )
-               .GetSelect( key, ct => ct.Name );
+            var connectionType = key.IsNotNullOrWhiteSpace()
+                ? new ConnectionTypeService( RockContext ).Get( key, !PageCache.Layout.Site.DisablePredictableIds )
+                : null;
+            string name = null;
 
-            if ( name != null )
+            if ( connectionType != null )
             {
+                // Only show the name of a connection type the person can view.
+                // RequestContext is not set when breadcrumbs are built, so fall
+                // back to the current request.
+                var currentPerson = RequestContext?.CurrentPerson ?? Rock.Net.RockRequestContextAccessor.Current?.CurrentPerson;
+                name = connectionType.IsAuthorized( Authorization.VIEW, currentPerson )
+                    ? connectionType.Name
+                    : ConnectionType.FriendlyTypeName;
+
                 pageParameters.Add( PageParameterKey.ConnectionTypeId, key );
             }
 
@@ -852,6 +882,22 @@ namespace Rock.Blocks.Engagement
             if ( entity == null )
             {
                 error = ActionBadRequest( $"{ConnectionType.FriendlyTypeName} not found." );
+                return false;
+            }
+
+            /*
+                11/23/2026 - MSE
+
+                Every action loads the type from the posted key, not the page
+                parameter, so an existing type must also be viewable here. Otherwise
+                a block administrator denied VIEW on a type could still get its full
+                details from Edit, or copy, save or delete it.
+
+                Reason: Same type VIEW rule as the initial load, for every action.
+            */
+            if ( entity.Id != 0 && !entity.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+            {
+                error = ActionBadRequest( EditModeMessage.NotAuthorizedToView( ConnectionType.FriendlyTypeName ) );
                 return false;
             }
 

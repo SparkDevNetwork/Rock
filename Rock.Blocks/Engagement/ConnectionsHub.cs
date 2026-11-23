@@ -6234,9 +6234,17 @@ WHERE 1 = 1" );
                 return ActionBadRequest( $"{Rock.Model.ConnectionType.FriendlyTypeName} not found." );
             }
 
-            var hasActiveRequests = new ConnectionRequestService( RockContext ).Queryable().Any( cr => cr.ConnectionState == ConnectionState.Active
-                && cr.ConnectionTypeId == connectionType.Id
-                && cr.PersonAlias.Guid == requesterPersonAliasGuid );
+            var activeRequestIds = new ConnectionRequestService( RockContext ).Queryable()
+                .AsNoTracking()
+                .Where( cr => cr.ConnectionState == ConnectionState.Active
+                    && cr.ConnectionTypeId == connectionType.Id
+                    && cr.PersonAlias.Guid == requesterPersonAliasGuid )
+                .Select( cr => cr.Id )
+                .ToList();
+
+            // Only answer for requests the person can view. Request VIEW inherits
+            // from the opportunity and type and honors request security.
+            var hasActiveRequests = GetViewAuthorizedConnectionRequestIds( activeRequestIds ).Any();
 
             return ActionOk( hasActiveRequests );
         }
