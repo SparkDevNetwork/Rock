@@ -1010,6 +1010,22 @@ describe("the one focus helper", () => {
         expect(focusedStop()).toBe("header");
     });
 
+    // A place that cannot hold focus, as a plain box with no tabindex, is not where focus went: the
+    // helper says so and goes on down the order, so a caller never reads a focus that did not take.
+    test("returns an element only when focus took there, else goes on down the order", async () => {
+        const { frame, wrapper } = mountMarked();
+        await nextTick();
+        const plain = document.createElement("div");
+        wrapper.element.appendChild(plain);
+
+        expect(frame.focusStop([plain])).toBeNull();
+
+        const focused = frame.focusStop([plain, "header"]);
+        expect(focused).toBe(document.activeElement);
+        expect(focusedStop()).toBe("header");
+        plain.remove();
+    });
+
     test("a room opened from a full view lands on Join, else the composer on desktop, else the title", async () => {
         const { frame, state, drawn } = mountMarked();
         state.activeChannelId = team;

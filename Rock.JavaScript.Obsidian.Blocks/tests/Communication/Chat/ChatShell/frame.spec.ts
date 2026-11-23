@@ -2628,6 +2628,24 @@ describe("the thread drawer", () => {
         expect(calls.filter(call => call.options?.preventScroll !== true)).toEqual([]);
     });
 
+    // The reader may scroll away from what opened the thread while it was open. The close never
+    // scrolls, so an opener now out of the feed's view would take focus out of sight; focus goes
+    // on down the order to the conversation's title.
+    test("closes a thread to the title when its opener has been scrolled out of the feed's view", async () => {
+        mockThreadPages = { newest: [41, 42], older: [] };
+        const w = await mountBlock(1200);
+        await openFromLabel(w, true);
+        placeAt(w.get("[data-testid='frame-main'] [data-chat-scroller]").element, 100, 700);
+        placeAt(w.get("[data-testid='frame-main'] [data-testid='thread-reply-label']").element, -2000, -1980);
+        const root = w.get("[data-testid='frame-main'] [data-message-id='40']").element;
+        placeAt(root, -3000, -2900);
+        placeAt(root.querySelector("[data-testid='thread-summary']")!, -2930, -2905);
+
+        await closeWatched(w, "x");
+
+        expect(document.activeElement).toBe(w.get("[data-testid='frame-main'] [data-focus-stop='header']").element);
+    });
+
     // The hover bar floats over the conversation from outside its column. Its Reply in thread on a
     // reply also sent to the conversation names that reply's row as the opener, which the close
     // gives focus back to, rather than the root's pill far above it.
