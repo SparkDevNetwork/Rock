@@ -1448,6 +1448,23 @@ describe("the section label", () => {
 
 // #endregion
 
+// #region Rock's admin footer
+
+// Rock draws its admin footer for a person who can edit the page: fixed to the window's foot, 36px
+// tall, and see-through until hovered on a wide screen, so it took the presses meant for the
+// sidebar's foot and the drawer's "Also send to". The chat makes room for it, never restyles it.
+describe("Rock's admin footer", () => {
+    test("the sheet gives the chat's foot room for the footer only where Rock draws it", () => {
+        const sheet = readSheet();
+
+        expect(valuesOf(sheet, "--chat-page-foot", rule => rule.media === "" && rule.selector === ".chat-shell")).toEqual(["0px"]);
+        expect(valuesOf(sheet, "--chat-page-foot", rule => rule.selector === "body:has(#cms-admin-footer) .chat-shell")).toEqual(["36px"]);
+        expect(sheet.rules.filter(r => r.selector.includes("#cms-admin-footer") && !r.selector.endsWith(".chat-shell"))).toEqual([]);
+    });
+});
+
+// #endregion
+
 // #region One tip, one focus ring
 
 describe("the tip and the focus ring", () => {
