@@ -239,6 +239,69 @@ describe("createRealtimeHub", () => {
         expect(f.removed.sort()).toEqual([channelTopic(tenant, channelOne), personalTopic(tenant, alias)].sort());
     });
 
+    // The rejoin's catch-up reads what was missed, and only a rejoin after a drop has missed any.
+    test("the open channel's join after a drop is told as a rejoin; its first join and a second confirmation are not", async () => {
+        const f = fakeClient();
+        const joins: string[] = [];
+        const hub = createRealtimeHub({
+            client: f.client,
+            tenantId: tenant,
+            personAliasGuid: alias,
+            onChannelEvent: () => undefined,
+            onPersonalEvent: () => undefined,
+            onJoined: (channelId, isRejoin) => joins.push(`${channelId} ${isRejoin ? "rejoined" : "joined"}`),
+            onStatus: () => undefined
+        });
+        await hub.start();
+        hub.openChannel(channelOne);
+        const topic = f.channels[1];
+
+        topic.status?.("SUBSCRIBED");
+        topic.status?.("SUBSCRIBED");
+        topic.status?.("CHANNEL_ERROR");
+        topic.status?.("SUBSCRIBED");
+        hub.openChannel(channelTwo);
+        f.channels[2].status?.("SUBSCRIBED");
+
+        expect(joins).toEqual([`${channelOne} joined`, `${channelOne} joined`, `${channelOne} rejoined`, `${channelTwo} joined`]);
+    });
+
+    // A socket that drops drops both topics, which come back in either order; until the last is
+    // joined again something is still missed, so the connection is not yet well.
+    test("the connection is well again only once every topic that dropped is joined again", async () => {
+        const f = fakeClient();
+        const { hub, seen } = hubWith(f.client);
+        await hub.start();
+        hub.openChannel(channelOne);
+        const [personal, open] = f.channels;
+        personal.status?.("SUBSCRIBED");
+        open.status?.("SUBSCRIBED");
+        seen.length = 0;
+
+        personal.status?.("CHANNEL_ERROR");
+        open.status?.("CHANNEL_ERROR");
+        open.status?.("SUBSCRIBED");
+
+        expect(seen).toEqual(["status rt.channel_error", "status rt.channel_error", `joined ${channelOne}`]);
+
+        personal.status?.("SUBSCRIBED");
+
+        expect(seen.slice(3)).toEqual(["status healthy"]);
+    });
+
+    test("a topic that failed and was then left for another holds nothing back", async () => {
+        const f = fakeClient();
+        const { hub, seen } = hubWith(f.client);
+        await hub.start();
+        hub.openChannel(channelOne);
+        f.channels[1].status?.("CHANNEL_ERROR");
+
+        hub.openChannel(channelTwo);
+        f.channels[2].status?.("SUBSCRIBED");
+
+        expect(seen).toEqual(["status rt.channel_error", "status healthy", `joined ${channelTwo}`]);
+    });
+
     test("an error Realtime sends about the open channel is reported by its code", async () => {
         const f = fakeClient();
         const { hub, seen } = hubWith(f.client);
@@ -471,5 +534,110 @@ describe("the personal topic joined again", () => {
         personalChannel.status?.("SUBSCRIBED");
 
         expect(rejoins()).toBe(0);
+    });
+});
+
+// A browser that loses its network says so at once, while the socket can stay open on a dead
+// connection until a heartbeat goes unanswered, half a minute or more: Chrome keeps the socket,
+// so only the offline event tells the person they are offline before they try to send.
+describe("the browser's own word on the network", () => {
+    type Listener = (event: unknown) => void;
+
+    function page(): { window: { addEventListener: (type: string, listener: Listener) => void, removeEventListener: (type: string, listener: Listener) => void }, fire: (type: string) => void, count: () => number } {
+        const listeners: Record<string, Listener[]> = {};
+        return {
+            window: {
+                addEventListener: (type, listener) => {
+                    (listeners[type] ??= []).push(listener);
+                },
+                removeEventListener: (type, listener) => {
+                    listeners[type] = (listeners[type] ?? []).filter(l => l !== listener);
+                }
+            },
+            fire: type => (listeners[type] ?? []).forEach(l => l({ type })),
+            count: () => Object.values(listeners).reduce((n, l) => n + l.length, 0)
+        };
+    }
+
+    function hubOnPage(client: RealtimeClientLike, window: ReturnType<typeof page>["window"]): { hub: ReturnType<typeof createRealtimeHub>, seen: string[] } {
+        const seen: string[] = [];
+        const hub = createRealtimeHub({
+            client,
+            tenantId: tenant,
+            personAliasGuid: alias,
+            page: { window },
+            onChannelEvent: () => undefined,
+            onPersonalEvent: () => undefined,
+            onJoined: channelId => seen.push(`joined ${channelId}`),
+            onStatus: error => seen.push(`status ${error ? error.code : "healthy"}`)
+        });
+        return { hub, seen };
+    }
+
+    test("going offline is told at once, though every topic is still joined, and coming back is told once the network is back", async () => {
+        const f = fakeClient();
+        const p = page();
+        const { hub, seen } = hubOnPage(f.client, p.window);
+        await hub.start();
+        hub.openChannel(channelOne);
+        f.channels[0].status?.("SUBSCRIBED");
+        f.channels[1].status?.("SUBSCRIBED");
+        seen.length = 0;
+
+        p.fire("offline");
+        expect(seen).toEqual(["status rt.closed"]);
+
+        p.fire("online");
+        expect(seen).toEqual(["status rt.closed", "status healthy"]);
+    });
+
+    test("a socket that dropped while offline keeps the connection lost after the network is back, until its topics are joined again", async () => {
+        const f = fakeClient();
+        const p = page();
+        const { hub, seen } = hubOnPage(f.client, p.window);
+        await hub.start();
+        hub.openChannel(channelOne);
+        f.channels[0].status?.("SUBSCRIBED");
+        f.channels[1].status?.("SUBSCRIBED");
+        seen.length = 0;
+
+        p.fire("offline");
+        f.channels[0].status?.("CLOSED");
+        f.channels[1].status?.("CLOSED");
+        p.fire("online");
+
+        expect(seen).not.toContain("status healthy");
+
+        f.channels[0].status?.("SUBSCRIBED");
+        f.channels[1].status?.("SUBSCRIBED");
+
+        expect(seen.filter(s => s === "status healthy")).toHaveLength(1);
+    });
+
+    test("an online event with nothing lost tells nothing", async () => {
+        const f = fakeClient();
+        const p = page();
+        const { hub, seen } = hubOnPage(f.client, p.window);
+        await hub.start();
+        f.channels[0].status?.("SUBSCRIBED");
+        seen.length = 0;
+
+        p.fire("online");
+
+        expect(seen).toEqual([]);
+    });
+
+    test("stop takes the listeners off", async () => {
+        const f = fakeClient();
+        const p = page();
+        const { hub, seen } = hubOnPage(f.client, p.window);
+        await hub.start();
+        expect(p.count()).toBe(2);
+
+        await hub.stop();
+        p.fire("offline");
+
+        expect(p.count()).toBe(0);
+        expect(seen).toEqual([]);
     });
 });

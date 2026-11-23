@@ -20,6 +20,7 @@
 import { classifyRealtimeMessage, classifyRealtimeStatus } from "../errors.partial";
 import { computeBackoff } from "../platformCall.partial";
 import { ChatError } from "../types.partial";
+import { PageEventTargets } from "./useMarkRead.partial";
 import { ChatSettings } from "./useSession.partial";
 
 /** The Realtime protocol this client speaks, pinned so a library update cannot change it. */
@@ -79,8 +80,11 @@ export type RealtimeHubDependencies = {
     /** An event on the person's own topic. */
     onPersonalEvent: (event: string, payload: unknown) => void;
 
-    /** The open channel's topic has been joined, the first time or again after a drop. */
-    onJoined: (channelId: string) => void;
+    /**
+     * The open channel's topic has been joined, the first time or again; a rejoin is a join after
+     * a drop, which may have missed messages.
+     */
+    onJoined: (channelId: string, isRejoin: boolean) => void;
 
     /** The person's topic was joined again after a drop; never called for its first join. */
     onPersonalRejoined?: () => void;
@@ -96,6 +100,13 @@ export type RealtimeHubDependencies = {
      * lost read the client was not built to recognise, so the shell checks access again.
      */
     onUnknownError?: () => void;
+
+    /**
+     * The page, whose offline and online events say the network went and came back. Chrome can
+     * keep a socket open on a dead network until a heartbeat goes unanswered, half a minute or
+     * more, so the browser's own word is the first a person can be told.
+     */
+    page?: Pick<PageEventTargets, "window">;
 };
 
 /** The live connection a shell holds. */
@@ -144,23 +155,41 @@ export function personalTopic(tenantId: string, personAliasGuid: string): string
 export function createRealtimeHub(dependencies: RealtimeHubDependencies): RealtimeHub {
     const { client } = dependencies;
     let personal: RealtimeChannelLike | null = null;
-    let open: { channelId: string, channel: RealtimeChannelLike, isJoined: boolean } | null = null;
+    let open: { channelId: string, channel: RealtimeChannelLike, isJoined: boolean, isDropped: boolean } | null = null;
     let isDegraded = false;
+
+    // What the connection is still waiting on: each topic whose last word was a failure, and the
+    // network while the browser says it is offline. The connection is well again only once all
+    // have come back, since until then something sent meanwhile is still missed.
+    const failing = new Set<RealtimeChannelLike | "network">();
 
     // Set by stop; a hub stopped while it waits on the token, or asked to open a channel after,
     // joins nothing.
     let isStopped = false;
 
+    /** Something the connection needs failed; the person is told each time, in its words. */
+    function fail(source: RealtimeChannelLike | "network", error: ChatError): void {
+        failing.add(source);
+        isDegraded = true;
+        dependencies.onStatus(error);
+    }
+
+    /** Something came back; the connection is well again once nothing is still failing. */
+    function recover(source: RealtimeChannelLike | "network"): void {
+        failing.delete(source);
+        if (isDegraded && failing.size === 0) {
+            isDegraded = false;
+            dependencies.onStatus(null);
+        }
+    }
+
     /**
-     * Reports the connection's health, only when it changes. A refused join carries Realtime's
-     * words, which say more than the status does.
+     * Reports a topic's status. A refused join carries Realtime's words, which say more than the
+     * status does.
      */
-    function report(status: string, error?: unknown): void {
+    function report(channel: RealtimeChannelLike, status: string, error?: unknown): void {
         if (status === "SUBSCRIBED") {
-            if (isDegraded) {
-                isDegraded = false;
-                dependencies.onStatus(null);
-            }
+            recover(channel);
             return;
         }
 
@@ -168,9 +197,13 @@ export function createRealtimeHub(dependencies: RealtimeHubDependencies): Realti
         if (words?.code === "rt.unknown") {
             dependencies.onUnknownError?.();
         }
-        isDegraded = true;
-        dependencies.onStatus(words && words.code !== "rt.unknown" ? words : classifyRealtimeStatus(status));
+        fail(channel, words && words.code !== "rt.unknown" ? words : classifyRealtimeStatus(status));
     }
+
+    // The browser's word on the network, which a socket on a dead network may not give for a
+    // while; going offline is a closed connection, as a dropped socket says.
+    const onOffline = (): void => fail("network", classifyRealtimeStatus("CLOSED"));
+    const onOnline = (): void => recover("network");
 
     /**
      * Handles Realtime's own error about a channel. A read revoked from the open channel means
@@ -189,17 +222,21 @@ export function createRealtimeHub(dependencies: RealtimeHubDependencies): Realti
 
         const error = classifyRealtimeMessage(message.message ?? "", isOpen && open!.isJoined);
 
-        if (isOpen && error.code === "rt.read_revoked") {
-            open = null;
-            void client.removeChannel(channel);
-        }
-
         if (error.code === "rt.unknown") {
             dependencies.onUnknownError?.();
         }
 
-        isDegraded = true;
-        dependencies.onStatus(error);
+        // A revoked channel is left, so it is nothing the connection waits on.
+        if (isOpen && error.code === "rt.read_revoked") {
+            open = null;
+            failing.delete(channel);
+            void client.removeChannel(channel);
+            isDegraded = true;
+            dependencies.onStatus(error);
+            return;
+        }
+
+        fail(channel, error);
     }
 
     return {
@@ -212,6 +249,9 @@ export function createRealtimeHub(dependencies: RealtimeHubDependencies): Realti
                 return;
             }
 
+            dependencies.page?.window.addEventListener("offline", onOffline);
+            dependencies.page?.window.addEventListener("online", onOnline);
+
             const channel = client.channel(personalTopic(dependencies.tenantId, dependencies.personAliasGuid), { config: { private: true } });
             // Signals sent while the topic was down are lost, so a join after a drop is told to the
             // shell, which reads the sidebar again. The first join is the page load's, which has
@@ -222,7 +262,7 @@ export function createRealtimeHub(dependencies: RealtimeHubDependencies): Realti
                 .on("broadcast", { event: "*" }, message => dependencies.onPersonalEvent(message.event ?? "", message.payload))
                 .on("system", {}, message => onSystem(channel, message))
                 .subscribe((status, error) => {
-                    report(status, error);
+                    report(channel, status, error);
                     if (status !== "SUBSCRIBED") {
                         isDropped = hasJoined;
                         return;
@@ -248,6 +288,8 @@ export function createRealtimeHub(dependencies: RealtimeHubDependencies): Realti
             const left = open;
             open = null;
             if (left) {
+                // a topic let go is nothing the connection waits on
+                failing.delete(left.channel);
                 void client.removeChannel(left.channel);
             }
 
@@ -262,23 +304,31 @@ export function createRealtimeHub(dependencies: RealtimeHubDependencies): Realti
                 })
                 .on("system", {}, message => onSystem(channel, message));
 
-            open = { channelId, channel, isJoined: false };
+            open = { channelId, channel, isJoined: false, isDropped: false };
 
             channel.subscribe((status, error) => {
                 if (open?.channel !== channel) {
                     return;
                 }
 
-                report(status, error);
-                if (status === "SUBSCRIBED") {
-                    open.isJoined = true;
-                    dependencies.onJoined(channelId);
+                report(channel, status, error);
+                // A join after a drop may have missed messages, which its catch-up reads; a second
+                // confirmation of the same join has missed nothing.
+                if (status !== "SUBSCRIBED") {
+                    open.isDropped = open.isJoined;
+                    return;
                 }
+                const isRejoin = open.isDropped;
+                open.isJoined = true;
+                open.isDropped = false;
+                dependencies.onJoined(channelId, isRejoin);
             });
         },
 
         stop: async (): Promise<void> => {
             isStopped = true;
+            dependencies.page?.window.removeEventListener("offline", onOffline);
+            dependencies.page?.window.removeEventListener("online", onOnline);
             const channels = [open?.channel, personal].filter((c): c is RealtimeChannelLike => !!c);
             open = null;
             personal = null;

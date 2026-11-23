@@ -132,12 +132,13 @@ function build(options: {
     stored: Record<string, string>,
     fireBlur: () => void,
     fireOnline: () => void,
+    fireOffline: () => void,
     fireShown: () => void,
     topics: LiveTopic[],
     counts: { mints: number, clients: number, setAuths: number, bootstraps: number },
     mintGate: { value: string },
     bootstrap: { value: unknown },
-    pageDocument: { visibilityState: string },
+    pageDocument: { visibilityState: string, title: string },
     sent: Array<{ channelId: string, body: string, args: Record<string, unknown> }>,
     tokenPerson: { value: string | null },
     reloads: { count: number },
@@ -275,6 +276,8 @@ function build(options: {
     const documentListeners: Record<string, Array<() => void>> = {};
     const pageDocument = {
         visibilityState: "visible",
+        // Rock's own title for the page, which the shell counts what waits in while hidden
+        title: "Chat | Rock",
         addEventListener: (type: string, listener: () => void) => (documentListeners[type] ??= []).push(listener),
         removeEventListener: (type: string, listener: () => void) => {
             documentListeners[type] = (documentListeners[type] ?? []).filter(l => l !== listener);
@@ -529,6 +532,7 @@ function build(options: {
         channelReads, channelFacts, directoryCalls, sendRefusals, personCalls, personAnswer, foundDm, historyCalls, prefsCalls, prefsAnswer, deviceCalls, emojiCalls, deviceAnswer, exchangeSettings, heldExchange, exchangeAnswers, exchangeTimes, exchangeSignals, exchangeBodies, exchangeHeaders, exchangePresence, exchangeRead, statusCalls, statusAnswer, statusAnswers, toasts, bootstrapCalls, marks, heldMint, serverAheadSeconds, exchangeDelayMs, memberCalls, begins, uploads, blockCalls, blocksAnswer, listCalls, listAnswers, reports, typingCalls,
         fireBlur: () => (windowListeners["blur"] ?? []).forEach(l => l()),
         fireOnline: () => (windowListeners["online"] ?? []).forEach(l => l()),
+        fireOffline: () => (windowListeners["offline"] ?? []).forEach(l => l()),
         fireShown: () => (documentListeners["visibilitychange"] ?? []).forEach(l => l()),
         firePageHide: (persisted = false) => (windowListeners["pagehide"] ?? []).forEach(l => l({ persisted })),
         firePageShow: (persisted: boolean) => (windowListeners["pageshow"] ?? []).forEach(l => l({ persisted })),
@@ -2090,6 +2094,121 @@ describe("what the page tells push", () => {
     });
 });
 
+// A person who leaves chat for another tab sees what waits for them in the tab's title, "(3) Chat",
+// counted as the app icon counts it, and Rock's own title again once they come back. The room
+// left open counts too while the page is hidden, since nobody is reading it then.
+describe("the tab's title", () => {
+    const ben = "c00000b1-0000-4000-8000-000000000000";
+    const youth = "c00000c1-0000-4000-8000-000000000000";
+
+    /** A sidebar row of the given kind, read and named nowhere unless the cell says otherwise. */
+    function titleRow(channelId: string, roomKind: "channel" | "person" | "group", extra: Partial<SidebarRow> = {}): Partial<SidebarRow> {
+        return { channel_id: channelId, name: channelId, room_kind: roomKind, is_member: true, is_unread: false, unread_count: 0, mention_count: 0, all_mention_count: 0, read_cursor: 10, last_message_id: 10, ...extra };
+    }
+
+    async function startedWith(rows: Partial<SidebarRow>[]): Promise<ReturnType<typeof build>> {
+        const h = build();
+        h.bootstrap.value = { channels: rows };
+        const starting = h.shell.start();
+        await settle();
+        answerHistory(h, channelA, 10);
+        await starting;
+        await settle();
+        topicOf(h, channelTopic(tenant, channelA)).status?.("SUBSCRIBED");
+        await settle();
+        return h;
+    }
+
+    async function hide(h: ReturnType<typeof build>): Promise<void> {
+        h.pageDocument.visibilityState = "hidden";
+        h.fireShown();
+        await settle();
+    }
+
+    async function show(h: ReturnType<typeof build>): Promise<void> {
+        h.pageDocument.visibilityState = "visible";
+        h.fireShown();
+        await settle();
+    }
+
+    test("while the page is hidden it counts what waits, and Rock's title comes back when the page is seen", async () => {
+        const h = await startedWith([
+            titleRow(channelA, "channel"),
+            titleRow(ben, "person", { is_unread: true }),
+            titleRow(youth, "channel", { is_unread: true, mention_count: 2 })
+        ]);
+        expect(h.pageDocument.title).toBe("Chat | Rock");
+
+        await hide(h);
+        expect(h.pageDocument.title).toBe("(3) Chat | Rock");
+
+        await show(h);
+        expect(h.pageDocument.title).toBe("Chat | Rock");
+    });
+
+    test("a hidden page with nothing waiting keeps Rock's title, and the count follows what arrives", async () => {
+        const h = await startedWith([titleRow(channelA, "channel"), titleRow(ben, "person"), titleRow(youth, "channel")]);
+
+        await hide(h);
+        expect(h.pageDocument.title).toBe("Chat | Rock");
+
+        personal(h, "channel.unread", { channel_id: ben, message_id: 11, id: "5e0000a1-0000-4000-8000-000000000000" });
+        await settle();
+        expect(h.pageDocument.title).toBe("(1) Chat | Rock");
+
+        personal(h, "channel.mention", { channel_id: youth, message_id: 12, parent_id: null, in_channel: true, all: false });
+        await settle();
+        expect(h.pageDocument.title).toBe("(2) Chat | Rock");
+
+        // read on her phone meanwhile
+        personal(h, "channel.read", { channel_id: ben, read_cursor: 11 });
+        await settle();
+        expect(h.pageDocument.title).toBe("(1) Chat | Rock");
+    });
+
+    test("a conversation left open counts once while the page is hidden, and a read of it elsewhere takes it off", async () => {
+        const h = await startedWith([titleRow(channelA, "person")]);
+        await hide(h);
+
+        personal(h, "channel.unread", { channel_id: channelA, message_id: 11, id: "5e0000a2-0000-4000-8000-000000000000" });
+        await settle();
+        expect(h.pageDocument.title).toBe("(1) Chat | Rock");
+
+        personal(h, "channel.read", { channel_id: channelA, read_cursor: 11 });
+        await settle();
+        expect(h.pageDocument.title).toBe("Chat | Rock");
+    });
+
+    test("a channel left open counts its mentions by name while the page is hidden, never @all, and none once seen", async () => {
+        const h = await startedWith([titleRow(channelA, "channel")]);
+        await hide(h);
+
+        personal(h, "channel.unread", { channel_id: channelA, message_id: 11, id: "5e0000a3-0000-4000-8000-000000000000" });
+        personal(h, "channel.mention", { channel_id: channelA, message_id: 12, parent_id: null, in_channel: true, all: false });
+        personal(h, "channel.mention", { channel_id: channelA, message_id: 13, parent_id: null, in_channel: true, all: true });
+        personal(h, "channel.mention", { channel_id: channelA, message_id: 14, parent_id: null, in_channel: true, all: false });
+        await settle();
+        expect(h.pageDocument.title).toBe("(2) Chat | Rock");
+
+        await show(h);
+        expect(h.pageDocument.title).toBe("Chat | Rock");
+
+        await hide(h);
+        expect(h.pageDocument.title).toBe("Chat | Rock");
+    });
+
+    test("signing out gives Rock's title back", async () => {
+        const h = await startedWith([titleRow(channelA, "channel"), titleRow(ben, "person", { is_unread: true })]);
+        await hide(h);
+        expect(h.pageDocument.title).toBe("(1) Chat | Rock");
+
+        await h.shell.stop();
+        await settle();
+
+        expect(h.pageDocument.title).toBe("Chat | Rock");
+    });
+});
+
 describe("a direct message's first message", () => {
     const created = "c0000009-0000-4000-8000-000000000000";
     const other = { person_alias_guid: "a0000002-0000-4000-8000-000000000000", nick_name: "Bo", last_name: "Picked", avatar_url: null };
@@ -3001,6 +3120,84 @@ describe("the live sidebar", () => {
     function personalStatus(h: ReturnType<typeof build>, status: string): void {
         topicOf(h, personalTopic(tenant, person)).status?.(status);
     }
+
+    // A read is saved when the person leaves, so her other tabs in this browser are told of it as
+    // she reads, and take it as a read saved on another device.
+    describe("her other tabs", () => {
+        /** A post between tabs, made once the turn's reads are in, arrives on a later task, as the browser's does. */
+        async function delivered(): Promise<void> {
+            await settle();
+            await new Promise(resolve => setTimeout(resolve, 0));
+            await settle();
+        }
+
+        test("a room read in one tab clears its bold, dot and mentions in her other tab at once, with no save", async () => {
+            const browser = createChannelFake();
+            const one = await startedLive({ channel: browser.open });
+            const two = await startedLive({ channel: browser.open });
+            expect(rowOf(two, channelE)).toEqual(expect.objectContaining({ is_unread: true, mention_count: 1 }));
+
+            const toE = one.shell.selectChannel(channelE);
+            await settle();
+            answerHistory(one, channelE, 12);
+            await toE;
+            await settle();
+            one.shell.seen(12);
+            await delivered();
+
+            expect(rowOf(two, channelE)).toEqual(expect.objectContaining({ read_cursor: 12, is_unread: false, mention_count: 0 }));
+            expect(two.shell.mentions.state.hasDot).toBe(false);
+            expect(one.saves.filter(save => save.channelId === channelE)).toHaveLength(0);
+        });
+
+        test("a message arriving in the room open in one tab, and seen there, is read in her other tab", async () => {
+            const browser = createChannelFake();
+            const one = await startedLive({ channel: browser.open });
+            const two = await startedLive({ channel: browser.open });
+            const toB = two.shell.selectChannel(channelB);
+            await settle();
+            answerHistory(two, channelB, 10);
+            await toB;
+            personal(two, "channel.unread", { channel_id: channelA, message_id: 11, id: "5e000031-0000-4000-8000-000000000000" });
+            await settle();
+            expect(rowOf(two, channelA)?.is_unread).toBe(true);
+
+            one.shell.seen(11);
+            await delivered();
+
+            expect(rowOf(two, channelA)?.is_unread).toBe(false);
+        });
+
+        test("a tab stopped at sign-out hears no read", async () => {
+            const browser = createChannelFake();
+            const one = await startedLive({ channel: browser.open });
+            const two = await startedLive({ channel: browser.open });
+
+            await two.shell.stop();
+            const toE = one.shell.selectChannel(channelE);
+            await settle();
+            answerHistory(one, channelE, 12);
+            await toE;
+            await settle();
+            one.shell.seen(12);
+            await delivered();
+
+            expect(rowOf(two, channelE)?.is_unread).toBe(true);
+            expect(browser.posts.filter(post => post.name.startsWith("rock-chat:reads:"))).toHaveLength(1);
+        });
+    });
+
+    // The socket can stay open on a dead network until a heartbeat goes unanswered, so the
+    // browser's own word is the first the person can be told.
+    test("the browser going offline shows the connection lost at once, and coming back clears it", async () => {
+        const h = await startedLive();
+
+        h.fireOffline();
+        expect(h.shell.state.connection).toEqual(expect.objectContaining({ code: "rt.closed" }));
+
+        h.fireOnline();
+        expect(h.shell.state.connection).toBeNull();
+    });
 
     test("a channel whose unread newest message was deleted is read once its save answers with the message before", async () => {
         const h = await startedLive();

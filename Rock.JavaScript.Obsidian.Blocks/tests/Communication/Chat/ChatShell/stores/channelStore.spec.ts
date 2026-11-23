@@ -331,17 +331,6 @@ describe("dm.preview", () => {
         return { store: s, reloads: () => reloads };
     }
 
-    test("counts each fresh sidebar read and not a live preview, so the sidebar can tell a reread from news", () => {
-        const { store: s } = dmStore([dm(dmOne)]);
-        expect(s.sidebarReads).toBe(1);
-
-        s.applyPersonalEvent("dm.preview", preview(dmOne, 11));
-        expect(s.sidebarReads).toBe(1);
-
-        s.setSidebar([dm(dmOne, { last_message_id: 12 })]);
-        expect(s.sidebarReads).toBe(2);
-    });
-
     test("moves the row's preview, time, pointer, sender and own flag", () => {
         const { store: s, reloads } = dmStore([dm(dmOne)]);
 
@@ -591,6 +580,34 @@ describe("channel.read", () => {
         s.applyPersonalEvent("channel.read", { channel_id: one, read_cursor: 11, last_message_id: 12, id: "5e000004-0000-4000-8000-000000000000" });
 
         expect(s.rows[0]).toEqual(expect.objectContaining({ read_cursor: 11, last_message_id: 12, is_unread: true }));
+    });
+
+    // A read position only ever moves forward, so a read that arrives behind one the row already
+    // holds, from a tab that saw less or an answer overtaken on its way, says nothing new.
+    test("a read short of the position the row already holds never takes it back", () => {
+        const { store: s } = store();
+        s.setSidebar([row(one, { last_message_id: 12, read_cursor: 12, is_unread: false })]);
+
+        s.applyPersonalEvent("channel.read", { channel_id: one, read_cursor: 10, last_message_id: 12, id: "5e00000d-0000-4000-8000-000000000000" });
+        s.applyMarkRead(one, { read_cursor: 11, last_message_id: 12 });
+
+        expect(s.rows[0]).toEqual(expect.objectContaining({ read_cursor: 12, is_unread: false }));
+    });
+
+    // Another tab of the person's in this browser names only how far it read; the row's own
+    // pointer says whether anything is left.
+    test("a read naming no pointer is worked out against the row's own", () => {
+        const { store: s } = store();
+        s.setSidebar([
+            row(one, { last_message_id: 12, read_cursor: 10, is_unread: true, mention_count: 2 }),
+            row(two, { last_message_id: 13, read_cursor: 10, is_unread: true, mention_count: 1 })
+        ]);
+
+        s.applyPersonalEvent("channel.read", { channel_id: one, read_cursor: 12 });
+        s.applyPersonalEvent("channel.read", { channel_id: two, read_cursor: 12 });
+
+        expect(s.rows.find(r => r.channel_id === one)).toEqual(expect.objectContaining({ read_cursor: 12, is_unread: false, mention_count: 0 }));
+        expect(s.rows.find(r => r.channel_id === two)).toEqual(expect.objectContaining({ read_cursor: 12, is_unread: true, mention_count: 1 }));
     });
 });
 

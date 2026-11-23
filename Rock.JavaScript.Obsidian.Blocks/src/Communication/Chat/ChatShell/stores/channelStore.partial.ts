@@ -94,12 +94,6 @@ export type ChannelStore = {
     previewChannelId: string | null;
 
     /**
-     * How many fresh sidebars have been set. A row changed by a reread is not news the moment it
-     * shows: a reconnect or a membership change reads every message that landed since at once.
-     */
-    sidebarReads: number;
-
-    /**
      * Replaces every row with a fresh sidebar. A previewed room's row is kept after them, unless
      * the fresh sidebar holds the room itself, which ends the preview.
      */
@@ -183,8 +177,7 @@ export function createChannelStore(dependencies: ChannelStoreDependencies): Chan
         loadState: "loading" as SidebarLoadState,
         activeChannelId: null as string | null,
         previewChannelId: null as string | null,
-        badges: [] as ChatBadge[],
-        sidebarReads: 0
+        badges: [] as ChatBadge[]
     });
 
     /**
@@ -386,8 +379,12 @@ export function createChannelStore(dependencies: ChannelStoreDependencies): Chan
         if (!isKept && result.last_message_id !== null) {
             row.last_message_id = result.last_message_id;
         }
-        row.read_cursor = result.read_cursor;
-        const saved: MarkReadResult = { read_cursor: result.read_cursor, last_message_id: row.last_message_id };
+        // A read position only ever moves forward, so one behind what the row holds, from a tab
+        // that saw less or an answer overtaken on its way, takes nothing back.
+        if (row.read_cursor === null || (result.read_cursor !== null && result.read_cursor > row.read_cursor)) {
+            row.read_cursor = result.read_cursor;
+        }
+        const saved: MarkReadResult = { read_cursor: row.read_cursor, last_message_id: row.last_message_id };
 
         // A save that comes back after the person has returned to the channel leaves it read:
         // they are looking at it, and their next save settles it.
@@ -434,7 +431,6 @@ export function createChannelStore(dependencies: ChannelStoreDependencies): Chan
             }
             store.rows = [...rows, ...kept];
             store.loadState = "loaded";
-            store.sidebarReads++;
             answerPointers = new Map(rows.map(row => [row.channel_id, row.last_message_id]));
             const at = ++moves;
             movedAt.clear();
