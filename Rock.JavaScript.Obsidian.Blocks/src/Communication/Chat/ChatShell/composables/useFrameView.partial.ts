@@ -577,11 +577,12 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
         }
 
         const leftChannelId = activeChannelId.value;
-        movePanes(paneOrder.value.slice(0, -1));
+        const uncovered = paneOrder.value.slice(0, -1);
+        movePanes(uncovered);
 
         // A conversation opened from Activity uncovers it on its tab and scroll, with focus on the
         // row the person opened, as Back from a thread gives it.
-        if (pane.value === "panel") {
+        if (uncovered[uncovered.length - 1] === "panel") {
             await askFocus([{ stop: "mentions-row", match: "[aria-current='true']" }, "panel-start"], { within: "panel" });
             return;
         }
@@ -1140,7 +1141,7 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
 
         // The bar's box carries the id of the message it is on. A drawer's rows carry the same mark,
         // so only the box is read: a part of a drawer row is never an opener in the conversation.
-        const id = active.closest<HTMLElement>("[data-testid='message-box'][data-hot-id]")?.dataset.hotId;
+        const id = active.closest<HTMLElement>(".chat-box[data-hot-id]")?.dataset.hotId;
         return id ? main.querySelector<HTMLElement>(`[data-message-id='${id}']`) : null;
     }
 
