@@ -32,19 +32,21 @@
 
         <template v-else>
             <!--
-                While the other person of a direct message is Busy, a line on the composer's top
-                edge says what sending does. Keyed by her, so a switch to another conversation
-                draws it as state and takes the last one at once; only her own change fades it.
-                Drawn for the eye; the box is described by its sentence, never announced.
+                While the other person of a direct message is Busy, the chat's one soft inline
+                notice above the box says what sending does. Keyed by her, so a switch to another
+                conversation draws it as state and takes the last one at once; only her own change
+                fades it. Drawn for the eye; the box is described by its sentence, never announced.
             -->
             <Transition name="chat-note" :key="busyPerson?.person_alias_guid ?? ''">
-                <span v-if="busyNote" class="chat-composer-note" aria-hidden="true" data-testid="composer-busy-note">
-                    <span class="chat-composer-note-name" data-part="name">{{ busyNote.name }}</span>
-                    <span class="chat-composer-note-fixed" data-part="fixed">{{ " is busy" }}</span>
-                    <span v-if="busyNote.until" class="chat-composer-note-until" data-part="until">{{ busyNote.until }}</span>
-                    <span class="chat-composer-note-fixed" data-part="fixed">{{ " and won't be notified." }}</span>
+                <InlineNotice v-if="busyNote" class="chat-composer-note" :note="busyNotice" aria-hidden="true" data-testid="composer-busy-note">
+                    <span class="chat-composer-note-line">
+                        <span class="chat-composer-note-name" data-part="name">{{ busyNote.name }}</span>
+                        <span class="chat-composer-note-fixed" data-part="fixed">{{ " is busy" }}</span>
+                        <span v-if="busyNote.until" class="chat-composer-note-until" data-part="until">{{ busyNote.until }}</span>
+                        <span class="chat-composer-note-fixed" data-part="fixed">{{ " and won't be notified." }}</span>
+                    </span>
                     <span :id="busyNoteId" class="chat-sr-only">{{ busyNote.sentence }}</span>
-                </span>
+                </InlineNotice>
             </Transition>
 
             <!-- The files waiting to go with the next send, each uploading as it was picked. -->
@@ -213,9 +215,7 @@
 </template>
 
 <style scoped>
-/* Positioned, so the Busy note stands on its top edge. */
 .chat-composer {
-    position: relative;
     display: flex;
     flex: none;
     flex-direction: column;
@@ -462,39 +462,22 @@
 }
 
 /*
- * The Busy note stands on the composer's top edge over the feed's bottom padding: it takes no
- * space, so neither the composer nor the feed moves as it comes and goes, and a failure strip, a
- * quote or a staged GIF opening inside the composer only carries it up. Its text starts where the
- * foot's does, the composer's side padding plus the foot's own 14px, and it stops at that padding
- * on the right, short of the scrollbar above. The surface behind it, feathered at its top, hides
- * rows scrolled under it; a wheel, a hover or a drag passes through it to them.
+ * The Busy note is the inline notice in the composer's flow, so its edges are the box's, at the
+ * secondary text size as a helper line beside the box. The notice's own entrance rise is off: the
+ * note comes and goes with her status only, so a room switch draws it as state, and her own change
+ * fades it (below).
  */
-.chat-composer-note {
-    position: absolute;
-    right: 20px;
-    bottom: 100%;
-    left: 0;
-    z-index: 1;
-    display: flex;
-    height: 16px;
-    padding: 0 14px 0 34px;
-    overflow: hidden;
+.chat-composer .chat-composer-note {
     font-size: var(--chat-fs-small);
-    line-height: 16px;
-    color: var(--chat-muted);
+    animation: none;
+}
+
+/* Its parts on one line inside the notice's words, so a narrow composer shortens them, never wraps. */
+.chat-composer-note-line {
+    display: flex;
+    min-width: 0;
+    overflow: hidden;
     white-space: nowrap;
-    pointer-events: none;
-    background: linear-gradient(to bottom, transparent, var(--chat-surface) 4px);
-}
-
-.chat-composer.is-thread .chat-composer-note {
-    right: 14px;
-    padding-left: 28px;
-}
-
-.chat-composer.is-phone .chat-composer-note {
-    right: 10px;
-    padding-left: 24px;
 }
 
 /*
@@ -865,6 +848,9 @@
         const name = person.nick_name || person.last_name || "";
         return busyNoteWords(name, status.busyUntil !== null ? new Date(status.busyUntil) : null, new Date());
     });
+
+    /** The Busy note as the inline notice: a note, never a failure, its words drawn in parts inside it. */
+    const busyNotice = computed((): Note => ({ kind: "info", text: busyNote.value?.sentence ?? "" }));
 
     const placeholder = computed((): string => {
         if (props.isThread) {
