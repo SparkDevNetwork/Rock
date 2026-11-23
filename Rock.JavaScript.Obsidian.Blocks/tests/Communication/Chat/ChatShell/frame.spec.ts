@@ -1366,7 +1366,11 @@ describe("the phone's Back, one screen at a time", () => {
         expect(under).toMatch(/transform:\s*translateX\(calc\(var\(--chat-rise-sheet\) \/ -4\)\)/);
 
         const over = styleRules(block, /\[data-phone="true"\] \.chat-frame\[data-main-over="true"\] \.chat-frame-main$/).join(";");
-        expect(over).toMatch(/z-index:\s*calc\(var\(--chat-z-panel\) \+ 1\)/);
+        expect(over).toMatch(/z-index:\s*var\(--chat-z-over-panel\);/);
+        const sheet = readFileSync(join(__dirname, "../../../../../RockWeb/Styles/Blocks/Communication/Chat/chat.css"), "utf8");
+        const layer = (name: string): number => Number(new RegExp(`--chat-z-${name}:\\s*(\\d+);`).exec(sheet)?.[1]);
+        expect(layer("over-panel")).toBeGreaterThan(layer("panel"));
+        expect(layer("over-panel")).toBeLessThan(layer("view"));
     });
 });
 

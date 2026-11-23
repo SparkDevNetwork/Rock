@@ -822,7 +822,7 @@
 
 /* The conversation is drawn over the panel when it lies over it, or slides away from over it. */
 .chat-shell[data-phone="true"] .chat-frame[data-main-over="true"] .chat-frame-main {
-    z-index: calc(var(--chat-z-panel) + 1);
+    z-index: var(--chat-z-over-panel);
 }
 
 .chat-shell[data-phone="true"] .chat-frame[data-pane="list"] .chat-frame-main {

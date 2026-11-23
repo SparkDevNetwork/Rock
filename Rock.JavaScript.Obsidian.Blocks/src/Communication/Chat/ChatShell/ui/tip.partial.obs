@@ -1,6 +1,5 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <!-- Carried out to the chat's root, so the feed's faded edges neither fade nor cut it; drawn in place where the anchor is drawn alone. -->
     <Teleport v-if="tip.isTipShown.value" :to="host ?? 'body'" :disabled="!host">
         <span v-bind="$attrs"
               :ref="setTipElement"
@@ -16,6 +15,8 @@
     import { computed, PropType } from "vue";
     import { ChatTooltip, overlayHostOf } from "./tooltip.partial";
 
+    // The tip is carried out to the chat's root, so the feed's faded edges neither fade nor cut it,
+    // and drawn in place where the anchor is drawn alone.
     // The tip's look is the sheet's chat-tip, shared with every tip. A holder's attributes, as
     // aria-hidden on a tip whose words the anchor already reads, go to the tip, since a Teleport
     // cannot take them.

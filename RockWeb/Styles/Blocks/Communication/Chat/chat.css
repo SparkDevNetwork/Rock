@@ -205,7 +205,8 @@
         chooser (New message's To field) drops its suggestions over them; the first load's veil
         covers the frame under the bars; a bar
         floats over the feed (the message tools, the connection bar); the phone's panel slides over
-        the conversation and a full view covers it; then a notice, a dialog, a sheet's scrim and
+        the conversation, a conversation opened from the panel lies over the panel, and a full view
+        covers it; then a notice, a dialog, a sheet's scrim and
         the sheet, a popover, and over everything the tooltip and the reaction card.
     */
     --chat-z-raised: 2;
@@ -214,6 +215,7 @@
     --chat-z-veil: 5;
     --chat-z-bar: 6;
     --chat-z-panel: 8;
+    --chat-z-over-panel: 9;
     --chat-z-view: 20;
     --chat-z-notice: 50;
     --chat-z-modal: 60;
