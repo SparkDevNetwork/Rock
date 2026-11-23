@@ -376,8 +376,9 @@ img.chat-tool-glyph {
 
     /**
      * The control outside the box its grown form stands at, as the smile-plus under a message's
-     * chips, which the person pressed and is looking at; null where the box grew from its own place
-     * in the row, as the bar's Add reaction asks, or from what holds that place, its bubble or row.
+     * chips, which the person pressed and is looking at, or the bubble, whose dock beside it holds
+     * the box's place rather than the bubble itself; null where the box grew from its own place in
+     * the row, as the bar's Add reaction asks, or from the row that holds that place.
      */
     const control = computed((): HTMLElement | null => {
         const anchor = held.value?.anchor ?? null;
