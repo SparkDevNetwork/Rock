@@ -45,6 +45,14 @@ namespace Rock.Model
             }
         }
 
+        /// <inheritdoc/>
+        public override bool IsAllowedByDefault( string action )
+        {
+            // Applications grant VIEW through explicit rules (the save hook adds them for
+            // Rock Administrators and Lava Application Developers).
+            return action != Authorization.VIEW && base.IsAllowedByDefault( action );
+        }
+
         /// <summary>
         /// Provides custom security authorization logic. 
         /// </summary>
