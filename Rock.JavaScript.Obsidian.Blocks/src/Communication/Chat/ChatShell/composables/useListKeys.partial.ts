@@ -18,7 +18,7 @@
 // A list's keys, the one way every list of rows moves: one tab stop for the whole list, held by
 // the row last focused, and Up, Down, Home and End between the rows.
 
-import { computed, inject, InjectionKey, provide, Ref, ref, shallowReactive, watch } from "vue";
+import { computed, getCurrentScope, inject, InjectionKey, provide, Ref, ref, shallowReactive, watch } from "vue";
 
 /** What a row binds on the element that takes its focus. */
 export type ListItemAttrs = {
@@ -87,14 +87,38 @@ export function useListKeys<K>(items: () => readonly K[], options: ListKeysOptio
 
     // Moved key by key, never cleared, since clearing the set would wake every row that asks it;
     // before the rows draw, never in the middle of a change to the list the stop is read from.
-    watch(stopKey, (next, before) => {
-        if (before !== null && before !== undefined) {
-            stop.delete(before);
+    // Started by the first row asking, in the list's own scope: a list is often made before the
+    // rows it reads are, so its keys are read first as a row draws, as they always were.
+    const scope = getCurrentScope();
+    let isFollowing = false;
+    function followStop(): void {
+        if (isFollowing) {
+            return;
         }
-        if (next !== null) {
-            stop.add(next);
+        isFollowing = true;
+        const follow = (): void => {
+            watch(stopKey, (next, before) => {
+                if (before !== null && before !== undefined) {
+                    stop.delete(before);
+                }
+                if (next !== null) {
+                    stop.add(next);
+                }
+            }, { immediate: true });
+        };
+        if (scope) {
+            scope.run(follow);
         }
-    }, { immediate: true });
+        else {
+            follow();
+        }
+    }
+
+    /** Whether a row holds the stop, asked by each row of its own key alone. */
+    function isStop(key: K): boolean {
+        followStop();
+        return stop.has(key);
+    }
 
     function onKeydown(key: K, event: KeyboardEvent): void {
         if (options.isRowOnly && event.target !== event.currentTarget) {
@@ -127,7 +151,7 @@ export function useListKeys<K>(items: () => readonly K[], options: ListKeysOptio
     return {
         current,
         itemAttrs: key => ({
-            tabindex: stop.has(key) ? 0 : -1,
+            tabindex: isStop(key) ? 0 : -1,
             onFocus: (): void => {
                 current.value = key;
             },
