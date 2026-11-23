@@ -268,13 +268,37 @@ namespace Rock.Model
                 {
                     var calendar = EventCalendarCache.Get( eci.EventCalendarId );
 
-                    if ( calendar?.IsAuthorized( action, person ) == true )
+                    if ( calendar?.IsAuthorized( action, person ) == true || ( action == Rock.Security.Authorization.VIEW && calendar?.IsAuthorized( Rock.Security.Authorization.EDIT, person ) == true ) )
                     {
                         return true;
                     }
                 }
             }
+
+            // For VIEW on an item that is on a calendar and no calendar allowed it
+            // (VIEW or EDIT), use the item's own rules, then the event item entity
+            // type rules, and deny when none of them match.
+            if ( action == Rock.Security.Authorization.VIEW && EventCalendarItems != null && EventCalendarItems.Count > 0 )
+            {
+                return Rock.Security.Authorization.AuthorizedForEntity( this, action, person, false )
+                    ?? Rock.Security.Authorization.AuthorizedForEntity( new EventItem(), action, person, false )
+                    ?? false;
+            }
+
             return base.IsAuthorized( action, person );
+        }
+
+        /// <inheritdoc/>
+        public override bool IsAllowedByDefault( string action )
+        {
+            // Items on a calendar are viewable only when a calendar or an
+            // explicit rule on the item allows it.
+            if ( action == Rock.Security.Authorization.VIEW && EventCalendarItems != null && EventCalendarItems.Count > 0 )
+            {
+                return false;
+            }
+
+            return base.IsAllowedByDefault( action );
         }
 
         #endregion
