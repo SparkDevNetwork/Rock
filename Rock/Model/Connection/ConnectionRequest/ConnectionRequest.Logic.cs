@@ -154,11 +154,24 @@ namespace Rock.Model
         /// <returns>True if the person is authorized; false otherwise.</returns>
         public override bool IsAuthorized( string action, Person person )
         {
+            /*
+                11/23/2026 - MSE
+
+                The connector shortcut only applies to a saved request. REST checks a new
+                request, or a request moved to another opportunity, on a copy with Id set
+                to 0 and the connector the caller posted. Without the Id check a caller
+                could name themselves as the connector to pass the EDIT check on an
+                opportunity they cannot edit. A new request falls back to the opportunity's
+                security through ParentAuthority, the same way Note does.
+
+                Reason: Do not let a posted connector grant access to a new request.
+            */
             if ( this.ConnectionOpportunity != null
                 && this.ConnectionOpportunity.ConnectionType != null
                 && this.ConnectionOpportunity.ConnectionType.EnableRequestSecurity
                 && this.ConnectorPersonAlias != null
                 && person != null
+                && this.Id != 0
                 && this.ConnectorPersonAlias.PersonId == person.Id )
             {
                 return true;

@@ -21,6 +21,7 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock;
+using Rock.Attribute;
 using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
@@ -177,6 +178,93 @@ namespace Rock.Utility
         {
             var campaignConnectionItems = Rock.Web.SystemSettings.GetValue( CampaignConnectionKey.CAMPAIGN_CONNECTION_CONFIGURATION ).FromJsonOrNull<List<CampaignItem>>() ?? new List<CampaignItem>();
             return campaignConnectionItems.FirstOrDefault( a => a.Guid == campaignGuid );
+        }
+
+        /// <summary>
+        /// Checks that the person may use the data view, connection type, connection opportunity
+        /// and opt-out group selected on a campaign, and that the opportunity belongs to the
+        /// selected connection type. A value that is empty or unchanged from the stored campaign
+        /// is not checked, so an existing campaign set up by someone else can still be saved.
+        /// </summary>
+        /// <param name="previous">The campaign as currently stored, or a new <see cref="CampaignItem"/> when adding one.</param>
+        /// <param name="updated">The campaign with the values about to be saved.</param>
+        /// <param name="person">The person saving the campaign.</param>
+        /// <param name="errorMessage">The reason the campaign cannot be saved, or an empty string.</param>
+        /// <returns><c>true</c> if the campaign can be saved; otherwise <c>false</c>.</returns>
+        [RockInternal( "17.14", keepInternalForever: true )]
+        public static bool ValidateCampaignReferences( CampaignItem previous, CampaignItem updated, Person person, out string errorMessage )
+        {
+            errorMessage = string.Empty;
+
+            if ( updated == null || person == null )
+            {
+                errorMessage = "You do not have permission to save this campaign.";
+                return false;
+            }
+
+            previous = previous ?? new CampaignItem();
+
+            var isDataViewChanged = updated.DataViewGuid != Guid.Empty && updated.DataViewGuid != previous.DataViewGuid;
+            var isConnectionTypeChanged = updated.ConnectionTypeGuid != Guid.Empty && updated.ConnectionTypeGuid != previous.ConnectionTypeGuid;
+            var isOpportunityChanged = updated.OpportunityGuid != Guid.Empty && updated.OpportunityGuid != previous.OpportunityGuid;
+            var isOptOutGroupChanged = updated.OptOutGroupGuid.HasValue && updated.OptOutGroupGuid.Value != Guid.Empty && updated.OptOutGroupGuid != previous.OptOutGroupGuid;
+
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
+            {
+                if ( isDataViewChanged )
+                {
+                    var dataView = new DataViewService( rockContext ).Get( updated.DataViewGuid );
+                    if ( dataView == null || !dataView.IsAuthorized( Rock.Security.Authorization.VIEW, person ) )
+                    {
+                        errorMessage = "You do not have permission to use the selected data view.";
+                        return false;
+                    }
+                }
+
+                if ( isConnectionTypeChanged )
+                {
+                    var connectionType = new ConnectionTypeService( rockContext ).Get( updated.ConnectionTypeGuid );
+                    if ( connectionType == null || !connectionType.IsAuthorized( Rock.Security.Authorization.VIEW, person ) )
+                    {
+                        errorMessage = "You do not have permission to use the selected connection type.";
+                        return false;
+                    }
+                }
+
+                ConnectionOpportunity opportunity = null;
+                if ( isOpportunityChanged )
+                {
+                    opportunity = new ConnectionOpportunityService( rockContext ).Get( updated.OpportunityGuid );
+                    if ( opportunity == null || !opportunity.IsAuthorized( Rock.Security.Authorization.VIEW, person ) )
+                    {
+                        errorMessage = "You do not have permission to use the selected connection opportunity.";
+                        return false;
+                    }
+                }
+
+                if ( isOptOutGroupChanged )
+                {
+                    var optOutGroup = new GroupService( rockContext ).Get( updated.OptOutGroupGuid.Value );
+                    if ( optOutGroup == null || !optOutGroup.IsAuthorized( Rock.Security.Authorization.VIEW, person ) )
+                    {
+                        errorMessage = "You do not have permission to use the selected opt-out group.";
+                        return false;
+                    }
+                }
+
+                // The campaign creates requests in the opportunity, so it must belong to the selected connection type.
+                if ( ( isConnectionTypeChanged || isOpportunityChanged ) && updated.ConnectionTypeGuid != Guid.Empty && updated.OpportunityGuid != Guid.Empty )
+                {
+                    opportunity = opportunity ?? new ConnectionOpportunityService( rockContext ).Get( updated.OpportunityGuid );
+                    if ( opportunity == null || opportunity.ConnectionType == null || opportunity.ConnectionType.Guid != updated.ConnectionTypeGuid )
+                    {
+                        errorMessage = "The opportunity does not belong to the selected connection type.";
+                        return false;
+                    }
+                }
+            }
+
+            return true;
         }
 
         /// <summary>
