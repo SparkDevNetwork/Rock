@@ -296,7 +296,7 @@ namespace Rock
 
                     if ( objAttrs.Any() )
                     {
-                        result.Add( string.Format( "Attributes <p class='attributes'>Below is a list of attributes that can be retrieved using <code>{{{{ {0} | Attribute:'[AttributeKey]' }}}}</code>.</p>", parentElement ), objAttrs );
+                        result.Add( string.Format( "Attributes <p class='attributes'>Below is a list of attributes that can be retrieved using <code>{{{{ {0} | Attribute:'[AttributeKey]' }}}}</code>.</p>", parentElement.EncodeHtml() ), objAttrs );
                     }
                 }
 
@@ -348,7 +348,7 @@ namespace Rock
                 var jValue = ( myObject as Newtonsoft.Json.Linq.JValue );
                 if ( jValue != null && jValue.Value != null )
                 {
-                    return jValue.Value.ToString();
+                    return jValue.Value.ToString().Truncate( 50 ).EncodeHtml();
                 }
                 else
                 {
@@ -381,7 +381,7 @@ namespace Rock
                 return result;
             }
 
-            return myObject.ToStringSafe();
+            return myObject.ToStringSafe().EncodeHtml();
         }
 
         private static string FormatLavaDataObjectInfo( object liquidizedObject, int levelsDeep = 0, string parents = "" )
@@ -409,7 +409,7 @@ namespace Rock
                         if ( keyVal.Value is string )
                         {
                             // item is a root level property
-                            sb.Append( string.Format( "<ul><li><span class='lava-debug-key'>{0}</span> - {1}</li></ul>{2}", keyVal.Key, keyVal.Value.ToString(), Environment.NewLine ) );
+                            sb.Append( string.Format( "<ul><li><span class='lava-debug-key'>{0}</span> - {1}</li></ul>{2}", keyVal.Key.EncodeHtml(), keyVal.Value.ToString(), Environment.NewLine ) );
                         }
                         else
                         {
@@ -419,7 +419,7 @@ namespace Rock
                             sb.Append( "<div class='panel panel-default panel-lavadebug'>" );
 
                             sb.Append( string.Format( "<div class='panel-heading clearfix collapsed' data-toggle='collapse' data-target='#collapse-{0}' onclick='$(\"#collapse-{0}\").collapse(\"toggle\"); event.stopPropagation();'>", panelId ) );
-                            sb.Append( string.Format( "<h5 class='panel-title pull-left'>{0}</h5> <div class='pull-right'><i class='ti ti-chevron-up'></i></div>", keyVal.Key.SplitCase() ) );
+                            sb.Append( string.Format( "<h5 class='panel-title pull-left'>{0}</h5> <div class='pull-right'><i class='ti ti-chevron-up'></i></div>", keyVal.Key.SplitCase().EncodeHtml() ) );
                             sb.Append( "</div>" );
 
                             sb.Append( string.Format( "<div id='collapse-{0}' class='panel-collapse collapse'>", panelId ) );
@@ -454,7 +454,8 @@ namespace Rock
                     {
                         string section = ( keyVal.Value is string ) ? "" : string.Format( " lava-debug-section level-{0}", levelsDeep );
                         string value = FormatLavaDataObjectInfo( keyVal.Value, levelsDeep + 1, parents + "." + keyVal.Key );
-                        sb.AppendFormat( "<li><span class='lava-debug-key{0}'>{1}</span> {2}</li>{3}", section, keyVal.Key, value, Environment.NewLine );
+                        var key = IsLavaDebugAttributesKey( keyVal.Key ) ? keyVal.Key : keyVal.Key.EncodeHtml();
+                        sb.AppendFormat( "<li><span class='lava-debug-key{0}'>{1}</span> {2}</li>{3}", section, key, value, Environment.NewLine );
                     }
                 }
 
