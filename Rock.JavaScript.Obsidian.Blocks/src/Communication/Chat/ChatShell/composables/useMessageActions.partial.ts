@@ -598,6 +598,8 @@ export function createMessageActions(dependencies: MessageActionsDependencies): 
         stop: (): void => {
             // for good: what is on screen stays as it was, and nothing still out lands in it
             isStopped = true;
+            // an unfinished edit's words are this person's, held only while chat runs for them
+            editTexts.clear();
         }
     };
 }
