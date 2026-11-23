@@ -974,8 +974,8 @@ namespace Rock.Blocks.Engagement
         }
 
         /// <summary>
-        /// Gets the Ids of the active Connection Opportunities under the specified Connection Type
-        /// that the current person is authorized to VIEW. This mirrors the legacy Connection Request
+        /// Gets the Ids of the active (or, with <paramref name="includeInactive"/>, all) Connection Opportunities
+        /// under the specified Connection Type that the current person is authorized to VIEW. This mirrors the legacy Connection Request
         /// Board: an opportunity is viewable when the person has native VIEW authorization on it, or
         /// (only when Request Security is enabled on the type) when the person is the assigned
         /// connector on at least one request in that opportunity. Authorization is evaluated over the
@@ -983,8 +983,10 @@ namespace Rock.Blocks.Engagement
         /// ConnectorPersonAlias.PersonId, so the cost does not grow with total Connection Request volume.
         /// </summary>
         /// <param name="connectionType">The Connection Type whose opportunities are evaluated.</param>
+        /// <param name="includeInactive">If <c>true</c>, inactive opportunities are evaluated too (for example, so that
+        /// completion metrics still count requests in an opportunity that has since been made inactive).</param>
         /// <returns>The set of Connection Opportunity Ids the current person is authorized to view.</returns>
-        private HashSet<int> GetViewAuthorizedConnectionOpportunityIds( ConnectionType connectionType )
+        private HashSet<int> GetViewAuthorizedConnectionOpportunityIds( ConnectionType connectionType, bool includeInactive = false )
         {
             var authorizedOpportunityIds = new HashSet<int>();
 
@@ -1008,7 +1010,7 @@ namespace Rock.Blocks.Engagement
                     .Distinct() );
             }
 
-            foreach ( var opportunity in connectionType.ConnectionOpportunities.Where( o => o.IsActive ) )
+            foreach ( var opportunity in connectionType.ConnectionOpportunities.Where( o => includeInactive || o.IsActive ) )
             {
                 // Check native VIEW authorization on the opportunity directly (matching the board),
                 // falling back to the self-assigned connector check only when Request Security is enabled.
@@ -1605,6 +1607,22 @@ namespace Rock.Blocks.Engagement
                 ? connectionTypeService.Queryable().Where( ct => ct.Id == configuredConnectionTypeId.Value )
                 : connectionTypeService.Queryable().Where( ct => !filterConnectionType.HasValue || ct.Guid == filterConnectionType.Value );
 
+            /*
+                11/23/2026 - MSE
+
+                The metrics count only requests in opportunities the person may VIEW, using the same
+                rule as the grid (GetViewAuthorizedConnectionOpportunityIds). Inactive opportunities
+                are included so completed requests in them still count for people allowed to see them.
+                A type the person cannot see yields no ids and so no counts.
+
+                Reason: Keep the dashboard from counting requests in restricted opportunities.
+            */
+            var viewableOpportunityIds = connectionTypeQry
+                .Include( ct => ct.ConnectionOpportunities )
+                .ToList()
+                .SelectMany( ct => GetViewAuthorizedConnectionOpportunityIds( ct, true ) )
+                .ToList();
+
             var selectedConnector = IsConnectorLockedToCurrentPerson
                 ? RequestContext.CurrentPerson
                 : new PersonService( RockContext ).Get( SelectedConnector, !PageCache.Layout.Site.DisablePredictableIds );
@@ -1621,6 +1639,7 @@ namespace Rock.Blocks.Engagement
                     {
                         CampusGuid = RequestContext.GetContextEntity<Campus>()?.Guid,
                         ConnectionOpportunityGuid = connectionOpportunityGuid,
+                        ConnectionOpportunityIds = viewableOpportunityIds,
                         ConnectorPersonAliasGuid = selectedConnector?.PrimaryAliasGuid
                     } )
                 .Select( c => new CompletionMetricsBag
