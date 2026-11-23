@@ -300,4 +300,29 @@ describe("a row's live arrival", () => {
         await nextTick();
         expect(later.isArrivedLive.value).toBe(true);
     });
+
+    // A live arrival greets once per message per page life: the first row that reads it claims it,
+    // so the same message redrawn by a scroll, a remount or a return to its room never replays it.
+    test("is told to the first row that reads it, never to the same message's row drawn again", () => {
+        const motion = createMessageMotion();
+        motion.arrived(annas, place);
+        motion.arrived({ id: 4, client_key: null }, place);
+        motion.typingEnded(place, "sent", { id: 4, client_key: null });
+
+        expect(rowOf(motion, "k:3").isArrivedLive.value).toBe(true);
+        expect(rowOf(motion, "k:3").isArrivedLive.value).toBe(false);
+        expect(rowOf(motion, "k:4").isArrivedLive.value).toBe(true);
+        expect(rowOf(motion, "k:4").isArrivedLive.value).toBe(false);
+    });
+
+    test("a row that never reads it leaves it for the row that does", () => {
+        const motion = createMessageMotion();
+        motion.arrived(annas, place);
+
+        rowOf(motion, "k:3");
+
+        const read = rowOf(motion, "k:3");
+        expect(read.isArrivedLive.value).toBe(true);
+        expect(read.isArrivedLive.value).toBe(true);
+    });
 });
