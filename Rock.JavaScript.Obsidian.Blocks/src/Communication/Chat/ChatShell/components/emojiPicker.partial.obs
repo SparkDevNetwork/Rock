@@ -249,11 +249,15 @@ img.chat-picker-glyph {
     transition-duration: var(--chat-d-glyph-press);
 }
 
-/* The keyboard's cell, and the first search result, which Enter takes. */
-.chat-picker-cell:focus-visible,
+/* The keyboard's cell wears the chat's ring inside its edge, so its neighbours do not cover it. */
+.chat-picker-cell:focus-visible {
+    background: var(--chat-hover);
+    outline-offset: -2px;
+}
+
+/* The first search result, which Enter takes before any cell has focus. */
 .chat-picker-cell.is-first {
     background: var(--chat-hover);
-    outline: none;
     box-shadow: inset 0 0 0 2px var(--chat-brand-ring);
 }
 
@@ -261,10 +265,6 @@ img.chat-picker-glyph {
 .chat-picker-cell[aria-pressed="true"] {
     background: var(--chat-brand-tint);
     box-shadow: inset 0 0 0 1px var(--chat-brand-line);
-}
-
-.chat-picker-cell[aria-pressed="true"]:focus-visible {
-    box-shadow: inset 0 0 0 2px var(--chat-brand-ring), inset 0 0 0 1px var(--chat-brand-line);
 }
 
 /* The loading cells stand where a category's first rows will, under its label's line. */
@@ -372,11 +372,6 @@ img.chat-picker-glyph {
     content: "";
     background: var(--chat-brand);
     border-radius: var(--chat-r-inline);
-}
-
-.chat-picker-tabs button:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 2px var(--chat-brand-ring);
 }
 
 .chat-picker-foot {

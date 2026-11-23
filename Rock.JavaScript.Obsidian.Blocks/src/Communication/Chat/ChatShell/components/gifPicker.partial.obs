@@ -193,7 +193,7 @@
     opacity: 0;
 }
 
-/* A hovered or focused tile takes the grid's ring, drawn over the GIF. */
+/* A hovered tile takes the grid's ring, drawn over the GIF. */
 .chat-gif-tile::after {
     position: absolute;
     inset: 0;
@@ -203,13 +203,13 @@
     transition: box-shadow var(--chat-t-fast) var(--chat-ease-state);
 }
 
-.chat-gif-tile:hover::after,
-.chat-gif-tile:focus-visible::after {
+.chat-gif-tile:hover::after {
     box-shadow: inset 0 0 0 2px var(--chat-brand-fill), inset 0 0 0 4px var(--chat-brand-ring);
 }
 
+/* The keyboard's tile wears the chat's ring inside its edge, drawn over the GIF as an outline is. */
 .chat-gif-tile:focus-visible {
-    outline: none;
+    outline-offset: -2px;
 }
 
 /*
