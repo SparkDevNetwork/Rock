@@ -295,13 +295,19 @@ namespace Rock.Model
             var campusGuid = options?.CampusGuid;
             var connectionOpportunityGuid = options?.ConnectionOpportunityGuid;
 
+            // EF cannot compare a list to null in SQL, so use a flag and a non-null list.
+            var isFilteredByOpportunityIds = options?.ConnectionOpportunityIds != null;
+            var opportunityIds = options?.ConnectionOpportunityIds ?? new List<int>();
+
             var baseQuery =
                 from ct in connectionTypeQuery
 
                 from co in ct.ConnectionOpportunities
                     .Where(co =>
-                        !connectionOpportunityGuid.HasValue
-                        || co.Guid == connectionOpportunityGuid.Value
+                        ( !connectionOpportunityGuid.HasValue
+                            || co.Guid == connectionOpportunityGuid.Value )
+                        && ( !isFilteredByOpportunityIds
+                            || opportunityIds.Contains( co.Id ) )
                     )
 
                 from cr in co.ConnectionRequests
@@ -369,12 +375,18 @@ namespace Rock.Model
             var campusGuid = options?.CampusGuid;
             var connectionOpportunityGuid = options?.ConnectionOpportunityGuid;
 
+            // EF cannot compare a list to null in SQL, so use a flag and a non-null list.
+            var isFilteredByOpportunityIds = options?.ConnectionOpportunityIds != null;
+            var opportunityIds = options?.ConnectionOpportunityIds ?? new List<int>();
+
             return
                 from ct in connectionTypeQuery
                 from co in ct.ConnectionOpportunities
                     .Where(co =>
-                        !connectionOpportunityGuid.HasValue
-                        || co.Guid == connectionOpportunityGuid.Value
+                        ( !connectionOpportunityGuid.HasValue
+                            || co.Guid == connectionOpportunityGuid.Value )
+                        && ( !isFilteredByOpportunityIds
+                            || opportunityIds.Contains( co.Id ) )
                     )
                 from cr in co.ConnectionRequests
                 where
@@ -425,13 +437,19 @@ namespace Rock.Model
             var campusGuid = options?.CampusGuid;
             var connectionOpportunityGuid = options?.ConnectionOpportunityGuid;
 
+            // EF cannot compare a list to null in SQL, so use a flag and a non-null list.
+            var isFilteredByOpportunityIds = options?.ConnectionOpportunityIds != null;
+            var opportunityIds = options?.ConnectionOpportunityIds ?? new List<int>();
+
             var query =
                 from cr in connectionTypeQuery
                     .SelectMany( ct =>
                         ct.ConnectionOpportunities
                             .Where( co =>
-                                !connectionOpportunityGuid.HasValue
-                                || co.Guid == connectionOpportunityGuid.Value
+                                ( !connectionOpportunityGuid.HasValue
+                                    || co.Guid == connectionOpportunityGuid.Value )
+                                && ( !isFilteredByOpportunityIds
+                                    || opportunityIds.Contains( co.Id ) )
                             )
                             .SelectMany( co =>
                                 co.ConnectionRequests
@@ -497,13 +515,19 @@ namespace Rock.Model
             var campusGuid = options?.CampusGuid;
             var connectionOpportunityGuid = options?.ConnectionOpportunityGuid;
 
+            // EF cannot compare a list to null in SQL, so use a flag and a non-null list.
+            var isFilteredByOpportunityIds = options?.ConnectionOpportunityIds != null;
+            var opportunityIds = options?.ConnectionOpportunityIds ?? new List<int>();
+
             var query =
                 from cr in connectionTypeQuery
                     .SelectMany( ct =>
                         ct.ConnectionOpportunities
                             .Where( co =>
-                                !connectionOpportunityGuid.HasValue
-                                || co.Guid == connectionOpportunityGuid.Value
+                                ( !connectionOpportunityGuid.HasValue
+                                    || co.Guid == connectionOpportunityGuid.Value )
+                                && ( !isFilteredByOpportunityIds
+                                    || opportunityIds.Contains( co.Id ) )
                             )
                             .SelectMany( co => co.ConnectionRequests )
                     )

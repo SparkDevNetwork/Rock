@@ -155,10 +155,83 @@ namespace Rock.Blocks.Engagement
             }
         }
 
+        private bool? _isConnectionTypeViewable = null;
+        /// <summary>
+        /// Gets a value indicating whether the current person may view the connection
+        /// type from the page parameter. This is true when the person has VIEW on the
+        /// type or is the connector on a request in a type with request security enabled.
+        /// </summary>
+        private bool IsConnectionTypeViewable
+        {
+            get
+            {
+                if ( !_isConnectionTypeViewable.HasValue )
+                {
+                    _isConnectionTypeViewable = ConnectionType != null
+                        && new ConnectionTypeService( RockContext )
+                            .GetViewAuthorizedConnectionTypes( new[] { ConnectionType }, GetCurrentPerson() )
+                            .Any();
+                }
+
+                return _isConnectionTypeViewable.Value;
+            }
+        }
+
+        private List<int> _viewAuthorizedOpportunityIds = null;
+        /// <summary>
+        /// Gets the identifiers of every opportunity (active or not) within the connection
+        /// type that the current person may view. Used to limit the metrics and the
+        /// Connectors grid to requests the person is allowed to see.
+        /// </summary>
+        private List<int> ViewAuthorizedOpportunityIds
+        {
+            get
+            {
+                if ( _viewAuthorizedOpportunityIds == null )
+                {
+                    // Load the connection type first so it is tracked by EF and gets
+                    // wired up to each opportunity for the inherited security checks.
+                    if ( ConnectionType == null )
+                    {
+                        _viewAuthorizedOpportunityIds = new List<int>();
+                    }
+                    else
+                    {
+                        _viewAuthorizedOpportunityIds = ConnectionTypeQuery
+                            // Don't add .AsNoTracking() here or the type won't get wired up to the opportunities.
+                            .SelectMany( ct => ct.ConnectionOpportunities )
+                            .ToList()
+                            .Where( CanViewOpportunity )
+                            .Select( co => co.Id )
+                            .ToList();
+                    }
+                }
+
+                return _viewAuthorizedOpportunityIds;
+            }
+        }
+
         #endregion
 
         public override object GetObsidianBlockInitialization()
         {
+            /*
+                11/23/2026 - MSE
+
+                Block VIEW only lets the person open the page. The connection type
+                comes from the page parameter, so the person must also be allowed
+                to view that type before its name, opportunities or metrics are built.
+
+                Reason: Do not show data for a connection type the person cannot view.
+            */
+            if ( ConnectionType != null && !IsConnectionTypeViewable )
+            {
+                return new ListBlockBox<OptionsBag>
+                {
+                    ErrorMessage = Rock.Constants.EditModeMessage.NotAuthorizedToView( Rock.Model.ConnectionType.FriendlyTypeName )
+                };
+            }
+
             var builder = GetGridBuilder();
 
             var box = new ListBlockBox<OptionsBag>
@@ -220,6 +293,11 @@ namespace Rock.Blocks.Engagement
         [BlockAction( "GetCompletionMetrics" )]
         public BlockActionResult GetCompletionMetricsBlockAction()
         {
+            if ( !IsConnectionTypeViewable )
+            {
+                return ActionBadRequest( "Connection opportunity not found." );
+            }
+
             var completionMetrics = GetCompletionMetrics();
             return ActionOk( completionMetrics );
         }
@@ -236,13 +314,21 @@ namespace Rock.Blocks.Engagement
         /// out of the opportunity picker.
         /// </summary>
         /// <param name="bag">The bag that contains the posted filter values.</param>
-        /// <returns><c>true</c> if no opportunity was posted or the posted opportunity is allowed; otherwise <c>false</c>.</returns>
+        /// <returns><c>true</c> if the connection type is viewable and no opportunity was posted or the posted opportunity is allowed; otherwise <c>false</c>.</returns>
         private bool IsConnectionOpportunityAllowed( GetMetricsBag bag )
         {
+            // Every action re-checks the connection type from the page parameter,
+            // independent of what the block returned on initialization.
+            if ( !IsConnectionTypeViewable )
+            {
+                return false;
+            }
+
             var connectionOpportunityGuid = bag?.ConnectionOpportunityGuid;
 
-            // No opportunity filter means the type-wide data, which is what
-            // the block shows on initialization.
+            // No opportunity filter means the data for every opportunity in the
+            // type that the person can view, which is what the block shows on
+            // initialization.
             if ( !connectionOpportunityGuid.HasValue )
             {
                 return true;
@@ -337,10 +423,24 @@ namespace Rock.Blocks.Engagement
             };
         }
 
-        private List<IdKeyListItemBag> GetConnectionOpportunities()
+        /// <summary>
+        /// Determines whether the current person may view the connection opportunity.
+        /// This is the one rule used by the opportunity picker, the metrics and the
+        /// Connectors grid.
+        /// </summary>
+        /// <param name="connectionOpportunity">The connection opportunity, loaded with its connection type tracked.</param>
+        /// <returns><c>true</c> if the person has VIEW or EDIT on the opportunity or is a connector in it on a type with request security; otherwise <c>false</c>.</returns>
+        private bool CanViewOpportunity( ConnectionOpportunity connectionOpportunity )
         {
             var currentPerson = GetCurrentPerson();
 
+            return connectionOpportunity.IsAuthorized( Authorization.VIEW, currentPerson )
+                || connectionOpportunity.IsAuthorized( Authorization.EDIT, currentPerson )
+                || SelfAssignedOpportunityIds.Contains( connectionOpportunity.Id );
+        }
+
+        private List<IdKeyListItemBag> GetConnectionOpportunities()
+        {
             // Ensure the connection type is tracked by EF so it'll get wired up
             // to each opportunity for the inherited security checks below.
             if ( ConnectionType == null )
@@ -356,11 +456,7 @@ namespace Rock.Blocks.Engagement
                 .ThenBy( co => co.PublicName )
                 .ToList()
                 // Only include opportunities that the current person is authorized to view.
-                .Where( co =>
-                    co.IsAuthorized( Authorization.VIEW, currentPerson )
-                    || co.IsAuthorized( Authorization.EDIT, currentPerson )
-                    || SelfAssignedOpportunityIds.Contains( co.Id )
-                )
+                .Where( CanViewOpportunity )
                 .Select( co => new IdKeyListItemBag
                 {
                     // Use IdKeys instead of guid so they can be used as page parameters when navigating to the Connections Hub
@@ -387,7 +483,8 @@ namespace Rock.Blocks.Engagement
                     new ConnectionRequestCompletionMetricsQueryOptions
                     {
                         CampusGuid = RequestContext.GetContextEntity<Campus>()?.Guid,
-                        ConnectionOpportunityGuid = connectionOpportunityGuid
+                        ConnectionOpportunityGuid = connectionOpportunityGuid,
+                        ConnectionOpportunityIds = ViewAuthorizedOpportunityIds
                     } )
                 .Select( c => new CompletionMetricsBag
                 {
@@ -436,7 +533,8 @@ namespace Rock.Blocks.Engagement
                     new ConnectionRequestHealthSnapshotQueryOptions
                     {
                         CampusGuid = RequestContext.GetContextEntity<Campus>()?.Guid,
-                        ConnectionOpportunityGuid = connectionOpportunityGuid
+                        ConnectionOpportunityGuid = connectionOpportunityGuid,
+                        ConnectionOpportunityIds = ViewAuthorizedOpportunityIds
                     }
                 )
                 .FirstOrDefault();
@@ -447,7 +545,8 @@ namespace Rock.Blocks.Engagement
                     new ConnectionRequestStatusDistributionQueryOptions
                     {
                         CampusGuid = RequestContext.GetContextEntity<Campus>()?.Guid,
-                        ConnectionOpportunityGuid = connectionOpportunityGuid
+                        ConnectionOpportunityGuid = connectionOpportunityGuid,
+                        ConnectionOpportunityIds = ViewAuthorizedOpportunityIds
                     }
                 )
                 .Select( sd => new RequestStatusCountBag
@@ -481,7 +580,8 @@ namespace Rock.Blocks.Engagement
                     new ConnectionRequestUpcomingFollowUpWindowQueryOptions
                     {
                         CampusGuid = RequestContext.GetContextEntity<Campus>()?.Guid,
-                        ConnectionOpportunityGuid = connectionOpportunityGuid
+                        ConnectionOpportunityGuid = connectionOpportunityGuid,
+                        ConnectionOpportunityIds = ViewAuthorizedOpportunityIds
                     }
                 )
                 .Select( w => new UpcomingFollowUpBag
@@ -522,10 +622,15 @@ namespace Rock.Blocks.Engagement
             var campusGuid = RequestContext.GetContextEntity<Campus>()?.Guid;
             var connectionOpportunityGuid = bag?.ConnectionOpportunityGuid;
 
+            // Only count requests in opportunities the person can view. Use a
+            // local list so EF can translate it to SQL.
+            var viewableOpportunityIds = ViewAuthorizedOpportunityIds;
+
             // 1. Aggregate metrics per connector in SQL
             var metrics = ConnectionTypeQuery
                 .SelectMany( ct => ct.ConnectionOpportunities
-                    .Where( co => !connectionOpportunityGuid.HasValue || co.Guid == connectionOpportunityGuid.Value )
+                    .Where( co => viewableOpportunityIds.Contains( co.Id )
+                        && ( !connectionOpportunityGuid.HasValue || co.Guid == connectionOpportunityGuid.Value ) )
                     .SelectMany( co => co.ConnectionRequests )
                 )
                 .Where( cr =>

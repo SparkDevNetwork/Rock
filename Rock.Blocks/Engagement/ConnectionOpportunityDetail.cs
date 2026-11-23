@@ -147,6 +147,19 @@ namespace Rock.Blocks.Engagement
         }
 
         /// <summary>
+        /// Determines whether the connection type from the page parameter is
+        /// missing or can be viewed by the current person.
+        /// </summary>
+        /// <returns><c>true</c> if there is no connection type or the person can view it; otherwise <c>false</c>.</returns>
+        private bool IsConnectionTypeViewable()
+        {
+            var connectionType = GetConnectionType();
+
+            return connectionType == null
+                || connectionType.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson );
+        }
+
+        /// <summary>
         /// Gets the connection request attributes that are scoped to the specified connection opportunity.
         /// </summary>
         /// <param name="connectionOpportunityId">The identifier of the connection opportunity.</param>
@@ -629,12 +642,29 @@ namespace Rock.Blocks.Engagement
                 return null;
             }
 
-            var isViewable = BlockCache.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson );
+            /*
+                11/23/2026 - MSE
+
+                Block VIEW only lets the person open the page. An existing opportunity
+                also needs block EDIT or VIEW on the opportunity itself, the rule the
+                WebForms block used before showing details. This is kept separate from
+                IsEditable below so a later change to the edit rule does not hide the
+                view from block viewers.
+
+                Reason: Do not show a connection opportunity the person is denied.
+            */
+            var isViewable = BlockCache.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson )
+                && ( entity.Id == 0
+                    || BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson )
+                    || entity.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) );
 
             // Match the WebForms behavior: editing is allowed by block-level Edit rights or View
             // rights on the connection opportunity itself.
-            box.IsEditable = BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson )
-                || entity.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson );
+            // A new opportunity also needs VIEW on the page parameter connection
+            // type, the same rule the Edit and Save actions use.
+            box.IsEditable = ( BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson )
+                    || entity.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+                && ( entity.Id != 0 || IsConnectionTypeViewable() );
 
             if ( entity.Id != 0 )
             {
@@ -1012,11 +1042,22 @@ namespace Rock.Blocks.Engagement
                 pageParameters.Add( PageParameterKey.ConnectionTypeId, connectionTypeKey );
             }
 
-            var name = new ConnectionOpportunityService( RockContext )
-                .GetSelect( connectionOpportunityKey, co => co.Name );
+            var opportunity = connectionOpportunityKey.IsNotNullOrWhiteSpace()
+                ? new ConnectionOpportunityService( RockContext ).Get( connectionOpportunityKey, !PageCache.Layout.Site.DisablePredictableIds )
+                : null;
+            string name = null;
 
-            if ( name.IsNotNullOrWhiteSpace() )
+            if ( opportunity != null )
             {
+                // Only show the name of an opportunity the person can view, the
+                // same rule the detail view uses. RequestContext is not set when
+                // breadcrumbs are built, so fall back to the current request.
+                var currentPerson = RequestContext?.CurrentPerson ?? Rock.Net.RockRequestContextAccessor.Current?.CurrentPerson;
+                var canView = BlockCache.IsAuthorized( Authorization.EDIT, currentPerson )
+                    || opportunity.IsAuthorized( Authorization.VIEW, currentPerson );
+
+                name = canView ? opportunity.Name : ConnectionOpportunity.FriendlyTypeName;
+
                 pageParameters.Add( PageParameterKey.ConnectionOpportunityId, connectionOpportunityKey );
             }
 
@@ -1027,6 +1068,33 @@ namespace Rock.Blocks.Engagement
             {
                 BreadCrumbs = new List<IBreadCrumb> { breadCrumb }
             };
+        }
+
+        /// <summary>
+        /// Determines whether the current person may edit the connection opportunity
+        /// from the page parameter. This is the same rule used for <c>IsEditable</c>
+        /// when the block is initialized and by <see cref="TryGetEntityForEditAction"/>.
+        /// Used by the lookup actions the editor calls; Save keeps its own check.
+        /// </summary>
+        /// <returns><c>true</c> if the person has block EDIT or VIEW on the opportunity; otherwise <c>false</c>.</returns>
+        private bool IsEditAllowed()
+        {
+            var entity = GetInitialEntity();
+
+            /*
+                11/23/2026 - MSE
+
+                A new opportunity has no ConnectionType loaded, so the opportunity
+                VIEW check falls back to the default and passes for any block viewer.
+                Require VIEW on the page parameter connection type for a new
+                opportunity, the same rule IsEditable and TryGetEntityForEditAction use.
+
+                Reason: Do not let the editor lookups run for a connection type the person cannot view.
+            */
+            return entity != null
+                && ( BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson )
+                    || entity.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+                && ( entity.Id != 0 || IsConnectionTypeViewable() );
         }
 
         /// <inheritdoc/>
@@ -1059,6 +1127,25 @@ namespace Rock.Blocks.Engagement
             }
             else
             {
+                /*
+                    11/23/2026 - MSE
+
+                    A new opportunity takes its connection type from the page parameter,
+                    which the client supplies. The new entity has no ConnectionType
+                    loaded, so the opportunity VIEW check below falls back to the
+                    default and passes. Require VIEW on that type here so Edit and Save
+                    with an empty key cannot read the type's details or create an
+                    opportunity in a type the person is denied.
+
+                    Reason: Do not expose or write to a connection type the person cannot view.
+                */
+                if ( !IsConnectionTypeViewable() )
+                {
+                    entity = null;
+                    error = ActionBadRequest( $"Not authorized to edit {ConnectionOpportunity.FriendlyTypeName}." );
+                    return false;
+                }
+
                 // Create a new entity.
                 entity = new ConnectionOpportunity();
                 entityService.Add( entity );
@@ -1635,9 +1722,15 @@ namespace Rock.Blocks.Engagement
         [BlockAction]
         public BlockActionResult GetSupplementalDataForNewPlacementGroup( Guid groupGuid )
         {
+            if ( !IsEditAllowed() )
+            {
+                return ActionForbidden( "Not authorized to edit connection opportunities." );
+            }
+
             var group = new GroupService( RockContext ).Get( groupGuid );
 
-            if ( group == null )
+            // Same rule the group picker used to offer the group.
+            if ( group == null || !group.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
             {
                 return ActionNotFound( "Group not found." );
             }
@@ -1660,8 +1753,24 @@ namespace Rock.Blocks.Engagement
 		/// <returns>A result containing a list of qualifier options as <see cref="ListItemBag"/> values.</returns>
         public BlockActionResult GetConnectionWorkflowQualifierOptions( ConnectionWorkflowTriggerType triggerType )
         {
-            var connectionTypeId = GetConnectionType()?.Id;
+            if ( !IsEditAllowed() )
+            {
+                return ActionForbidden( "Not authorized to edit connection opportunities." );
+            }
+
+            var connectionType = GetConnectionType();
+            var connectionTypeId = connectionType?.Id;
             var qualifierOptions = new List<ListItemBag>();
+
+            // The connection type comes from the page parameter, so do not return
+            // its status or activity names unless the person can view it.
+            if ( connectionType != null && !connectionType.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+            {
+                return ActionOk( new ConnectionWorkflowQualifierOptionsResponseBag
+                {
+                    QualifierOptions = qualifierOptions
+                } );
+            }
 
             switch ( triggerType )
             {
@@ -1716,7 +1825,12 @@ namespace Rock.Blocks.Engagement
 		/// <returns>A list of distinct person options eligible to be default connectors.</returns>
         public BlockActionResult GetDefaultConnectorOptions( DefaultConnectorOptionsRequestBag bag )
         {
-            if ( bag.GroupGuids == null || !bag.GroupGuids.Any() )
+            if ( !IsEditAllowed() )
+            {
+                return ActionForbidden( "Not authorized to edit connection opportunities." );
+            }
+
+            if ( bag?.GroupGuids == null || !bag.GroupGuids.Any() )
             {
                 return ActionOk( new List<ListItemBag>() );
             }
@@ -1731,9 +1845,21 @@ namespace Rock.Blocks.Engagement
                 return ActionOk( new List<ListItemBag>() );
             }
 
+            /*
+                11/23/2026 - MSE
+
+                The group Guids are posted by the client. Only list members of groups
+                the person can view, the same rule the group picker uses to offer them.
+                The edit check above is not enough on its own because VIEW on the
+                opportunity is allowed by default.
+
+                Reason: Do not list members of a group the person cannot view.
+            */
             var groupService = new GroupService( RockContext );
             var groupIds = groupService.Queryable()
                 .Where( g => validGroupGuids.Contains( g.Guid ) && g.IsActive )
+                .ToList()
+                .Where( g => g.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
                 .Select( g => g.Id )
                 .ToList();
 
@@ -1741,8 +1867,6 @@ namespace Rock.Blocks.Engagement
             {
                 return ActionOk( new List<ListItemBag>() );
             }
-
-            var connectionOpportunityId = PageParameter( PageParameterKey.ConnectionOpportunityId ).AsInteger();
 
             var defaultConnectorOptions = new GroupMemberService( RockContext ).Queryable()
                 .Include( gm => gm.Person )
