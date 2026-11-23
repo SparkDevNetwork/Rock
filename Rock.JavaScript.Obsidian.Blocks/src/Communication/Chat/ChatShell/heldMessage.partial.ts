@@ -17,7 +17,7 @@
 // A message as every holder keeps it: one shape whichever path brought the copy, its send's key in
 // one form, masked as the people blocked now stand, and what its row draws.
 import { reactive, toRaw } from "vue";
-import { DisplayPiece, MessageDeletedEvent, MessageEditedEvent, MessageVisibilityEvent, TimelineMessage } from "./types.partial";
+import { DisplayPiece, EmojiGlyph, MessageDeletedEvent, MessageEditedEvent, MessageVisibilityEvent, TimelineMessage } from "./types.partial";
 
 /** What a message row draws: what kind of row, and its text. */
 export type MessageDisplay = {
@@ -226,27 +226,146 @@ export function maskHeld(messages: readonly Partial<TimelineMessage>[], mask: Me
     }
 }
 
-/** A mention token as a person types it: a person's alias guid, or the whole room, in any case. */
-const mentionToken = /<@(all|[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})>/gi;
+/** What a send knows beyond its text when its row is drawn before the platform answers. */
+export type PendingKnown = {
+    /** The mention pieces of the chips picked into this send, each with the name and photo the platform will write. */
+    mentions?: readonly DisplayPiece[];
+
+    /** The church's emoji catalog as this client holds it, if loaded. */
+    emoji?: readonly EmojiGlyph[] | null;
+};
 
 /**
- * What a message not yet stored draws. Who may be mentioned is the platform's call, made when the
- * message is stored, so until then each token is plain text: the name this client already holds
- * for the person, else "someone". Never a mention piece, which would claim an admission the
- * platform has not made, and never the raw token.
+ * The platform's cut of a body into chunks, as chat_display_pieces makes it: a token, a link, a
+ * shortcode's opening (its closing colon left to the next chunk, so an unknown code gives it back
+ * to open the next one), or ordinary text. The platform takes the longest alternative at each
+ * place; each alternative here begins with its own character, so the first that matches is it.
+ */
+const chunkPattern = /<@(?:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|all)>|https?:\/\/[^\s<]+|:[a-z0-9_+-]{1,64}(?=:)(?!:\/\/)|[^<h:]+|[\s\S]/gi;
+
+/** Each catalog's codes, built once per catalog the client holds, not once per row drawn. */
+const catalogCodes = new WeakMap<readonly EmojiGlyph[], ReadonlyMap<string, EmojiGlyph>>();
+
+function codesOf(catalog: readonly EmojiGlyph[]): ReadonlyMap<string, EmojiGlyph> {
+    let codes = catalogCodes.get(catalog);
+    if (!codes) {
+        codes = new Map(catalog.map(glyph => [glyph.code, glyph]));
+        catalogCodes.set(catalog, codes);
+    }
+    return codes;
+}
+
+/**
+ * A link's address as the platform keeps it: trailing punctuation, and a closing bracket with no
+ * opening one inside, end the sentence rather than the link.
+ */
+function linkAddress(chunk: string): string {
+    const tail = /[.,;:!?)]*$/.exec(chunk)?.[0] ?? "";
+    const open = chunk.split("(").length - 1;
+    let close = chunk.split(")").length - 1;
+    let cut = 0;
+    for (let index = tail.length - 1; index >= 0; index--) {
+        if (tail[index] === ")") {
+            if (close <= open) {
+                break;
+            }
+            close--;
+        }
+        cut++;
+    }
+    return chunk.slice(0, chunk.length - cut);
+}
+
+/**
+ * What a message not yet stored draws: the pieces the platform will store for it, where the
+ * client can know them. A link and a catalog code are the platform's rule over the body alone, so
+ * they are drawn as it will draw them; an alias, or a code while the catalog is not loaded, waits
+ * for the platform. Who may be mentioned is the platform's call, made when the message is stored:
+ * a chip picked in this send draws as a pending chip, the stored chip's look claiming nothing,
+ * since nothing that reads mentions counts it; any other token is the name this client holds,
+ * else "someone". Never a mention piece, which would claim an admission the platform has not
+ * made, and never the raw token.
  *
  * @param body The body as typed.
  * @param names Each person's name this client holds, by alias guid in lower case.
+ * @param known The chips picked and the catalog held, where the send has them.
  *
- * @returns The body as text pieces.
+ * @returns The body as pieces.
  */
-export function pendingPieces(body: string, names: ReadonlyMap<string, string>): DisplayPiece[] {
-    const text = body.replace(mentionToken, (_token, target: string) => {
-        const key = target.toLowerCase();
-        return key === "all" ? "@all" : `@${names.get(key) ?? "someone"}`;
-    });
+export function pendingPieces(body: string, names: ReadonlyMap<string, string>, known: PendingKnown = {}): DisplayPiece[] {
+    const codes = known.emoji ? codesOf(known.emoji) : null;
+    const picked = new Map<string, DisplayPiece>();
+    for (const piece of known.mentions ?? []) {
+        const key = piece.all === true ? "all" : typeof piece.person_alias_guid === "string" ? piece.person_alias_guid.toLowerCase() : null;
+        if (key) {
+            picked.set(key, piece);
+        }
+    }
 
-    return [{ type: "text", text }];
+    const pieces: DisplayPiece[] = [];
+    let text = "";
+    let isClosing = false;
+    const push = (piece: DisplayPiece): void => {
+        if (text) {
+            pieces.push({ type: "text", text });
+            text = "";
+        }
+        pieces.push(piece);
+    };
+
+    for (const match of body.matchAll(chunkPattern)) {
+        let chunk = match[0];
+
+        // the closing colon of the glyph just drawn, which may have opened this chunk
+        if (isClosing) {
+            isClosing = false;
+            text += chunk.slice(1);
+            continue;
+        }
+
+        if (chunk.startsWith("<@")) {
+            const key = chunk.slice(2, -1).toLowerCase();
+            const chip = picked.get(key);
+            if (chip) {
+                push({ ...chip, type: "pending-mention" });
+            }
+            else {
+                text += key === "all" ? "@all" : `@${names.get(key) ?? "someone"}`;
+            }
+            continue;
+        }
+
+        if (chunk.startsWith(":") && chunk.length > 1) {
+            const glyph = codes?.get(chunk.slice(1));
+            if (glyph) {
+                push({
+                    type: "emoji",
+                    text: `${chunk}:`,
+                    code: glyph.code,
+                    ...(glyph.emoji ? { emoji: glyph.emoji } : {}),
+                    ...(glyph.image_url ? { image_url: glyph.image_url } : {}),
+                    label: glyph.label
+                });
+                isClosing = true;
+                continue;
+            }
+        }
+        else if (/^https?:\/\//i.test(chunk)) {
+            const url = linkAddress(chunk);
+            if (/^https?:\/\/./i.test(url)) {
+                push({ type: "link", text: url, url });
+                chunk = chunk.slice(url.length);
+            }
+        }
+
+        text += chunk;
+    }
+
+    if (text || pieces.length === 0) {
+        pieces.push({ type: "text", text });
+    }
+
+    return pieces;
 }
 
 /**
