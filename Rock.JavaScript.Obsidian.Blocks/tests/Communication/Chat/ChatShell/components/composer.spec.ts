@@ -505,6 +505,38 @@ describe("the composer's quote strip", () => {
 
         expect(wrapper.emitted("cancelQuote")).toEqual([[]]);
     });
+
+    test("Escape in the box takes the quote back, focus staying in the box", async () => {
+        const wrapper = mountComposer({ attachTo: document.body, props: { title: "Anna Reyes", quote: annasMessage } as Record<string, unknown> });
+        editorOf(wrapper).focus();
+
+        editorOf(wrapper).dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true, cancelable: true }));
+
+        expect(wrapper.emitted("cancelQuote")).toEqual([[]]);
+        expect(document.activeElement).toBe(editorOf(wrapper));
+        wrapper.unmount();
+    });
+
+    test("an Escape a picker above the box took first leaves the quote", async () => {
+        const wrapper = mountComposer({ props: { title: "Anna Reyes", quote: annasMessage } as Record<string, unknown> });
+        const escape = new KeyboardEvent("keydown", { key: "Escape", bubbles: true, cancelable: true });
+        escape.preventDefault();
+
+        editorOf(wrapper).dispatchEvent(escape);
+
+        expect(wrapper.emitted("cancelQuote")).toBeUndefined();
+    });
+
+    test("reads a quoted glyph and link as the message draws them", () => {
+        const pieces = [
+            { type: "emoji", text: ":tada:", code: "tada", emoji: "🎉", label: "party popper" },
+            { type: "text", text: " see " },
+            { type: "link", text: "https://cedarhill.church/hike", url: "https://cedarhill.church/hike" }
+        ];
+        const wrapper = mountComposer({ props: { title: "Anna Reyes", quote: { ...annasMessage, body: ":tada: see https://cedarhill.church/hike", pieces } } as Record<string, unknown> });
+
+        expect(wrapper.get("[data-testid='composer-quote-preview']").text()).toBe("🎉 see cedarhill.church/hike");
+    });
 });
 
 // The emoji button opens the picker in insert mode, anchored on the button: a Unicode emoji goes
