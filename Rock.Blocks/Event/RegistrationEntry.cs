@@ -360,9 +360,13 @@ namespace Rock.Blocks.Event
                     }
                 }
 
+                // The person may have been matched only from the typed details, so their Guid is returned only to someone who could already see them.
+                var isRegistrantPersonAvailable = registrantPerson != null
+                    && IsPersonAvailableForDefaultValues( RockContext, registrantPerson, GetCurrentPerson(), registrationContext.Registration );
+
                 return ActionOk( new ResolveRegistrantPersonResultBag
                 {
-                    PersonGuid = registrantPerson?.Guid,
+                    PersonGuid = isRegistrantPersonAvailable ? registrantPerson.Guid : ( Guid? ) null,
                     IsAlreadyInAnotherRegistration = isAlreadyInAnotherRegistration,
                     IsAlreadyInCurrentRegistration = isAlreadyInCurrentRegistration
                 } );
