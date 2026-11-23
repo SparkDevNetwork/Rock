@@ -1489,6 +1489,14 @@ describe("the tip and the focus ring", () => {
         expect(templateOf(resolve(shell, "ui/tip.partial.obs"))).toMatch(/class="chat-tip"[\s\S]*role="tooltip"/);
     });
 
+    // Only the Tip part draws a tip, so its look is the part's own, not a sheet rule restyling it.
+    test("the tip's look has one home, the Tip part", () => {
+        expect(readSheet().rules.filter(rule => /\.chat-tip(?![\w-])/.test(rule.selector))).toEqual([]);
+        const look = readSheet(resolve(shell, "ui/tip.partial.obs")).rules.find(rule => rule.selector === ".chat-tip");
+        expect(look?.declarations.get("background")).toBe("var(--chat-tip-bg)");
+        expect(look?.declarations.get("z-index")).toBe("var(--chat-z-tip)");
+    });
+
     test.each(tipHolders)("%s draws its tip with the Tip part and no markup of its own", file => {
         const template = templateOf(resolve(shell, file));
 
