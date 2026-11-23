@@ -1723,6 +1723,20 @@ describe("the conversation's failed sends", () => {
             await settle();
         }
 
+        test("the drawer's strip asks the sender to try its reply again and to drop it", async () => {
+            const w = await mountBlock(1200);
+            await openThreadWith(w);
+            (mockShell!.sender as { pending: () => unknown[] }).pending = () => [reply];
+            await settle();
+            const strip = w.get("[data-testid='frame-panel'] [data-testid='composer-failed']");
+
+            await strip.get("[data-testid='composer-failed-retry']").trigger("click");
+            await strip.get("[data-testid='composer-failed-discard']").trigger("click");
+
+            expect((mockShell!.sender as { retryAll: jest.Mock }).retryAll.mock.calls).toEqual([[["r1"]]]);
+            expect((mockShell!.sender as { discard: jest.Mock }).discard.mock.calls).toEqual([["r1"]]);
+        });
+
         test("failing with its thread open has one strip, the drawer's, and is said once", async () => {
             const w = await mountBlock(1200);
             await openThreadWith(w);
@@ -2737,6 +2751,16 @@ describe("focus as the frame changes what it shows", () => {
 
         await press(w, "[data-testid='frame-sidebar'] [data-testid='new-message']");
         await press(w, "[data-testid='nd-close']");
+        await press(w, "[data-testid='frame-main'] [data-testid='header-members']");
+
+        expect(w.get("[data-testid='chat-frame']").attributes("data-sidebar")).toBe("folded");
+    });
+
+    test("Browse from the sidebar over the conversation, closed, then Members: the sidebar is folded", async () => {
+        const w = await openSidebarOver();
+
+        await press(w, "[data-testid='frame-sidebar'] [data-testid='sidebar-browse']");
+        await press(w, "[data-testid='directory-close']");
         await press(w, "[data-testid='frame-main'] [data-testid='header-members']");
 
         expect(w.get("[data-testid='chat-frame']").attributes("data-sidebar")).toBe("folded");
