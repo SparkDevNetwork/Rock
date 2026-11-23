@@ -32,7 +32,7 @@
 // nothing more is sent, a wait to send again sends nothing, and no answer still on its way
 // reaches the screen.
 import { onBeforeUnmount, reactive, Ref, watch } from "vue";
-import { AttachmentItem, ChatError, DisplayPiece, FailureWords, isFileItem, isGifItem, MessageBlock, PendingMessage, RoomKind, SidebarRow, TimelineMessage } from "../types.partial";
+import { AttachmentItem, ChatError, DisplayPiece, FailureWords, isFileItem, isGifItem, MessageBlock, PendingMessage, QuotedMessage, RoomKind, SidebarRow, TimelineMessage } from "../types.partial";
 import { sendingQuietMs, sentHoldMs } from "../feedLayout.partial";
 import { tokenDuration } from "../ui/brand.partial";
 import { failureWords, finalRefusals, finalWords, inRoomKind, isOfflineFailure, isRefusedForGood, messageForError, offlineWords, readOnlySentence } from "../errors.partial";
@@ -374,6 +374,18 @@ export type SenderDependencies = {
      */
     waitBeforeResend?: (attempt: number) => Promise<void>;
 
+    /**
+     * The message whose quote a place's send just took, as held, read as the send's row goes up so
+     * the row draws its quote at once. Without it the quote waits for the platform's copy.
+     */
+    quoteTaken?: (channelId: string, parentId: number | undefined) => TimelineMessage | undefined;
+
+    /**
+     * The mention pieces of the chips in a place's box as it is sent, read as the send's row goes
+     * up so the row draws each chip's look. Without it a mention is drawn as plain text.
+     */
+    mentionsTyped?: (channelId: string, parentId: number | undefined) => readonly DisplayPiece[];
+
     /** The person sending, as the platform knows them. */
     personAliasGuid: string;
 
@@ -678,8 +690,10 @@ export function createSender(dependencies: SenderDependencies): Sender {
         const confirmed: TimelineMessage = {
             id: result.id,
             ...(isReply ? { parent_id: row.parentId, shown_in_channel: row.isShownInChannel === true } : {}),
-            // named at once, so the quote draws from what is held before the live copy brings its preview
+            // named at once with the preview taken with it, so the quote never reads as gone
+            // before the live copy brings the platform's preview
             ...(typeof row.quotedMessageId === "number" ? { quoted_message_id: row.quotedMessageId } : {}),
+            ...(row.quoted ? { quoted: row.quoted } : {}),
             person_alias_guid: dependencies.personAliasGuid,
             sender_listed: true,
             message_type: "text",
@@ -759,6 +773,11 @@ export function createSender(dependencies: SenderDependencies): Sender {
             sentKeys.add(localId);
             dependencies.motion.sent(localId, quoteKey(channelId, reply?.parentId));
 
+            // Read now, while the place's box and the quote it gave up still hold this send's.
+            const taken = typeof quotedMessageId === "number" ? dependencies.quoteTaken?.(channelId, reply?.parentId) : undefined;
+            const quoted = taken && taken.id === quotedMessageId ? quotePreview(taken) : undefined;
+            const mentions = dependencies.mentionsTyped?.(channelId, reply?.parentId) ?? [];
+
             rows.push({
                 localId,
                 channelId,
@@ -770,6 +789,8 @@ export function createSender(dependencies: SenderDependencies): Sender {
                 ...(attempt ? { isFirstMessage: true } : {}),
                 ...(reply ? { parentId: reply.parentId, isShownInChannel: reply.isShownInChannel } : {}),
                 ...(typeof quotedMessageId === "number" ? { quotedMessageId } : {}),
+                ...(quoted ? { quoted } : {}),
+                ...(mentions.length ? { mentions: [...mentions] } : {}),
                 ...(attachments?.length ? { attachments } : {})
             });
 
@@ -842,6 +863,31 @@ export function createSender(dependencies: SenderDependencies): Sender {
         stop: (): void => {
             isStopped = true;
         }
+    };
+}
+
+/**
+ * A held message as the platform previews it in a quote: who sent it and what it said, nothing of
+ * its reactions or thread.
+ *
+ * @param message The quoted message as held.
+ *
+ * @returns Its preview.
+ */
+function quotePreview(message: TimelineMessage): QuotedMessage {
+    return {
+        id: message.id,
+        person_alias_guid: message.person_alias_guid,
+        sender_nick_name: message.sender_nick_name ?? null,
+        sender_last_name: message.sender_last_name ?? null,
+        sender_avatar_url: message.sender_avatar_url ?? null,
+        body: message.body ?? null,
+        pieces: message.pieces ?? null,
+        attachments: message.attachments ?? null,
+        created_at: message.created_at,
+        ...(message.deleted_at ? { deleted_at: message.deleted_at } : {}),
+        ...(message.visibility && message.visibility !== "visible" ? { visibility: message.visibility } : {}),
+        ...(message.blocked ? { blocked: true } : {})
     };
 }
 

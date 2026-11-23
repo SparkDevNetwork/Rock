@@ -1102,6 +1102,18 @@ export type PendingMessage = {
     quotedMessageId?: number;
 
     /**
+     * The quoted message's preview as it was held when the quote was taken, so the row draws its
+     * quote at once and its confirmed copy keeps it until a copy from the platform says otherwise.
+     */
+    quoted?: QuotedMessage;
+
+    /**
+     * The mention pieces of the chips picked into this send, with the names and photos the
+     * platform writes, so the row draws each chip's look before the platform admits it.
+     */
+    mentions?: DisplayPiece[];
+
+    /**
      * The files it carries, uploaded before it was sent, sent on every try; a try that finds an
      * upload gone sends the files uploaded again in their place.
      */
