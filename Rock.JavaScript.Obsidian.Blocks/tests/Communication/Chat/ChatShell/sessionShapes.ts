@@ -18,12 +18,14 @@
 // phone flag and the signed-in person from it rather than from its own inputs.
 import { computed, ref } from "vue";
 import { ChatMe, chatSessionKey, SessionContext } from "../../../../src/Communication/Chat/ChatShell/chatSession.partial";
+import { BackStack, noBackStack } from "../../../../src/Communication/Chat/ChatShell/composables/useBackStack.partial";
 
 /** What a spec sets of the session; the rest reads as a wide window with no one signed in. */
 export type SessionShape = {
     isPhone?: boolean;
     me?: Partial<ChatMe>;
     churchName?: string;
+    backStack?: BackStack;
 };
 
 /**
@@ -41,7 +43,8 @@ export function providedSession(shape: SessionShape = {}): Record<symbol, Sessio
             me: computed(() => me),
             church: { name: shape.churchName ?? "" },
             emojiSource: null,
-            mentionSource: () => null
+            mentionSource: () => null,
+            backStack: shape.backStack ?? noBackStack
         }
     };
 }
