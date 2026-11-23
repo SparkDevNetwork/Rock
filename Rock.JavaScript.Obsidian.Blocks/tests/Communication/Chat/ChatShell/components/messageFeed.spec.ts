@@ -385,6 +385,20 @@ describe("the feed's entrance", () => {
         expect(wrapper.get("[data-testid='message-feed']").classes()).toContain("is-entering");
     });
 
+    // The day carried over the feed is drawn outside the feed's box; it rises in with the rows, so
+    // a held room coming back never shows its date alone over a feed not yet in.
+    test("the day over the feed rises in with the feed", async () => {
+        const wrapper = draw({ timeline: timeline([message(1, anna, at(14, 50))]), isEntering: true });
+        await nextTick();
+
+        const isEntering = wrapper.get("[data-testid='message-feed']").classes().includes("is-entering");
+        expect(isEntering).toBe(true);
+        expect(wrapper.get("[data-testid='day-float']").classes()).toContain("is-entering");
+
+        const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/messageFeed.partial.obs"), "utf8");
+        expect(source).toMatch(/\.chat-day-float\.is-entering\s*\{[^}]*animation:\s*chat-feed-enter var\(--chat-d-view\) var\(--chat-ease-in\)/);
+    });
+
     test("the first feed the block draws enters as its first page is drawn, when it mounted before the page", async () => {
         const state = timeline([], { isLoaded: false });
         const wrapper = draw({ timeline: state });
@@ -2413,7 +2427,7 @@ describe("the history skeleton", () => {
         expect(wrapper.find("[data-testid='history-skeleton']").exists()).toBe(false);
         // no exit of its own: nothing in the feed's styles fades it out
         const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/messageFeed.partial.obs"), "utf8");
-        expect(source).not.toMatch(/skeletonDelayMs|chat-skeleton-|is-leaving|is-gone/);
+        expect(source).not.toMatch(/chat-skeleton-|is-leaving|is-gone/);
     });
 
     test("stands over the feed rather than in it, so the first page lands under it in place", async () => {
@@ -2438,7 +2452,7 @@ describe("the history skeleton", () => {
     // A switch, a Browse preview or a found conversation mounts its feed once the first load has
     // revealed the column: a page there lands in tens of milliseconds, so a skeleton would only
     // flash. The feed stays blank until its rows are drawn, then they rise in.
-    test("never shows on a switch: a feed mounted once the first load revealed the column draws nothing until its page lands", async () => {
+    test("never shows on a fast switch: a feed mounted once the first load revealed the column draws nothing until its page lands", async () => {
         const state = timeline([], { isLoaded: false });
         const wrapper = draw({ timeline: state, isEntering: true }, { isMainRevealed: true });
 
@@ -2450,6 +2464,43 @@ describe("the history skeleton", () => {
         await nextTick();
         expect(wrapper.find("[data-testid='history-skeleton']").exists()).toBe(false);
         expect(wrapper.findAll("[data-message-id]")).toHaveLength(1);
+    });
+
+    // Changed by decision: a switch on a slow network once stayed blank for seconds with no sign of
+    // loading. A switch whose page has not landed after the slow wait shows the skeleton, gone the
+    // moment the page lands; one that lands inside the wait never shows it.
+    test("shows on a slow switch once the page has waited a second, and is gone the moment it lands", async () => {
+        const state = timeline([], { isLoaded: false });
+        const wrapper = draw({ timeline: state, isEntering: true }, { isMainRevealed: true });
+
+        jest.advanceTimersByTime(999);
+        await nextTick();
+        expect(wrapper.find("[data-testid='history-skeleton']").exists()).toBe(false);
+
+        jest.advanceTimersByTime(1);
+        await nextTick();
+        expect(wrapper.find("[data-testid='history-skeleton']").exists()).toBe(true);
+
+        state.isLoaded = true;
+        state.messages.push(message(1, anna, at(14, 0)));
+        await nextTick();
+        expect(wrapper.find("[data-testid='history-skeleton']").exists()).toBe(false);
+        expect(wrapper.findAll("[data-message-id]")).toHaveLength(1);
+    });
+
+    test("never shows on a switch whose page lands inside the wait, however long the feed then stays", async () => {
+        const state = timeline([], { isLoaded: false });
+        const wrapper = draw({ timeline: state, isEntering: true }, { isMainRevealed: true });
+
+        jest.advanceTimersByTime(900);
+        state.isLoaded = true;
+        state.messages.push(message(1, anna, at(14, 0)));
+        await nextTick();
+        jest.advanceTimersByTime(5000);
+        await nextTick();
+
+        expect(wrapper.find("[data-testid='history-skeleton']").exists()).toBe(false);
+        expect(jest.getTimerCount()).toBe(0);
     });
 
     test("never shows for a room whose first page is already there, whose rows are drawn on the first render", () => {
@@ -3141,5 +3192,102 @@ describe("the open's first read, as the feed hands it to its tail", () => {
         finally {
             spy.mockRestore();
         }
+    });
+});
+
+// The messages are one Tab stop. The stop is held by the message last focused while it is drawn,
+// else by the newest; Up and Down move between every message drawn, other people's mid-run ones
+// included, and keys pressed inside a message stay with what is inside it.
+describe("the feed's one Tab stop", () => {
+    let mounted: VueWrapper | null = null;
+
+    afterEach(() => {
+        mounted?.unmount();
+        mounted = null;
+    });
+
+    function attached(props: FeedProps): VueWrapper {
+        Element.prototype.scrollIntoView = jest.fn();
+        mounted = mount(MessageFeed, inSession({ props: { pending: [], personAliasGuid: me, ...props }, attachTo: document.body }));
+        return mounted;
+    }
+
+    function rowOf(id: number): HTMLElement {
+        return document.querySelector<HTMLElement>(`[data-message-id='${id}']`) as HTMLElement;
+    }
+
+    function press(key: string): KeyboardEvent {
+        const event = new KeyboardEvent("keydown", { key, bubbles: true, cancelable: true });
+        (document.activeElement ?? document.body).dispatchEvent(event);
+        return event;
+    }
+
+    /** Anna's run of three, then the reader's own message: Anna's middle row is a mid-run message. */
+    const run = (): TimelineMessage[] => [message(1, anna, at(14, 0)), message(2, anna, at(14, 1)), message(3, anna, at(14, 2)), message(4, me, at(14, 3))];
+
+    function stops(): number {
+        return document.querySelectorAll("[data-testid='message-row'][tabindex='0']").length;
+    }
+
+    test("is one stop, on the newest message while none has been focused", async () => {
+        attached({ timeline: timeline(run()) });
+        await nextTick();
+
+        expect(stops()).toBe(1);
+        expect(rowOf(4).tabIndex).toBe(0);
+    });
+
+    test("Up and Down reach another person's mid-run message, and the stop follows the message last focused", async () => {
+        attached({ timeline: timeline(run()) });
+        await nextTick();
+        rowOf(1).focus();
+
+        expect(press("ArrowDown").defaultPrevented).toBe(true);
+        expect(document.activeElement).toBe(rowOf(2));
+        await nextTick();
+        expect(rowOf(2).tabIndex).toBe(0);
+        expect(stops()).toBe(1);
+
+        press("End");
+        expect(document.activeElement).toBe(rowOf(4));
+        press("Home");
+        expect(document.activeElement).toBe(rowOf(1));
+    });
+
+    test("arrows pressed on something inside a message move no message", async () => {
+        attached({ timeline: timeline([message(1, anna, at(14, 0), { pieces: [{ type: "link", text: "a.org", url: "https://a.org" }] } as Partial<TimelineMessage>), message(2, anna, at(14, 1))]) });
+        await nextTick();
+        const link = rowOf(1).querySelector<HTMLElement>("a") as HTMLElement;
+        link.focus();
+
+        expect(press("ArrowDown").defaultPrevented).toBe(false);
+        expect(document.activeElement).toBe(link);
+    });
+
+    test("Down crosses a folded line of blocked messages, keyed by its first message", async () => {
+        const blocked = (id: number, minute: number): TimelineMessage => message(id, anna, at(14, minute), { body: null, sender_nick_name: null, blocked: true } as Partial<TimelineMessage>);
+        attached({ timeline: timeline([message(1, me, at(14, 0)), blocked(2, 1), blocked(3, 2), message(4, me, at(14, 3))]) });
+        await nextTick();
+        rowOf(1).focus();
+
+        press("ArrowDown");
+        const line = document.activeElement as HTMLElement;
+        expect(line.getAttribute("data-state")).toBe("blocked");
+        press("ArrowDown");
+        expect(document.activeElement).toBe(rowOf(4));
+    });
+
+    test("a message arriving keeps the stop on the message focused", async () => {
+        const state = timeline(run());
+        attached({ timeline: state });
+        await nextTick();
+        rowOf(2).focus();
+        await nextTick();
+
+        state.messages.push(message(5, anna, at(14, 4)));
+        await nextTick();
+
+        expect(rowOf(2).tabIndex).toBe(0);
+        expect(stops()).toBe(1);
     });
 });

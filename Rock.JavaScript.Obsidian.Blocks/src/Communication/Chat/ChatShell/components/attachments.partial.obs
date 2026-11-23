@@ -67,6 +67,7 @@
                         type="button"
                         class="chat-attach-tile"
                         data-testid="attachment-image"
+                        :data-attachment-id="item.id"
                         :data-unavailable="linkOf(item)?.isUnavailable ? 'true' : undefined"
                         :aria-label="`Open photo ${item.name}`"
                         :style="images.length === 1 ? { aspectRatio: singleStyle.aspectRatio } : undefined"

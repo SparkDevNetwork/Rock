@@ -34,6 +34,7 @@ import MessageReactions from "../../../../../src/Communication/Chat/ChatShell/co
 import { ActionBarDock, useActionBar } from "../../../../../src/Communication/Chat/ChatShell/composables/useActionBar.partial";
 import { PendingMessage, TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 import { problemReportKey } from "../../../../../src/Communication/Chat/ChatShell/problemReport.partial";
+import { attachmentViewsKey } from "../../../../../src/Communication/Chat/ChatShell/composables/useAttachments.partial";
 import { isEditableMessage, isSenderBlockable } from "../../../../../src/Communication/Chat/ChatShell/composables/useMessageActions.partial";
 import { createMessageMotion, MessageMotion, messageMotionKey } from "../../../../../src/Communication/Chat/ChatShell/messageMotion.partial";
 
@@ -142,6 +143,51 @@ function rowStyles(): string {
 /** The row's outermost element, which carries its role, label and markers. */
 function root(wrapper: VueWrapper): HTMLElement {
     return wrapper.element as HTMLElement;
+}
+
+/** A finger's pointer event; jsdom has no PointerEvent, so a mouse event carries the pointer's fields. */
+function touch(type: string): Event {
+    const event = new MouseEvent(type, { bubbles: true, cancelable: true, clientX: 10, clientY: 10 });
+    Object.defineProperty(event, "pointerType", { value: "touch" });
+    Object.defineProperty(event, "isPrimary", { value: true });
+    Object.defineProperty(event, "pointerId", { value: 1 });
+    return event;
+}
+
+/**
+ * A finger held on an element past the long-press duration and lifted, with the click its lift
+ * makes, as a phone sends them. The click is what a hold must not let through.
+ *
+ * @returns The click the lift made.
+ */
+async function hold(target: Element, options: { isClickSent?: boolean } = {}): Promise<MouseEvent> {
+    await nextTick();
+    jest.useFakeTimers();
+    try {
+        target.dispatchEvent(touch("pointerdown"));
+        jest.advanceTimersByTime(450);
+    }
+    finally {
+        jest.useRealTimers();
+    }
+    window.dispatchEvent(touch("pointerup"));
+    const click = new MouseEvent("click", { bubbles: true, cancelable: true });
+    if (options.isClickSent !== false) {
+        target.dispatchEvent(click);
+    }
+    await nextTick();
+    await nextTick();
+    return click;
+}
+
+/** A finger's tap: down, up and the click, with no hold between. */
+async function tap(target: Element): Promise<MouseEvent> {
+    target.dispatchEvent(touch("pointerdown"));
+    window.dispatchEvent(touch("pointerup"));
+    const click = new MouseEvent("click", { bubbles: true, cancelable: true });
+    target.dispatchEvent(click);
+    await nextTick();
+    return click;
 }
 
 const mentionLee = { type: "mention", text: "@Lee Leader", person_alias_guid: lee };
@@ -1403,14 +1449,165 @@ describe("the phone's action sheet", () => {
         return item;
     }
 
-    test.each([["a direct message", false], ["a channel", true]] as const)("opens from a tap on the message in %s", async (_kind, isChannel) => {
+    // A tap follows what it lands on and does nothing on text; a long press is the message's own.
+    test.each([["a direct message", false], ["a channel", true]] as const)("opens from a long press on the message in %s, never from a tap on its text", async (_kind, isChannel) => {
         const w = onPhone({ message: message(), isChannel });
+
+        await tap(w.get(".chat-message-body").element);
         expect(sheet()).toBeNull();
 
-        await w.get(".chat-message-body").trigger("click");
-
+        await hold(w.get(".chat-message-body").element);
         expect(sheet()).not.toBeNull();
         expect(w.find("[data-testid='action-bar']").exists()).toBe(false);
+    });
+
+    test("says it opens a dialog, and the row on a touch screen keeps the phone's callout and selection off, except while editing", () => {
+        const w = onPhone({ message: message() });
+        expect(root(w).getAttribute("aria-haspopup")).toBe("dialog");
+        expect(root(w).classList).toContain("is-touch");
+
+        const style = rowStyles().replace(/\/\*[\s\S]*?\*\//g, "");
+        expect(style).toMatch(/\.chat-msg\.is-touch:not\(\.is-editing\)\s*\{[^}]*-webkit-touch-callout:\s*none;[^}]*user-select:\s*none;/);
+        expect(root(draw({ message: message() })).getAttribute("aria-haspopup")).toBeNull();
+    });
+
+    // A tap focuses what it lands on; on a touch screen that lights nothing, neither the row's
+    // tint nor, in a channel, its gutter time, both of which read a focus inside the row.
+    test("a focus inside a touch row lights no tint", () => {
+        const style = rowStyles().replace(/\/\*[\s\S]*?\*\//g, "");
+        const tinted = [...style.matchAll(/([^{}]+)\{[^}]*background-image:\s*linear-gradient\(var\(--chat-hover\)/g)].map(m => m[1]).join(",");
+        expect(tinted).toContain(":not(.is-touch):focus-within");
+        expect(tinted).not.toMatch(/is-community:focus-within/);
+    });
+
+    test("shows the press fill while held, over a flash", async () => {
+        const w = onPhone({ message: message(), isChannel: true, isFlashing: true } as RowProps);
+        await nextTick();
+        jest.useFakeTimers();
+        try {
+            w.get(".chat-message-body").element.dispatchEvent(touch("pointerdown"));
+            jest.advanceTimersByTime(120);
+            await nextTick();
+            expect(root(w).classList).toContain("is-pressing");
+        }
+        finally {
+            window.dispatchEvent(touch("pointercancel"));
+            jest.useRealTimers();
+        }
+        const style = rowStyles().replace(/\/\*[\s\S]*?\*\//g, "");
+        const press = /\.chat-msg\.is-community\.is-pressing::before\s*\{([^}]*)\}/.exec(style);
+        expect(press?.[1]).toMatch(/background:\s*var\(--chat-press\)/);
+        expect(press?.[1]).toMatch(/animation:\s*none/);
+        expect(press?.index ?? 0).toBeGreaterThan(style.indexOf(".chat-msg.is-community.is-flashing::before"));
+    });
+
+    describe("held on a link or a photo", () => {
+        const linked = (): TimelineMessage => message({ body: "See https://example.org/a", pieces: [{ type: "text", text: "See " }, { type: "link", text: "example.org/a", url: "https://example.org/a" }] } as Partial<TimelineMessage>);
+        const photoA = { id: "d0000000-0000-4000-8000-00000000000a", key: "t/a", kind: "image" as const, name: "a.jpg", size: 900, type: "image/jpeg", width: 400, height: 300 };
+        const photoB = { ...photoA, id: "d0000000-0000-4000-8000-00000000000b", key: "t/b", name: "b.jpg" };
+
+        function labels(): string[] {
+            return Array.from(sheet()?.querySelectorAll<HTMLElement>(".chat-sheet-item") ?? []).map(button => button.textContent?.trim() ?? "");
+        }
+
+        test("a tap on a link follows it, and opens nothing", async () => {
+            const w = onPhone({ message: linked() });
+            const click = await tap(w.get("a.chat-lnk").element);
+            expect(click.defaultPrevented).toBe(false);
+            expect(sheet()).toBeNull();
+        });
+
+        test("a hold on a link puts Open link and Copy link first, and the release follows nothing", async () => {
+            const w = onPhone({ message: linked() });
+            const followed = jest.fn((event: Event) => event.preventDefault());
+            w.get("a.chat-lnk").element.addEventListener("click", followed);
+
+            const release = await hold(w.get("a.chat-lnk").element);
+
+            expect(release.defaultPrevented).toBe(true);
+            expect(followed).not.toHaveBeenCalled();
+            expect(labels().slice(0, 3)).toEqual(["Open link", "Copy link", "Reply in thread"]);
+        });
+
+        // The browser can end a hold with no click; the swallow then waits for the next press,
+        // which disarms it, so Open link in the sheet drawn outside the row still follows its link.
+        test("Open link follows the link as a tap would, after a hold that ended with no click", async () => {
+            const w = onPhone({ message: linked() });
+            const followed = jest.fn((event: Event) => event.preventDefault());
+            w.get("a.chat-lnk").element.addEventListener("click", followed);
+            await hold(w.get("a.chat-lnk").element, { isClickSent: false });
+
+            await tap(sheetItem("Open link"));
+
+            expect(followed).toHaveBeenCalledTimes(1);
+            expect(sheet()).toBeNull();
+        });
+
+        test("Copy link asks to copy the link's address, in Copy text's words", async () => {
+            const target = linked();
+            const w = onPhone({ message: target });
+            await hold(w.get("a.chat-lnk").element);
+
+            sheetItem("Copy link").click();
+            await nextTick();
+
+            expect(w.emitted("messageAction")).toEqual([[{ kind: "copy", message: target, text: "https://example.org/a" }]]);
+        });
+
+        test("a hold on text offers neither", async () => {
+            const w = onPhone({ message: linked() });
+            await hold(w.get(".chat-message-body").element);
+            expect(labels()).not.toContain("Open link");
+            expect(labels()).not.toContain("Save photo");
+        });
+
+        test("a hold on a photo offers Save photo first and opens no viewer; Save photo asks a fresh link for that photo", async () => {
+            const fresh = jest.fn(async () => ({ url: "https://files/b", downloadUrl: "https://files/b?download=b.jpg", isUnavailable: false }));
+            const views = { localCopyOf: () => null, links: { subscribe: () => () => undefined, linkOf: () => null, isFresh: () => true, fresh } };
+            const clicked: string[] = [];
+            const anchorClick = jest.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(function (this: HTMLAnchorElement) {
+                clicked.push(this.href);
+            });
+            try {
+                mounted = mount(MessageRow, inSession({
+                    props: { personAliasGuid: me, isPhone: true, position: "single", message: message({ body: null, attachments: [photoA, photoB] }) },
+                    attachTo: document.body,
+                    global: { provide: { [attachmentViewsKey as symbol]: views } }
+                }));
+                const tiles = mounted.findAll("[data-testid='attachment-image']");
+                await hold(tiles[1].element);
+
+                expect(document.querySelector(".chat-attach-viewer")).toBeNull();
+                expect(labels()[0]).toBe("Save photo");
+
+                sheetItem("Save photo").click();
+                await nextTick();
+                await nextTick();
+
+                expect(fresh).toHaveBeenCalledWith(expect.objectContaining({ id: photoB.id }));
+                expect(clicked).toEqual(["https://files/b?download=b.jpg"]);
+            }
+            finally {
+                anchorClick.mockRestore();
+            }
+        });
+    });
+
+    // A hold with the composer focused: the trap would hand focus back to the composer, which
+    // raises a phone's keyboard; the row takes it back instead.
+    test("gives focus back to the message on close, not to what held it before", async () => {
+        const composer = document.createElement("textarea");
+        document.body.appendChild(composer);
+        composer.focus();
+        const w = onPhone({ message: message() });
+
+        await hold(w.get(".chat-message-body").element);
+        sheet()?.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true, cancelable: true }));
+        await nextTick();
+        await nextTick();
+
+        expect(sheet()).toBeNull();
+        expect(document.activeElement).toBe(root(w));
     });
 
     test("a tap on a button in the message does not open it", async () => {
@@ -1430,7 +1627,7 @@ describe("the phone's action sheet", () => {
     ] as const)("does not open %s", async (_where, extra) => {
         const w = onPhone({ message: message(), ...extra } as RowProps);
 
-        await w.trigger("click");
+        await hold(w.element);
 
         expect(sheet()).toBeNull();
     });
@@ -1438,13 +1635,13 @@ describe("the phone's action sheet", () => {
     test("its Quote asks for the same quote the bar would, and its Reply in thread opens the thread", async () => {
         const target = message();
         const w = onPhone({ message: target });
-        await w.trigger("click");
+        await hold(w.element);
 
         sheetItem("Quote").click();
         await nextTick();
         expect(w.emitted("messageAction")).toEqual([[{ kind: "quote", message: target }]]);
 
-        await w.trigger("click");
+        await hold(w.element);
         sheetItem("Reply in thread").click();
         await nextTick();
         expect(w.emitted("openThread")).toEqual([[{ rootId: 42, messageId: null }]]);
@@ -1454,7 +1651,7 @@ describe("the phone's action sheet", () => {
     // reply, never a thread rooted at the reply itself, which has none.
     test("its Reply in thread on a reply also sent opens the reply's own thread at the reply", async () => {
         const w = onPhone({ message: message({ id: 51, parent_id: 40, shown_in_channel: true }) });
-        await w.trigger("click");
+        await hold(w.element);
 
         sheetItem("Reply in thread").click();
         await nextTick();
@@ -1466,7 +1663,7 @@ describe("the phone's action sheet", () => {
     test.each([["a direct message", false], ["a channel", true]] as const)("its plus asks for the picker placed on the message in %s, since the sheet closes under it", async (_kind, isChannel) => {
         const target = message();
         const w = onPhone({ message: target, isChannel, reactionHost: host([]) });
-        await w.trigger("click");
+        await hold(w.element);
 
         sheet()?.querySelector<HTMLElement>("[data-testid='action-sheet-reactions'] button[aria-label='More reactions']")?.click();
         await nextTick();
@@ -1475,6 +1672,28 @@ describe("the phone's action sheet", () => {
         expect(request.kind).toBe("openPicker");
         expect(request.anchor).toBe(isChannel ? root(w) : w.get(".chat-bubble").element);
         expect(request.opening).toEqual({ startsOn: "full" });
+    });
+
+    // A touch screen that is no phone, a tablet, grows the picker as a box, not a sheet: asked for
+    // from the sheet's plus, it grows from the box's own place in the row, beside the message, as
+    // the bar's Add reaction does, never at the bubble's top corner.
+    test("its plus on a touch screen that is no phone places the picker at the box's own place in the row", async () => {
+        const original = window.matchMedia;
+        window.matchMedia = ((query: string) => ({ matches: query === "(hover: none)", media: query, addEventListener: () => undefined, removeEventListener: () => undefined })) as unknown as typeof window.matchMedia;
+        try {
+            const w = onPhone({ message: message(), isPhone: false, reactionHost: host([]) });
+            await hold(w.element);
+
+            sheet()?.querySelector<HTMLElement>("[data-testid='action-sheet-reactions'] button[aria-label='More reactions']")?.click();
+            await nextTick();
+
+            const [request] = (w.emitted("messageAction") ?? [])[0] as [{ kind: string, anchor: HTMLElement }];
+            expect(request.kind).toBe("openPicker");
+            expect(request.anchor).toBe(w.get(".chat-tools-dock").element);
+        }
+        finally {
+            window.matchMedia = original;
+        }
     });
 
     // The sheet's own cells, moved here when the row came to draw it on the shared sheet: a
@@ -1502,7 +1721,7 @@ describe("the phone's action sheet", () => {
         /** The row on a phone with its sheet opened by a tap on the message. */
         async function openSheet(props: RowProps): Promise<VueWrapper> {
             const w = onPhone({ reactionHost: host(favorites), ...props });
-            await w.trigger("click");
+            await hold(w.element);
             await nextTick();
             await nextTick();
             return w;
@@ -1571,7 +1790,7 @@ describe("the phone's action sheet", () => {
             let closes = 0;
             for (const label of ["Reply in thread", "Quote", "Edit message", "Copy text", "Approve request", "Delete message"]) {
                 if (!sheet()) {
-                    await w.trigger("click");
+                    await hold(w.element);
                     await nextTick();
                 }
                 sheetItem(label).click();
@@ -1887,12 +2106,13 @@ describe("the column's bar and its picker", () => {
         }
     });
 
-    // The person's own message has no name or face to press, so a plain one had nothing for Tab to
-    // reach and its bar never showed from the keyboard; the row itself is the stop.
-    test.each([false, true])("the person's own message is a Tab stop, so its bar is reached (channel: %s)", isChannel => {
-        expect(root(draw({ message: ownConfirmed(), isOwn: true, isChannel })).getAttribute("tabindex")).toBe("0");
+    // Changed by decision: the column's messages are one Tab stop, which the feed holds and Up and
+    // Down move along, other people's messages included, so the row no longer makes itself a stop
+    // for its own message. Drawn alone, with no column's list, every row is focusable but no stop;
+    // the feed's cells hold the list.
+    test.each([false, true])("a row drawn with no column's list is focusable but no Tab stop, the person's own too (channel: %s)", isChannel => {
+        expect(root(draw({ message: ownConfirmed(), isOwn: true, isChannel })).getAttribute("tabindex")).toBe("-1");
         expect(root(draw({ message: message(), isChannel })).getAttribute("tabindex")).toBe("-1");
-        expect(root(draw({ message: ownConfirmed({ deleted_at: nineOhTwo, body: null }), isOwn: true, isChannel })).getAttribute("tabindex")).toBe("-1");
         expect(root(draw({ message: ownConfirmed(), isOwn: true, isChannel, isPhone: true })).getAttribute("tabindex")).toBe("-1");
     });
 
@@ -2289,13 +2509,12 @@ describe("a message's files", () => {
             expect(next).toMatch(/margin-top:\s*calc\(12px - var\(--chat-grp-gap, 0px\)\)/);
         });
 
-        // An own photo with no words is a Tab stop like any own message, and a focus rings what the
-        // person reads: with no bubble that is the files, ringed as a bubble is, on their corners.
+        // An own photo with no words is reached by the column's keys like any message, and a focus
+        // rings what the person reads: with no bubble that is the files, ringed as a bubble is, on their corners.
         test("an own message of files alone rings its files when focused, as a bubble is ringed", () => {
             const alone = draw({ message: ownConfirmed({ body: null, attachments: [photo] }), isOwn: true });
             const worded = draw({ message: ownConfirmed({ attachments: [photo] }), isOwn: true });
 
-            expect(root(alone).getAttribute("tabindex")).toBe("0");
             expect(alone.get(".chat-bub-anchor").classes()).toContain("is-files-only");
             expect(worded.get(".chat-bub-anchor").classes()).not.toContain("is-files-only");
 

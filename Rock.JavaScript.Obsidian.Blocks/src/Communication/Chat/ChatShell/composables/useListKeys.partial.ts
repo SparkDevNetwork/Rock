@@ -18,7 +18,7 @@
 // A list's keys, the one way every list of rows moves: one tab stop for the whole list, held by
 // the row last focused, and Up, Down, Home and End between the rows.
 
-import { Ref, ref } from "vue";
+import { computed, getCurrentScope, inject, InjectionKey, provide, Ref, ref, shallowReactive, watch } from "vue";
 
 /** What a row binds on the element that takes its focus. */
 export type ListItemAttrs = {
@@ -39,27 +39,92 @@ export type ListKeys<K> = {
     current: Ref<K | null>;
 };
 
+/** How a list's keys behave beyond the arrows. */
+export type ListKeysOptions<K> = {
+    /** What Enter does on a row, for rows that are not buttons; a button's own click otherwise. */
+    onPick?: (key: K) => void;
+
+    /** The row holding the stop while none has been focused; the first row when not said. */
+    defaultKey?: () => K | null;
+
+    /**
+     * Keys act only on the row itself, never bubbling up from a control inside it, for rows that
+     * hold controls of their own whose arrows are theirs: a message's links, chips and bar.
+     */
+    isRowOnly?: boolean;
+};
+
+const rowKeysKey: InjectionKey<ListKeys<string>> = Symbol("chat-row-keys");
+
 /**
  * A list's keys. The list is one tab stop: the row last focused holds it while it is drawn, the
- * first row while none has been. Up and Down move by one and stop at the ends, Home and End go to
+ * default row while none has been. Up and Down move by one and stop at the ends, Home and End go to
  * them, and the row moved to is kept in view; every other key is the row's own.
  *
+ * The stop is held as the one key in a set each row asks about its own key alone, so the stop
+ * moving wakes the row it leaves and the row it reaches, and the list changing wakes no row: a
+ * feed of hundreds of messages redraws none of them as one arrives.
+ *
  * @param items The rows' keys, in order.
- * @param options What Enter does on a row, for rows that are not buttons; a button's own click otherwise.
+ * @param options What Enter does, which row holds the stop at first, and whether keys from inside a row are its own.
  *
  * @returns What each row binds.
  */
-export function useListKeys<K>(items: () => readonly K[], options: { onPick?: (key: K) => void } = {}): ListKeys<K> {
+export function useListKeys<K>(items: () => readonly K[], options: ListKeysOptions<K> = {}): ListKeys<K> {
     const current = ref(null) as Ref<K | null>;
     const elements = new Map<K, HTMLElement>();
+    const stop = shallowReactive(new Set<K>());
 
-    function isTabStop(key: K): boolean {
+    /** The row holding the stop: the one last focused while it is drawn, else the default. */
+    const stopKey = computed((): K | null => {
         const keys = items();
-        const isCurrentShown = current.value !== null && keys.includes(current.value);
-        return isCurrentShown ? current.value === key : keys[0] === key;
+        if (current.value !== null && keys.includes(current.value)) {
+            return current.value;
+        }
+
+        return options.defaultKey ? options.defaultKey() : keys[0] ?? null;
+    });
+
+    // Moved key by key, never cleared, since clearing the set would wake every row that asks it;
+    // before the rows draw, never in the middle of a change to the list the stop is read from.
+    // Started by the first row asking, in the list's own scope: a list is often made before the
+    // rows it reads are, so its keys are read first as a row draws, as they always were.
+    const scope = getCurrentScope();
+    let isFollowing = false;
+    function followStop(): void {
+        if (isFollowing) {
+            return;
+        }
+        isFollowing = true;
+        const follow = (): void => {
+            watch(stopKey, (next, before) => {
+                if (before !== null && before !== undefined) {
+                    stop.delete(before);
+                }
+                if (next !== null) {
+                    stop.add(next);
+                }
+            }, { immediate: true });
+        };
+        if (scope) {
+            scope.run(follow);
+        }
+        else {
+            follow();
+        }
+    }
+
+    /** Whether a row holds the stop, asked by each row of its own key alone. */
+    function isStop(key: K): boolean {
+        followStop();
+        return stop.has(key);
     }
 
     function onKeydown(key: K, event: KeyboardEvent): void {
+        if (options.isRowOnly && event.target !== event.currentTarget) {
+            return;
+        }
+
         if (event.key === "Enter" && options.onPick) {
             event.preventDefault();
             options.onPick(key);
@@ -86,7 +151,7 @@ export function useListKeys<K>(items: () => readonly K[], options: { onPick?: (k
     return {
         current,
         itemAttrs: key => ({
-            tabindex: isTabStop(key) ? 0 : -1,
+            tabindex: isStop(key) ? 0 : -1,
             onFocus: (): void => {
                 current.value = key;
             },
@@ -101,4 +166,26 @@ export function useListKeys<K>(items: () => readonly K[], options: { onPick?: (k
             }
         }
     };
+}
+
+/**
+ * Hands a column's rows their list, by each row's key, as the feed and the thread drawer do for
+ * their messages.
+ *
+ * @param keys The column's list.
+ *
+ * @returns The same list.
+ */
+export function provideRowKeys(keys: ListKeys<string>): ListKeys<string> {
+    provide(rowKeysKey, keys);
+    return keys;
+}
+
+/**
+ * The list of the column a row is drawn in.
+ *
+ * @returns The list, or null for a row drawn alone, which is then focusable but no tab stop.
+ */
+export function useRowKeys(): ListKeys<string> | null {
+    return inject(rowKeysKey, null);
 }

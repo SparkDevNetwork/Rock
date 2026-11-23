@@ -23,7 +23,7 @@
         -->
         <div ref="dayFloat"
              class="chat-day-float"
-             :class="{ 'is-on': carried !== null }"
+             :class="{ 'is-on': carried !== null, 'is-entering': isEnteringDrawn }"
              :style="{ '--chat-feed-gutter': `${gutterPx}px`, '--chat-day-offset': `${carried?.offset ?? 0}px` }"
              data-testid="day-float"
              aria-hidden="true"><span>{{ carried?.label }}</span></div>
@@ -89,6 +89,7 @@
                                     :blockedRun="item.messages"
                                     :isChannel="isChannel"
                                     :reactionHost="reactionHost"
+                                    :rowKey="item.key"
                                     :data-row-key="item.key"
                                     @openThread="emit('openThread', $event)"
                                     @messageAction="emit('messageAction', $event)" />
@@ -98,6 +99,7 @@
                                     :isChannel="isChannel"
                                     :isFlashing="item.message.id === flashingId"
                                     :reactionHost="reactionHost"
+                                    :rowKey="item.key"
                                     :data-row-key="item.key"
                                     @messageAction="emit('messageAction', $event)" />
 
@@ -122,6 +124,7 @@
                                         :editError="editError"
                                         :isEditSaving="isEditSaving"
                                         :reactionHost="reactionHost"
+                                        :rowKey="row.key"
                                         :data-row-key="row.key"
                                         @openThread="emit('openThread', $event)"
                                         @jump="emit('jump', $event)"
@@ -161,9 +164,10 @@
             Rows of the look the conversation will draw, standing at the feed's foot so nothing
             jumps when the page lands: the final frame of a room still loading on the first load,
             drawn at once and still. Over the feed rather than in it, so the first page lands under
-            it in place. A feed opened after the first load is blank until its rows are drawn.
+            it in place. A feed opened after the first load is blank until its rows are drawn, and
+            shows the same frame once its page has kept it waiting long enough to be slow.
         -->
-        <div v-if="isFirstLoad && !isDrawn" class="chat-feed-skeleton" data-testid="history-skeleton" aria-hidden="true">
+        <div v-if="isSkeletonShown" class="chat-feed-skeleton" data-testid="history-skeleton" aria-hidden="true">
             <template v-if="layout === 'community'">
                 <!-- Every other row shorter, so the column reads as messages rather than stripes. -->
                 <Skeleton v-for="index in 5" :key="index" shape="group" :widths="index % 2 === 0 ? [46, 30] : [64, 40]" data-testid="skeleton-row" />
@@ -358,6 +362,11 @@
 
 .chat-day-float.is-on {
     visibility: visible;
+}
+
+/* The day over the feed is part of the feed: it rises in with the rows, never standing alone over a feed not yet in. */
+.chat-day-float.is-entering {
+    animation: chat-feed-enter var(--chat-d-view) var(--chat-ease-in);
 }
 
 .chat-day-pill span,
@@ -592,6 +601,7 @@
     import { useFeedTail } from "../composables/useFeedTail.partial";
     import { useNewestEnd } from "../composables/useNewestEnd.partial";
     import { useActionBar } from "../composables/useActionBar.partial";
+    import { provideRowKeys, useListKeys } from "../composables/useListKeys.partial";
 
     import { usePlaceInView, useSeenObserver } from "../composables/useSeenObserver.partial";
     import { MessageActionRequest } from "../composables/useMessageActions.partial";
@@ -759,6 +769,13 @@
 
     // #region Values
 
+    /**
+     * How long a room switch's page may take before the feed shows its skeleton, in milliseconds.
+     * On the sandbox a page lands in 100 to 300 ms, so a second passes only on a slow network
+     * (an estimate, to measure on a throttled sandbox).
+     */
+    const slowPageMs = 1000;
+
     const feed = ref<HTMLElement | null>(null);
 
     /** The reader, whose own messages are never news to them, and the phone flag, where the feed's edges come in. */
@@ -894,6 +911,13 @@
      */
     const isFirstLoad = !!page && !page.state.isMainRevealed;
 
+    /**
+     * Whether a later feed's page has kept it waiting long enough to be slow, as on a poor network,
+     * where a blank feed for seconds reads as broken. Set once the slow wait passes with the page
+     * still out; a page landing inside it never shows the skeleton.
+     */
+    const isPageSlow = ref(false);
+
     // #endregion Values
 
     // #region Computed Values
@@ -922,6 +946,9 @@
     const justSentKeys = useSentHold(() => channelPending.value, feed);
     const slowSendKeys = useSlowSend(() => channelPending.value);
 
+    /** The skeleton: the first load's final frame at once, a later feed's only once its page is slow. */
+    const isSkeletonShown = computed((): boolean => !isDrawn.value && (isFirstLoad || isPageSlow.value));
+
     /** Who is typing as the feed draws it: no one until the rows are drawn, so nothing types under the skeleton. */
     const drawnTyping = computed((): Typing | null => isDrawn.value ? props.typing : null);
 
@@ -942,6 +969,16 @@
     });
 
     const sections = computed((): FeedSection[] => isDrawn.value ? laidOut.value.sections : []);
+
+    /** Every message row drawn, in order, by the key each row is given: the list the feed's one tab stop moves along. */
+    const rowKeys = computed((): string[] => sections.value.flatMap(section => section.items.flatMap(item => item.kind === "divider" ? [] : item.kind === "group" ? item.rows.map(row => row.key) : [item.key])));
+
+    /*
+        The messages are one Tab stop, held by the message last focused while it is drawn, else by
+        the newest, the one a reader most likely wants; Up and Down move between every message,
+        other people's mid-run ones too. Keys pressed inside a message stay that control's own.
+    */
+    provideRowKeys(useListKeys(() => rowKeys.value, { defaultKey: () => rowKeys.value[rowKeys.value.length - 1] ?? null, isRowOnly: true }));
 
     /** The folded lines drawn, by key, for their tail to claim every message each stands for. */
     const blockedRuns = computed((): ReadonlyMap<string, TimelineMessage[]> => new Map(sections.value
@@ -1362,6 +1399,21 @@
             void land(heldLandingId.value, true);
         }
     });
+
+    // A later feed waits for its page; the wait ends the moment the rows are drawn, so a page that
+    // lands inside it leaves nothing behind.
+    if (!isFirstLoad && !isDrawn.value) {
+        const slowTimer = window.setTimeout(() => {
+            isPageSlow.value = true;
+        }, slowPageMs);
+        const stopWaiting = watch(isDrawn, drawn => {
+            if (drawn) {
+                window.clearTimeout(slowTimer);
+                stopWaiting();
+            }
+        });
+        onBeforeUnmount(() => window.clearTimeout(slowTimer));
+    }
 
     onBeforeUnmount(() => {
         actionBar.stop();
