@@ -417,11 +417,11 @@ namespace RockWeb.Blocks.Finance
                             var literalTableColumn = tableColumn as RockLiteralField;
                             if ( literalTableColumn.ID == "lPerson" )
                             {
-                                literalControl.Text = string.Format( "<td>{0}</td>", financialTransactionDetail.Transaction.AuthorizedPersonAlias );
+                                literalControl.Text = string.Format( "<td>{0}</td>", financialTransactionDetail.Transaction.AuthorizedPersonAlias?.ToString().EncodeHtml() );
                             }
                             else if ( literalTableColumn.ID == "lTransactionInfo" )
                             {
-                                literalControl.Text = string.Format( "<td>{0}<br/>{1}</td>", financialTransactionDetail.Amount.FormatAsCurrency(), financialTransactionDetail.Account.ToString() );
+                                literalControl.Text = string.Format( "<td>{0}<br/>{1}</td>", financialTransactionDetail.Amount.FormatAsCurrency(), financialTransactionDetail.Account.ToString().EncodeHtml() );
                             }
                             else if ( literalTableColumn.ID == "lCheckImage" )
                             {
@@ -440,7 +440,7 @@ namespace RockWeb.Blocks.Finance
                             else if ( literalTableColumn.ID == "lTransactionType" )
                             {
                                 literalControl.ID = "lTransactionType_" + financialTransactionDetail.Id.ToString();
-                                literalControl.Text = string.Format( "<td>{0}</td>", financialTransactionDetail.Transaction.TransactionTypeValue );
+                                literalControl.Text = string.Format( "<td>{0}</td>", financialTransactionDetail.Transaction.TransactionTypeValue?.ToString().EncodeHtml() );
                             }
                             else if ( literalTableColumn.ID == "lMatchedRegistration" )
                             {
@@ -495,14 +495,16 @@ namespace RockWeb.Blocks.Finance
         /// <param name="selectedRegistrationInstanceId">The selected registration instance identifier.</param>
         private string GetRegistrationName( Registration registration, bool isEdit, int selectedRegistrationInstanceId )
         {
+            Func<string, string> encodeName = name => isEdit ? name : name.EncodeHtml();
+
             string registrationName = string.Empty;
             if ( registration.PersonAlias != null && registration.PersonAlias.Person != null )
             {
-                registrationName = registration.PersonAlias.Person.FullName;
+                registrationName = encodeName( registration.PersonAlias.Person.FullName );
             }
             else
             {
-                registrationName = string.Format( "{0} {1}", registration.FirstName, registration.LastName );
+                registrationName = string.Format( "{0} {1}", encodeName( registration.FirstName ), encodeName( registration.LastName ) );
             }
 
             var registrantNames = registration.Registrants
@@ -516,10 +518,10 @@ namespace RockWeb.Blocks.Finance
                 registrationName += string.Format( "<small> {0}</small>", registration.CreatedDateTime.ToShortDateString() );
                 if ( registration.RegistrationInstanceId != selectedRegistrationInstanceId )
                 {
-                    registrationName += string.Format( "</br><small>{0}</small>", registration.RegistrationInstance.Name );
+                    registrationName += string.Format( "</br><small>{0}</small>", encodeName( registration.RegistrationInstance.Name ) );
                 }
 
-                registrationName += string.Format( "</br><small>{0}</small>", registrantNames.Select( a => a.Person.FullName ).ToList().AsDelimited( ", " ) );
+                registrationName += string.Format( "</br><small>{0}</small>", registrantNames.Select( a => encodeName( a.Person.FullName ) ).ToList().AsDelimited( ", " ) );
             }
 
             return registrationName;
