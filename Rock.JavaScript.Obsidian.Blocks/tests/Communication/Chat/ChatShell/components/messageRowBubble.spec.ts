@@ -21,7 +21,7 @@
 import { mount, VueWrapper } from "@vue/test-utils";
 import MessageRow from "../../../../../src/Communication/Chat/ChatShell/components/messageRow.partial.obs";
 import { providedSession } from "../sessionShapes";
-import { DisplayPiece, EmojiGlyph, PendingMessage, QuotedMessage, TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
+import { AttachmentItem, DisplayPiece, EmojiGlyph, PendingMessage, QuotedMessage, TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 
 const me = "a0000001-0000-4000-8000-000000000000";
 const anna = "a0000002-0000-4000-8000-000000000000";
@@ -60,7 +60,7 @@ function stored(extra: Partial<TimelineMessage> = {}): TimelineMessage {
     };
 }
 
-function draw(row: { pending?: PendingMessage | null, message?: TimelineMessage | null }, isChannel: boolean): VueWrapper {
+function draw(row: { pending?: PendingMessage | null, message?: TimelineMessage | null, position?: string }, isChannel: boolean): VueWrapper {
     return mount(MessageRow, {
         props: { personAliasGuid: me, isOwn: true, isChannel, position: "single", ...row },
         global: { provide: providedSession({ me: { personAliasGuid: me, name: "Maxwell Eley" }, emoji: catalog }) }
@@ -110,4 +110,27 @@ test("a reply also sent to the conversation says so before the answer", () => {
     const row = draw({ pending: pending({ parentId: 30, isShownInChannel: true }) }, true);
 
     expect(row.find("[data-testid='thread-reply-label']").exists()).toBe(true);
+});
+
+// A photo, a file or a GIF sent alone has no text line: its "Sending…" and "Sent" take the time's
+// place, so neither adds a line above the files nor takes one away.
+describe("files sent alone", () => {
+    const photo: AttachmentItem = { id: "u1", key: "k1", kind: "image", name: "hike.jpg", size: 1000, type: "image/jpeg", width: 400, height: 300 };
+
+    test.each([["a head row", "single", ".chat-cm-head"], ["a row in its run", "last", ".chat-cm-gutter"]])("in Community, %s says Sent where its time is, never in a text line", async (_name, position, home) => {
+        const row = draw({ pending: pending({ body: "", attachments: [photo] }), position }, true);
+
+        await row.setProps({ pending: null, message: stored({ body: null, attachments: [photo] }), isJustSent: true });
+
+        expect(row.get(home).find("[data-testid='message-state']").text()).toBe("Sent");
+        expect(row.find(".chat-cm-text").exists()).toBe(false);
+    });
+
+    test("in a direct message, Sent rides the time line under the files", async () => {
+        const row = draw({ pending: pending({ body: "", attachments: [photo] }) }, false);
+
+        await row.setProps({ pending: null, message: stored({ body: null, attachments: [photo] }), isJustSent: true });
+
+        expect(row.get(".chat-meta").find("[data-testid='message-state']").text()).toBe("Sent");
+    });
 });
