@@ -10,6 +10,8 @@
 <asp:UpdatePanel ID="upDetail" runat="server">
     <ContentTemplate>
 
+        <Rock:NotificationBox ID="nbNotAuthorizedToView" runat="server" NotificationBoxType="Info" Visible="false" EnableViewState="false" />
+
         <asp:Panel ID="pnlDetails" CssClass="panel panel-block" runat="server" >
             <asp:HiddenField ID="hfWorkflowTypeId" runat="server" />
 

@@ -314,7 +314,7 @@ namespace RockWeb.Blocks.WorkFlow
             _hasLaunched = LaunchWorkflows();
             RenderState();
 
-            if ( !_hasLaunched )
+            if ( !_hasLaunched && GetEntitySetId() != 0 )
             {
                 // RenderState hides the notification box, so show this after it.
                 ShowError( "Please select a workflow type." );
@@ -435,6 +435,11 @@ namespace RockWeb.Blocks.WorkFlow
 
             var workflowAttributes = PageParameters().ToDictionary(k => k.Key, v => v.Value.ToString());
             var entitySetId = GetEntitySetId();
+            if ( entitySetId == 0 )
+            {
+                return false;
+            }
+
             var rockContext = new RockContext();
             var entitySetService = new EntitySetService( rockContext );
             entitySetService.LaunchWorkflows( entitySetId, workflowType.Id, CurrentPersonAliasId, workflowAttributes );
@@ -538,7 +543,7 @@ namespace RockWeb.Blocks.WorkFlow
 
             if ( entitySetId == default( int ) )
             {
-                ShowError( "An entity set id is required" );
+                ShowError( "A valid entity set is required" );
                 return false;
             }
 
@@ -805,12 +810,53 @@ namespace RockWeb.Blocks.WorkFlow
         #region Data Helpers
 
         /// <summary>
-        /// Gets the entity set identifier.
+        /// Gets the identifier of the entity set named by the page parameter when the current person created it.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>The entity set identifier, or 0 when there is none or another person created it.</returns>
         private int GetEntitySetId()
         {
-            return PageParameter( PageParameterKey.EntitySetId ).AsInteger();
+            if ( _ownedEntitySetId.HasValue )
+            {
+                return _ownedEntitySetId.Value;
+            }
+
+            /*
+                11/23/26 - JMH
+
+                Grids create the entity set while the person is signed in, so the
+                creator is the person who should be able to preview it and launch
+                workflows for it. The person Id is compared instead of the alias Id
+                so a merged person still matches. Sets with no creator are rejected.
+
+                Reason: Only open entity sets created by the current person.
+            */
+            _ownedEntitySetId = 0;
+
+            var entitySetId = PageParameter( PageParameterKey.EntitySetId ).AsInteger();
+            if ( entitySetId == 0 || !CurrentPersonId.HasValue )
+            {
+                return _ownedEntitySetId.Value;
+            }
+
+            var rockContext = new RockContext();
+            var creatorAliasId = new EntitySetService( rockContext ).Queryable()
+                .AsNoTracking()
+                .Where( es => es.Id == entitySetId )
+                .Select( es => es.CreatedByPersonAliasId )
+                .FirstOrDefault();
+
+            if ( !creatorAliasId.HasValue )
+            {
+                return _ownedEntitySetId.Value;
+            }
+
+            var creatorPersonId = new PersonAliasService( rockContext ).GetPersonId( creatorAliasId.Value );
+            if ( creatorPersonId.HasValue && creatorPersonId.Value == CurrentPersonId.Value )
+            {
+                _ownedEntitySetId = entitySetId;
+            }
+
+            return _ownedEntitySetId.Value;
         }
 
         /// <summary>
@@ -831,6 +877,7 @@ namespace RockWeb.Blocks.WorkFlow
             return _entitySet;
         }
         private EntitySet _entitySet = null;
+        private int? _ownedEntitySetId = null;
 
         /// <summary>
         /// Gets the entity type cache.
