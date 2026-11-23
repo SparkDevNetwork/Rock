@@ -93,6 +93,19 @@ test('P3 refuses a press listener on the document outside the popover, scrim and
   }
 });
 
+test('P3 passes only the long press swallowing the one click a fired hold leaves, in its own file', () => {
+  const swallow = [
+    'document.addEventListener("click", onClick, true);',
+    'document.addEventListener("pointerdown", onDown, true);',
+  ];
+  const outside = 'document.addEventListener("pointerdown", onDocumentPointerDown, true);';
+  const longPress = `${shell}/composables/useLongPress.partial.ts`;
+
+  assert.deepEqual(ruleLines(one(longPress, swallow.join('\n')), 'P3'), []);
+  assert.deepEqual(ruleLines(one(longPress, [...swallow, outside].join('\n')), 'P3'), [3]);
+  assert.deepEqual(ruleLines(one(`${shell}/components/messageRow.partial.ts`, [...swallow, outside].join('\n')), 'P3'), [1, 2, 3]);
+});
+
 test('P4 refuses a media query read outside the viewport part, optional call included', () => {
   const script = [
     'const isTouch = window.matchMedia?.("(hover: none)").matches ?? false;',
