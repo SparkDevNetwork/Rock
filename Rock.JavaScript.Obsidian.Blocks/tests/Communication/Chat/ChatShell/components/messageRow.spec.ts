@@ -884,7 +884,8 @@ describe("Community, in a channel", () => {
         };
 
         const flash = block(".chat-msg.is-flashing .chat-bub-anchor::before");
-        expect(flash).toMatch(/inset:\s*-4px/);
+        expect(flash).toMatch(/inset:\s*0/);
+        expect(flash).toMatch(/box-shadow:\s*0 0 0 4px var\(--chat-flash\)/);
         expect(flash).toMatch(/z-index:\s*-1/);
         expect(flash).toMatch(/animation:\s*chat-flash var\(--chat-d-flash\)/);
         expect(block(".chat-msg.is-flashing .chat-bub-anchor")).toMatch(/isolation:\s*isolate/);

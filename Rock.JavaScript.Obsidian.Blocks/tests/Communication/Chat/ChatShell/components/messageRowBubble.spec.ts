@@ -143,10 +143,21 @@ describe("the jump flash", () => {
     const style = readFileSync(resolve(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/messageRowBubble.partial.obs"), "utf8").replace(/\r\n/g, "\n");
     const flash = /\n\.chat-msg\.is-flashing \.chat-bub-anchor::before\s*\{([^}]*)\}/.exec(style)?.[1] ?? "";
 
-    test("stands its gap clear of the bubble with the bubble's radius plus that gap", () => {
-        expect(flash).toMatch(/--chat-flash-gap: 4px;/);
-        expect(flash).toMatch(/inset: -4px;/);
-        expect(flash).toMatch(/border-radius: calc\(var\(--chat-r-bubble\) \+ var\(--chat-flash-gap\)\);/);
+    // The flash lies on the bubble's own box with the bubble's own corners and stands 4px clear of
+    // it as a spread of its colour. A spread grows every corner by its width wherever the corner is
+    // at least that wide, so the flash's outer corners are the bubble's plus 4px: concentric, with
+    // no gap for the bubble's corners to leave out.
+    test("stands 4px clear of the bubble as a spread over the bubble's own corners, so its corners grow by that gap", () => {
+        const sheet = readFileSync(resolve(__dirname, "../../../../../../RockWeb/Styles/Blocks/Communication/Chat/chat.css"), "utf8");
+        const radius = (name: string): number => parseFloat(new RegExp(`--chat-r-${name}:\\s*([\\d.]+)px`).exec(sheet)?.[1] ?? "0");
+
+        expect(flash).toMatch(/inset: 0;/);
+        expect(flash).toMatch(/border-radius: var\(--chat-r-bubble\);/);
+        expect(flash).toMatch(/background: var\(--chat-flash\);/);
+        expect(flash).toMatch(/box-shadow: 0 0 0 4px var\(--chat-flash\);/);
+        expect(radius("tail")).toBeGreaterThanOrEqual(4);
+        expect(radius("bubble")).toBeGreaterThanOrEqual(4);
+        expect(style).not.toMatch(/--chat-flash-gap/);
     });
 
     test.each([
@@ -156,14 +167,14 @@ describe("the jump flash", () => {
         [".is-own", "first", "border-bottom-right-radius"],
         [".is-own", "middle", "border-top-right-radius"],
         [".is-own", "last", "border-top-right-radius"]
-    ])("in a run%s, a %s message's tail corners are the flash's too, grown by the gap", (own, position, corner) => {
+    ])("in a run%s, a %s message's tail corners are the flash's too, the bubble's plain", (own, position, corner) => {
         const row = `\\.is-conversational${own.replace(".", "\\.")}\\[data-position="${position}"\\]`;
         const rule = new RegExp(`${row} \\.chat-bubble,\\n${row} \\.chat-bub-anchor::before\\s*\\{([^}]*)\\}`).exec(style)?.[1] ?? "";
-        expect(rule).toMatch(new RegExp(`${corner}: calc\\(var\\(--chat-r-tail\\) \\+ var\\(--chat-flash-gap, 0px\\)\\);`));
+        expect(rule).toMatch(new RegExp(`${corner}: var\\(--chat-r-tail\\);`));
     });
 
     test("the person's own run takes its corners back on the flash as on the bubble", () => {
         const rule = /\n\.is-conversational\.is-own\[data-position\] \.chat-bubble,\n\.is-conversational\.is-own\[data-position\] \.chat-bub-anchor::before\s*\{([^}]*)\}/.exec(style)?.[1] ?? "";
-        expect(rule).toMatch(/border-radius: calc\(var\(--chat-r-bubble\) \+ var\(--chat-flash-gap, 0px\)\);/);
+        expect(rule).toMatch(/border-radius: var\(--chat-r-bubble\);/);
     });
 });
