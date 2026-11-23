@@ -243,9 +243,9 @@
     opacity: 0;
 }
 
-/* Shown on the row the column's bar is on, as its tint is, not under any pointer, so one time shows at once. */
+/* Shown on the row the column's bar is on, as its tint is, not under any pointer, so one time shows at once. A tap on a touch screen focuses the row and shows no time. */
 .chat-msg.is-hot .chat-cm-gutter-time,
-.chat-msg:focus-within .chat-cm-gutter-time {
+.chat-msg:not(.is-touch):focus-within .chat-cm-gutter-time {
     opacity: 1;
 }
 

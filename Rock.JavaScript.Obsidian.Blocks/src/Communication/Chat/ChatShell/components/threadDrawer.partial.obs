@@ -94,6 +94,7 @@
                             :isChannel="isChannel"
                             :isInThread="true"
                             :reactionHost="reactionHost"
+                            :rowKey="item.key"
                             :data-row-key="item.key"
                             :data-reply-id="item.isReply ? item.messages[item.messages.length - 1].id : undefined"
                             @messageAction="emit('messageAction', $event)" />
@@ -105,6 +106,7 @@
                             :isInThread="true"
                             :isFlashing="item.isReply && item.message.id === flashingId"
                             :reactionHost="reactionHost"
+                            :rowKey="item.key"
                             :data-row-key="item.key"
                             :data-reply-id="item.isReply ? item.message.id : undefined"
                             @jump="emit('jump', $event)"
@@ -113,6 +115,7 @@
                 <div v-else class="chat-grp chat-enter" :class="{ 'is-own': item.isOwn }">
                     <MessageRow v-for="row in item.rows"
                                 :key="row.key"
+                                :rowKey="row.key"
                                 :groupKey="item.key"
                                 :message="row.message"
                                 :pending="row.pending"
@@ -270,6 +273,7 @@
     import { messageForError } from "../errors.partial";
     import { useViewArrivals } from "../messageMotion.partial";
     import { useFeedTail } from "../composables/useFeedTail.partial";
+    import { provideRowKeys, useListKeys } from "../composables/useListKeys.partial";
     import { useNewestEnd } from "../composables/useNewestEnd.partial";
 
     import { useSeenObserver } from "../composables/useSeenObserver.partial";
@@ -568,6 +572,13 @@
             ...flatten(repliesLaidOut.value, true)
         ];
     });
+
+    /** Every message row drawn, root first, by the key each row is given: the list the thread's one tab stop moves along. */
+    const rowKeys = computed((): string[] => items.value.flatMap(item => item.kind === "thread-divider" ? [] : item.kind === "group" ? item.rows.map(row => row.key) : [item.key]));
+
+    // The thread's messages are one Tab stop, as the conversation's are: held by the message last
+    // focused, else by the newest reply; Up and Down move along the root and every reply.
+    provideRowKeys(useListKeys(() => rowKeys.value, { defaultKey: () => rowKeys.value[rowKeys.value.length - 1] ?? null, isRowOnly: true }));
 
     /** The folded lines drawn, by key, for their tail to claim every message each stands for. */
     const blockedRuns = computed((): ReadonlyMap<string, TimelineMessage[]> => new Map(items.value
