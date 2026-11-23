@@ -105,9 +105,11 @@
                       @select="onNotifySelect" />
             </span>
 
+            <!-- A toggle keeps one name and says its state by being pressed; the tip, for the eye, names what a click does. -->
             <IconButton v-if="isPrefsOffered && !isPhone"
                         :icon="isStarred ? 'star-f' : 'star'"
-                        :label="starWords"
+                        label="Favorite"
+                        :tooltip="starWords"
                         :aria-pressed="isStarred ? 'true' : 'false'"
                         data-testid="header-star"
                         @click="emit('star')" />
