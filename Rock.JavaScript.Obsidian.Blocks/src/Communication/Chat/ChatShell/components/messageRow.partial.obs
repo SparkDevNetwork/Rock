@@ -108,12 +108,12 @@
 }
 
 .chat-msg.is-conversational.is-system:focus-visible {
-    outline: 2px solid var(--chat-brand-ink);
+    outline: var(--chat-focus-ring);
     outline-offset: 2px;
 }
 
 .chat-msg.is-conversational.is-system:focus {
-    outline: 2px solid var(--chat-brand-ink);
+    outline: var(--chat-focus-ring);
     outline-offset: 2px;
 }
 
@@ -256,13 +256,13 @@
 
 /* The ring sits inside the row, which runs edge to edge, so the scroller does not clip it. */
 .chat-msg.is-community:focus-visible {
-    outline: 2px solid var(--chat-brand-ink);
+    outline: var(--chat-focus-ring);
     outline-offset: -2px;
     border-radius: var(--chat-r-control);
 }
 
 .chat-msg.is-community:focus {
-    outline: 2px solid var(--chat-brand-ink);
+    outline: var(--chat-focus-ring);
     outline-offset: -2px;
     border-radius: var(--chat-r-control);
 }

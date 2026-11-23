@@ -152,12 +152,13 @@ button.chat-quote:active .chat-quote-body {
     transform: scale(var(--chat-press-shallow));
 }
 
+/* The ring is drawn on the body, the quote's visible shape, as the shared ring, right against its edge. */
 .chat-quote:focus-visible {
     outline: none;
 }
 
 .chat-quote:focus-visible .chat-quote-body {
-    box-shadow: 0 0 0 2px var(--chat-brand-ring);
+    outline: var(--chat-focus-ring);
 }
 
 /* An original that is gone: no fill, a dashed outline, and the sentence saying so. */

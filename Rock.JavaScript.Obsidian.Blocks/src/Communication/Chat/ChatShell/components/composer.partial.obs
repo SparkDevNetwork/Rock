@@ -153,22 +153,14 @@
                         aria-label="Send"
                         data-testid="composer-send"
                         :disabled="isDisabled || !isReady"
-                        @mouseenter="onSendPointerEnter"
-                        @mouseleave="hideSendTip"
-                        @pointerdown="onSendPointerDown"
-                        @focus="onSendFocus"
-                        @blur="onSendBlur"
-                        @click="hideSendTip">
+                        @mouseenter="sendTip.onPointerEnter"
+                        @mouseleave="sendTip.hideTip"
+                        @pointerdown="sendTip.onPointerDown"
+                        @focus="sendTip.onFocus"
+                        @blur="sendTip.onBlur"
+                        @click="sendTip.hideTip">
                     <Icon name="arrow-up" />
-                    <Teleport :to="sendTipHost ?? 'body'" :disabled="!sendTipHost">
-                        <div v-if="isSendTipShown"
-                             ref="sendTipElement"
-                             class="chat-tip"
-                             role="tooltip"
-                             :style="sendTipStyles">
-                            Send
-                        </div>
-                    </Teleport>
+                    <Tip :tip="sendTip">Send</Tip>
                 </button>
             </form>
 
@@ -589,7 +581,8 @@
     import InlineNotice, { Note } from "../ui/inlineNotice.partial.obs";
     import Menu, { MenuItem } from "../ui/menu.partial.obs";
     import Switch from "../ui/switch.partial.obs";
-    import { overlayHostOf, useTooltip } from "../ui/tooltip.partial";
+    import Tip from "../ui/tip.partial.obs";
+    import { useTooltip } from "../ui/tooltip.partial";
 
     const props = defineProps({
         isDisabled: {
@@ -815,19 +808,7 @@
     const busyNoteId = `chat-busy-note-${newGuid()}`;
 
     /** Send's tip, shown on a rest or a keyboard focus as every icon button's is. */
-    const {
-        tipElement: sendTipElement,
-        isTipShown: isSendTipShown,
-        floatingStyles: sendTipStyles,
-        hideTip: hideSendTip,
-        onPointerEnter: onSendPointerEnter,
-        onPointerDown: onSendPointerDown,
-        onFocus: onSendFocus,
-        onBlur: onSendBlur
-    } = useTooltip(sendElement);
-
-    /** The chat's root, which Send's tip is drawn in; null where the composer is drawn alone. */
-    const sendTipHost = ref<HTMLElement | null>(null);
+    const sendTip = useTooltip(sendElement);
 
     // #endregion Values
 
@@ -1210,11 +1191,6 @@
                 props.tray.removeGif("GIFs were turned off, so the GIF was taken out.");
             }
         }
-    });
-
-    // Send is drawn with the box, which a locked composer leaves out, so its tip finds the chat's root as it comes.
-    watch(sendElement, element => {
-        sendTipHost.value = overlayHostOf(element);
     });
 
     // #endregion Watchers

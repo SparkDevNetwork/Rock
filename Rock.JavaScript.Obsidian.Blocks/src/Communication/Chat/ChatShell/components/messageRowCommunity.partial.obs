@@ -8,7 +8,7 @@
             <div class="chat-cm-head" data-testid="message-head">
                 <span class="chat-cm-name" data-testid="sender-name">{{ view.displayName }}</span>
                 <Badge v-if="isLeaderShown" tone="tag" label="Leader" isSpoken class="chat-cm-pill" data-testid="leader-pill" />
-                <span ref="timeElement" class="chat-cm-time" data-testid="message-time" @mouseenter="onPointerEnter" @mouseleave="onPointerLeave" @pointerdown="onPointerDown">{{ view.time }}</span>
+                <span ref="timeElement" class="chat-cm-time" data-testid="message-time" @mouseenter="timeTip.onPointerEnter" @mouseleave="timeTip.onPointerLeave" @pointerdown="timeTip.onPointerDown">{{ view.time }}</span>
             </div>
             <BlockCard :text="view.text" :blocks="view.message?.blocks ?? null" :runAction="on.runBlockAction" />
         </div>
@@ -46,7 +46,7 @@
                            @click="view.authorGuid && on.author($event)">{{ view.displayName }}</component>
                 <Badge v-if="isLeaderShown" tone="tag" label="Leader" isSpoken class="chat-cm-pill" data-testid="leader-pill" />
                 <Badge v-if="view.isAnnouncement" tone="brand" icon="speaker" label="Announcement" isSpoken class="chat-cm-pill" data-testid="announcement-pill" />
-                <span ref="timeElement" class="chat-cm-time" data-testid="message-time" @mouseenter="onPointerEnter" @mouseleave="onPointerLeave" @pointerdown="onPointerDown">{{ view.time }}</span>
+                <span ref="timeElement" class="chat-cm-time" data-testid="message-time" @mouseenter="timeTip.onPointerEnter" @mouseleave="timeTip.onPointerLeave" @pointerdown="timeTip.onPointerDown">{{ view.time }}</span>
                 <span v-if="isStateAtTime && view.isSendingShown" class="chat-cm-state"><Icon name="clock" size="xs" /><span class="chat-cm-state-words" data-testid="message-state">Sending…</span></span>
                 <span v-else-if="isStateAtTime && view.state === 'sent'" class="chat-cm-state is-sent"><Icon name="check" size="xs" /><span class="chat-cm-state-words" data-testid="message-state">Sent</span></span>
                 <span v-if="view.readerMention" class="chat-cm-mention" data-testid="mention-tag" aria-hidden="true"><Icon name="at" size="xs" /><span class="chat-cm-mention-words">Mentioned {{ view.readerMention }}</span></span>
@@ -80,13 +80,7 @@
         </div>
         <span v-if="view.isDockLent" :ref="on.setDock" class="chat-tools-dock"></span>
     </template>
-    <Teleport :to="tipHost ?? 'body'" :disabled="!tipHost">
-        <span v-if="isTipShown"
-              ref="tipElement"
-              class="chat-tip"
-              role="tooltip"
-              :style="floatingStyles">{{ longTime }}</span>
-    </Teleport>
+    <Tip :tip="timeTip">{{ longTime }}</Tip>
 </template>
 
 <style scoped>
@@ -409,7 +403,8 @@
     import { MessageRowHandlers, MessageRowView } from "../composables/useMessageRowView.partial";
     import { dayLabel, gutterTimeLabel } from "../feedLayout.partial";
     import { useChatSession } from "../chatSession.partial";
-    import { overlayHostOf, useTooltip } from "../ui/tooltip.partial";
+    import Tip from "../ui/tip.partial.obs";
+    import { useTooltip } from "../ui/tooltip.partial";
 
     const props = defineProps({
         /** What the message shows and what can be done to it, as the row worked them out. */
@@ -452,10 +447,7 @@
     // The head time's tip is the chat's own, timed and drawn as every other; the row's label already
     // speaks the time, so the tip is for the pointer only.
     const timeElement = ref<HTMLElement>();
-    const { tipElement, isTipShown, floatingStyles, onPointerEnter, onPointerLeave, onPointerDown } = useTooltip(timeElement);
-
-    /** The chat's overlay layer the tip is drawn in, so the feed's faded edges never cut it; none when the row is drawn alone. */
-    const tipHost = computed((): HTMLElement | null => overlayHostOf(timeElement.value));
+    const timeTip = useTooltip(timeElement);
 
     /**
      * The Leader pill beside the name: a fact about the sender in this channel now, which only a

@@ -2533,7 +2533,7 @@ describe("a message's files", () => {
                 .filter(m => m[1].split(",").map(s => s.trim()).includes(selector))
                 .map(m => m[2]);
             const ringed = (selector: string): boolean => rulesNaming(selector)
-                .some(body => /outline:\s*2px solid var\(--chat-brand-ink\)/.test(body) && /outline-offset:\s*2px/.test(body));
+                .some(body => /outline:\s*var\(--chat-focus-ring\)/.test(body) && /outline-offset:\s*2px/.test(body));
 
             expect(ringed(".chat-msg.is-conversational:focus-visible .chat-bub-anchor.is-files-only")).toBe(true);
             expect(ringed(".chat-msg.is-conversational:focus .chat-bub-anchor.is-files-only")).toBe(true);

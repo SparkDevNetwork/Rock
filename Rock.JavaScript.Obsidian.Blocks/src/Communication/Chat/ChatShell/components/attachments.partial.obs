@@ -51,13 +51,7 @@
                 <InlineNotice v-if="tray.notice" class="chat-attach-notice" :note="{ kind: 'info', text: tray.notice }" data-testid="attachment-tray-notice" />
             </div>
 
-            <Teleport :to="tipHost ?? 'body'" :disabled="!tipHost">
-                <div v-if="isWordsTipShown"
-                     ref="wordsTipElement"
-                     class="chat-tip"
-                     role="tooltip"
-                     :style="wordsTip.floatingStyles.value">{{ wordsTipText }}</div>
-            </Teleport>
+            <Tip :tip="wordsTip">{{ wordsTipText }}</Tip>
         </template>
 
         <template v-else>
@@ -383,7 +377,7 @@
 }
 
 .chat-attach-tile:focus-visible {
-    outline: 2px solid var(--chat-focus-line);
+    outline: var(--chat-focus-ring);
     outline-offset: -2px;
 }
 
@@ -475,7 +469,7 @@
 }
 
 .chat-attach-gif-play:focus-visible {
-    outline: 2px solid var(--chat-focus-line);
+    outline: var(--chat-focus-ring);
     outline-offset: 2px;
 }
 
@@ -532,7 +526,7 @@ a.chat-attach-file:hover {
 }
 
 a.chat-attach-file:focus-visible {
-    outline: 2px solid var(--chat-focus-line);
+    outline: var(--chat-focus-ring);
     outline-offset: 1px;
 }
 
@@ -617,6 +611,7 @@ a.chat-attach-file:focus-visible {
     import InlineNotice from "../ui/inlineNotice.partial.obs";
     import IconButton from "../ui/iconButton.partial.obs";
     import { useImageReveal, vReveal } from "../ui/imageReveal.partial";
+    import Tip from "../ui/tip.partial.obs";
     import { isCutShort, overlayHostOf, useTooltip } from "../ui/tooltip.partial";
 
     const props = defineProps({
@@ -670,10 +665,6 @@ a.chat-attach-file:focus-visible {
     const wordsAnchor = ref<HTMLElement>();
     const wordsTipText = ref("");
     const wordsTip = useTooltip(wordsAnchor, () => !isCutShort(wordsAnchor.value));
-    const { tipElement: wordsTipElement, isTipShown: isWordsTipShown } = wordsTip;
-
-    /** The chat's root, which the tip is drawn in; null where the strip is drawn alone. */
-    const tipHost = ref<HTMLElement | null>(null);
 
     /** The card being followed by the click the chat made itself, which its handler lets through. */
     let following: HTMLAnchorElement | null = null;
@@ -755,7 +746,6 @@ a.chat-attach-file:focus-visible {
     function onWordsEnter(event: MouseEvent, words: string): void {
         wordsAnchor.value = event.currentTarget instanceof HTMLElement ? event.currentTarget : undefined;
         wordsTipText.value = words;
-        tipHost.value = overlayHostOf(wordsAnchor.value);
         wordsTip.onPointerEnter();
     }
 

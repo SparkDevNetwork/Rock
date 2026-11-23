@@ -91,14 +91,14 @@
 .chat-msg.is-conversational:focus-visible .chat-bubble,
 .chat-msg.is-conversational:focus-visible .chat-bub-anchor.is-files-only,
 .chat-msg.is-conversational.is-card:focus-visible .chat-card {
-    outline: 2px solid var(--chat-brand-ink);
+    outline: var(--chat-focus-ring);
     outline-offset: 2px;
 }
 
 .chat-msg.is-conversational:focus .chat-bubble,
 .chat-msg.is-conversational:focus .chat-bub-anchor.is-files-only,
 .chat-msg.is-conversational.is-card:focus .chat-card {
-    outline: 2px solid var(--chat-brand-ink);
+    outline: var(--chat-focus-ring);
     outline-offset: 2px;
 }
 
