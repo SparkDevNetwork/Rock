@@ -592,7 +592,7 @@ namespace RockWeb.Blocks.Finance
                             var literalTableColumn = tableColumn as RockLiteralField;
                             if ( literalTableColumn.ID == "lPerson" )
                             {
-                                literalControl.Text = string.Format( "<td>{0}</td>", financialTransactionDetail.Transaction.AuthorizedPersonAlias );
+                                literalControl.Text = string.Format( "<td>{0}</td>", financialTransactionDetail.Transaction.AuthorizedPersonAlias?.ToString().EncodeHtml() );
                             }
                             else if ( literalTableColumn.ID == "lAmount" )
                             {
@@ -600,12 +600,12 @@ namespace RockWeb.Blocks.Finance
                             }
                             else if ( literalTableColumn.ID == "lAccount" )
                             {
-                                literalControl.Text = string.Format( "<td>{0}</td>", financialTransactionDetail.Account.ToString() );
+                                literalControl.Text = string.Format( "<td>{0}</td>", financialTransactionDetail.Account.ToString().EncodeHtml() );
                             }
                             else if ( literalTableColumn.ID == "lTransactionType" )
                             {
                                 literalControl.ID = "lTransactionType_" + financialTransactionDetail.Id.ToString();
-                                literalControl.Text = string.Format( "<td>{0}</td>", financialTransactionDetail.Transaction.TransactionTypeValue );
+                                literalControl.Text = string.Format( "<td>{0}</td>", financialTransactionDetail.Transaction.TransactionTypeValue?.ToString().EncodeHtml() );
                             }
                             else if ( literalTableColumn.ID == "lEntityColumn" )
                             {
@@ -713,7 +713,7 @@ namespace RockWeb.Blocks.Finance
                         var lTransactionType = phTableRows.ControlsOfTypeRecursive<LiteralControl>().Where( a => a.ID == "lTransactionType_" + financialTransactionDetail.Id.ToString() ).FirstOrDefault();
                         if ( lTransactionType != null )
                         {
-                            lTransactionType.Text = string.Format( "<td>{0}</td>", DefinedValueCache.Get( financialTransactionDetail.Transaction.TransactionTypeValueId ) );
+                            lTransactionType.Text = string.Format( "<td>{0}</td>", DefinedValueCache.Get( financialTransactionDetail.Transaction.TransactionTypeValueId )?.ToString().EncodeHtml() );
                         }
                     }
 

@@ -736,7 +736,7 @@ namespace RockWeb.Blocks.Finance
                     {
                         if ( transactionToMatch.AuthorizedPersonAliasId.HasValue )
                         {
-                            nbIsInProcess.Text = string.Format( "Warning. This transaction was matched by {0} at {1} ({2})", transactionToMatch.ProcessedByPersonAlias.Person, transactionToMatch.ProcessedDateTime.ToString(), transactionToMatch.ProcessedDateTime.ToRelativeDateString() );
+                            nbIsInProcess.Text = string.Format( "Warning. This transaction was matched by {0} at {1} ({2})", transactionToMatch.ProcessedByPersonAlias.Person?.FullName.EncodeHtml(), transactionToMatch.ProcessedDateTime.ToString(), transactionToMatch.ProcessedDateTime.ToRelativeDateString() );
                             nbIsInProcess.Visible = true;
                         }
                         else
@@ -744,7 +744,7 @@ namespace RockWeb.Blocks.Finance
                             // display a warning if some other user has this marked as InProcess (and it isn't matched)
                             if ( transactionToMatch.ProcessedByPersonAliasId != CurrentPersonAliasId )
                             {
-                                nbIsInProcess.Text = string.Format( "Warning. This transaction is getting processed by {0} as of {1} ({2})", transactionToMatch.ProcessedByPersonAlias.Person, transactionToMatch.ProcessedDateTime.ToString(), transactionToMatch.ProcessedDateTime.ToRelativeDateString() );
+                                nbIsInProcess.Text = string.Format( "Warning. This transaction is getting processed by {0} as of {1} ({2})", transactionToMatch.ProcessedByPersonAlias.Person?.FullName.EncodeHtml(), transactionToMatch.ProcessedDateTime.ToString(), transactionToMatch.ProcessedDateTime.ToRelativeDateString() );
                                 nbIsInProcess.Visible = true;
                             }
                         }
@@ -1538,7 +1538,7 @@ namespace RockWeb.Blocks.Finance
                     var personList = personService.Queryable().Where( a => personIdsWithEnvelopeNumber.Contains( a.Id ) ).AsNoTracking().ToList();
                     foreach ( var person in personList )
                     {
-                        cblEnvelopeSearchPersons.Items.Add( new ListItem( person.FullName, person.Id.ToString() ) );
+                        cblEnvelopeSearchPersons.Items.Add( new ListItem( person.FullName.EncodeHtml(), person.Id.ToString() ) );
                     }
 
                     mdEnvelopeSearchResults.SaveButtonText = "Select";
@@ -1600,15 +1600,15 @@ namespace RockWeb.Blocks.Finance
             if ( person != null )
             {
                 // force the link to open a new scrollable,resizable browser window (and make it work in FF, Chrome and IE) http://stackoverflow.com/a/2315916/1755417
-                lPersonName.Text = string.Format( "<a href onclick=\"javascript: window.open('/person/{0}', '_blank', 'scrollbars=1,resizable=1,toolbar=1'); return false;\">{1}</a>", person.Id, person.FullName );
+                lPersonName.Text = string.Format( "<a href onclick=\"javascript: window.open('/person/{0}', '_blank', 'scrollbars=1,resizable=1,toolbar=1'); return false;\">{1}</a>", person.Id, person.FullName.EncodeHtml() );
 
                 var spouse = person.GetSpouse( rockContext );
-                lSpouseName.Text = spouse != null ? string.Format( "<p><strong>Spouse: </strong>{0}</p>", spouse.FullName ) : string.Empty;
+                lSpouseName.Text = spouse != null ? string.Format( "<p><strong>Spouse: </strong>{0}</p>", spouse.FullName.EncodeHtml() ) : string.Empty;
 
                 if ( CampusCache.All( false ).Count > 1 )
                 {
                     var campus = person.GetCampus();
-                    lCampus.Text = campus != null ? string.Format( "<p><strong>Campus: </strong>{0}</p>", campus.Name ) : string.Empty;
+                    lCampus.Text = campus != null ? string.Format( "<p><strong>Campus: </strong>{0}</p>", campus.Name.EncodeHtml() ) : string.Empty;
                 }
 
                 var previousDefinedValue = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_PREVIOUS );
