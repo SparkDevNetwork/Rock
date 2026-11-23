@@ -1,0 +1,47 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <!-- Carried out to the chat's root, so the feed's faded edges neither fade nor cut it; drawn in place where the anchor is drawn alone. -->
+    <Teleport v-if="tip.isTipShown.value" :to="host ?? 'body'" :disabled="!host">
+        <span v-bind="$attrs"
+              :ref="setTipElement"
+              class="chat-tip"
+              role="tooltip"
+              :style="tip.floatingStyles.value">
+            <slot></slot>
+        </span>
+    </Teleport>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import { ChatTooltip, overlayHostOf } from "./tooltip.partial";
+
+    // The tip's look is the sheet's chat-tip, shared with every tip. A holder's attributes, as
+    // aria-hidden on a tip whose words the anchor already reads, go to the tip, since a Teleport
+    // cannot take them.
+    defineOptions({ inheritAttrs: false });
+
+    const props = defineProps({
+        /** The anchor's tooltip, whose state and placing this draws; the slot holds its words. */
+        tip: {
+            type: Object as PropType<ChatTooltip>,
+            required: true
+        }
+    });
+
+    // #region Computed Values
+
+    /** The chat's root around the anchor, read as the tip shows, so an anchor that moves takes its tip along. */
+    const host = computed((): HTMLElement | null => overlayHostOf(props.tip.anchor.value));
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /** Hands the drawn tip to the placing, and takes it back as the tip goes. */
+    function setTipElement(element: unknown): void {
+        props.tip.tipElement.value = element instanceof HTMLElement ? element : undefined;
+    }
+
+    // #endregion Functions
+</script>

@@ -21,15 +21,7 @@
             </svg>
         </template>
 
-        <Teleport :to="tipHost ?? 'body'" :disabled="!tipHost">
-            <div v-if="isTipShown"
-                 ref="tipElement"
-                 class="chat-tip"
-                 role="tooltip"
-                 :style="floatingStyles">
-                {{ status.tip }}
-            </div>
-        </Teleport>
+        <Tip :tip="tip">{{ status.tip }}</Tip>
     </span>
 </template>
 
@@ -120,9 +112,10 @@
 </style>
 
 <script setup lang="ts">
-    import { computed, onMounted, PropType, ref } from "vue";
+    import { computed, PropType, ref } from "vue";
     import { FaceStatus } from "../types.partial";
-    import { overlayHostOf, useTooltip } from "./tooltip.partial";
+    import Tip from "./tip.partial.obs";
+    import { useTooltip } from "./tooltip.partial";
 
     const props = defineProps({
         /** What the face draws, from the status store. */
@@ -148,10 +141,8 @@
 
     const badgeElement = ref<HTMLElement>();
 
-    const { tipElement, isTipShown, floatingStyles, hideTip, onPointerEnter } = useTooltip(badgeElement, () => !props.hasTip);
-
-    /** The chat's root, which the tip is drawn in; null where the face is drawn alone. */
-    const tipHost = ref<HTMLElement | null>(null);
+    const tip = useTooltip(badgeElement, () => !props.hasTip);
+    const { hideTip, onPointerEnter } = tip;
 
     // The revision the badge was first drawn at: anything at it or before is what was already true
     // when the face appeared, so only a later one is a change to show.
@@ -173,8 +164,4 @@
     });
 
     // #endregion Values
-
-    onMounted(() => {
-        tipHost.value = overlayHostOf(badgeElement.value);
-    });
 </script>

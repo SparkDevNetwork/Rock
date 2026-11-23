@@ -18,15 +18,7 @@
         <!-- A mark over the icon, such as a header button's dot, placed by the part that draws it; a failure's words. -->
         <slot></slot>
         <!-- The tip is carried out to the chat's overlay layer, so it sits inside the button only in the template: the button stays the part's one root, and the holder's class and scoped rules reach it, as with the status badge. -->
-        <Teleport :to="tipHost ?? 'body'" :disabled="!tipHost">
-            <div v-if="isTipShown"
-                 ref="tipElement"
-                 class="chat-tip"
-                 role="tooltip"
-                 :style="floatingStyles">
-                {{ tooltip || label }}
-            </div>
-        </Teleport>
+        <Tip :tip="tip">{{ tooltip || label }}</Tip>
     </button>
 </template>
 
@@ -161,10 +153,11 @@
 </style>
 
 <script setup lang="ts">
-    import { computed, onMounted, PropType, ref } from "vue";
+    import { computed, PropType, ref } from "vue";
     import Icon from "./icon.partial.obs";
+    import Tip from "./tip.partial.obs";
     import { ControlSize, IconSize } from "../types.partial";
-    import { overlayHostOf, useTooltip } from "./tooltip.partial";
+    import { useTooltip } from "./tooltip.partial";
 
     defineOptions({ inheritAttrs: false });
 
@@ -245,10 +238,8 @@
 
     const drawnIconSize = computed((): IconSize => props.iconSize || (props.size === "sm" ? "xs" : "md"));
 
-    const { tipElement, isTipShown, floatingStyles, hideTip, onPointerEnter, onPointerDown, onFocus, onBlur } = useTooltip(buttonElement, () => props.isTooltipDisabled);
-
-    /** The chat's root, which the tip is drawn in; null where the button is drawn alone. */
-    const tipHost = ref<HTMLElement | null>(null);
+    const tip = useTooltip(buttonElement, () => props.isTooltipDisabled);
+    const { hideTip, onPointerEnter, onPointerDown, onFocus, onBlur } = tip;
 
     // #endregion Values
 
@@ -269,14 +260,6 @@
     }
 
     // #endregion Functions
-
-    // #region Lifecycle Hooks
-
-    onMounted(() => {
-        tipHost.value = overlayHostOf(buttonElement.value);
-    });
-
-    // #endregion Lifecycle Hooks
 
     defineExpose({ buttonElement, focus });
 </script>
