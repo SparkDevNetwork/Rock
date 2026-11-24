@@ -18,6 +18,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -247,7 +248,11 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
 
             qry = qry.OrderBy( w => w.Name );
 
-            gFormTemplates.SetLinqDataSource( qry );
+            var viewableTemplates = qry.ToList()
+                .Where( w => w.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                .AsQueryable();
+
+            gFormTemplates.SetLinqDataSource( viewableTemplates );
             gFormTemplates.DataBind();
         }
 

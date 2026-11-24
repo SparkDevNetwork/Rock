@@ -851,7 +851,11 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
                 var workflowFormBuilderTemplateService = new WorkflowFormBuilderTemplateService( rockContext );
 
                 // get all group types that have at least one role
-                var templates = workflowFormBuilderTemplateService.Queryable().Where( a => a.IsActive ).ToList();
+                var templates = workflowFormBuilderTemplateService.Queryable()
+                    .Where( a => a.IsActive )
+                    .ToList()
+                    .Where( a => a.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                    .ToList();
 
                 foreach ( var template in templates )
                 {
