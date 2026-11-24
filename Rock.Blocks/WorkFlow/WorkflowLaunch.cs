@@ -123,11 +123,11 @@ namespace Rock.Blocks.WorkFlow
 
             box.Options = GetBoxOptions();
 
-            var entitySetId = PageParameter( PageParameterKey.EntitySetId ).AsInteger();
+            var entitySetId = GetOwnedEntitySetId();
 
             if ( entitySetId == 0 )
             {
-                box.Bag = new WorkflowLaunchBag { ErrorMessage = "An entity set id is required" };
+                box.Bag = new WorkflowLaunchBag { ErrorMessage = "A valid entity set is required" };
                 return box;
             }
 
@@ -338,7 +338,12 @@ namespace Rock.Blocks.WorkFlow
                 return false;
             }
 
-            var entitySetId = PageParameter( PageParameterKey.EntitySetId ).AsInteger();
+            var entitySetId = GetOwnedEntitySetId();
+            if ( entitySetId == 0 )
+            {
+                errorMessage = "A valid entity set is required";
+                return false;
+            }
 
             // Every page parameter is carried forward as a workflow attribute value.
             var workflowAttributeValues = RequestContext.GetPageParameters()
@@ -445,6 +450,46 @@ namespace Rock.Blocks.WorkFlow
         }
 
         /// <summary>
+        /// Gets the identifier of the entity set named by the page parameter when the current person created it.
+        /// </summary>
+        /// <returns>The entity set identifier, or 0 when there is none or another person created it.</returns>
+        private int GetOwnedEntitySetId()
+        {
+            /*
+                11/24/26 - JMH
+
+                Grids create the entity set while the person is signed in, so the
+                creator is the person who should be able to preview it and launch
+                workflows for it. The person Id is compared instead of the alias Id
+                so a merged person still matches. Sets with no creator are rejected.
+
+                Reason: Only open entity sets created by the current person.
+            */
+            var entitySetId = PageParameter( PageParameterKey.EntitySetId ).AsInteger();
+            var currentPerson = RequestContext.CurrentPerson;
+
+            if ( entitySetId == 0 || currentPerson == null )
+            {
+                return 0;
+            }
+
+            var creatorAliasId = new EntitySetService( RockContext ).Queryable()
+                .AsNoTracking()
+                .Where( es => es.Id == entitySetId )
+                .Select( es => es.CreatedByPersonAliasId )
+                .FirstOrDefault();
+
+            if ( !creatorAliasId.HasValue )
+            {
+                return 0;
+            }
+
+            var creatorPersonId = new PersonAliasService( RockContext ).GetPersonId( creatorAliasId.Value );
+
+            return creatorPersonId.HasValue && creatorPersonId.Value == currentPerson.Id ? entitySetId : 0;
+        }
+
+        /// <summary>
         /// Gets the entity query for the entity set along with its entity type.
         /// </summary>
         /// <param name="entitySetId">The entity set identifier.</param>
@@ -500,7 +545,7 @@ namespace Rock.Blocks.WorkFlow
         [BlockAction]
         public BlockActionResult GetAllItems()
         {
-            var entitySetId = PageParameter( PageParameterKey.EntitySetId ).AsInteger();
+            var entitySetId = GetOwnedEntitySetId();
             var query = GetEntitySetQuery( entitySetId, out var entityTypeCache );
 
             if ( query == null || entityTypeCache == null )
