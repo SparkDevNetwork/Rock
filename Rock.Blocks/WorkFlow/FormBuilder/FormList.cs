@@ -211,7 +211,7 @@ namespace Rock.Blocks.WorkFlow.FormBuilder
         /// can translate the selected category's Id from the page parameter to the Guid its forms
         /// are keyed by.
         /// </summary>
-        /// <returns>Every category defined for the WorkflowType entity type.</returns>
+        /// <returns>The categories defined for the WorkflowType entity type that the current person can view.</returns>
         private List<FormListCategoryBag> GetCategoryList()
         {
             var workflowTypeEntityTypeId = EntityTypeCache.Get( typeof( WorkflowType ) )?.Id;
@@ -223,6 +223,7 @@ namespace Rock.Blocks.WorkFlow.FormBuilder
             return new CategoryService( RockContext ).Queryable().AsNoTracking()
                 .Where( c => c.EntityTypeId == workflowTypeEntityTypeId.Value )
                 .ToList()
+                .Where( c => c.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
                 .Select( c => new FormListCategoryBag
                 {
                     Id = c.Id,
@@ -534,7 +535,14 @@ namespace Rock.Blocks.WorkFlow.FormBuilder
             var allowIntegerId = !PageCache.Layout.Site.DisablePredictableIds;
             var category = CategoryCache.Get( key, allowIntegerId );
 
-            return ActionOk( category?.Id.ToString() );
+            if ( category == null
+                || category.EntityTypeId != EntityTypeCache.GetId<WorkflowType>()
+                || !category.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+            {
+                return ActionOk( ( string ) null );
+            }
+
+            return ActionOk( category.Id.ToString() );
         }
 
         /// <summary>

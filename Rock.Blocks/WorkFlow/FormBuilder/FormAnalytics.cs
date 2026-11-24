@@ -24,6 +24,7 @@ using System.Linq;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.ViewModels.Blocks.WorkFlow.FormBuilder.FormAnalytics;
 using Rock.Web.Cache;
 
@@ -56,6 +57,14 @@ namespace Rock.Blocks.WorkFlow.FormBuilder
         }
 
         #endregion Keys
+
+        #region Fields
+
+        private WorkflowTypeCache _workflowType;
+
+        private bool _hasAttemptedWorkflowTypeLoad;
+
+        #endregion Fields
 
         #region Constants
 
@@ -105,9 +114,76 @@ namespace Rock.Blocks.WorkFlow.FormBuilder
         /// <summary>
         /// Returns the WorkflowType resolved from the WorkflowTypeId page parameter, or null if not found.
         /// </summary>
-        private WorkflowTypeCache GetWorkflowType()
+        /// <remarks>
+        /// No security check is done here; use <see cref="GetWorkflowType"/> for anything that reads data.
+        /// </remarks>
+        private WorkflowTypeCache GetRequestedWorkflowType()
         {
             return WorkflowTypeCache.Get( PageParameter( PageParameterKey.WorkflowTypeId ), !PageCache.Layout.Site.DisablePredictableIds );
+        }
+
+        /// <summary>
+        /// Returns the Form Builder WorkflowType from the WorkflowTypeId page parameter if the current person can view or edit it, otherwise null.
+        /// </summary>
+        private WorkflowTypeCache GetWorkflowType()
+        {
+            if ( _hasAttemptedWorkflowTypeLoad )
+            {
+                return _workflowType;
+            }
+
+            _hasAttemptedWorkflowTypeLoad = true;
+
+            /*
+                11/24/26 - JMH
+
+                The workflow type comes from the page parameter, so only Form Builder
+                forms the person can VIEW, or EDIT through the form or its category,
+                are returned. This matches Form Submission List, so people who can see
+                a form's submissions also see its analytics. It is the one choke point
+                for the box, the chart refresh and the preference key.
+
+                Reason: Form Analytics follows the form's view rights.
+            */
+            var workflowType = GetRequestedWorkflowType();
+            if ( workflowType == null || !workflowType.IsFormBuilder )
+            {
+                return null;
+            }
+
+            if ( !workflowType.IsAuthorized( Authorization.VIEW, GetCurrentPerson() ) && !GetCanEditWorkflowType() )
+            {
+                return null;
+            }
+
+            _workflowType = workflowType;
+
+            return _workflowType;
+        }
+
+        /// <summary>
+        /// Determines whether the current person can edit the requested Form Builder workflow type.
+        /// </summary>
+        /// <remarks>
+        /// Falls back to the category's EDIT rights when the workflow type has no explicit EDIT rule.
+        /// </remarks>
+        private bool GetCanEditWorkflowType()
+        {
+            var workflowType = GetRequestedWorkflowType();
+
+            if ( workflowType == null || !workflowType.IsFormBuilder )
+            {
+                return false;
+            }
+
+            var explicitAuth = Authorization.AuthorizedForEntity( workflowType, Authorization.EDIT, GetCurrentPerson(), false );
+            if ( explicitAuth.HasValue )
+            {
+                return explicitAuth.Value;
+            }
+
+            var category = workflowType.CategoryId.HasValue ? CategoryCache.Get( workflowType.CategoryId.Value ) : null;
+            return category != null && category.IsAuthorized( Authorization.EDIT, GetCurrentPerson() );
         }
 
         /// <summary>
