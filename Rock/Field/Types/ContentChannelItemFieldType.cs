@@ -58,7 +58,7 @@ namespace Rock.Field.Types
             var configurationProperties = base.GetPublicEditConfigurationProperties( privateConfigurationValues );
 
             // Get the Code editor options that are available
-            var contentChannels = ContentChannelCache.All().OrderBy( a => a.Name ).ToList();
+            var contentChannels = ContentChannelCache.All().Where( c => Helper.IsVisibleInList( c, c.Guid, null ) ).OrderBy( a => a.Name ).ToList();
             var options = contentChannels.ConvertAll( c => new ListItemBag() { Text = c.Name, Value = c.Guid.ToString().ToUpper() } );
 
             configurationProperties[CONTENT_CHANNELS] = options.ToCamelCaseJson( false, true );

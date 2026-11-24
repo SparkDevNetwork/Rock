@@ -147,6 +147,11 @@ namespace RockWeb.Blocks.Core
 
                 foreach ( var item in dtItem.DefinedValues )
                 {
+                    if ( !item.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ) )
+                    {
+                        continue;
+                    }
+
                     definedValues.Add( item );
                 }
 

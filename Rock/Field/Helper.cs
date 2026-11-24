@@ -21,6 +21,7 @@ using System.Linq;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
 using Rock.Security;
 
 namespace Rock.Field
@@ -124,6 +125,29 @@ namespace Rock.Field
             }
 
             return items;
+        }
+
+        /// <summary>
+        /// Determines whether an option may be listed for the current person.
+        /// </summary>
+        /// <remarks>
+        /// An option is listed only when the current person has VIEW on it or
+        /// it is already the selected value.
+        /// </remarks>
+        /// <param name="item">The secured record behind the option.</param>
+        /// <param name="guid">The unique identifier of the record.</param>
+        /// <param name="selectedValue">The currently selected value, which may contain several delimited unique identifiers.</param>
+        /// <returns><c>true</c> if the option may be listed; otherwise <c>false</c>.</returns>
+        internal static bool IsVisibleInList( ISecured item, Guid guid, string selectedValue )
+        {
+            var selectedGuids = selectedValue?.Split( new[] { ',', '|', ';' }, StringSplitOptions.RemoveEmptyEntries ).AsGuidList();
+
+            if ( selectedGuids != null && selectedGuids.Contains( guid ) )
+            {
+                return true;
+            }
+
+            return item.IsAuthorized( Authorization.VIEW, RockRequestContextAccessor.Current?.CurrentPerson );
         }
 
         /// <summary>
