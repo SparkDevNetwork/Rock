@@ -55,7 +55,7 @@ namespace Rock.Field.Types
 
             if ( !configurationProperties.ContainsKey( CONNECTION_TYPE_OPTIONS ) )
             {
-                var connectionTypes = ConnectionTypeCache.All().ToListItemBagList();
+                var connectionTypes = ConnectionTypeCache.All().Where( t => Helper.IsVisibleInList( t, t.Guid, null ) ).ToListItemBagList();
                 configurationProperties[CONNECTION_TYPE_OPTIONS] = connectionTypes.ToCamelCaseJson( false, true );
             }
 
@@ -93,7 +93,13 @@ namespace Rock.Field.Types
 
                     if ( connectionType != null )
                     {
-                        configurationValues[CONNECTION_TYPE_FILTER] = connectionType.ToListItemBag().ToCamelCaseJson( false, true );
+                        // The client needs the guid to apply the filter, but the
+                        // name is only sent to people who can view the type.
+                        var filterBag = Helper.IsVisibleInList( connectionType, connectionType.Guid, null )
+                            ? connectionType.ToListItemBag()
+                            : new ListItemBag { Value = connectionType.Guid.ToString() };
+
+                        configurationValues[CONNECTION_TYPE_FILTER] = filterBag.ToCamelCaseJson( false, true );
                     }
                 }
 
@@ -101,10 +107,13 @@ namespace Rock.Field.Types
                 var query = new ConnectionOpportunityService( rockContext )
                     .Queryable()
                     .Where( ca => ca.IsActive || includeInactive )
+                    .Include( o => o.ConnectionType )
                     .AsNoTracking();
 
                 var clientValues = query.OrderBy( o => o.ConnectionType.Name )
                     .ThenBy( o => o.Name )
+                    .ToList()
+                    .Where( o => Helper.IsVisibleInList( o, o.Guid, value ) )
                     .Select( o => new ListItemBag()
                     {
                         Value = o.Guid.ToString().ToUpper(),

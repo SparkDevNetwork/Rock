@@ -47,6 +47,14 @@ namespace Rock.Field.Types
             return allChannels.ToDictionary( c => c.Guid.ToString(), c => c.Name );
         }
 
+        /// <inheritdoc/>
+        internal override Dictionary<string, string> GetPublicListSource( Dictionary<string, ConfigurationValue> configurationValues, string privateValue )
+        {
+            return ContentChannelCache.All()
+                .Where( c => Helper.IsVisibleInList( c, c.Guid, privateValue ) )
+                .ToDictionary( c => c.Guid.ToString(), c => c.Name );
+        }
+
         #endregion
 
         #region IEntityReferenceFieldType

@@ -96,7 +96,7 @@ namespace Rock.Field.Types
                 // Get the defined values that are available to be selected.
                 var definedValues = definedTypeCache
                     .DefinedValues
-                    .Where( v => v.IsActive || includeInactive )
+                    .Where( v => ( v.IsActive || includeInactive ) && Helper.IsVisibleInList( v, v.Guid, null ) )
                     .OrderBy( v => v.Order )
                     .Select( v => new ListItemBag
                     {
@@ -153,7 +153,8 @@ namespace Rock.Field.Types
                 var includeInactive = privateConfigurationValues.GetValueOrNull( INCLUDE_INACTIVE_KEY ).AsBooleanOrNull() ?? false;
                 var definedValues = definedType.DefinedValues
                     .Where( v => ( includeInactive || v.IsActive )
-                        && ( selectableValues == null || selectableValues.Contains( v.Id ) ) );
+                        && ( selectableValues == null || selectableValues.Contains( v.Id ) )
+                        && Helper.IsVisibleInList( v, v.Guid, privateValue ) );
 
                 if ( usage == ConfigurationValueUsage.View )
                 {

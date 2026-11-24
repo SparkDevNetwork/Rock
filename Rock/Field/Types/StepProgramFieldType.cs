@@ -83,6 +83,7 @@ namespace Rock.Field.Types
         {
             var publicConfigurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, privateValue );
             publicConfigurationValues[VALUES_PUBLIC_KEY] = StepProgramCache.All()
+                .Where( p => Helper.IsVisibleInList( p, p.Guid, privateValue ) )
                 .OrderBy( o => o.Name )
                 .ToListItemBagList()
                 .ToCamelCaseJson( false, true );

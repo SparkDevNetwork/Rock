@@ -48,6 +48,15 @@ namespace Rock.Field.Types
             return service.Queryable().OrderBy( a => a.Name ).ToDictionary( k => k.Guid.ToString(), v => v.Name );
         }
 
+        /// <inheritdoc/>
+        internal override Dictionary<string, string> GetPublicListSource( Dictionary<string, ConfigurationValue> configurationValues, string privateValue )
+        {
+            return ContentChannelTypeCache.All()
+                .Where( t => Helper.IsVisibleInList( t, t.Guid, privateValue ) )
+                .OrderBy( t => t.Name )
+                .ToDictionary( t => t.Guid.ToString(), t => t.Name );
+        }
+
         #endregion
 
         #region IEntityReferenceFieldType

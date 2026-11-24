@@ -49,6 +49,8 @@ namespace Rock.Field.Types
                 publicConfigurationValues[VALUES_PUBLIC_KEY] = new ConnectionTypeService( rockContext )
                     .Queryable().AsNoTracking()
                     .OrderBy( o => o.Name )
+                    .ToList()
+                    .Where( o => Helper.IsVisibleInList( o, o.Guid, privateValue ) )
                     .Select( o => new ListItemBag
                     {
                         Value = o.Guid.ToString(),

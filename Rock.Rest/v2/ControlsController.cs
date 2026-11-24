@@ -5373,9 +5373,9 @@ namespace Rock.Rest.v2
 
             var field = fieldType.Field;
 
-            var entityValue = options.EntityValue ?? "";
-            var privateValue = field.GetPrivateEditValue( entityValue, new Dictionary<string, string>() );
-            var configurationValues = field.GetPublicConfigurationValues( new Dictionary<string, string>(), Field.ConfigurationValueUsage.Edit, privateValue );
+            // The value comes from the request, so it is not passed on. Passing it
+            // would let the caller list options they are not allowed to view.
+            var configurationValues = field.GetPublicConfigurationValues( new Dictionary<string, string>(), Field.ConfigurationValueUsage.Edit, null );
 
             return Ok( new EntityPickerGetFieldTypeConfigurationResultsBag
             {
@@ -5628,7 +5628,9 @@ namespace Rock.Rest.v2
             }
 
             // Get the public configuration options from the internal options (values).
-            var publicEditConfigurationValues = fieldType.GetPublicConfigurationValues( configurationValues, Field.ConfigurationValueUsage.Edit, options.DefaultValue );
+            // The posted default value is not passed on, so it cannot make
+            // options the person is not allowed to view appear in the list.
+            var publicEditConfigurationValues = fieldType.GetPublicConfigurationValues( configurationValues, Field.ConfigurationValueUsage.Edit, null );
 
             return Ok( new FieldTypeEditorUpdateAttributeConfigurationResultBag
             {
