@@ -1,0 +1,48 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <ul class="nav navbar-nav contextsetter contextsetter-schedule">
+        <li class="dropdown">
+            <a class="dropdown-toggle navbar-link" href="#" data-toggle="dropdown">
+                <span v-html="config.currentSelectionText ?? ''"></span>
+                <b class="ti ti-caret-down-filled"></b>
+            </a>
+
+            <ul class="dropdown-menu">
+                <li v-for="(schedule, index) in config.schedules ?? []"
+                    :key="schedule.value ?? index">
+                    <a href="#" @click.prevent="onScheduleSelected(schedule.value)" v-html="schedule.text ?? ''"></a>
+                </li>
+            </ul>
+        </li>
+    </ul>
+</template>
+
+<script setup lang="ts">
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { emptyGuid } from "@Obsidian/Utility/guid";
+    import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
+    import { ScheduleContextSetterOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/ScheduleContextSetter/scheduleContextSetterOptionsBag";
+
+    const config = useConfigurationValues<ScheduleContextSetterOptionsBag>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    /**
+     * Called when a schedule is selected from the dropdown.
+     *
+     * @param scheduleValue The unique identifier of the selected schedule.
+     */
+    async function onScheduleSelected(scheduleValue: string | null | undefined): Promise<void> {
+        const data = {
+            scheduleGuid: scheduleValue ?? emptyGuid,
+            url: window.location.href
+        };
+
+        const result = await invokeBlockAction<{ redirectUrl?: string | null }>("SetSchedule", data);
+
+        if (result.isSuccess && result.data?.redirectUrl) {
+            window.location.href = makeUrlRedirectSafe(result.data.redirectUrl);
+        }
+    }
+
+    onConfigurationValuesChanged(useReloadBlock());
+</script>
