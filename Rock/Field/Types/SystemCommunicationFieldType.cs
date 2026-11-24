@@ -103,6 +103,8 @@ namespace Rock.Field.Types
                     .AsNoTracking()
                     .Where( c => ( !c.IsActive.HasValue || c.IsActive.Value || includeInactive ) )
                     .OrderBy( d => d.Title )
+                    .ToList()
+                    .Where( sc => Helper.IsVisibleInList( sc, sc.Guid, value ) )
                     .Select( sc => new ListItemBag()
                     {
                         Text = sc.Title,

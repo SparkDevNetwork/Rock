@@ -93,6 +93,8 @@ namespace Rock.Field.Types
                         .Queryable()
                         .AsNoTracking()
                         .OrderBy( r => r.Name )
+                        .ToList()
+                        .Where( r => Helper.IsVisibleInList( r, r.Guid, privateValue ) )
                         .Select( r => new ListItemBag
                         {
                             Text = r.Name,

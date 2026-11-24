@@ -69,17 +69,16 @@ namespace Rock.Field.Types
             {
                 bool includeInactive = configuration.ContainsKey( INCLUDE_INACTIVE_KEY ) && configuration[INCLUDE_INACTIVE_KEY].AsBoolean();
 
-                var templates = new CommunicationTemplateService( rockContext )
-                    .Queryable()
+                var templates = new CommunicationTemplateService( rockContext ).Queryable()
                     .Where( c => ( c.IsActive || includeInactive ) && c.UsageType == null ) // By default, exclude templates with a specified usage type (e.g., Communication Flows)
+                    .OrderBy( t => t.Name )
+                    .ToList()
+                    .Where( t => Helper.IsVisibleInList( t, t.Guid, value ) )
                     .Select( a => new ListItemBag()
                     {
                         Value = a.Guid.ToString(),
                         Text = a.Name
-                    } )
-                    .ToList()
-                    .OrderBy( t => t.Text )
-                    .ToList();
+                    } ).ToList();
 
                 if ( templates.Any() )
                 {

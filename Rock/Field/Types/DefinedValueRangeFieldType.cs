@@ -85,6 +85,7 @@ namespace Rock.Field.Types
                 var definedType = DefinedTypeCache.Get( definedTypeGuid.Value );
 
                 publicConfigurationValues[PUBLIC_VALUES] = definedType.DefinedValues
+                    .Where( v => Helper.IsVisibleInList( v, v.Guid, privateValue ) )
                     .OrderBy( v => v.Order )
                     .Select( v => new
                     {

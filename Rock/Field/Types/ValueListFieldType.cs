@@ -28,6 +28,7 @@ using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.Security;
 using Rock.Model;
+using Rock.Net;
 using Rock.Reporting;
 using Rock.Security;
 using Rock.ViewModels.Utility;
@@ -77,7 +78,15 @@ namespace Rock.Field.Types
         {
             var publicConfigurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, privateValue );
 
+            var definedType = DefinedTypeCache.Get( privateConfigurationValues.GetValueOrNull( "definedtype" ).AsInteger() );
+            var selectedValues = privateValue?.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries ) ?? new string[0];
+
+            // Defined value options are keyed by Id, so a saved value is kept by
+            // matching its Id rather than its Guid.
             var options = GetCustomValues( privateConfigurationValues.ToDictionary( k => k.Key, k => new ConfigurationValue( k.Value ) ) )
+                .Where( kvp => definedType == null
+                    || selectedValues.Contains( kvp.Key )
+                    || DefinedValueCache.Get( kvp.Key.AsInteger() )?.IsAuthorized( Authorization.VIEW, RockRequestContextAccessor.Current?.CurrentPerson ) == true )
                 .Select( kvp => new ListItemBag
                 {
                     Value = kvp.Key,

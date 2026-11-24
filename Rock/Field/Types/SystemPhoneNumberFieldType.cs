@@ -92,6 +92,8 @@ namespace Rock.Field.Types
                 phoneNumbers = phoneNumbers.Where( sp => sp.IsActive ).ToList();
             }
 
+            phoneNumbers = phoneNumbers.Where( sp => Helper.IsVisibleInList( sp, sp.Guid, value ) ).ToList();
+
             publicConfigurationValues[VALUES_KEY] = phoneNumbers.OrderBy( v => v.Name )
                 .ToListItemBagList()
                 .ToCamelCaseJson( false, true );

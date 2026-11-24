@@ -47,7 +47,7 @@ namespace Rock.Field.Types
             using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 publicConfigurationValues[VALUES_PUBLIC_KEY] = StreakTypeCache.All()
-                    .Where( s => s.IsActive )
+                    .Where( s => s.IsActive && Helper.IsVisibleInList( s, s.Guid, value ) )
                     .OrderBy( o => o.Name )
                     .Select( o => new ListItemBag
                     {

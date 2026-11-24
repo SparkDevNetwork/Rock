@@ -275,12 +275,14 @@ namespace Rock.Field.Types
                 foreach ( var definedType in definedTypes )
                 {
                     var definedValueValues = definedType.DefinedValues
-                        .ConvertAll( g => new ListItemBag()
+                        .Where( g => Helper.IsVisibleInList( g, g.Guid, value ) )
+                        .Select( g => new ListItemBag()
                         {
                             Text = g.Value,
                             Value = g.Guid.ToString(),
                             Category = CategoryCache.Get( g.CategoryId ?? 0 )?.Name ?? "All Categories"
-                        } );
+                        } )
+                        .ToList();
                     definedValues.Add( definedType.Guid.ToString(), definedValueValues.ToCamelCaseJson( false, true ) );
                 }
 

@@ -54,6 +54,8 @@ namespace Rock.Field.Types
                     .Queryable().AsNoTracking()
                     .Where( a => a.GroupTypePurposeValueId.HasValue && a.GroupTypePurposeValueId.Value == groupTypePurposeCheckinTemplateValueId )
                     .OrderBy( o => o.Name )
+                    .ToList()
+                    .Where( g => Helper.IsVisibleInList( g, g.Guid, privateValue ) )
                     .Select( o => new ListItemBag
                     {
                         Value = o.Guid.ToString(),

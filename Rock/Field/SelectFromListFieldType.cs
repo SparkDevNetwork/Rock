@@ -62,7 +62,7 @@ namespace Rock.Field.Types
                 clientValues[REPEAT_COLUMNS] = "4";
             }
 
-            var values = GetListSource( privateConfigurationValues.ToDictionary( k => k.Key, k => new ConfigurationValue( k.Value ) ) )
+            var values = GetPublicListSource( privateConfigurationValues.ToDictionary( k => k.Key, k => new ConfigurationValue( k.Value ) ), privateValue )
                     .Select( kvp => new ListItemBag
                     {
                         Value = kvp.Key,
@@ -238,6 +238,20 @@ namespace Rock.Field.Types
         /// The list source.
         /// </value>
         internal abstract Dictionary<string, string> GetListSource( Dictionary<string, ConfigurationValue> configurationValues );
+
+        /// <summary>
+        /// Gets the options sent to the client for selection.
+        /// </summary>
+        /// <remarks>
+        /// Subclasses override this to hide options the current person cannot VIEW.
+        /// </remarks>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="privateValue">The currently selected value, which is always kept in the list.</param>
+        /// <returns>The options, keyed by value with the display text as the value.</returns>
+        internal virtual Dictionary<string, string> GetPublicListSource( Dictionary<string, ConfigurationValue> configurationValues, string privateValue )
+        {
+            return GetListSource( configurationValues );
+        }
 
         /// <summary>
         /// Creates the control(s) necessary for prompting user for a new value
