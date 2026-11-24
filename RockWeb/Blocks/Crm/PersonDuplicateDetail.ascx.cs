@@ -26,6 +26,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.Utility.Enums;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -337,13 +338,14 @@ namespace RockWeb.Blocks.Crm
                     row.AddCssClass( "grid-row-bold" );
                 }
 
-                // If this is the main person for the compare, hide the "not duplicate" button
-                LinkButton btnNotDuplicate = e.Row.ControlsOfTypeRecursive<LinkButton>().FirstOrDefault( a => a.ID == "btnNotDuplicate" );
-                btnNotDuplicate.Visible = isComparePerson;
+                // Hide the "not duplicate" and "ignore duplicate" buttons for the main person and for people without Edit.
+                var isDuplicateChangeAllowed = isComparePerson && IsUserAuthorized( Authorization.EDIT );
 
-                // If this is the main person for the compare, hide the "ignore duplicate" button
+                LinkButton btnNotDuplicate = e.Row.ControlsOfTypeRecursive<LinkButton>().FirstOrDefault( a => a.ID == "btnNotDuplicate" );
+                btnNotDuplicate.Visible = isDuplicateChangeAllowed;
+
                 LinkButton btnIgnoreDuplicate = e.Row.ControlsOfTypeRecursive<LinkButton>().FirstOrDefault( a => a.ID == "btnIgnoreDuplicate" );
-                btnIgnoreDuplicate.Visible = isComparePerson;
+                btnIgnoreDuplicate.Visible = isDuplicateChangeAllowed;
             }
         }
 
@@ -354,6 +356,11 @@ namespace RockWeb.Blocks.Crm
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnNotDuplicate_Click( object sender, EventArgs e )
         {
+            if ( !IsUserAuthorized( Authorization.EDIT ) )
+            {
+                return;
+            }
+
             RockContext rockContext = new RockContext();
             var personDuplicateService = new PersonDuplicateService( rockContext );
             int personDuplicateId = ( sender as LinkButton ).CommandArgument.AsInteger();
@@ -371,6 +378,11 @@ namespace RockWeb.Blocks.Crm
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnIgnoreDuplicate_Click( object sender, EventArgs e )
         {
+            if ( !IsUserAuthorized( Authorization.EDIT ) )
+            {
+                return;
+            }
+
             RockContext rockContext = new RockContext();
             var personDuplicateService = new PersonDuplicateService( rockContext );
             int personDuplicateId = ( sender as LinkButton ).CommandArgument.AsInteger();
