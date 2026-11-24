@@ -811,7 +811,20 @@ namespace Rock.NCOA
                             foreach ( var campusGeoPoint in campusGeoPoints )
                             {
 
-                                var distance = campusGeoPoint.Distance( geoPoint ) ?? 0.0D * 0.00062137505D;
+                                /*
+                                    11/23/26 - CLAUDE
+
+                                    The parentheses make the meters-to-miles conversion apply to the
+                                    distance itself. Before, the ?? operator bound looser than the
+                                    multiply, so only the 0.0 fallback was converted. The distance
+                                    stayed in meters and was compared to a setting in miles. A new
+                                    address only counted as close if it was within N meters of a
+                                    campus (N being the setting in miles), so almost no family or
+                                    individual was treated as close to a campus.
+
+                                    Reason: Convert the campus distance to miles before comparing it.
+                                */
+                                var distance = ( campusGeoPoint.Distance( geoPoint ) ?? 0.0D ) * Location.MilesPerMeter;
                                 if ( distance < ( double ) minMoveDistance.Value )
                                 {
                                     isCloseToCampus = true;
