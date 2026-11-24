@@ -54,7 +54,15 @@ namespace Rock.Workflow.Action
             var attribute = AttributeCache.Get( GetAttributeValue( action, "Attribute" ).AsGuid(), rockContext );
             if ( attribute != null )
             {
-                string value = GetAttributeValue( action, "Value", true ).ResolveMergeFields( GetMergeFields( action ) );
+                /*
+                    11/24/26 - JMH
+
+                    A value read from a selected workflow attribute is data and is not rendered
+                    as Lava; only text typed into the setting is rendered.
+
+                    Reason: Attribute values can hold untrusted input and must not run as Lava.
+                */
+                string value = GetTextOrAttributeValue( action, "Value", GetMergeFields( action ) );
 
                 SetWorkflowAttributeValue( action, attribute.Guid, value );
                 action.AddLogEntry( string.Format( "Set '{0}' attribute to '{1}'.", attribute.Name, value ) );
