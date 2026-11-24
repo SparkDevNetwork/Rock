@@ -23,6 +23,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Obsidian.UI;
+using Rock.Security;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Crm.PersonDuplicateDetail;
 using Rock.Web.Cache;
@@ -128,8 +129,18 @@ namespace Rock.Blocks.Crm
             options.IncludeInactive = GetAttributeValue( AttributeKey.IncludeInactive ).AsBoolean();
             options.IncludeBusinesses = GetAttributeValue( AttributeKey.IncludeBusinesses ).AsBoolean();
             options.HasMultipleCampuses = CampusCache.All().Count( c => c.IsActive ?? true ) > 1;
+            options.IsEditEnabled = GetIsEditEnabled();
 
             return options;
+        }
+
+        /// <summary>
+        /// Determines whether the current person can change duplicate records with this block.
+        /// </summary>
+        /// <returns><c>true</c> if the current person has Edit on the block; otherwise <c>false</c>.</returns>
+        private bool GetIsEditEnabled()
+        {
+            return BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
         }
 
         #endregion Initialization Methods
@@ -429,9 +440,16 @@ namespace Rock.Blocks.Crm
         [BlockAction]
         public virtual BlockActionResult MarkNotDuplicate( string personDuplicateIdKey )
         {
+            if ( !GetIsEditEnabled() )
+            {
+                return ActionForbidden( "Not authorized to change duplicates." );
+            }
+
             var personDuplicateService = new PersonDuplicateService( RockContext );
             var personDuplicate = personDuplicateService.Get( personDuplicateIdKey, !PageCache.Layout.Site.DisablePredictableIds );
-            if ( personDuplicate == null )
+            var pagePersonId = RequestContext.PageParameterAsId( PageParameterKey.PersonId );
+
+            if ( personDuplicate == null || pagePersonId == 0 || personDuplicate.PersonAlias == null || personDuplicate.PersonAlias.PersonId != pagePersonId )
             {
                 return ActionNotFound();
             }
@@ -445,9 +463,16 @@ namespace Rock.Blocks.Crm
         [BlockAction]
         public virtual BlockActionResult MarkIgnoreDuplicate( string personDuplicateIdKey )
         {
+            if ( !GetIsEditEnabled() )
+            {
+                return ActionForbidden( "Not authorized to change duplicates." );
+            }
+
             var personDuplicateService = new PersonDuplicateService( RockContext );
             var personDuplicate = personDuplicateService.Get( personDuplicateIdKey, !PageCache.Layout.Site.DisablePredictableIds );
-            if ( personDuplicate == null )
+            var pagePersonId = RequestContext.PageParameterAsId( PageParameterKey.PersonId );
+
+            if ( personDuplicate == null || pagePersonId == 0 || personDuplicate.PersonAlias == null || personDuplicate.PersonAlias.PersonId != pagePersonId )
             {
                 return ActionNotFound();
             }

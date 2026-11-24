@@ -46,5 +46,10 @@ namespace Rock.ViewModels.Blocks.Crm.PersonDuplicateDetail
         /// Gets or sets a value indicating whether the entity has multiple campuses.
         /// </summary>
         public bool HasMultipleCampuses { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the current person can edit the block.
+        /// </summary>
+        public bool IsEditEnabled { get; set; }
     }
 }

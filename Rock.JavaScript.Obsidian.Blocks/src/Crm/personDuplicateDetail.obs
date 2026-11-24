@@ -114,7 +114,7 @@
                                 @click="onPersonProfileClick(row.personIdKey as string)">
                         <i class="ti ti-user"></i>
                     </RockButton>
-                    <RockButton v-if="row.isDuplicateRow"
+                    <RockButton v-if="row.isDuplicateRow && config.options?.isEditEnabled"
                                 title="Not Duplicate"
                                 :btnSize="BtnSize.ExtraSmall"
                                 :btnType="BtnType.Default"
@@ -122,7 +122,7 @@
                                 @click="onNotDuplicateClick(row.idKey as string)">
                         <i class="ti ti-ban"></i>
                     </RockButton>
-                    <RockButton v-if="row.isDuplicateRow"
+                    <RockButton v-if="row.isDuplicateRow && config.options?.isEditEnabled"
                                 title="Ignore"
                                 :btnSize="BtnSize.ExtraSmall"
                                 :btnType="BtnType.Default"
