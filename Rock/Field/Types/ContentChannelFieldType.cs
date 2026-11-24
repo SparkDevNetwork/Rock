@@ -74,7 +74,7 @@ namespace Rock.Field.Types
             var configurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, value );
 
             var contentChannels = ContentChannelCache.All()
-                .Where( a => a.ContentChannelType.ShowInChannelList )
+                .Where( a => a.ContentChannelType.ShowInChannelList && Helper.IsVisibleInList( a, a.Guid, value ) )
                 .OrderBy( d => d.Name )
                 .ToListItemBagList();
 
