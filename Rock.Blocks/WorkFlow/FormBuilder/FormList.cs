@@ -262,6 +262,8 @@ namespace Rock.Blocks.WorkFlow.FormBuilder
             var templates = templateService.Queryable()
                 .AsNoTracking()
                 .Where( t => t.IsActive )
+                .ToList()
+                .Where( t => t.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
                 .ToListItemBagList();
 
             return ActionOk( templates );
@@ -458,7 +460,7 @@ namespace Rock.Blocks.WorkFlow.FormBuilder
             var categoryService = new CategoryService( RockContext );
             var category = categoryService.Get( categoryGuid );
 
-            if ( category == null )
+            if ( category == null || !IsWorkflowTypeCategory( category ) )
             {
                 return ActionBadRequest( "Invalid category." );
             }
@@ -710,7 +712,7 @@ namespace Rock.Blocks.WorkFlow.FormBuilder
             var workflowTypeService = new WorkflowTypeService( RockContext );
             var workflowType = workflowTypeService.Get( workflowTypeGuid );
 
-            if ( workflowType == null )
+            if ( workflowType == null || !workflowType.IsFormBuilder || !workflowType.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
             {
                 return ActionBadRequest( "Invalid form." );
             }
