@@ -74,6 +74,14 @@ namespace Rock.Blocks.Workflow.FormBuilder
             public const string DefaultPreviewPage = "DefaultPreviewPage";
         }
 
+        #region Fields
+
+        private Rock.Workflow.FormBuilder.FormConnectionRequestsSettings _editableFormConnectionRequests;
+
+        private bool _hasLoadedEditableFormConnectionRequests;
+
+        #endregion Fields
+
         #region Methods
 
         /// <inheritdoc/>
@@ -709,9 +717,11 @@ namespace Rock.Blocks.Workflow.FormBuilder
                 LinkToFormOptions = workflowTypeId.HasValue ? GetLinkToFormOptions( rockContext, WorkflowTypeCache.Get( workflowTypeId.Value )?.Slug ) : null,
 
                 ConnectionTypeOptions = new ConnectionTypeService( rockContext ).Queryable()
-                    .AsNoTracking()
                     .Where( ct => ct.IsActive )
                     .OrderBy( ct => ct.Name )
+                    .ToList()
+                    .Where( ct => ct.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson )
+                        || GetEditableFormConnectionRequests()?.ConnectionTypeGuid == ct.Guid )
                     .Select( ct => new ListItemBag
                     {
                         Value = ct.Guid.ToString(),
@@ -745,6 +755,131 @@ namespace Rock.Blocks.Workflow.FormBuilder
                     IsPersonEntryConfigured = t.AllowPersonEntry
                 } )
                 .ToList();
+        }
+
+        /// <summary>
+        /// Gets the connection type with the specified unique identifier when the current person can view it.
+        /// </summary>
+        /// <param name="connectionTypeGuid">The connection type unique identifier.</param>
+        /// <returns>The connection type, or <c>null</c> if it does not exist or the person cannot view it.</returns>
+        private ConnectionType GetViewableConnectionType( Guid connectionTypeGuid )
+        {
+            var connectionType = new ConnectionTypeService( RockContext ).Get( connectionTypeGuid );
+
+            if ( connectionType == null )
+            {
+                return null;
+            }
+
+            if ( !connectionType.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson )
+                && GetEditableFormConnectionRequests()?.ConnectionTypeGuid != connectionType.Guid )
+            {
+                return null;
+            }
+
+            return connectionType;
+        }
+
+        /// <summary>
+        /// Determines whether the current person can view the connection opportunity in the Connection Requests editor.
+        /// </summary>
+        /// <param name="opportunity">The connection opportunity.</param>
+        /// <returns><c>true</c> if the person can view it or it is the opportunity saved on the form they are editing; otherwise <c>false</c>.</returns>
+        private bool CanViewConnectionOpportunity( ConnectionOpportunity opportunity )
+        {
+            return opportunity.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson )
+                || GetEditableFormConnectionRequests()?.ConnectionOpportunityGuid == opportunity.Guid;
+        }
+
+        /// <summary>
+        /// Determines whether the connection type and opportunity in the posted settings may be saved on the form.
+        /// </summary>
+        /// <param name="workflowType">The form being saved.</param>
+        /// <param name="connectionRequests">The posted Connection Requests settings.</param>
+        /// <returns><c>true</c> if each target is unchanged from the saved form or the person can view it; otherwise <c>false</c>.</returns>
+        private bool IsConnectionTargetAllowed( WorkflowType workflowType, FormConnectionRequestsViewModel connectionRequests )
+        {
+            if ( connectionRequests == null )
+            {
+                return true;
+            }
+
+            /*
+                11/24/26 - JMH
+
+                The Connection Requests editor lets a form's own saved target
+                through even when the editor cannot view it. A changed target must
+                therefore pass VIEW here, or someone could save a hidden type on
+                their own form and then read it through the editor lookups. An
+                unchanged target still saves so existing forms stay editable.
+
+                Reason: Only save connection targets the person can view.
+            */
+            var saved = workflowType.FormBuilderSettingsJson
+                .FromJsonOrNull<Rock.Workflow.FormBuilder.FormSettings>()?
+                .ConnectionRequests;
+
+            if ( connectionRequests.ConnectionTypeGuid.HasValue && connectionRequests.ConnectionTypeGuid != saved?.ConnectionTypeGuid )
+            {
+                var connectionType = new ConnectionTypeService( RockContext ).Get( connectionRequests.ConnectionTypeGuid.Value );
+
+                if ( connectionType != null && !connectionType.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+                {
+                    return false;
+                }
+            }
+
+            if ( connectionRequests.ConnectionOpportunityGuid.HasValue && connectionRequests.ConnectionOpportunityGuid != saved?.ConnectionOpportunityGuid )
+            {
+                var opportunity = new ConnectionOpportunityService( RockContext ).Get( connectionRequests.ConnectionOpportunityGuid.Value );
+
+                if ( opportunity != null && !opportunity.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Gets the Connection Requests settings saved on the form named by the page parameter when the current person can edit that form.
+        /// </summary>
+        /// <returns>The saved settings, or <c>null</c> when there is no such form, the person cannot edit it, or it has no Connection Requests settings.</returns>
+        private Rock.Workflow.FormBuilder.FormConnectionRequestsSettings GetEditableFormConnectionRequests()
+        {
+            if ( _hasLoadedEditableFormConnectionRequests )
+            {
+                return _editableFormConnectionRequests;
+            }
+
+            _hasLoadedEditableFormConnectionRequests = true;
+
+            /*
+                11/24/26 - JMH
+
+                Connection types, opportunities, statuses and sources are filtered
+                by VIEW, but a form already saved with a target the editor cannot
+                view must still open with that target intact. Otherwise the editor
+                blanks the required type and resets the attribute mappings, and the
+                next save changes what the form does at runtime. Only the target
+                saved on the form, and only for people who can edit that form, is
+                let through.
+
+                Reason: Keep a saved form's connection target when it is edited.
+            */
+            var workflowType = new WorkflowTypeService( RockContext ).Get( RequestContext.GetPageParameter( PageParameterKey.WorkflowTypeId ), !PageCache.Layout.Site.DisablePredictableIds );
+
+            if ( workflowType == null || !workflowType.IsFormBuilder || !CanEditWorkflowType( workflowType ) )
+            {
+                return null;
+            }
+
+            _editableFormConnectionRequests = workflowType.FormBuilderSettingsJson
+                .FromJsonOrNull<Rock.Workflow.FormBuilder.FormSettings>()?
+                .ConnectionRequests;
+
+            return _editableFormConnectionRequests;
         }
 
         private List<FormBuilderDetailLinkToFormBag> GetLinkToFormOptions( RockContext rockContext, string workflowTypeSlug )
@@ -890,6 +1025,11 @@ namespace Rock.Blocks.Workflow.FormBuilder
             if ( !CanEditWorkflowType( workflowType ) )
             {
                 return ActionBadRequest( "You are not authorized to edit this form." );
+            }
+
+            if ( !IsConnectionTargetAllowed( workflowType, formSettings.ConnectionRequests ) )
+            {
+                return ActionBadRequest( "You are not authorized to use the selected connection type or opportunity." );
             }
 
             // Ensure the slug is unique.
@@ -1081,10 +1221,17 @@ namespace Rock.Blocks.Workflow.FormBuilder
         [BlockAction]
         public BlockActionResult GetConnectionOpportunities( Guid connectionTypeGuid )
         {
+            var connectionType = GetViewableConnectionType( connectionTypeGuid );
+            if ( connectionType == null )
+            {
+                return ActionBadRequest( "Connection type not found." );
+            }
+
             var options = new ConnectionOpportunityService( RockContext ).Queryable()
-                .AsNoTracking()
-                .Where( o => o.IsActive && o.ConnectionType.Guid == connectionTypeGuid )
+                .Where( o => o.IsActive && o.ConnectionTypeId == connectionType.Id )
                 .OrderBy( o => o.Name )
+                .ToList()
+                .Where( o => CanViewConnectionOpportunity( o ) )
                 .Select( o => new ListItemBag
                 {
                     Value = o.Guid.ToString(),
@@ -1103,9 +1250,15 @@ namespace Rock.Blocks.Workflow.FormBuilder
         [BlockAction]
         public BlockActionResult GetConnectionStatuses( Guid connectionTypeGuid )
         {
+            var connectionType = GetViewableConnectionType( connectionTypeGuid );
+            if ( connectionType == null )
+            {
+                return ActionBadRequest( "Connection type not found." );
+            }
+
             var options = new ConnectionStatusService( RockContext ).Queryable()
                 .AsNoTracking()
-                .Where( s => s.IsActive && s.ConnectionType.Guid == connectionTypeGuid )
+                .Where( s => s.IsActive && s.ConnectionTypeId == connectionType.Id )
                 .OrderBy( s => s.Order )
                 .ThenBy( s => s.Name )
                 .Select( s => new ListItemBag
@@ -1126,9 +1279,15 @@ namespace Rock.Blocks.Workflow.FormBuilder
         [BlockAction]
         public BlockActionResult GetConnectionSources( Guid connectionTypeGuid )
         {
+            var connectionType = GetViewableConnectionType( connectionTypeGuid );
+            if ( connectionType == null )
+            {
+                return ActionBadRequest( "Connection type not found." );
+            }
+
             var options = new ConnectionTypeSourceService( RockContext ).Queryable()
                 .AsNoTracking()
-                .Where( s => s.ConnectionType.Guid == connectionTypeGuid )
+                .Where( s => s.ConnectionTypeId == connectionType.Id )
                 .OrderBy( s => s.Name )
                 .Select( s => new ListItemBag
                 {
@@ -1150,7 +1309,7 @@ namespace Rock.Blocks.Workflow.FormBuilder
         public BlockActionResult GetOpportunityAttributes( Guid opportunityGuid )
         {
             var opportunity = new ConnectionOpportunityService( RockContext ).Get( opportunityGuid );
-            if ( opportunity == null )
+            if ( opportunity == null || !CanViewConnectionOpportunity( opportunity ) )
             {
                 return ActionBadRequest( "Opportunity not found." );
             }

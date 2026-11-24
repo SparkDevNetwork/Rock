@@ -23,6 +23,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Obsidian.UI;
+using Rock.Security;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.WorkFlow.FormBuilder.FormTemplateList;
 using Rock.Web.Cache;
@@ -107,9 +108,7 @@ namespace Rock.Blocks.WorkFlow.FormBuilder
             var box = new ListBlockBox<FormTemplateListOptionsBag>();
             var builder = GetGridBuilder();
 
-            // The block exposes add, delete, and security to anyone who can access
-            // the block; access to the block is the only authorization boundary.
-            // Matches Webforms.
+            // Rows are filtered by template VIEW. Add and delete follow block access.
             box.IsAddEnabled = true;
             box.IsDeleteEnabled = true;
             box.ExpectedRowCount = null;
@@ -174,6 +173,14 @@ namespace Rock.Blocks.WorkFlow.FormBuilder
         protected override IQueryable<WorkflowFormBuilderTemplate> GetOrderedListQueryable( IQueryable<WorkflowFormBuilderTemplate> queryable, RockContext rockContext )
         {
             return queryable.OrderBy( t => t.Name );
+        }
+
+        /// <inheritdoc/>
+        protected override List<WorkflowFormBuilderTemplate> GetListItems( IQueryable<WorkflowFormBuilderTemplate> queryable, RockContext rockContext )
+        {
+            return queryable.ToList()
+                .Where( t => t.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+                .ToList();
         }
 
         /// <inheritdoc/>
