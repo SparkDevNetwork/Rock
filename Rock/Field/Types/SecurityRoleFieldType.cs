@@ -84,6 +84,8 @@ namespace Rock.Field.Types
                     .Queryable().AsNoTracking()
                     .Where( g => g.IsSecurityRole )
                     .OrderBy( o => o.Name )
+                    .ToList()
+                    .Where( g => Helper.IsVisibleInList( g, g.Guid, privateValue ) )
                     .Select( o => new ListItemBag
                     {
                         Value = o.Guid.ToString(),
