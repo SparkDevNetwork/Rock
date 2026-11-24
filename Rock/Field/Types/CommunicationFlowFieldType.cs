@@ -83,17 +83,12 @@ namespace Rock.Field.Types
                         cf.IsActive
                         && ( noTriggerTypeFilter || filterTriggerTypes.Contains( ( int ) cf.TriggerType ) )
                     )
-                    .Select( cf => new
-                    {
-                        cf.Guid,
-                        cf.PublicName,
-                        cf.Name
-                    } )
                     .ToList()
-                    .Select( a => new ListItemBag()
+                    .Where( cf => Helper.IsVisibleInList( cf, cf.Guid, value ) )
+                    .Select( cf => new ListItemBag()
                     {
-                        Value = a.Guid.ToString(),
-                        Text = a.PublicName.IsNotNullOrWhiteSpace() ? a.PublicName : a.Name
+                        Value = cf.Guid.ToString(),
+                        Text = cf.PublicName.IsNotNullOrWhiteSpace() ? cf.PublicName : cf.Name
                     } )
                     .OrderBy( t => t.Text )
                     .ToList();
