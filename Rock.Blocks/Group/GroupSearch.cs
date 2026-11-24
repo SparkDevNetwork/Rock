@@ -97,8 +97,13 @@ namespace Rock.Blocks.Group
         {
             var options = new GroupSearchOptionsBag();
 
-            // Only the single-result check is needed, so avoid materializing the entire match set.
-            var matchingGroups = GetMatchingGroupsQueryable()?.Take( 2 ).ToList();
+            // Only the single-result check is needed, so stream the matches and stop after
+            // two viewable groups instead of materializing the entire match set.
+            var matchingGroups = GetMatchingGroupsQueryable()?
+                .AsEnumerable()
+                .Where( g => g.IsAuthorized( Rock.Security.Authorization.VIEW, RequestContext.CurrentPerson ) )
+                .Take( 2 )
+                .ToList();
 
             if ( matchingGroups != null && matchingGroups.Count == 1 )
             {
@@ -164,13 +169,23 @@ namespace Rock.Blocks.Group
         }
 
         /// <summary>
+        /// Gets the groups that match the current search and that the current person is allowed to view.
+        /// </summary>
+        /// <returns>The viewable matching groups, or an empty list when no search should run.</returns>
+        private List<Model.Group> GetViewableMatchingGroups()
+        {
+            return GetMatchingGroupsQueryable()?.ToList()
+                .Where( g => g.IsAuthorized( Rock.Security.Authorization.VIEW, RequestContext.CurrentPerson ) )
+                .ToList() ?? new List<Model.Group>();
+        }
+
+        /// <summary>
         /// Gets the current group search results.
         /// </summary>
         /// <returns>The search results.</returns>
         private List<GroupSearchResultBag> GetSearchResults()
         {
-            var matchingQueryable = GetMatchingGroupsQueryable();
-            var groups = matchingQueryable?.ToList() ?? new List<Model.Group>();
+            var groups = GetViewableMatchingGroups();
 
             if ( !groups.Any() )
             {
@@ -405,7 +420,11 @@ namespace Rock.Blocks.Group
                 return ActionBadRequest( "No entity set data was provided." );
             }
 
-            var rockEntitySet = GridHelper.CreateEntitySet( entitySet );
+            // The grid only lists viewable groups, so those are the only keys a set may hold.
+            var allowedKeys = new GridEntityKeys();
+            allowedKeys.AddKeys( EntityTypeCache.GetId<Model.Group>() ?? 0, GetViewableMatchingGroups().Select( g => g.Id.ToString() ) );
+
+            var rockEntitySet = GridHelper.CreateEntitySet( entitySet, allowedKeys );
 
             if ( rockEntitySet == null )
             {
