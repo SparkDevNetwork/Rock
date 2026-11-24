@@ -123,14 +123,26 @@ namespace Rock.Blocks.CheckIn
             var kioskConfiguration = await GetConfigurationByUrlAsync( director )
                 ?? await GetConfigurationByIpOrNameAsync( director );
 
+            var isManualSetupAllowed = GetAttributeValue( AttributeKey.AllowManualSetup ).AsBoolean();
+            var campuses = GetCampusesAndKiosks( RockContext );
+
+            // The kiosk picker is only shown for manual setup.
+            if ( !isManualSetupAllowed )
+            {
+                foreach ( var campus in campuses )
+                {
+                    campus.Kiosks = new List<WebKioskBag>();
+                }
+            }
+
             return new
             {
                 KioskConfiguration = kioskConfiguration,
                 IsEditAllowed = BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ),
-                IsManualSetupAllowed = GetAttributeValue( AttributeKey.AllowManualSetup ).AsBoolean(),
+                IsManualSetupAllowed = isManualSetupAllowed,
                 IsConfigureByLocationEnabled = GetAttributeValue( AttributeKey.EnableLocationSharing ).AsBoolean(),
                 GeoLocationCacheInMinutes = GetAttributeValue( AttributeKey.TimeToCacheKioskLocation ).AsInteger(),
-                Campuses = GetCampusesAndKiosks( RockContext ),
+                Campuses = campuses,
                 CurrentTheme = PageParameter( PageParameterKey.Theme )?.ToLower()
                     .IfEmpty( PageCache.Layout?.Site?.Theme?.ToLower() ),
                 Templates = director.GetConfigurationTemplateBags(),
@@ -614,8 +626,8 @@ namespace Rock.Blocks.CheckIn
 
             // Order the items.
             promotionItems = contentChannel.ItemsManuallyOrdered
-                ? contentChannel.Items.OrderBy( item => item.Order )
-                : contentChannel.Items.OrderBy( item => item.StartDateTime );
+                ? promotionItems.OrderBy( item => item.Order )
+                : promotionItems.OrderBy( item => item.StartDateTime );
 
             var promotions = promotionItems
                 .Select( item => new PromotionBag
