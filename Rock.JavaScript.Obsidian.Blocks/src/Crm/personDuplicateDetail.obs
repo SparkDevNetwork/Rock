@@ -69,13 +69,13 @@
                           @click="onViewPersonClick(row as Record<string, unknown>)">
                         <i class="ti ti-user"></i>
                     </span>
-                    <span v-if="row.isDuplicateRow"
+                    <span v-if="row.isDuplicateRow && config.options?.isEditEnabled"
                           class="action clickable text-info"
                           title="Not Duplicate"
                           @click="onNotDuplicateClick(row as Record<string, unknown>)">
                         <i class="ti ti-ban"></i>
                     </span>
-                    <span v-if="row.isDuplicateRow"
+                    <span v-if="row.isDuplicateRow && config.options?.isEditEnabled"
                           class="action clickable text-info"
                           title="Ignore"
                           @click="onIgnoreClick(row as Record<string, unknown>)">

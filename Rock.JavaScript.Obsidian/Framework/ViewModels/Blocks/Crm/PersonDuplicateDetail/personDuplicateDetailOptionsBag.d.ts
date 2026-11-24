@@ -37,4 +37,7 @@ export type PersonDuplicateDetailOptionsBag = {
 
     /** Gets or sets a value indicating whether inactive persons should be included. */
     includeInactive: boolean;
+
+    /** Gets or sets a value indicating whether the current person can edit the block. */
+    isEditEnabled: boolean;
 };
