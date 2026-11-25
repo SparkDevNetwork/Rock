@@ -154,6 +154,21 @@ namespace Rock.Blocks.Event
             var templateId = PageParameter( "RegistrationTemplateId" ).AsInteger();
             if ( templateId != 0 )
             {
+                var template = new RegistrationTemplateService( rockContext ).Get( templateId );
+
+                /*
+                    11/25/2026 - MSE
+
+                    Grid data is loaded by a block action, so check that the
+                    person may view the template before listing its instances.
+
+                    Reason: Do not list instances of a template the person may not view.
+                */
+                if ( template == null || !template.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+                {
+                    return qry.Where( i => false );
+                }
+
                 qry = qry.Where( i => i.RegistrationTemplateId == templateId );
             }
             else
@@ -162,6 +177,32 @@ namespace Rock.Blocks.Event
             }
 
             return qry;
+        }
+
+        /// <inheritdoc/>
+        protected override List<RegistrationInstance> GetListItems( IQueryable<RegistrationInstance> queryable, RockContext rockContext )
+        {
+            var listItems = base.GetListItems( queryable, rockContext );
+
+            var templateId = PageParameter( "RegistrationTemplateId" ).AsInteger();
+            if ( templateId != 0 )
+            {
+                // Template VIEW was already checked in GetListQueryable.
+                return listItems;
+            }
+
+            /*
+                11/25/2026 - MSE
+
+                With no template on the page the list shows active instances
+                of every template, so check VIEW on each one (it inherits from
+                its template).
+
+                Reason: Do not list instances the person may not view.
+            */
+            return listItems
+                .Where( i => i.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+                .ToList();
         }
 
         /// <inheritdoc/>
