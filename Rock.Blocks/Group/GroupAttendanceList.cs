@@ -356,7 +356,16 @@ namespace Rock.Blocks.Group
         /// <returns><c>true</c> if the person can edit; otherwise <c>false</c>.</returns>
         private bool GetCanEdit( Model.Group group )
         {
-            if ( group == null )
+            /*
+                11/25/2026 - MSE
+
+                Block EDIT alone is not enough: the person must also be able
+                to view the group, the same as the initial load and the grid
+                require. Delete calls this directly, so the check lives here.
+
+                Reason: Require group VIEW before attendance can be changed.
+            */
+            if ( group == null || !group.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
             {
                 return false;
             }
