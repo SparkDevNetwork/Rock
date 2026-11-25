@@ -19,6 +19,7 @@ using System.Linq;
 
 using Rock.AI.Agent.Annotations;
 using Rock.AI.Agent.Classes.Common;
+using Rock.Security;
 using Rock.SystemGuid;
 using Rock.Utility;
 using Rock.Web.Cache;
@@ -46,14 +47,14 @@ internal sealed partial class AttendanceSkill
             ? GroupTypeCache.Get( checkInConfigurationId.Value, AgentRequestContext.RockContext )
             : null;
 
-        if ( checkInConfiguration == null )
+        if ( checkInConfiguration == null || !checkInConfiguration.IsAuthorized( Authorization.VIEW, AgentRequestContext.CurrentPerson ) )
         {
             return Error( "The provided check-in configuration id key is not valid." )
                 .WithInstructions( $"Call {nameof( LookupCheckInConfigurations )} for a list of possible values." );
         }
 
         var areaResults = checkInConfiguration.GetDescendentGroupTypes()
-            .Where( a => a.TakesAttendance )
+            .Where( a => a.TakesAttendance && a.IsAuthorized( Authorization.VIEW, AgentRequestContext.CurrentPerson ) )
             .OrderBy( a => a.Name )
             .Select( a => KeyNameResult.FromCache( a ) )
             .ToList();
