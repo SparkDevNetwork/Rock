@@ -24,6 +24,7 @@ import { defineComponent, h, nextTick, ref } from "vue";
 import Button from "../../../../../src/Communication/Chat/ChatShell/ui/button.partial.obs";
 import Dialog from "../../../../../src/Communication/Chat/ChatShell/ui/dialog.partial.obs";
 import SurfacePage from "../../../../../src/Communication/Chat/ChatShell/ui/surfacePage.partial.obs";
+import { SurfacePages, useSurfacePages } from "../../../../../src/Communication/Chat/ChatShell/ui/surfacePages.partial";
 import { providedSession, recordingBackStack } from "../sessionShapes";
 import { shellFolder } from "../statusStore";
 import { ruleOf, styleOf } from "./partStyle";
@@ -310,9 +311,11 @@ describe("a dialog on a phone's Back", () => {
 });
 
 // A phone's panel drawn as a sheet is held at the frame's bottom, so a change of its content's
-// height within a page, a list loading, an ask opening or a row leaving, moves its top edge and
-// head. The sheet glides its edge with the content's own move instead of jumping; a frame change,
-// as a keyboard rising, changes the height at once.
+// height within a page moves its top edge and head. The sheet glides its edge only with a move its
+// content draws and says it draws, as a list closing over a row that has gone; the content is laid
+// out from its top, so gliding any other change, as an ask closing at once, would draw the rows
+// below it jumping and gliding back. Every other change, and a frame change, as a keyboard rising,
+// sets the height at once.
 describe("a panel drawn as a sheet following its content's height", () => {
     type Observed = { callback: ResizeObserverCallback, targets: Element[] };
     let observers: Observed[] = [];
@@ -347,12 +350,33 @@ describe("a panel drawn as a sheet following its content's height", () => {
         observers.filter(o => o.targets.includes(target)).forEach(o => o.callback([{ target, contentRect: { height } as DOMRectReadOnly } as ResizeObserverEntry], {} as ResizeObserver));
     }
 
+    /** The pages of the drawn sheet, as its content reaches them. */
+    let pages: SurfacePages | null = null;
+
+    /** The content: rows that reach the sheet's pages as a list in it would. */
+    const Rows = defineComponent({
+        setup() {
+            pages = useSurfacePages();
+            return () => h("div", { "data-testid": "rows" }, "rows");
+        }
+    });
+
+    /**
+     * The content draws a move of its own to a new height and says so, then the browser's layout
+     * reports the change, as a list closing over a row that has gone does.
+     */
+    function moved(content: Element, height: number): void {
+        content.getBoundingClientRect = (): DOMRect => ({ height }) as DOMRect;
+        pages?.followMove();
+        resized(content, height);
+    }
+
     async function drawSheet(isPhone: boolean): Promise<{ dialog: HTMLElement, content: HTMLElement | null, heights: ReturnType<typeof standInHeights>, setHeight: (h: number) => void }> {
         const heights = standInHeights();
         let height = 300;
         wrapper = mount(Dialog, {
             props: { isOpen: true, title: "Chat settings", isPanel: true, sheet: "phone" },
-            slots: { default: () => h("div", { "data-testid": "rows" }, "rows") },
+            slots: { default: () => h(Rows) },
             global: { provide: { ...providedSession({ isPhone }) } },
             attachTo: document.body
         });
@@ -367,12 +391,12 @@ describe("a panel drawn as a sheet following its content's height", () => {
         } };
     }
 
-    test("glides from its old height to its content's new one, over the content's own move", async () => {
+    test("glides from its old height to its content's new one, over the move the content draws, once", async () => {
         const { dialog, content, heights, setHeight } = await drawSheet(true);
         try {
             resized(dialog.parentElement as Element, 800);
             setHeight(360);
-            resized(content as Element, 300);
+            moved(content as Element, 300);
 
             expect(heights.played).toEqual([expect.objectContaining({ element: dialog, from: "300px", to: "360px", duration: 240 })]);
         }
@@ -381,7 +405,25 @@ describe("a panel drawn as a sheet following its content's height", () => {
         }
     });
 
-    test("changes at once for a frame change, and the next content change glides from there", async () => {
+    // An ask closing at Yes is drawn at once: its rows below must not jump up and glide back.
+    test("sets any other change of its content's height at once, and the next move glides from there", async () => {
+        const { dialog, content, heights, setHeight } = await drawSheet(true);
+        try {
+            resized(dialog.parentElement as Element, 800);
+            setHeight(340);
+            resized(content as Element, 300);
+            expect(heights.played).toEqual([]);
+
+            setHeight(296);
+            moved(content as Element, 256);
+            expect(heights.played).toEqual([expect.objectContaining({ from: "340px", to: "296px" })]);
+        }
+        finally {
+            heights.restore();
+        }
+    });
+
+    test("changes at once for a frame change, and the next move glides from there", async () => {
         const { dialog, content, heights, setHeight } = await drawSheet(true);
         try {
             setHeight(250);
@@ -389,7 +431,7 @@ describe("a panel drawn as a sheet following its content's height", () => {
             expect(heights.played).toEqual([]);
 
             setHeight(290);
-            resized(content as Element, 280);
+            moved(content as Element, 280);
             expect(heights.played).toEqual([expect.objectContaining({ from: "250px", to: "290px" })]);
         }
         finally {
@@ -404,7 +446,7 @@ describe("a panel drawn as a sheet following its content's height", () => {
         try {
             resized(dialog.parentElement as Element, 800);
             setHeight(360);
-            resized(content as Element, 300);
+            moved(content as Element, 300);
 
             expect(heights.played).toEqual([]);
         }

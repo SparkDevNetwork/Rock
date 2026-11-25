@@ -22,6 +22,8 @@ import { mount } from "@vue/test-utils";
 import { defineComponent, h, nextTick, ref, TransitionGroup } from "vue";
 import SettingGroup from "../../../../../src/Communication/Chat/ChatShell/ui/settingGroup.partial.obs";
 import SettingRow from "../../../../../src/Communication/Chat/ChatShell/ui/settingRow.partial.obs";
+import { provideSurfacePages, SurfacePages } from "../../../../../src/Communication/Chat/ChatShell/ui/surfacePages.partial";
+import { providedSession } from "../sessionShapes";
 import { ruleOf, styleOf } from "./partStyle";
 
 /** A list group of named rows, the names its own to change. */
@@ -151,6 +153,29 @@ describe("a settings group", () => {
             expect(rowOf(wrapper, "Ben")).toBeNull();
             expect(rowOf(wrapper, "Ana")?.classList).toContain("chat-move");
             expect(rowOf(wrapper, "Sam")?.classList).not.toContain("chat-move");
+        });
+
+        // The list draws its own closing, so it tells the surface it stands in; the surface glides
+        // its edge only with a move its content says it draws, and sets every other change at once.
+        test("tells the surface it stands in that its box closes by its own move, once a row has gone and not while it fades", async () => {
+            let pages: SurfacePages | null = null;
+            const shown = ref(["Sam", "Ben", "Ana"]);
+            mount(defineComponent({
+                setup() {
+                    pages = provideSurfacePages({ isOpen: () => true, surface: () => undefined });
+                    return () => h(SettingGroup, { label: "Blocked people", isList: true }, {
+                        default: () => shown.value.map(name => h(SettingRow, { key: name, title: name, "data-name": name }))
+                    });
+                }
+            }), { global: { provide: { ...providedSession({ isPhone: true }) }, stubs: { transition: false, "transition-group": false } } });
+            const followMove = jest.spyOn(pages as unknown as SurfacePages, "followMove");
+
+            shown.value = ["Sam", "Ana"];
+            await nextTick();
+            expect(followMove).not.toHaveBeenCalled();
+
+            await leaveEnds();
+            expect(followMove).toHaveBeenCalledTimes(1);
         });
 
         describe("on a page busy with other work", () => {
