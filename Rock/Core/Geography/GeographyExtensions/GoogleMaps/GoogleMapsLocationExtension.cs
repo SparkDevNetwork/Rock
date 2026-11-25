@@ -191,7 +191,9 @@ namespace Rock.Core.Geography.GeographyExtensions.GoogleMaps
                 {
                     // A transient failure (network, quota, or an unexpected response shape) yields no
                     // result; the caller treats the location as unresolved rather than erroring.
-                    _logger.Value.LogWarning( ex, "Google could not geocode '{Input}'.", input );
+                    // The input is what a visitor typed, and the exception text can repeat the
+                    // request, so only the exception type and input length are logged.
+                    _logger.Value.LogWarning( "Google could not geocode the input ({ExceptionType}, input length {InputLength}).", ex.GetType().Name, input?.Length ?? 0 );
                     return null;
                 }
             }
@@ -278,8 +280,10 @@ namespace Rock.Core.Geography.GeographyExtensions.GoogleMaps
                 catch ( Exception ex )
                 {
                     // A transient failure (network, quota) just yields no suggestions; the visitor can still
-                    // type a full address and search.
-                    _logger.Value.LogWarning( ex, "Google could not return address suggestions for '{Input}'.", input );
+                    // type a full address and search. The input is what a visitor typed, and the
+                    // exception text can repeat the request, so only the exception type and input
+                    // length are logged.
+                    _logger.Value.LogWarning( "Google could not return address suggestions ({ExceptionType}, input length {InputLength}).", ex.GetType().Name, input?.Length ?? 0 );
                     return suggestions;
                 }
             }
