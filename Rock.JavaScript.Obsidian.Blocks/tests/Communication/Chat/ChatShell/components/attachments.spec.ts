@@ -695,6 +695,14 @@ describe("links over time", () => {
         expect(card.attributes("rel")).toBeUndefined();
     });
 
+    // What is sent looks final from Enter: the card draws its download arrow while still being
+    // sent, so the answer that makes it a link changes nothing a person sees.
+    test("a file card still being sent draws its download arrow, as it will once sent", async () => {
+        const { wrapper } = await mountFiles([file(1, "a.pdf")], harness(), { isPending: true });
+
+        expect(wrapper.get("[data-testid='attachment-file']").find(".chat-attach-file-get").exists()).toBe(true);
+    });
+
     test("a file card whose link is refused is plain text, with no label and no link relation", async () => {
         const h = harness();
         h.signAnswer.value = paths => paths.map(path => ({ path, signedURL: null, error: "Either the object does not exist or you do not have access to it" }));
