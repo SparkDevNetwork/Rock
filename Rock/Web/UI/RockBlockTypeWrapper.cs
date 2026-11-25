@@ -104,9 +104,19 @@ namespace Rock.Web.UI
                         }
                         catch ( Exception ex )
                         {
-                            _cachedRenderContent = $"<div class=\"alert alert-warning\">An error occurred while rendering the block: {ex.Message}</div>";
-
                             ExceptionLogService.LogException( ex, Context );
+
+                            /*
+                                11/25/2026 - MSE
+
+                                Show a fixed message instead of the exception message. The
+                                message can contain text from stored data and is shown to
+                                everyone who views the page. The details are in the
+                                Exception Log.
+
+                                Reason: Do not show exception details on the page.
+                            */
+                            _cachedRenderContent = "<div class=\"alert alert-warning\">An error occurred while rendering the block. See the Exception Log for details.</div>";
                         }
                     }
 
