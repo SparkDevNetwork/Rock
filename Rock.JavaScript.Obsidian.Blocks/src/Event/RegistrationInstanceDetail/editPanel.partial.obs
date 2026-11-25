@@ -380,11 +380,11 @@
             return;
         }
 
-        // The template (not the instance) owns the gateway, so templateKey resolves for
-        // both existing records and the new-instance Add flow.
-        const templateKey = props.modelValue.bag?.registrationTemplateIdKey ?? "";
+        // The server takes the gateway from the instance's template. templateKey is only
+        // used for a new instance when the page has no template (such as a copy).
         const result = await invokeBlockAction<ListItemBag[]>("GetGatewayFunds", {
-            templateKey,
+            key: props.modelValue.bag?.idKey ?? "",
+            templateKey: props.modelValue.bag?.registrationTemplateIdKey ?? "",
             merchantId
         });
 
