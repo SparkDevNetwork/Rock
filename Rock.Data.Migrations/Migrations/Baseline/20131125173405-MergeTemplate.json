@@ -1,0 +1,11 @@
+{
+  "columns": [ "Id", "Name", "Description", "TemplateBinaryFileId", "MergeTemplateTypeEntityTypeId", "CategoryId", "PersonAliasId", "CreatedDateTime", "ModifiedDateTime", "CreatedByPersonAliasId", "ModifiedByPersonAliasId", "Guid", "ForeignKey", "ForeignGuid", "ForeignId" ],
+  "rows": [
+    [1,"Mailing Labels - Home Address (Avery 5150, 5260)","Standard Address Labels (Avery 5150, 5260) with a person's home address.",36,228,167,null,null,null,null,null,"7730fda8-3a1f-79af-4f79-1f7aee5bcb9c",null,null,null],
+    [2,"Name Tags (Avery 5395)","Labels (3.75in x 2.25in) used for name tags (Avery 5395)",37,228,167,null,null,null,null,null,"cf853643-9a06-c49b-4223-df23ae1faf99",null,null,null],
+    [3,"Sample Letter","A sample letter to give an example of what's possible.",38,228,167,null,null,null,null,null,"9fee4b0f-e5a4-6997-4620-60caa0964d19",null,null,null],
+    [4,"Envelope - Home Address (#10)","#10 Envelope with a person's home address.",39,228,167,null,null,null,null,null,"111e35d5-57b9-44a9-4934-b234cf9afaf1",null,null,null],
+    [5,"Sample Certificate","Sample certificate to help get the juices flowing.",40,228,167,null,null,null,null,null,"62604c89-bcd7-09a7-4f04-93c93f03f8d5",null,null,null],
+    [6,"Group Attendance Roster","The default template to use when printing a roster for Group Attendance",44,228,178,null,null,null,null,null,"69a8286b-fe23-45de-959b-7cc8c7a57911",null,null,null]
+  ]
+}

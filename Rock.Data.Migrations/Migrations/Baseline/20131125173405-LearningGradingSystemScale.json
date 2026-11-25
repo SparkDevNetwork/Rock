@@ -1,0 +1,13 @@
+{
+  "columns": [ "Id", "Name", "Description", "ThresholdPercentage", "IsPassing", "Order", "LearningGradingSystemId", "CreatedDateTime", "ModifiedDateTime", "CreatedByPersonAliasId", "ModifiedByPersonAliasId", "Guid", "ForeignId", "ForeignGuid", "ForeignKey", "HighlightColor" ],
+  "rows": [
+    [1,"Pass","A \"Pass\" grade indicates that the individual has met all the basic requirements and demonstrated sufficient understanding of the material.",70.000,true,1,1,"2026-11-17T09:45:49.2270000","2026-11-17T09:45:49.2270000",null,null,"c07a3227-7188-4d61-ac02-ff6ab8380aad",null,null,null,"#34D87D"],
+    [2,"Fail","A \"Fail\" grade indicates that the individual did not meet the minimum requirements or demonstrate an adequate understanding of the material.",0.000,false,2,1,"2026-11-17T09:45:49.2270000","2026-11-17T09:45:49.2270000",null,null,"bd209f2d-22e0-41a9-b425-ed42d515e13b",null,null,null,"#FF624F"],
+    [3,"A","",93.000,true,3,2,"2026-11-17T09:45:49.2270000","2026-11-17T09:45:49.2270000",null,null,"f96bddd2-ea0f-4c35-90bb-0b7d9faabd26",null,null,null,"#34D87D"],
+    [4,"B","",83.000,true,4,2,"2026-11-17T09:45:49.2270000","2026-11-17T09:45:49.2270000",null,null,"e8128844-04b0-4772-ab59-55f17645ab7a",null,null,null,"#CCE744"],
+    [5,"C","",73.000,true,5,2,"2026-11-17T09:45:49.2270000","2026-11-17T09:45:49.2270000",null,null,"a99dc539-d363-416f-bda8-00163d186919",null,null,null,"#F7E64A"],
+    [6,"D","",63.000,false,6,2,"2026-11-17T09:45:49.2270000","2026-11-17T09:45:49.2270000",null,null,"6e6a61c3-3305-491d-80c6-1c3723468460",null,null,null,"#FAAE48"],
+    [7,"F","",0.000,false,7,2,"2026-11-17T09:45:49.2270000","2026-11-17T09:45:49.2270000",null,null,"2f7885f5-4dfb-4057-92d7-2684b4542bf7",null,null,null,"#FF624F"],
+    [8,"Completed","Has been completed.",0.000,true,1,3,"2026-11-17T09:45:59.8700000","2026-11-17T09:46:39.9270000",null,null,"9d17f412-25a8-4638-9cd7-5343017620d6",null,null,null,"#34D87D"]
+  ]
+}

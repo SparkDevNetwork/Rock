@@ -1,0 +1,8 @@
+{
+  "columns": [ "Id", "Name", "Description", "DeviceTypeValueId", "LocationId", "IPAddress", "PrinterDeviceId", "PrintFrom", "PrintToOverride", "Guid", "CreatedDateTime", "ModifiedDateTime", "CreatedByPersonAliasId", "ModifiedByPersonAliasId", "ForeignKey", "ForeignGuid", "ForeignId", "IsActive", "HasCamera", "CameraBarcodeConfigurationType", "KioskType", "ProxyDeviceId" ],
+  "rows": [
+    [1,"Check-in Label Printer",null,43,null,"10.1.20.200",null,0,1,"36ea94d3-9d2a-4bad-ae15-116d0727cd9c",null,null,null,null,null,null,null,true,false,null,null,null],
+    [2,"Main Campus: Central Kiosk",null,41,null,null,1,1,1,"61111232-01d7-427d-9c1f-d45cf4d3f7cb",null,null,null,null,null,null,null,true,false,null,null,null],
+    [11,"Self-Service Kiosk","Sample self-service/giving kiosk.",42,null,"::1",null,0,0,"8638f176-df1e-659b-4e76-ce4227d95081",null,null,null,null,null,null,null,true,false,null,null,null]
+  ]
+}

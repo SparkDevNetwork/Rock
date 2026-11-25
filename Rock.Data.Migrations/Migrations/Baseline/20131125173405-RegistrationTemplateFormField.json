@@ -1,0 +1,11 @@
+{
+  "columns": [ "Id", "RegistrationTemplateFormId", "FieldSource", "PersonFieldType", "AttributeId", "IsSharedValue", "ShowCurrentValue", "PreText", "PostText", "IsGridField", "IsRequired", "Order", "CreatedDateTime", "ModifiedDateTime", "CreatedByPersonAliasId", "ModifiedByPersonAliasId", "Guid", "ForeignKey", "ForeignGuid", "ForeignId", "IsInternal", "ShowOnWaitlist", "FieldVisibilityRulesJSON", "IsLockedIfValuesExist" ],
+  "rows": [
+    [1,1,0,0,null,false,false,"<div class='row'>\r\n    <div class='col-md-6'>","    </div>",true,true,0,null,null,null,null,"b119b60d-c42e-4c4e-9c42-7195087d420a",null,null,null,false,true,null,false],
+    [2,1,0,1,null,false,false,"    <div class='col-md-6'>","    </div>\r\n</div>",true,true,1,null,null,null,null,"78a6f2f3-f4d8-4f09-be60-320eb4f30e23",null,null,null,false,true,null,false],
+    [3,1,0,4,null,false,false,"","",false,true,2,null,null,null,null,"cd051a92-9fde-4281-abdf-d221702cf132",null,null,null,false,true,null,false],
+    [4,2,0,0,null,false,false,"<div class='row'>\r\n    <div class='col-md-6'>","    </div>",true,true,0,null,null,null,null,"bdc7bf2b-6387-4ef6-b13b-1b857192adb3",null,null,null,false,true,null,false],
+    [5,2,0,1,null,false,false,"    <div class='col-md-6'>","    </div>\r\n</div>",true,true,1,null,null,null,null,"91c83fc8-62ea-4151-92fa-0d5555974139",null,null,null,false,true,null,false],
+    [6,2,0,4,null,false,false,"","",false,true,2,null,null,null,null,"ffa0be13-c08e-481d-91a5-e579caf009e2",null,null,null,false,true,null,false]
+  ]
+}

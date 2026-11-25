@@ -35,8 +35,8 @@ dotnet_separate_import_directive_groups = true
 [*.sql]
 trim_trailing_whitespace = false
 
-# Whitespace override for all Rock.Migrations
-[Rock.Migrations/**.cs]
+# Whitespace override for all Rock.Data.Migrations
+[Rock.Data.Migrations/**.cs]
 trim_trailing_whitespace = false
 
 [*.cs]

@@ -1,0 +1,7 @@
+{
+  "columns": [ "Id", "EventCalendarId", "ContentChannelId", "CreatedDateTime", "ModifiedDateTime", "CreatedByPersonAliasId", "ModifiedByPersonAliasId", "Guid", "ForeignKey", "ForeignGuid", "ForeignId" ],
+  "rows": [
+    [1,1,1,null,null,null,null,"e24519fa-4ab5-4077-ac40-62dde708c095",null,null,null],
+    [2,1,2,null,null,null,null,"db20b060-2d3e-4e13-b377-307cde5c9f18",null,null,null]
+  ]
+}

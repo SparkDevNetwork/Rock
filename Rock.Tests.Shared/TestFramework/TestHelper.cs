@@ -118,6 +118,36 @@ namespace Rock.Tests.Shared.TestFramework
         }
 
         /// <summary>
+        /// The connection string of <see cref="CreateScopedRockAppWithUnusableDatabase"/>.
+        /// It is malformed on purpose, so opening a connection with it fails at
+        /// once instead of waiting for a connection timeout.
+        /// </summary>
+        private const string UnusableConnectionString = "Unusable test connection string: this code must not open a database connection through RockApp.";
+
+        /// <summary>
+        /// Creates a scoped RockApp whose connection strings cannot be used, so
+        /// any <c>RockContext</c> or <c>DbService</c> call that reaches the
+        /// database inside the scope fails. Use it around code that must not
+        /// touch the database through RockApp, such as running SQL migrations,
+        /// which use their own connection. Building a <c>RockContext</c> still
+        /// works; opening its connection does not.
+        /// </summary>
+        /// <returns>An instance of <see cref="RockAppScope"/>.</returns>
+        public static RockAppScope CreateScopedRockAppWithUnusableDatabase()
+        {
+            // The real IDatabaseConfiguration queries the database when it is
+            // created, which would fail on the unusable connection string.
+            var databaseConfigurationMock = new Mock<IDatabaseConfiguration>( MockBehavior.Loose );
+
+            var app = CreateRockApp( UnusableConnectionString, sc =>
+            {
+                sc.AddSingleton<IDatabaseConfiguration>( databaseConfigurationMock.Object );
+            } );
+
+            return new RockAppScope( app );
+        }
+
+        /// <summary>
         /// Creates a new RockApp object with the provided connection string.
         /// </summary>
         /// <param name="connectionString">The connection string to be used for the RockApp object.</param>

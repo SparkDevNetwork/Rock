@@ -168,7 +168,7 @@ Paths are relative to `.claude/skills/sentinel/references/checklists/`.
 | `webforms-blocks.md` | `RockWeb/Blocks/` `.ascx` / `.ascx.cs`, postback handlers, `HiddenField`, `ViewState`, grids |
 | `rest-api.md` | `Rock.Rest/`, API controllers, `[Authenticate]`, `[Secured]`, auth headers, JWT, CORS |
 | `lava-and-sql.md` | Lava templates, Lava commands, filters, or shortcodes, `ResolveMergeFields`, SQL, the `sql` command, RunSQL |
-| `migrations.md` | `Rock.Migrations/`, `Rock/Plugin/HotFixes/`, data migrations, `Auth` rows |
+| `migrations.md` | `Rock.Data.Migrations/`, `Rock.Migrations/`, `Rock/Plugin/HotFixes/`, data migrations, `Auth` rows |
 | `security-model.md` | `ISecured`, `IsAuthorized` or `ParentAuthority` overrides, `*Cache` classes, `SecurityGrant`, security roles, the Security dialog, categories or other parent/child hierarchies |
 | `self-service-and-finance.md` | Public or self-service blocks, person matching, person tokens, giving, saved accounts, scheduled transactions, pledges, assessments, reminders |
 | `files-and-paths.md` | `BinaryFile`, uploads, downloads, file handlers, asset manager, file paths, zip or archive handling |

@@ -1,0 +1,6 @@
+{
+  "columns": [ "Id", "Name", "Order", "EntityTypeId", "IsActive", "Description", "CreatedDateTime", "ModifiedDateTime", "CreatedByPersonAliasId", "ModifiedByPersonAliasId", "Guid", "ForeignId", "ForeignGuid", "ForeignKey" ],
+  "rows": [
+    [1,"Local Content",0,471,true,null,null,null,null,null,"3e32147b-70be-47d6-8679-c3ad634da61f",null,null,null]
+  ]
+}

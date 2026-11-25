@@ -1,0 +1,14 @@
+{
+  "columns": [ "Id", "Name", "ConnectionTypeId", "IsActive", "CreatedDateTime", "ModifiedDateTime", "CreatedByPersonAliasId", "ModifiedByPersonAliasId", "Guid", "ForeignKey", "ForeignGuid", "ForeignId", "PersonNoteCreationBehavior", "PersonNoteTypeId" ],
+  "rows": [
+    [1,"Called Left Message",1,true,"2018-04-02T09:24:16.1900000","2018-04-02T09:24:16.1900000",10,10,"54ecf450-7925-49b3-ab49-085945fb3086",null,null,null,null,null],
+    [2,"Called No Answer",1,true,"2018-04-02T09:24:16.1900000","2018-04-02T09:24:16.1900000",10,10,"f793ef4a-495d-4b40-b6ea-9bca75a7c5b9",null,null,null,null,null],
+    [3,"Contacted Waiting for Response",1,true,"2018-04-02T09:24:16.1900000","2018-04-02T09:24:16.1900000",10,10,"b8ef4b88-242e-41e6-9761-6cde83933d8f",null,null,null,null,null],
+    [4,"Connected",null,true,"2018-04-02T09:24:16.1900000","2018-04-02T09:24:16.1900000",10,10,"04c61230-97b6-4702-89c0-634e5ae57d6f",null,null,null,null,null],
+    [5,"Transferred",null,true,"2018-04-02T09:24:16.1900000","2018-04-02T09:24:16.1900000",10,10,"6e7c8475-2a03-42eb-a883-5b2cc6cae519",null,null,null,null,null],
+    [6,"Assigned",null,true,null,null,null,null,"db4c6d25-211c-4995-b194-9fef7551f26b",null,null,null,null,null],
+    [7,"Called",1,true,"2018-04-02T09:24:20.3470000","2018-04-02T09:24:20.3470000",null,null,"2437d702-e02e-4d8e-48df-7cefe4609f35",null,null,null,null,null],
+    [8,"Follow-up Date Reached",null,true,null,null,null,null,"d0fbb866-9029-4705-b3ba-07364f3d7fc1",null,null,null,null,null],
+    [9,"Bulk Update",null,true,null,null,null,null,"10104830-5afc-491f-9885-747521a2aa75",null,null,null,null,null]
+  ]
+}

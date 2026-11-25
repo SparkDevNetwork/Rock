@@ -1,0 +1,8 @@
+{
+  "columns": [ "Id", "Name", "Description", "EntityTypeId", "BatchTimeOffsetTicks", "IsActive", "CreatedDateTime", "ModifiedDateTime", "CreatedByPersonAliasId", "ModifiedByPersonAliasId", "Guid", "ForeignKey", "ForeignGuid", "ForeignId", "BatchDayOfWeek" ],
+  "rows": [
+    [1,"Pay Flow Pro (Legacy)",null,161,0,false,null,null,null,null,"420747be-640c-406e-b382-cee4bb377f29",null,null,null,null],
+    [2,"Test Gateway",null,200,0,true,null,null,null,null,"6432d2d2-32ff-443d-b5b3-fb6c8414c3ad",null,null,null,null],
+    [3,"Celero/TransNational NMI Gateway",null,262,0,false,null,null,null,null,"369f58a0-de75-4beb-8a9c-ca02f86c3252",null,null,null,null]
+  ]
+}

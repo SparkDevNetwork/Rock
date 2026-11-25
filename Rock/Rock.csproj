@@ -173,18 +173,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="Plugin\HotFixes\HotFixMigrationResource.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>HotFixMigrationResource.resx</DependentUpon>
-    </Compile>
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Update="Plugin\HotFixes\HotFixMigrationResource.resx">
-      <Generator>PublicResXFileCodeGenerator</Generator>
-      <LastGenOutput>HotFixMigrationResource.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
     <!--
       Crawler pattern list consumed by Rock.Net.CrawlerUserAgents. Vendored from
       https://github.com/monperrus/crawler-user-agents (MIT) and refreshed as a

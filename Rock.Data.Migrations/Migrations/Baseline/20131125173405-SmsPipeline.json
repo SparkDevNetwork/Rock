@@ -1,0 +1,6 @@
+{
+  "columns": [ "Id", "Name", "Description", "IsActive", "CreatedDateTime", "ModifiedDateTime", "CreatedByPersonAliasId", "ModifiedByPersonAliasId", "Guid", "ForeignId", "ForeignGuid", "ForeignKey" ],
+  "rows": [
+    [1,"Default",null,true,null,null,null,null,"daff8e4a-005e-4960-ae2f-bd50086520b0",null,null,null]
+  ]
+}

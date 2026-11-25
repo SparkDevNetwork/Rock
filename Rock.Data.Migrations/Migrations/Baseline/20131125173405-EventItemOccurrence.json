@@ -1,0 +1,9 @@
+{
+  "columns": [ "Id", "EventItemId", "CampusId", "Location", "ContactPersonAliasId", "ContactPhone", "ContactEmail", "Note", "CreatedDateTime", "ModifiedDateTime", "CreatedByPersonAliasId", "ModifiedByPersonAliasId", "Guid", "ForeignKey", "ScheduleId", "ForeignGuid", "ForeignId", "NextStartDateTime" ],
+  "rows": [
+    [1,1,null,"",10,"","admin@organization.com","",null,null,null,null,"f959d1a9-ee5c-4571-932b-10419971b76f",null,8,null,null,null],
+    [2,2,null,"",10,"","admin@organization.com","",null,null,null,null,"22579acd-e636-4d52-b682-5883edff331d",null,9,null,null,null],
+    [3,3,null,"",10,"","admin@organization.com","",null,null,null,null,"8d435c91-f2d7-4192-b0f1-27c1d48d5135",null,10,null,null,null],
+    [4,4,null,"",10,"","admin@organization.com","",null,null,null,null,"7b095d3d-ac48-4406-a1e9-22c0979f4aea",null,11,null,null,null]
+  ]
+}

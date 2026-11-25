@@ -1,0 +1,6 @@
+{
+  "columns": [ "Id", "UserName", "Password", "IsConfirmed", "LastActivityDateTime", "LastLoginDateTime", "LastPasswordChangedDateTime", "IsOnLine", "IsLockedOut", "LastLockedOutDateTime", "FailedPasswordAttemptCount", "FailedPasswordAttemptWindowStartDateTime", "LastPasswordExpirationWarningDateTime", "ApiKey", "PersonId", "Guid", "EntityTypeId", "CreatedDateTime", "ModifiedDateTime", "CreatedByPersonAliasId", "ModifiedByPersonAliasId", "ForeignKey", "ForeignGuid", "ForeignId", "IsPasswordChangeRequired", "ApiKeyPurpose", "Description" ],
+  "rows": [
+    [1,"admin","$2a$11$XTLibmiVyu6SArCqLSSi5OQO3tA8cuMWgPVNIfylx5bICaniAfP5C",true,"2026-11-17T10:03:50.3500000","2026-11-17T10:03:50.2130000","2012-01-23T03:43:25.1700000",false,null,"2011-12-15T02:45:54.9370000",1,"2012-06-07T15:25:06.9770000",null,"",1,"7e10a764-ef6b-431f-87c7-861053c84131",27,"2011-03-19T07:34:15.3270000","2026-11-17T10:03:50.3530000",null,null,null,null,null,null,null,null]
+  ]
+}

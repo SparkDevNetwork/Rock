@@ -1,0 +1,7 @@
+{
+  "columns": [ "ContentChannelId", "ChildContentChannelId" ],
+  "rows": [
+    [4,5],
+    [5,7]
+  ]
+}

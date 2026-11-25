@@ -46,6 +46,9 @@ RMDIR "Rock.Mailgun\Obj" /S /Q
 RMDIR "Rock.Mandrill\Bin" /S /Q
 RMDIR "Rock.Mandrill\Obj" /S /Q
 
+RMDIR "Rock.Data.Migrations\Bin" /S /Q
+RMDIR "Rock.Data.Migrations\Obj" /S /Q
+
 RMDIR "Rock.Migrations\Bin" /S /Q
 RMDIR "Rock.Migrations\Obj" /S /Q
 

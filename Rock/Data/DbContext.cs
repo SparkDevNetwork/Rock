@@ -166,18 +166,25 @@ namespace Rock.Data
         /// <summary>
         /// Initializes a new instance of the <see cref="DbContext"/> class.
         /// </summary>
-        public DbContext() : base() { }
+        public DbContext() : base()
+        {
+            MigrationExecutionScope.ThrowIfMigrationRunning( "created a RockContext" );
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DbContext"/> class.
         /// </summary>
         /// <param name="nameOrConnectionString">Either the database name or a connection string.</param>
-        public DbContext( string nameOrConnectionString ) : base( nameOrConnectionString ) { }
+        public DbContext( string nameOrConnectionString ) : base( nameOrConnectionString )
+        {
+            MigrationExecutionScope.ThrowIfMigrationRunning( "created a RockContext" );
+        }
 
         /// <inheritdoc />
         internal protected DbContext( ObjectContext objectContext, bool dbContextOwnsObjectContext ) :
             base( objectContext, dbContextOwnsObjectContext )
         {
+            MigrationExecutionScope.ThrowIfMigrationRunning( "created a RockContext" );
         }
 
 

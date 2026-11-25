@@ -1,0 +1,6 @@
+{
+  "columns": [ "Id", "IsSystem", "SiteId", "Domain", "Guid", "CreatedDateTime", "ModifiedDateTime", "CreatedByPersonAliasId", "ModifiedByPersonAliasId", "ForeignKey", "ForeignGuid", "ForeignId", "Order" ],
+  "rows": [
+    [1,true,1,"localhost","e07f3ef9-aec3-4ac8-b065-704736b04bea",null,null,null,null,null,null,null,0]
+  ]
+}

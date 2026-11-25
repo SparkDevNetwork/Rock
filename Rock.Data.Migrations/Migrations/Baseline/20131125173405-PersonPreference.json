@@ -1,0 +1,15 @@
+{
+  "columns": [ "Id", "PersonAliasId", "Key", "EntityTypeId", "EntityId", "Value", "IsEnduring", "LastAccessedDateTime", "Guid", "ForeignId", "ForeignGuid", "ForeignKey" ],
+  "rows": [
+    [1,10,"block-272-grid-filter-EntityType",9,272,"15",false,"2026-11-17T09:56:07.2870000","306eb76e-4c2f-42f7-8a75-c370e9f35233",null,null,null],
+    [2,10,"block-272-grid-filter-Scope",9,272,"Public",false,"2026-11-17T09:56:07.3500000","126528e9-1f58-4c14-a584-2902c18cd630",null,null,null],
+    [3,10,"block-253-grid-filter-EntityType",9,253,"15",false,"2026-11-17T09:56:07.3870000","ff5a5e2c-d671-45d8-adec-e0eb687f3244",null,null,null],
+    [4,10,"block-256-grid-filter-Entity Type",9,256,"50",false,"2026-11-17T09:56:07.4200000","f708d04e-9528-40b0-918a-0848548abefc",null,null,null],
+    [5,10,"block-149-grid-filter-Category",9,149,"All",false,"2026-11-17T09:56:07.4530000","662daa43-b339-4304-a1c5-790faafd233c",null,null,null],
+    [6,10,"block-264-grid-filter-Category",9,264,"50",false,"2026-11-17T09:56:07.4770000","f006841f-41e2-415d-948b-08d19fde0e2d",null,null,null],
+    [7,10,"global-0-grid-page-size-preference",null,null,"25",false,"2026-11-17T09:56:07.7530000","e042d82b-b735-4da5-bf72-3336c7f54420",null,null,null],
+    [8,10,"block-1440-grid-filter-Category",9,1440,"50",false,"2026-11-17T09:56:07.4770000","45183dcc-bcde-4572-9f2d-b589b8485fb6",null,null,null],
+    [9,10,"block-1552-grid-filter-EntityType",9,1552,"15",false,"2026-11-17T09:56:07.2870000","2509cae4-89df-474c-bd9e-8a07b4b4611a",null,null,null],
+    [10,10,"block-1552-grid-filter-Scope",9,1552,"Public",false,"2026-11-17T09:56:07.3500000","f755a3c1-5ab3-48e5-aeec-6ac4f3ed0388",null,null,null]
+  ]
+}

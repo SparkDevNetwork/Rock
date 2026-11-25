@@ -17,7 +17,6 @@
 using System;
 using System.Collections.Generic;
 using System.Configuration;
-using System.Data.Entity.Infrastructure;
 using System.Data.SqlClient;
 using System.IO;
 using System.IO.Compression;
@@ -48,12 +47,6 @@ namespace Rock.Tests.Integration.TestFramework.Database
         /// The connection string of the target database.
         /// </summary>
         public string ConnectionString = null;
-
-        /// <summary>
-        /// Specifies a target migration for the test database.
-        /// If not specified, the most recent migration is targeted.
-        /// </summary>
-        public string TargetMigrationName = null;
 
         /// <summary>
         /// An optional initializer that can configure a new database and add sample data.
@@ -305,76 +298,13 @@ namespace Rock.Tests.Integration.TestFramework.Database
         }
 
         /// <summary>
-        /// Gets the target migration.
+        /// Builds the database by running every migration through the SQL
+        /// migration runner, as the Docker image builder does.
         /// </summary>
-        private string GetTargetMigration()
-        {
-            if ( _targetMigration == null )
-            {
-                var targetMigrations = typeof( Migrations.RockMigration )
-                    .Assembly
-                    .GetExportedTypes()
-                       .Where( a => typeof( System.Data.Entity.Migrations.Infrastructure.IMigrationMetadata ).IsAssignableFrom( a ) )
-                    .Select( a => ( System.Data.Entity.Migrations.Infrastructure.IMigrationMetadata ) Activator.CreateInstance( a ) )
-                    .Select( a => a.Id )
-                    .OrderByDescending( a => a )
-                    .ToList();
-
-                _latestMigration = targetMigrations.FirstOrDefault();
-
-                var targetMigrationName = this.TargetMigrationName.ToStringSafe().Trim().ToLower();
-                if ( targetMigrationName.IsNullOrWhiteSpace() )
-                {
-                    _targetMigration = targetMigrations.FirstOrDefault();
-                }
-                else
-                {
-                    // Find a matching migration name, allowing for partial matches that do not include the datetime prefix.
-                    targetMigrations = targetMigrations.Where( m => m.EndsWith( targetMigrationName, StringComparison.InvariantCultureIgnoreCase ) )
-                        .ToList();
-                    if ( !targetMigrations.Any() )
-                    {
-                        throw new Exception( $"Target Migration is invalid. No match found. [TargetMigrationName={targetMigrationName}]" );
-                    }
-                    else
-                    {
-                        if ( targetMigrations.Count() > 1 )
-                        {
-                            throw new Exception( $"Target Migration is invalid. Multiple matches found. [TargetMigrationName={targetMigrationName}]" );
-                        }
-
-                        _targetMigration = targetMigrations.First();
-                    }
-                }
-            }
-
-            return _targetMigration;
-        }
-
-        private string _targetMigration;
-        private string _latestMigration;
-
-        /// <summary>
-        /// Migrates the database.
-        /// </summary>
+        /// <param name="connectionString">The connection string of the empty database.</param>
         private void MigrateDatabase( string connectionString )
         {
-            var connection = new DbConnectionInfo( connectionString, "System.Data.SqlClient" );
-
-            var config = new Migrations.Configuration();
-            config.TargetDatabase = connection;
-
-            var migrator = new System.Data.Entity.Migrations.DbMigrator( config );
-
-            LogHelper.Log( $"Applying database migrations... [Target=\"{_targetMigration}\"]" );
-            try
-            {
-                migrator.Update( _targetMigration );
-            }
-            catch ( Exception ex )
-            {
-                throw new Exception( "Test Database migration failed. Verify that the database connection string specified in the test project is valid. You may need to manually synchronize the database or configure the test environment to force-create a new database.", ex );
-            }
+            DatabaseContainerImageBuilder.MigrateDatabase( connectionString );
         }
 
         /// <summary>
@@ -471,12 +401,7 @@ namespace Rock.Tests.Integration.TestFramework.Database
 
             LogHelper.Log( $"Restoring local database from archive..." );
             LogHelper.Log( $"Target database is \"{targetDbName}\"." );
-            LogHelper.Log( $"Target migration is \"{_targetMigration}\"." );
-
-            if ( _latestMigration != _targetMigration )
-            {
-                LogHelper.Log( $"Latest migration is \"{_latestMigration}\"." );
-            }
+            LogHelper.Log( $"Migrations are \"{DatabaseContainerImageBuilder.GetMigrationTag()}\"." );
 
             // If this is a URL, download it.
             if ( archivePath.ToUpper().StartsWith( "HTTP" ) )
@@ -555,7 +480,7 @@ ALTER DATABASE [{targetDbName}] SET RECOVERY SIMPLE;
 
                 using ( var cmd = connection.CreateCommand() )
                 {
-                    cmd.CommandText = "SELECT COUNT(*) FROM [__MigrationHistory]";
+                    cmd.CommandText = "SELECT COUNT(*) FROM [RockMigration]";
 
                     try
                     {
@@ -737,7 +662,7 @@ DROP DATABASE [{name}];";
         /// <returns></returns>
         private string GetArchiveFileName()
         {
-            var migrationName = GetTargetMigration();
+            var migrationName = DatabaseContainerImageBuilder.GetMigrationTag();
 
             var datasetName = this.DatabaseInitializer?.DatasetIdentifier;
             if ( string.IsNullOrWhiteSpace( datasetName ) )

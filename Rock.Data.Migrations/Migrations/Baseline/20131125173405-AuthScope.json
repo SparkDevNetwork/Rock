@@ -1,0 +1,11 @@
+{
+  "columns": [ "Id", "IsActive", "IsSystem", "Name", "PublicName", "CreatedDateTime", "ModifiedDateTime", "CreatedByPersonAliasId", "ModifiedByPersonAliasId", "Guid", "ForeignId", "ForeignGuid", "ForeignKey" ],
+  "rows": [
+    [1,true,true,"address","Address","2026-11-17T09:40:38.3200000","2026-11-17T09:40:38.3200000",null,null,"f12eebe7-7ce4-46c5-80da-a2208011216e",null,null,null],
+    [2,true,true,"email","Email Address","2026-11-17T09:40:38.3200000","2026-11-17T09:40:38.3200000",null,null,"27f77ae2-81a2-4602-b530-8d75376201f2",null,null,null],
+    [3,true,true,"offline_access","Allows the use of refresh tokens.","2026-11-17T09:40:38.3200000","2026-11-17T09:40:38.3200000",null,null,"580662de-ee9b-4ca2-847a-615b7e61e15b",null,null,null],
+    [4,true,true,"phone","Phone Number","2026-11-17T09:40:38.3200000","2026-11-17T09:40:38.3200000",null,null,"3af58238-d3b9-4fce-971c-a55beb51241e",null,null,null],
+    [5,true,true,"profile","Profile Information","2026-11-17T09:40:38.3200000","2026-11-17T09:40:38.3200000",null,null,"5fe34f25-288a-48c7-aae1-f471eadce1ee",null,null,null],
+    [6,true,true,"mcp:invoke","MCP Tools",null,null,null,null,"67e7f27c-9022-47ba-8207-08d1fb54474f",null,null,null]
+  ]
+}

@@ -20,6 +20,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include="..\Dev Tools\schema-check\schema-check-allow-list.json" Link="TestData\schema-check-allow-list.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="TestData\test.jpg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -47,6 +50,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- Scripts and JSON data files for the SqlResource and BulkResource tests, embedded by the SqlScript targets in Directory.Build.targets. -->
+    <None Remove="Data\SqlMigrations\Scripts\*.sql;Data\SqlMigrations\Scripts\*.json" />
+    <SqlScript Include="Data\SqlMigrations\Scripts\*.sql;Data\SqlMigrations\Scripts\*.json" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="CsvHelper" Version="2.16.3" />
     <PackageReference Include="HttpSimulator" Version="2.3.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.0.1" />
@@ -71,13 +80,15 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Dev Tools\baseline-tool\Rock.BaselineTool.csproj" />
+    <ProjectReference Include="..\Dev Tools\schema-check\Rock.SchemaCheck.csproj" />
     <ProjectReference Include="..\Rock.Common\Rock.Common.csproj" />
+    <ProjectReference Include="..\Rock.Data.Migrations\Rock.Data.Migrations.csproj" />
     <ProjectReference Include="..\Rock.Enums\Rock.Enums.csproj" />
     <ProjectReference Include="..\Rock.Lava.Fluid\Rock.Lava.Fluid.csproj" />
     <ProjectReference Include="..\Rock.Lava.Shared\Rock.Lava.Shared.csproj" />
     <ProjectReference Include="..\Rock.Lava\Rock.Lava.csproj" />
     <ProjectReference Include="..\Rock.Mailgun\Rock.Mailgun.csproj" />
-    <ProjectReference Include="..\Rock.Migrations\Rock.Migrations.csproj" />
     <ProjectReference Include="..\Rock.Oidc\Rock.Oidc.csproj" />
     <ProjectReference Include="..\Rock.Rest\Rock.Rest.csproj" />
     <ProjectReference Include="..\Rock.Tests.Shared\Rock.Tests.Shared.csproj" />

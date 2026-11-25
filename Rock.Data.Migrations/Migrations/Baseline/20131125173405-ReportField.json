@@ -1,0 +1,18 @@
+{
+  "columns": [ "Id", "ReportId", "ReportFieldType", "ShowInGrid", "DataSelectComponentEntityTypeId", "Selection", "Guid", "ColumnHeaderText", "CreatedDateTime", "ModifiedDateTime", "CreatedByPersonAliasId", "ModifiedByPersonAliasId", "ForeignKey", "ColumnOrder", "SortOrder", "SortDirection", "ForeignGuid", "ForeignId", "IsCommunicationRecipientField", "IsCommunicationMergeField" ],
+  "rows": [
+    [3,1,0,true,null,"ReviewReasonNote","29f09daa-9d05-4e6f-9f3d-814dbc1d18e4","Review Reason Note","2014-04-29T15:47:20.0000000","2014-04-29T15:47:20.0000000",null,null,null,2,null,0,null,null,null,null],
+    [4,1,0,true,null,"InactiveReasonNote","65382c7a-44b2-4049-8dc8-8ada9edcf231","Inactive Reason Note","2014-04-29T15:47:20.0000000","2014-04-29T15:47:20.0000000",null,null,null,3,null,0,null,null,null,null],
+    [5,1,0,true,null,"RecordStatusReasonValueId","fc9e7bda-93e8-491e-b7a1-e7b2e1fe712a","Inactive Record Reason","2014-04-29T15:47:20.0000000","2014-04-29T15:47:20.0000000",null,null,null,4,null,0,null,null,null,null],
+    [8,2,0,true,null,"CreatedDateTime","aade6679-0b54-4ccb-bd5f-6486fa833a1a","Created Date Time",null,null,null,null,null,2,null,0,null,null,null,null],
+    [9,2,2,true,206,"Name","a5543e82-373d-403b-92a1-7f513c93d254","Name",null,null,null,null,null,0,null,0,null,null,null,null],
+    [10,1,2,true,206,"Name","e369b151-b334-4bb0-84a0-cdd7e4a27dbc","Name",null,null,null,null,null,0,null,0,null,null,null,null],
+    [11,2,2,true,207,"<a class='btn btn-default' href='/PersonDuplicate/{{ Id }}' title='Find Duplicates'><i class='fa fa-search-plus'></i></a>","7a4c4c85-61c9-4378-9cde-3f38516fb7de","Action",null,null,null,null,null,2,null,0,null,null,null,null],
+    [12,3,2,true,206,"{\"ShowAsLink\":\"True\",\"DisplayOrder\":\"0\"}","04532a6c-0bc7-4eb6-ae5b-d636e0707fff","Name",null,null,null,null,null,0,null,0,null,null,null,null],
+    [13,3,2,true,397,"407e7e45-7b2e-4fcd-9605-ecb1339f2453|False","2a0961fd-f658-4989-b23d-9a6d2762ff7c","Mobile Phone",null,null,null,null,null,1,null,0,null,null,null,null],
+    [14,3,2,true,397,"aa8732fb-2cea-4c76-8d6d-6aaa2c6a4303|False","a90872df-614a-4a82-b6f6-d83838a9b184","Home Phone",null,null,null,null,null,2,null,0,null,null,null,null],
+    [15,3,2,true,397,"2cc66d5a-f61c-4b74-9af9-590a9847c13c|False","92f93f8d-8b5c-4caf-9338-2d117fe273c7","Work Phone",null,null,null,null,null,3,null,0,null,null,null,null],
+    [16,4,2,true,206,"{\"ShowAsLink\":\"True\",\"DisplayOrder\":\"0\"}","60efff7b-10e7-4784-9e71-d9246b785cf4","Name",null,null,null,null,null,0,null,0,null,null,null,null],
+    [17,4,0,true,null,"Email","4fe499da-8c2a-463a-ad2f-87045ccdfaa4","Email",null,null,null,null,null,1,null,0,null,null,null,null]
+  ]
+}

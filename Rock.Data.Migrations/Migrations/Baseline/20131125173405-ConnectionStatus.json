@@ -1,0 +1,7 @@
+{
+  "columns": [ "Id", "Name", "Description", "ConnectionTypeId", "IsCritical", "IsDefault", "IsActive", "CreatedDateTime", "ModifiedDateTime", "CreatedByPersonAliasId", "ModifiedByPersonAliasId", "Guid", "ForeignKey", "ForeignGuid", "ForeignId", "AutoInactivateState", "Order", "HighlightColor", "RequestStatusDueSoonOffsetInDays", "AutoFutureFollowUpPauseInDays", "IsNoteRequiredOnCompletion", "RequestStatusDueDateOffsetInDays" ],
+  "rows": [
+    [1,"No Contact",null,1,true,true,true,"2018-04-02T09:24:16.1900000","2018-04-02T09:24:16.1900000",10,10,"901e1a6a-0e91-4f42-880f-47c061c24e0c",null,null,null,false,0,"#00a6f4",5,null,false,7],
+    [2,"In Progress",null,1,false,false,true,"2018-04-02T09:24:16.1900000","2018-04-02T09:24:16.1900000",10,10,"828d8744-b412-4b09-a00f-fc51bbe220f6",null,null,null,false,0,"#00a6f4",5,null,false,7]
+  ]
+}

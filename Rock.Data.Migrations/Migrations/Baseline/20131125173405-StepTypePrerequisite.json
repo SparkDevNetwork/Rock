@@ -1,0 +1,6 @@
+{
+  "columns": [ "Id", "StepTypeId", "PrerequisiteStepTypeId", "Order", "CreatedDateTime", "ModifiedDateTime", "CreatedByPersonAliasId", "ModifiedByPersonAliasId", "Guid", "ForeignId", "ForeignGuid", "ForeignKey" ],
+  "rows": [
+    [1,3,2,0,"2020-10-30T11:29:24.0000000",null,null,null,"85addb51-3c92-4a82-84b3-00b9a4e3ae29",null,null,null]
+  ]
+}

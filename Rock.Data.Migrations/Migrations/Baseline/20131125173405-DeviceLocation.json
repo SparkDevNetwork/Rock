@@ -1,0 +1,7 @@
+{
+  "columns": [ "DeviceId", "LocationId" ],
+  "rows": [
+    [2,2],
+    [11,2]
+  ]
+}

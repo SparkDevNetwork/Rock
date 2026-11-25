@@ -1,0 +1,9 @@
+{
+  "columns": [ "Id", "Name", "StepProgramId", "IsCompleteStatus", "StatusColor", "IsActive", "Order", "CreatedDateTime", "ModifiedDateTime", "CreatedByPersonAliasId", "ModifiedByPersonAliasId", "Guid", "ForeignId", "ForeignGuid", "ForeignKey", "IsSystem" ],
+  "rows": [
+    [1,"In Progress",1,false,"#FFC870",true,1,"2020-10-30T11:29:24.0000000",null,null,null,"e2f2ea68-7d30-490d-8ea7-e1b0cc625b0f",null,null,null,false],
+    [2,"Complete",1,true,"#16C98D",true,2,"2020-10-30T11:29:24.0000000",null,null,null,"2bc1146e-4dbf-4915-814b-f0fed29ddd19",null,null,null,false],
+    [3,"In Progress",2,false,"#FFC870",true,0,"2026-11-17T09:46:47.9900000",null,null,null,"8013c752-31aa-46c6-9b55-bcfbe57c0577",null,null,null,true],
+    [4,"Complete",2,true,"#16C98D",true,1,"2026-11-17T09:46:47.9900000",null,null,null,"359d3ce0-e144-491e-8c3b-2a2bce55c04b",null,null,null,true]
+  ]
+}

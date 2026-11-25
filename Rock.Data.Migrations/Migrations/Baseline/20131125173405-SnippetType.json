@@ -1,0 +1,6 @@
+{
+  "columns": [ "Id", "Name", "Description", "HelpText", "IsPersonalAllowed", "IsSharedAllowed", "CreatedDateTime", "ModifiedDateTime", "CreatedByPersonAliasId", "ModifiedByPersonAliasId", "Guid", "ForeignId", "ForeignGuid", "ForeignKey" ],
+  "rows": [
+    [1,"SMS","Snippets to be used for various SMS replies.","",true,true,null,null,null,null,"d6074803-9405-47e3-974c-e95c9ad05874",null,null,null]
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "columns": [ "Id", "ConnectionOpportunityId", "CampusId", "CreatedDateTime", "ModifiedDateTime", "CreatedByPersonAliasId", "ModifiedByPersonAliasId", "Guid", "ForeignKey", "ForeignGuid", "ForeignId", "DefaultConnectorPersonAliasId" ],
+  "rows": [
+    [1,1,1,"2018-04-02T09:24:16.1900000","2018-04-02T09:24:16.1900000",10,10,"8acfa062-024d-46d3-9fb2-1f58cf86b15e",null,null,null,null],
+    [2,2,1,"2018-04-02T09:24:16.1900000","2018-04-02T09:24:16.1900000",10,10,"b5867160-4d7a-4a0f-bbed-bf791a36d97f",null,null,null,null],
+    [3,3,1,"2018-04-02T09:24:16.1900000","2018-04-02T09:24:16.1900000",10,10,"b32cc6e2-eee7-4458-a4fc-04d9e0a3ded2",null,null,null,null]
+  ]
+}

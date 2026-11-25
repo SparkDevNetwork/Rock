@@ -1,0 +1,838 @@
+{
+  "Entries": [
+    {
+      "Check": "mapping",
+      "Code": "LengthMismatch",
+      "Object": "dbo.FinancialBatch.RemoteSettlementBatchKey",
+      "Reason": "Known drift found by the first mapping check on develop (2026-10-27): the model has no [MaxLength( 50 )], so EF maps nvarchar(max). Not fixed yet; add [MaxLength( 50 )] to the model, then remove this entry."
+    },
+    {
+      "Check": "mapping",
+      "Code": "LengthMismatch",
+      "Object": "dbo.PhoneNumber.NumberReversed",
+      "Reason": "Computed column ([DatabaseGenerated( Computed )]) that EF only reads; the model leaves the length unset, so EF maps nvarchar(max)."
+    },
+    {
+      "Check": "mapping",
+      "Code": "MissingColumn",
+      "Object": "dbo.AnalyticsDimFamilyHeadOfHousehold.BirthDateDim_DateKey",
+      "Reason": "Known drift found by the first mapping check on develop (2026-10-27): BirthDateDim has no HasForeignKey( t => t.BirthDateKey ) in this view's configuration, so EF6 maps its convention column. A model bug, not fixed yet; remove this entry when the configuration is fixed."
+    },
+    {
+      "Check": "mapping",
+      "Code": "MissingColumn",
+      "Object": "dbo.AnalyticsDimFinancialAccount.ForeignGuid",
+      "Reason": "Known drift found by the first mapping check on develop (2026-10-27): the entity inherits Entity<T>, which maps Id, Guid and the Foreign* columns, but the view does not have them. Not fixed yet; remove this entry when the view or the model is fixed."
+    },
+    {
+      "Check": "mapping",
+      "Code": "MissingColumn",
+      "Object": "dbo.AnalyticsDimFinancialAccount.ForeignId",
+      "Reason": "Known drift found by the first mapping check on develop (2026-10-27): the entity inherits Entity<T>, which maps Id, Guid and the Foreign* columns, but the view does not have them. Not fixed yet; remove this entry when the view or the model is fixed."
+    },
+    {
+      "Check": "mapping",
+      "Code": "MissingColumn",
+      "Object": "dbo.AnalyticsDimFinancialAccount.ForeignKey",
+      "Reason": "Known drift found by the first mapping check on develop (2026-10-27): the entity inherits Entity<T>, which maps Id, Guid and the Foreign* columns, but the view does not have them. Not fixed yet; remove this entry when the view or the model is fixed."
+    },
+    {
+      "Check": "mapping",
+      "Code": "MissingColumn",
+      "Object": "dbo.AnalyticsDimFinancialAccount.Guid",
+      "Reason": "Known drift found by the first mapping check on develop (2026-10-27): the entity inherits Entity<T>, which maps Id, Guid and the Foreign* columns, but the view does not have them. Not fixed yet; remove this entry when the view or the model is fixed."
+    },
+    {
+      "Check": "mapping",
+      "Code": "MissingColumn",
+      "Object": "dbo.AnalyticsDimFinancialAccount.Id",
+      "Reason": "Known drift found by the first mapping check on develop (2026-10-27): the entity inherits Entity<T>, which maps Id, Guid and the Foreign* columns, but the view does not have them. Not fixed yet; remove this entry when the view or the model is fixed."
+    },
+    {
+      "Check": "mapping",
+      "Code": "MissingColumn",
+      "Object": "dbo.AnalyticsDimFinancialBatch.ForeignGuid",
+      "Reason": "Known drift found by the first mapping check on develop (2026-10-27): the entity inherits Entity<T>, which maps Id, Guid and the Foreign* columns, but the view does not have them. Not fixed yet; remove this entry when the view or the model is fixed."
+    },
+    {
+      "Check": "mapping",
+      "Code": "MissingColumn",
+      "Object": "dbo.AnalyticsDimFinancialBatch.ForeignId",
+      "Reason": "Known drift found by the first mapping check on develop (2026-10-27): the entity inherits Entity<T>, which maps Id, Guid and the Foreign* columns, but the view does not have them. Not fixed yet; remove this entry when the view or the model is fixed."
+    },
+    {
+      "Check": "mapping",
+      "Code": "MissingColumn",
+      "Object": "dbo.AnalyticsDimFinancialBatch.ForeignKey",
+      "Reason": "Known drift found by the first mapping check on develop (2026-10-27): the entity inherits Entity<T>, which maps Id, Guid and the Foreign* columns, but the view does not have them. Not fixed yet; remove this entry when the view or the model is fixed."
+    },
+    {
+      "Check": "mapping",
+      "Code": "MissingColumn",
+      "Object": "dbo.AnalyticsDimFinancialBatch.Guid",
+      "Reason": "Known drift found by the first mapping check on develop (2026-10-27): the entity inherits Entity<T>, which maps Id, Guid and the Foreign* columns, but the view does not have them. Not fixed yet; remove this entry when the view or the model is fixed."
+    },
+    {
+      "Check": "mapping",
+      "Code": "MissingColumn",
+      "Object": "dbo.AnalyticsDimFinancialBatch.Id",
+      "Reason": "Known drift found by the first mapping check on develop (2026-10-27): the entity inherits Entity<T>, which maps Id, Guid and the Foreign* columns, but the view does not have them. Not fixed yet; remove this entry when the view or the model is fixed."
+    },
+    {
+      "Check": "mapping",
+      "Code": "MissingColumn",
+      "Object": "dbo.AnalyticsDimPersonCurrent.BirthDateDim_DateKey",
+      "Reason": "Known drift found by the first mapping check on develop (2026-10-27): BirthDateDim has no HasForeignKey( t => t.BirthDateKey ) in this view's configuration, so EF6 maps its convention column. A model bug, not fixed yet; remove this entry when the configuration is fixed."
+    },
+    {
+      "Check": "mapping",
+      "Code": "MissingColumn",
+      "Object": "dbo.AnalyticsDimPersonHistorical.BirthDateDim_DateKey",
+      "Reason": "Known drift found by the first mapping check on develop (2026-10-27): BirthDateDim has no HasForeignKey( t => t.BirthDateKey ) in this view's configuration, so EF6 maps its convention column. A model bug, not fixed yet; remove this entry when the configuration is fixed."
+    },
+    {
+      "Check": "mapping",
+      "Code": "NullabilityMismatch",
+      "Object": "dbo.Attribute.DefaultValueChecksum",
+      "Reason": "Computed column. SQL Server reports computed columns as nullable, but the expression never returns NULL, so EF reads it safely."
+    },
+    {
+      "Check": "mapping",
+      "Code": "NullabilityMismatch",
+      "Object": "dbo.AttributeValue.ValueChecksum",
+      "Reason": "Computed column. SQL Server reports computed columns as nullable, but the expression never returns NULL, so EF reads it safely."
+    },
+    {
+      "Check": "mapping",
+      "Code": "NullabilityMismatch",
+      "Object": "dbo.Badge.EntityTypeId",
+      "Reason": "Known drift found by the first mapping check on develop (2026-10-27): the model requires a value but the column allows NULL. Not fixed yet; make the column NOT NULL with a migration, then remove this entry."
+    },
+    {
+      "Check": "mapping",
+      "Code": "NullabilityMismatch",
+      "Object": "dbo.MetaLastNameLookup.LastName",
+      "Reason": "Known drift found by the first mapping check on develop (2026-10-27): the model requires a value but the column allows NULL. Not fixed yet; make the column NOT NULL with a migration, then remove this entry."
+    },
+    {
+      "Check": "mapping",
+      "Code": "NullabilityMismatch",
+      "Object": "dbo.RegistrationTemplate.Description",
+      "Reason": "Known drift found by the first mapping check on develop (2026-10-27): the model allows NULL but the column is NOT NULL, so saving a null fails. Not fixed yet; fix with a migration or [Required], then remove this entry."
+    },
+    {
+      "Check": "mapping",
+      "Code": "NullabilityMismatch",
+      "Object": "dbo.StepProgram.StepTerm",
+      "Reason": "Known drift found by the first mapping check on develop (2026-10-27): the model allows NULL but the column is NOT NULL, so saving a null fails. Not fixed yet; fix with a migration or [Required], then remove this entry."
+    },
+    {
+      "Check": "mapping",
+      "Code": "NullabilityMismatch",
+      "Object": "dbo.WorkflowActionForm.PersonEntrySpouseLabel",
+      "Reason": "Known drift found by the first mapping check on develop (2026-10-27): the model allows NULL but the column is NOT NULL, so saving a null fails. Not fixed yet; fix with a migration or [Required], then remove this entry."
+    },
+    {
+      "Check": "names",
+      "Code": "ForeignKeyName",
+      "Object": "dbo.AchievementAttempt/FK_dbo.StreakAchievementAttempt_dbo.PersonAlias_CreatedByPersonAliasId",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "ForeignKeyName",
+      "Object": "dbo.AchievementAttempt/FK_dbo.StreakAchievementAttempt_dbo.PersonAlias_ModifiedByPersonAliasId",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "ForeignKeyName",
+      "Object": "dbo.AchievementAttempt/FK_dbo.StreakAchievementAttempt_dbo.StreakTypeAchievementType_StreakTypeAchievementTypeId",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "ForeignKeyName",
+      "Object": "dbo.AchievementType/FK_dbo.StreakTypeAchievementType_dbo.Category_CategoryId",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "ForeignKeyName",
+      "Object": "dbo.AchievementType/FK_dbo.StreakTypeAchievementType_dbo.EntityType_AchievementEntityTypeId",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "ForeignKeyName",
+      "Object": "dbo.AchievementType/FK_dbo.StreakTypeAchievementType_dbo.PersonAlias_CreatedByPersonAliasId",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "ForeignKeyName",
+      "Object": "dbo.AchievementType/FK_dbo.StreakTypeAchievementType_dbo.PersonAlias_ModifiedByPersonAliasId",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "ForeignKeyName",
+      "Object": "dbo.AchievementType/FK_dbo.StreakTypeAchievementType_dbo.StepStatus_AchievementStepStatusId",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "ForeignKeyName",
+      "Object": "dbo.AchievementType/FK_dbo.StreakTypeAchievementType_dbo.StepType_AchievementStepTypeId",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "ForeignKeyName",
+      "Object": "dbo.AchievementType/FK_dbo.StreakTypeAchievementType_dbo.WorkflowType_AchievementEndWorkflowTypeId",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "ForeignKeyName",
+      "Object": "dbo.AchievementType/FK_dbo.StreakTypeAchievementType_dbo.WorkflowType_AchievementStartWorkflowTypeId",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "ForeignKeyName",
+      "Object": "dbo.AchievementType/FK_dbo.StreakTypeAchievementType_dbo.WorkflowType_AchievementSuccessWorkflowTypeId",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "ForeignKeyName",
+      "Object": "dbo.AchievementTypePrerequisite/FK_dbo.StreakTypeAchievementTypePrerequisite_dbo.PersonAlias_CreatedByPersonAliasId",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "ForeignKeyName",
+      "Object": "dbo.AchievementTypePrerequisite/FK_dbo.StreakTypeAchievementTypePrerequisite_dbo.PersonAlias_ModifiedByPersonAliasId",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "ForeignKeyName",
+      "Object": "dbo.AchievementTypePrerequisite/FK_dbo.StreakTypeAchievementTypePrerequisite_dbo.StreakTypeAchievementType_PrerequisiteStreakTypeAchievementTypeId",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "ForeignKeyName",
+      "Object": "dbo.AchievementTypePrerequisite/FK_dbo.StreakTypeAchievementTypePrerequisite_dbo.StreakTypeAchievementType_StreakTypeAchievementTypeId",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "ForeignKeyName",
+      "Object": "dbo.AssetStorageProvider/FK_dbo.AssetStorageSystem_dbo.EntityType_EntityTypeId",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "ForeignKeyName",
+      "Object": "dbo.AssetStorageProvider/FK_dbo.AssetStorageSystem_dbo.PersonAlias_CreatedByPersonAliasId",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "ForeignKeyName",
+      "Object": "dbo.AssetStorageProvider/FK_dbo.AssetStorageSystem_dbo.PersonAlias_ModifiedByPersonAliasId",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "ForeignKeyName",
+      "Object": "dbo.BackgroundCheck/FK_dbo.BackgroundCheck_dbo.ConnectionRequest",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "ForeignKeyName",
+      "Object": "dbo.Badge/FK_dbo.PersonBadge_dbo.EntityType_EntityTypeId",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "ForeignKeyName",
+      "Object": "dbo.Badge/FK_dbo.PersonBadge_dbo.PersonAlias_CreatedByPersonAliasId",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "ForeignKeyName",
+      "Object": "dbo.Badge/FK_dbo.PersonBadge_dbo.PersonAlias_ModifiedByPersonAliasId",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "ForeignKeyName",
+      "Object": "dbo.CommunicationFlowInstanceCommunicationConversion/FK_dbo.CommunicationFlowInstanceCommunicationConversion_dbo.CommunicationFlowInstanceCommunication_CommunicationFlowInstanceComm",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "ForeignKeyName",
+      "Object": "dbo.ConnectionOpportunityConnectorGroup/FK_dbo.ConnectionOpportunityGroupCampus_dbo.Campus_CampusId",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "ForeignKeyName",
+      "Object": "dbo.ConnectionOpportunityConnectorGroup/FK_dbo.ConnectionOpportunityGroupCampus_dbo.ConnectionOpportunity_ConnectionOpportunityId",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "ForeignKeyName",
+      "Object": "dbo.ConnectionOpportunityConnectorGroup/FK_dbo.ConnectionOpportunityGroupCampus_dbo.Group_ConnectorGroupId",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "ForeignKeyName",
+      "Object": "dbo.ConnectionOpportunityConnectorGroup/FK_dbo.ConnectionOpportunityGroupCampus_dbo.PersonAlias_CreatedByPersonAliasId",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "ForeignKeyName",
+      "Object": "dbo.ConnectionOpportunityConnectorGroup/FK_dbo.ConnectionOpportunityGroupCampus_dbo.PersonAlias_ModifiedByPersonAliasId",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "ForeignKeyName",
+      "Object": "dbo.ContactRelationshipChange/FK_dbo.ContactRelationshipChanges_dbo.Contact_ContactId",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "ForeignKeyName",
+      "Object": "dbo.ContentChannel/FK_dbo.ContentChannel_dbo.ContentType_ContentTypeId",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "ForeignKeyName",
+      "Object": "dbo.ContentChannelItem/FK_dbo.ContentItem_dbo.ContentChannel_ContentChannelId",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "ForeignKeyName",
+      "Object": "dbo.ContentChannelItem/FK_dbo.ContentItem_dbo.ContentType_ContentTypeId",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "ForeignKeyName",
+      "Object": "dbo.ContentChannelItem/FK_dbo.ContentItem_dbo.PersonAlias_ApprovedByPersonAliasId",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "ForeignKeyName",
+      "Object": "dbo.ContentChannelItem/FK_dbo.ContentItem_dbo.PersonAlias_CreatedByPersonAliasId",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "ForeignKeyName",
+      "Object": "dbo.ContentChannelItem/FK_dbo.ContentItem_dbo.PersonAlias_ModifiedByPersonAliasId",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "ForeignKeyName",
+      "Object": "dbo.ContentChannelType/FK_dbo.ContentType_dbo.PersonAlias_CreatedByPersonAliasId",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "ForeignKeyName",
+      "Object": "dbo.ContentChannelType/FK_dbo.ContentType_dbo.PersonAlias_ModifiedByPersonAliasId",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "ForeignKeyName",
+      "Object": "dbo.EventItemOccurrence/FK_dbo.EventItemCampus_dbo.Campus_CampusId",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "ForeignKeyName",
+      "Object": "dbo.EventItemOccurrence/FK_dbo.EventItemCampus_dbo.EventItem_EventItemId",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "ForeignKeyName",
+      "Object": "dbo.EventItemOccurrence/FK_dbo.EventItemCampus_dbo.PersonAlias_ContactPersonAliasId",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "ForeignKeyName",
+      "Object": "dbo.EventItemOccurrence/FK_dbo.EventItemCampus_dbo.PersonAlias_CreatedByPersonAliasId",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "ForeignKeyName",
+      "Object": "dbo.EventItemOccurrence/FK_dbo.EventItemCampus_dbo.PersonAlias_ModifiedByPersonAliasId",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "ForeignKeyName",
+      "Object": "dbo.EventItemOccurrenceGroupMap/FK_dbo.EventItemCampusGroupMap_dbo.EventItemCampus_EventItemCampusId",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "ForeignKeyName",
+      "Object": "dbo.EventItemOccurrenceGroupMap/FK_dbo.EventItemCampusGroupMap_dbo.Group_GroupId",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "ForeignKeyName",
+      "Object": "dbo.EventItemOccurrenceGroupMap/FK_dbo.EventItemCampusGroupMap_dbo.PersonAlias_CreatedByPersonAliasId",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "ForeignKeyName",
+      "Object": "dbo.EventItemOccurrenceGroupMap/FK_dbo.EventItemCampusGroupMap_dbo.PersonAlias_ModifiedByPersonAliasId",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "ForeignKeyName",
+      "Object": "dbo.EventItemOccurrenceGroupMap/FK_dbo.EventItemCampusGroupMap_dbo.RegistrationInstance_RegistrationInstanceId",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "ForeignKeyName",
+      "Object": "dbo.FinancialPaymentDetail/FK_dbo.FinancialPaymentDetail_dbo.FinancialPersonSavedAccount",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "ForeignKeyName",
+      "Object": "dbo.Group/FK_dbo.Group_dbo.SignatureDocumentType_RequiredSignatureDocumentTypeId",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "ForeignKeyName",
+      "Object": "dbo.HistoryLogin/FK_dbo.HistoryLogin_dboSite_SourceSiteId",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "ForeignKeyName",
+      "Object": "dbo.HistoryLogin/FK_dbo.HistoryLogin_dboUserLogin_UserLoginId",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "ForeignKeyName",
+      "Object": "dbo.LearningClassActivityCompletion/FK_dbo.LearningActivityCompletion_dbo.Communication_SentNotificationCommunicationId",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "ForeignKeyName",
+      "Object": "dbo.LearningClassActivityCompletion/FK_dbo.LearningActivityCompletion_dbo.LearningParticipant_StudentId",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "ForeignKeyName",
+      "Object": "dbo.LearningClassActivityCompletion/FK_dbo.LearningActivityCompletion_dbo.PersonAlias_CompletedByPersonAliasId",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "ForeignKeyName",
+      "Object": "dbo.LearningClassActivityCompletion/FK_dbo.LearningActivityCompletion_dbo.PersonAlias_CreatedByPersonAliasId",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "ForeignKeyName",
+      "Object": "dbo.LearningClassActivityCompletion/FK_dbo.LearningActivityCompletion_dbo.PersonAlias_GradedByPersonAliasId",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "ForeignKeyName",
+      "Object": "dbo.LearningClassActivityCompletion/FK_dbo.LearningActivityCompletion_dbo.PersonAlias_ModifiedByPersonAliasId",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "ForeignKeyName",
+      "Object": "dbo.Metric/FK_dbo.Metric_dbo.PersonAlias_StewardPersonAliasId",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "ForeignKeyName",
+      "Object": "dbo.PageShortLink/FK_dbo.SiteUrlMap_dbo.PersonAlias_CreatedByPersonAliasId",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "ForeignKeyName",
+      "Object": "dbo.PageShortLink/FK_dbo.SiteUrlMap_dbo.PersonAlias_ModifiedByPersonAliasId",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "ForeignKeyName",
+      "Object": "dbo.PageShortLink/FK_dbo.SiteUrlMap_dbo.Site_SiteId",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "ForeignKeyName",
+      "Object": "dbo.Person/FK_dbo.Person_dbo.DefinedValue_PersonStatusValueId",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "ForeignKeyName",
+      "Object": "dbo.RegistrationTemplate/FK_dbo.RegistrationTemplate_dbo.SignatureDocumentType_RequiredSignatureDocumentTypeId",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "ForeignKeyName",
+      "Object": "dbo.SignatureDocument/FK_dbo.SignatureDocument_dbo.SignatureDocumentType_SignatureDocumentTypeId",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "ForeignKeyName",
+      "Object": "dbo.SignatureDocumentTemplate/FK_dbo.SignatureDocumentType_dbo.BinaryFileType_BinaryFileTypeId",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "ForeignKeyName",
+      "Object": "dbo.SignatureDocumentTemplate/FK_dbo.SignatureDocumentType_dbo.EntityType_ProviderEntityTypeId",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "ForeignKeyName",
+      "Object": "dbo.SignatureDocumentTemplate/FK_dbo.SignatureDocumentType_dbo.PersonAlias_CreatedByPersonAliasId",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "ForeignKeyName",
+      "Object": "dbo.SignatureDocumentTemplate/FK_dbo.SignatureDocumentType_dbo.PersonAlias_ModifiedByPersonAliasId",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "ForeignKeyName",
+      "Object": "dbo.Streak/FK_dbo.SequenceEnrollment_dbo.Location_LocationId",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "ForeignKeyName",
+      "Object": "dbo.Streak/FK_dbo.SequenceEnrollment_dbo.PersonAlias_CreatedByPersonAliasId",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "ForeignKeyName",
+      "Object": "dbo.Streak/FK_dbo.SequenceEnrollment_dbo.PersonAlias_ModifiedByPersonAliasId",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "ForeignKeyName",
+      "Object": "dbo.Streak/FK_dbo.SequenceEnrollment_dbo.PersonAlias_PersonAliasId",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "ForeignKeyName",
+      "Object": "dbo.Streak/FK_dbo.SequenceEnrollment_dbo.Sequence_SequenceId",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "ForeignKeyName",
+      "Object": "dbo.StreakType/FK_dbo.Sequence_dbo.PersonAlias_CreatedByPersonAliasId",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "ForeignKeyName",
+      "Object": "dbo.StreakType/FK_dbo.Sequence_dbo.PersonAlias_ModifiedByPersonAliasId",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "ForeignKeyName",
+      "Object": "dbo.StreakTypeExclusion/FK_dbo.SequenceOccurrenceExclusion_dbo.Location_LocationId",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "ForeignKeyName",
+      "Object": "dbo.StreakTypeExclusion/FK_dbo.SequenceOccurrenceExclusion_dbo.PersonAlias_CreatedByPersonAliasId",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "ForeignKeyName",
+      "Object": "dbo.StreakTypeExclusion/FK_dbo.SequenceOccurrenceExclusion_dbo.PersonAlias_ModifiedByPersonAliasId",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "ForeignKeyName",
+      "Object": "dbo.StreakTypeExclusion/FK_dbo.SequenceOccurrenceExclusion_dbo.Sequence_SequenceId",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "IndexName",
+      "Object": "dbo.AdaptiveMessageCategory/IX_AdaptiveMessageCategory",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "IndexName",
+      "Object": "dbo.AnalyticsSourceAttendance/IX_AttendanceType_CurrentPerson_StartDateTime",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "IndexName",
+      "Object": "dbo.AnalyticsSourceFamilyHistorical/IX_FamilyIdCurrentRow",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "IndexName",
+      "Object": "dbo.AnalyticsSourceFinancialTransaction/IX_GivingID_TransactionDateTime_TransactionTypeValueId",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "IndexName",
+      "Object": "dbo.AnalyticsSourcePersonHistorical/IX_PersonIdCurrentRow",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "IndexName",
+      "Object": "dbo.AttendanceOccurrence/IX_GroupId_LocationID_ScheduleID_Date",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "IndexName",
+      "Object": "dbo.Attribute/IX_EntityTypeId_EntityTypeQualifierColumn_EntityTypeQualifierValue_Key",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "IndexName",
+      "Object": "dbo.AttributeQualifier/IX_AttributeIdKey",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "IndexName",
+      "Object": "dbo.AttributeValue/IX_AttributeIdEntityId",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "IndexName",
+      "Object": "dbo.AttributeValueHistorical/IX_AttributeValueIdCurrentRow",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "IndexName",
+      "Object": "dbo.CommunicationRecipient/IX_CommunicationId",
+      "Reason": "Added by HotFix 340 (AddCommunicationRecipientClaimIndex), which ships on release branches, so production databases can already have this name. Renaming it needs a migration on every branch; remove this entry if the index is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "IndexName",
+      "Object": "dbo.CommunicationRecipient/IX_ResponseCodeCreatedDateTime",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "IndexName",
+      "Object": "dbo.ContentChannelItemAssociation/IX_ContentChannelItemAssociation",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "IndexName",
+      "Object": "dbo.ContentCollectionSource/IX_ContentLibraryId",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "IndexName",
+      "Object": "dbo.EventItemOccurrence/IX_Email",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "IndexName",
+      "Object": "dbo.FieldType/IX_FieldTypeClass",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "IndexName",
+      "Object": "dbo.FinancialTransaction/IX_TransactionDateTime_SourceType_AuthorizedPerson_PaymentDetails",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "IndexName",
+      "Object": "dbo.FinancialTransaction/IX_TransactionDateTime_TransactionTypeValueId_Person",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "IndexName",
+      "Object": "dbo.FinancialTransactionDetail/IX_AccountId_TransactionId_Amount",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "IndexName",
+      "Object": "dbo.GroupHistorical/IX_GroupIdCurrentRow",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "IndexName",
+      "Object": "dbo.GroupLocationHistorical/IX_LocationIdCurrentRow",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "IndexName",
+      "Object": "dbo.GroupMember/IX_GroupMemberGroupIdGroupRoleIdGroupMemberStatus",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "IndexName",
+      "Object": "dbo.GroupMemberAssignment/IX_GroupMemberIdLocationIdScheduleId",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "IndexName",
+      "Object": "dbo.GroupMemberHistorical/IX_GroupMemberIdCurrentRow",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "IndexName",
+      "Object": "dbo.GroupSync/IX_GroupIdGroupTypeRoleId",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "IndexName",
+      "Object": "dbo.History/IX_EntityTypeId_Verb",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "IndexName",
+      "Object": "dbo.HistoryLogin/IX_LoginAttemptDateTime",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "IndexName",
+      "Object": "dbo.InteractionComponent/IX_EntityId_ChannelId",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "IndexName",
+      "Object": "dbo.InteractiveExperienceOccurrence/IX_InteractiveExperienceScheduleIdCampusIdOccurrenceDateTime",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "IndexName",
+      "Object": "dbo.PageContext/IX_PageIdEntityIdParameter",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "IndexName",
+      "Object": "dbo.PageShortLink/IX_Token ",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "IndexName",
+      "Object": "dbo.Person/IX_PersonStatusValueId",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "IndexName",
+      "Object": "dbo.PersonPreference/IX_PersonAliasIdKey",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "IndexName",
+      "Object": "dbo.WebFarmNodeMetric/IX_WebFarmNode_MetricType_MetricValueDateTime",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "IndexName",
+      "Object": "dbo.WorkflowAction/IX_CompletedDateTIme",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "IndexName",
+      "Object": "dbo.WorkflowActivity/IX_CompletedDateTimeActivatedDateTIme",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    },
+    {
+      "Check": "names",
+      "Code": "PrimaryKeyName",
+      "Object": "dbo.ContactRelationshipChange/PK_dbo.ContactRelationshipChanges",
+      "Reason": "Existing name when the name ratchet was introduced. Remove the entry if the object is renamed or dropped."
+    }
+  ]
+}

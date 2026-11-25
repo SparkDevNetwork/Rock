@@ -109,8 +109,8 @@ Skills are on-demand workflows that encode Rock-specific knowledge. They live in
 | `/convert-block` | "convert block", "obsidian conversion", WebForms path | Converts WebForms (.ascx) to Obsidian (Vue 3 + C#) |
 | `/css-cleanup` | "clean up css", "style audit", "use rock utilities" | Replaces inline styles with Rock utility classes |
 | `/entity-model` | "create entity", "new model", "scaffold entity" | Scaffolds entity class, config, SystemGuid, service |
-| `/migration` | "write migration", "EF migration", "review migration" | Writes/reviews Up() and Down() for EF migrations |
-| `/plugin-migration` | "plugin migration", "hotfix", "new hotfix" | Creates plugin migration .cs files in HotFixes/ |
+| `/migration` | "write migration", "new migration", "review migration", "convert migration" | Creates, writes, reviews and converts SQL migrations in `Rock.Data.Migrations` |
+| `/plugin-migration` | "plugin migration", "hotfix", "new hotfix" | Creates HotFix .cs files in `Rock/Plugin/HotFixes/` on release and hotfix branches; on develop it sends the fix to `/migration` |
 | `/review-conversion` | "review conversion", "check the conversion" | Audits completed Obsidian conversion against WebForms original |
 | `/sentinel` | "sentinel", "security review", "is this secure" | Read-only security review of a PR, commit, your changes, or a whole feature, with optional Codex and Grok second opinions |
 | `/sql` | "write sql", "seed data", "insert data" | Generates Rock-safe SQL with proper conventions |

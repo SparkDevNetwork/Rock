@@ -1,0 +1,7 @@
+{
+  "columns": [ "Id", "Name", "Description", "IconCssClass", "CategoryId", "DefaultListView", "IsActive", "Order", "CreatedDateTime", "ModifiedDateTime", "CreatedByPersonAliasId", "ModifiedByPersonAliasId", "Guid", "ForeignId", "ForeignGuid", "ForeignKey", "StepTerm", "IsSystem", "CompletionFlow" ],
+  "rows": [
+    [1,"Discipleship Path","This program outlines the official steps necessary for becoming a 'Disciple'.","ti ti-walk",208,0,true,0,"2020-10-30T11:29:24.0000000",null,null,null,"a31ae259-885e-4ace-b8b6-56000f58ea3b",null,null,null,"",false,0],
+    [2,"Core Steps","This program provides the foundation for all core steps.","ti ti-map",null,0,true,0,"2026-11-17T09:46:47.9900000",null,null,null,"898972da-e58c-4ee1-bca0-ca3343470b09",null,null,null,"",true,0]
+  ]
+}

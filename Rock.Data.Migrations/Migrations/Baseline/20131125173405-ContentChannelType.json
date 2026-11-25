@@ -1,0 +1,17 @@
+{
+  "columns": [ "Id", "IsSystem", "Name", "DateRangeType", "CreatedDateTime", "ModifiedDateTime", "CreatedByPersonAliasId", "ModifiedByPersonAliasId", "Guid", "ForeignKey", "DisablePriority", "IncludeTime", "ForeignGuid", "ForeignId", "DisableContentField", "DisableStatus", "ShowInChannelList" ],
+  "rows": [
+    [1,false,"Website Ads",2,null,null,null,null,"7d2fae46-16c6-47b5-93e6-b647ba182d3a",null,false,true,null,null,false,false,true],
+    [2,false,"Bulletins",1,null,null,null,null,"206cfc34-1c86-46f5-a1ea-6d71b25a8d33",null,false,false,null,null,false,false,true],
+    [3,false,"Blogs",1,null,null,null,null,"c0549458-dccf-4e02-8978-b15932576f68",null,true,true,null,null,false,false,true],
+    [4,true,"Universal Single Date Channel Type",1,null,null,null,null,"0a69da05-f671-454f-a25d-99a01e10adb8",null,false,true,null,null,false,false,true],
+    [5,false,"Messages",1,null,null,null,null,"484f9962-9dc6-2987-4ada-aabd122387fc",null,true,false,null,null,false,false,true],
+    [6,false,"Message Series",2,null,null,null,null,"dc1a1ef5-fa05-f4b2-4753-0ce971b65f7c",null,true,false,null,null,false,false,true],
+    [7,true,"Universal Date Range Channel Type",2,null,null,null,null,"a2f62edc-576a-45f4-9df1-f7867b21cdee",null,false,false,null,null,false,false,true],
+    [8,true,"Universal No Date Channel Type",3,null,null,null,null,"8a9b6de0-6057-4356-894d-e84e33392f57",null,false,false,null,null,false,false,true],
+    [9,false,"Internal Communication Template",1,null,null,null,null,"c0ecd3f9-0a19-47aa-ba6d-3afdcc1d4c8d",null,true,false,null,null,true,true,true],
+    [10,true,"Content Component",3,null,null,null,null,"bcfe276d-96a3-46e5-bf9f-7b68cc44da33",null,false,false,null,null,false,false,false],
+    [11,true,"Message Notes",1,null,null,null,null,"48951e97-0e45-4494-b87c-4eb9fca067eb",null,true,false,null,null,false,true,true],
+    [12,true,"Device Ads",2,null,null,null,null,"09f46d0d-72bc-4445-90e7-c256e4778666",null,true,true,null,null,true,false,true]
+  ]
+}

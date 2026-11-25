@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Configuration;
-using System.Data.Entity.Infrastructure;
 using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
@@ -15,8 +14,8 @@ using DotNet.Testcontainers.Containers;
 
 using Rock;
 using Rock.Configuration;
+using Rock.Data;
 using Rock.Jobs;
-using Rock.Migrations.RockStartup;
 using Rock.Model;
 using Rock.Tests.Integration.TestFramework.Lava;
 using Rock.Tests.Shared.TestFramework;
@@ -38,6 +37,22 @@ namespace Rock.Tests.Integration.TestFramework.Database
     {
         public const string RepositoryName = "rockrms/tests-integration";
 
+        /*
+            10/30/26 - CLAUDE
+
+            The migrations assembly is reached through a type in it rather
+            than loaded by name. MSTest deployment copies only the assemblies
+            the test assembly references into its deployment folder, and a
+            name-only load leaves no reference, so under Visual Studio the
+            assembly was missing and every test failed to start.
+
+            Reason: Keep Rock.Data.Migrations a compile-time reference.
+        */
+        /// <summary>
+        /// The <c>Rock.Data.Migrations</c> assembly.
+        /// </summary>
+        internal static Assembly MigrationsAssembly => typeof( Rock.Data.Migrations.Baseline ).Assembly;
+
         /// <summary>
         /// Builds a new image for the current migration target.
         /// </summary>
@@ -49,39 +64,47 @@ namespace Rock.Tests.Integration.TestFramework.Database
             using ( var dockerConfiguration = TestDockerClientFactory.CreateConfiguration() )
             using ( var dockerClient = dockerConfiguration.CreateClient() )
             {
-                var upgrade = false;
-
                 var images = await dockerClient.Images.ListImagesAsync( new ImagesListParameters
                 {
                     All = true
                 } );
 
-                var currentMigrationNumber = long.Parse( GetTargetMigration().Truncate( 15, false ) );
-                var currentHotFixMigrationNumber = GetTargetHotFixMigrationNumber();
+                var migrations = GetMigrations();
+                var currentNewestId = migrations.Max( m => m.Id );
 
-                // An image can be upgraded if it is behind on EF migrations, or
-                // has the same EF migrations and is behind on hotfix migrations.
-                // An image that is ahead on either one (for example, one built
-                // from a newer branch) cannot be rolled back, so it is skipped.
-                var latestImage = images.SelectMany( img => img.RepoTags )
+                /*
+                    10/30/26 - CLAUDE
+
+                    An image can be upgraded if it has no more migrations and
+                    no newer migration than this code has. The runner then applies
+                    whatever the image is missing. An image that is ahead (for
+                    example, one built from a newer branch) cannot be rolled
+                    back, so it is skipped. Tags from before the SQL migration
+                    runner have a different shape and never parse, so their
+                    images, built by EF6, are never reused.
+
+                    Reason: Reuse a nearby image instead of building from empty.
+                */
+                var latestImage = images.Where( img => img.RepoTags != null )
+                    .SelectMany( img => img.RepoTags )
                     .Where( t => t.StartsWith( $"{RepositoryName}:" ) )
-                    .Select( t => TryParseImageTag( t.Substring( RepositoryName.Length + 1 ), out var migrationNumber, out var hotFixMigrationNumber )
-                        ? new { RepositoryAndTag = t, MigrationNumber = migrationNumber, HotFixMigrationNumber = hotFixMigrationNumber }
+                    .Select( t => TryParseImageTag( t.Substring( RepositoryName.Length + 1 ), out var newestId, out var migrationCount )
+                        ? new { RepositoryAndTag = t, NewestId = newestId, MigrationCount = migrationCount }
                         : null )
-                    .Where( t => t != null )
-                    .Where( t => t.MigrationNumber < currentMigrationNumber
-                        || ( t.MigrationNumber == currentMigrationNumber && t.HotFixMigrationNumber <= currentHotFixMigrationNumber ) )
-                    .OrderByDescending( t => t.MigrationNumber )
-                    .ThenByDescending( t => t.HotFixMigrationNumber )
+                    .Where( t => t != null && t.NewestId <= currentNewestId )
+                    .Where( t => t.MigrationCount <= migrations.Count )
+                    .OrderByDescending( t => t.MigrationCount )
                     .FirstOrDefault();
 
                 var containerBuilder = new MsSqlBuilder();
+                var upgrade = false;
 
-                // Check if we are within 10 migrations of the last image. If
-                // so we will re-use that image as a starting point to save
-                // time.
-                if ( latestImage != null && latestImage.MigrationNumber >= long.Parse( GetRecentMigration( 10 ).Truncate( 15, false ) ) )
+                // Reuse the image as a starting point when it is within 10
+                // migrations of the current set, to save time.
+                if ( latestImage != null && migrations.Count - latestImage.MigrationCount <= 10 )
                 {
+                    LogHelper.Log( $"Upgrading test database image {latestImage.RepositoryAndTag}." );
+
                     containerBuilder = containerBuilder.WithImage( latestImage.RepositoryAndTag );
                     upgrade = true;
                 }
@@ -149,7 +172,7 @@ namespace Rock.Tests.Integration.TestFramework.Database
         /// Builds the container so it contains the required information.
         /// </summary>
         /// <param name="container">The container to be built.</param>
-        /// <param name="upgrade"><c>true</c> if this container is being upgraded from a previous install.</param>
+        /// <param name="upgrade"><c>true</c> if this container is being upgraded from a previous image.</param>
         /// <returns>A task that indicates when the operation has completed.</returns>
         private static async Task BuildContainerAsync( MsSqlContainer container, bool upgrade )
         {
@@ -176,8 +199,6 @@ namespace Rock.Tests.Integration.TestFramework.Database
                 TestHelper.ConfigureRockApp( csb.ConnectionString );
 
                 MigrateDatabase( csb.ConnectionString );
-
-                MigrateHotFixes();
 
                 RockDateTimeHelper.SynchronizeTimeZoneConfiguration( RockDateTime.OrgTimeZoneInfo.Id );
 
@@ -248,159 +269,57 @@ ALTER DATABASE [{dbName}] SET RECOVERY SIMPLE";
         }
 
         /// <summary>
-        /// Migrates the database.
+        /// Builds the database by running the baseline and every migration in
+        /// <c>Rock.Data.Migrations</c> through the SQL migration runner, the
+        /// same way Rock does on startup.
         /// </summary>
-        private static void MigrateDatabase( string connectionString )
+        /// <param name="connectionString">The connection string of the empty database.</param>
+        internal static void MigrateDatabase( string connectionString )
         {
-            var connection = new DbConnectionInfo( connectionString, "System.Data.SqlClient" );
-
-            var config = new Migrations.Configuration
-            {
-                TargetDatabase = connection
-            };
-
-            var targetMigrationName = GetTargetMigration();
-
-            LogHelper.Log( $"Migrate Database: running... [Target={targetMigrationName}]" );
-
-            var migrator = new System.Data.Entity.Migrations.DbMigrator( config );
+            LogHelper.Log( $"Migrate Database: running... [Migrations={GetMigrationTag()}]" );
 
             try
             {
-                var decorator = new System.Data.Entity.Migrations.Infrastructure.MigratorLoggingDecorator( migrator, new BuilderMigrationLogger() );
-
-                decorator.Update( targetMigrationName );
+                TestMigrationRunner.Run( new SqlMigrationRunnerOptions
+                {
+                    ConnectionString = connectionString,
+                    RockVersion = new System.Version( Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber() ),
+                    Migrations = GetMigrations(),
+                    Log = LogHelper.Log
+                } );
 
                 LogHelper.Log( $"Migrate Database: complete." );
             }
             catch ( Exception ex )
             {
-                throw new Exception( "Test Database migration failed. Verify that the database connection string specified in the test project is valid. You may need to manually synchronize the database or configure the test environment to force-create a new database.", ex );
+                throw new Exception( "Test database migration failed. The inner exception has the cause. If it is a connection error, verify the database connection string specified in the test project. If a migration failed, fix the migration and rebuild the test database.", ex );
             }
         }
 
         /// <summary>
-        /// Runs the core hotfix migrations in Rock/Plugin/HotFixes the same
-        /// way Rock does on startup, then verifies every one of them was applied.
+        /// Gets every migration in <c>Rock.Data.Migrations</c>, the baseline included.
         /// </summary>
-        private static void MigrateHotFixes()
+        /// <returns>The migrations.</returns>
+        internal static List<SqlMigrationDescriptor> GetMigrations()
         {
-            LogHelper.Log( $"HotFix Migrations: running... [Target={GetTargetHotFixMigrationNumber()}]" );
-
-            var rockAssembly = typeof( Rock.Plugin.Migration ).Assembly;
-            var rockAssemblyName = rockAssembly.GetName().Name;
-            var lastExceptionLogId = new ExceptionLogService( RockApp.Current.CreateRockContext() ).Queryable()
-                .Select( e => ( int? ) e.Id )
-                .Max() ?? 0;
-
-            /*
-                10/7/26 - CLAUDE
-
-                Hotfix migrations ship security and data fixes that a real
-                install receives on startup. Without them the test database
-                does not match production. For example, the Auth rules that
-                let finance roles link check images were added only by a
-                hotfix migration.
-
-                RunPluginMigrations is the method Rock itself uses, so the
-                test database gets the same migrations, in the same order,
-                with the same minimum version filter. That method logs a
-                failure to the ExceptionLog table and stops instead of
-                throwing, so the result is checked here and the build fails
-                with the logged errors rather than producing an image that is
-                silently missing migrations.
-
-                Reason: The test database must include hotfix migrations.
-            */
-            RockApplicationStartupHelper.RunPluginMigrations( rockAssembly );
-
-            // Hotfixes update data with direct SQL, so anything already
-            // cached could be stale. Rock clears the cache here on startup too.
-            RockCache.ClearAllCachedItems( false );
-
-            var rockContext = RockApp.Current.CreateRockContext();
-            var installedMigrationNumbers = new PluginMigrationService( rockContext ).Queryable()
-                .Where( m => m.PluginAssemblyName == rockAssemblyName )
-                .Select( m => m.MigrationNumber )
-                .ToList();
-
-            var missingMigrationNumbers = GetHotFixMigrationNumbers()
-                .Except( installedMigrationNumbers )
-                .OrderBy( n => n )
-                .ToList();
-
-            if ( missingMigrationNumbers.Any() )
-            {
-                var errors = new ExceptionLogService( rockContext ).Queryable()
-                    .Where( e => e.Id > lastExceptionLogId )
-                    .OrderBy( e => e.Id )
-                    .Select( e => e.Description )
-                    .ToList();
-
-                throw new Exception( $"Test Database hotfix migrations failed. Not applied: {missingMigrationNumbers.AsDelimited( ", " )}. Logged errors: {errors.AsDelimited( " | " )}" );
-            }
-
-            LogHelper.Log( $"HotFix Migrations: complete." );
-        }
-
-        /// <summary>
-        /// Gets the numbers of the core hotfix migrations that Rock would run
-        /// for the current Rock version.
-        /// </summary>
-        /// <returns>The migration numbers.</returns>
-        private static List<int> GetHotFixMigrationNumbers()
-        {
-            var rockVersion = new System.Version( Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber() );
-
-            return Rock.Reflection.SearchAssembly( typeof( Rock.Plugin.Migration ).Assembly, typeof( Rock.Plugin.Migration ) )
-                .Select( a => a.Value.GetCustomAttribute<Rock.Plugin.MigrationNumberAttribute>() )
-                .Where( a => a != null && new System.Version( a.MinimumRockVersion ).CompareTo( rockVersion ) <= 0 )
-                .Select( a => a.Number )
+            return Rock.Reflection.SearchAssembly( MigrationsAssembly, typeof( Migration ) ).Values
+                .Select( SqlMigrationDescriptor.FromType )
                 .ToList();
         }
 
         /// <summary>
-        /// Gets the highest core hotfix migration number that Rock would run
-        /// for the current Rock version.
+        /// Gets a tag that changes whenever a migration is added: the newest
+        /// migration ID and the number of migrations, such as
+        /// "20261110221328-59". The count is needed because migrations run in
+        /// version order, so one merged up from a release branch can have an
+        /// older ID than the newest.
         /// </summary>
-        /// <returns>The migration number, or 0 if there are none.</returns>
-        private static int GetTargetHotFixMigrationNumber()
+        /// <returns>The migration tag.</returns>
+        internal static string GetMigrationTag()
         {
-            return GetHotFixMigrationNumbers()
-                .DefaultIfEmpty( 0 )
-                .Max();
-        }
+            var migrations = GetMigrations();
 
-        /// <summary>
-        /// Gets the target migration.
-        /// </summary>
-        private static string GetTargetMigration()
-        {
-            return typeof( Migrations.RockMigration )
-                .Assembly
-                .GetExportedTypes()
-                .Where( a => typeof( System.Data.Entity.Migrations.Infrastructure.IMigrationMetadata ).IsAssignableFrom( a ) )
-                .Select( a => ( System.Data.Entity.Migrations.Infrastructure.IMigrationMetadata ) Activator.CreateInstance( a ) )
-                .Select( a => a.Id )
-                .OrderByDescending( a => a )
-                .First();
-        }
-
-        /// <summary>
-        /// Gets a recent migration specified by the number migrations back.
-        /// </summary>
-        /// <param name="numberBack">The number of migrations back to look.</param>
-        private static string GetRecentMigration( int numberBack )
-        {
-            return typeof( Migrations.RockMigration )
-                .Assembly
-                .GetExportedTypes()
-                .Where( a => typeof( System.Data.Entity.Migrations.Infrastructure.IMigrationMetadata ).IsAssignableFrom( a ) )
-                .Select( a => ( System.Data.Entity.Migrations.Infrastructure.IMigrationMetadata ) Activator.CreateInstance( a ) )
-                .Select( a => a.Id )
-                .OrderByDescending( a => a )
-                .Skip( numberBack )
-                .First();
+            return $"{migrations.Max( m => m.Id )}-{migrations.Count}";
         }
 
         /// <summary>
@@ -493,66 +412,33 @@ ALTER DATABASE [{dbName}] SET RECOVERY SIMPLE";
         }
 
         /// <summary>
-        /// Gets the image tag for the current migration targets. The tag is
-        /// the EF migration number followed by the hotfix migration number,
-        /// such as "202609222138362-327". Including the hotfix number means a
-        /// new hotfix migration produces a new image even when there is no
-        /// new EF migration.
+        /// Gets the image tag for the current migrations, the migration tag,
+        /// such as "20261110221328-59". Develop has no HotFixes, so the tag no
+        /// longer carries a HotFix number.
         /// </summary>
         /// <returns>The image tag.</returns>
         private static string GetImageTag()
         {
-            return $"{GetTargetMigration().Truncate( 15, false )}-{GetTargetHotFixMigrationNumber()}";
+            return GetMigrationTag();
         }
 
         /// <summary>
-        /// Parses an image tag created by <see cref="GetImageTag"/>. Tags from
-        /// before hotfix migrations were included have no hotfix number, and
-        /// those images contain no hotfix migrations, so they parse as 0.
+        /// Parses an image tag created by <see cref="GetImageTag"/>.
         /// </summary>
         /// <param name="tag">The image tag, without the repository name.</param>
-        /// <param name="migrationNumber">On return, contains the EF migration number.</param>
-        /// <param name="hotFixMigrationNumber">On return, contains the hotfix migration number.</param>
+        /// <param name="newestId">On return, contains the newest migration ID.</param>
+        /// <param name="migrationCount">On return, contains the number of migrations.</param>
         /// <returns><c>true</c> if the tag was parsed; otherwise <c>false</c>.</returns>
-        private static bool TryParseImageTag( string tag, out long migrationNumber, out int hotFixMigrationNumber )
+        private static bool TryParseImageTag( string tag, out long newestId, out int migrationCount )
         {
             var parts = tag.Split( '-' );
 
-            hotFixMigrationNumber = 0;
+            newestId = 0;
+            migrationCount = 0;
 
-            if ( parts.Length > 2 || !long.TryParse( parts[0], out migrationNumber ) )
-            {
-                migrationNumber = 0;
-                return false;
-            }
-
-            return parts.Length == 1 || int.TryParse( parts[1], out hotFixMigrationNumber );
-        }
-
-        /// <summary>
-        /// Helper class to log migrations to the debug output. This can help
-        /// with debugging migrations that are failing during image build.
-        /// </summary>
-        private class BuilderMigrationLogger : System.Data.Entity.Migrations.Infrastructure.MigrationsLogger
-        {
-            /// <inheritdoc/>
-            public override void Info( string message )
-            {
-                if ( message.StartsWith( "Applying explicit migration:" ) )
-                {
-                    LogHelper.Log( message );
-                }
-            }
-
-            /// <inheritdoc/>
-            public override void Warning( string message )
-            {
-            }
-
-            /// <inheritdoc/>
-            public override void Verbose( string message )
-            {
-            }
+            return parts.Length == 2
+                && long.TryParse( parts[0], out newestId )
+                && int.TryParse( parts[1], out migrationCount );
         }
     }
 }

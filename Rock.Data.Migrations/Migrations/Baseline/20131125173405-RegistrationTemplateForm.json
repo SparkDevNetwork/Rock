@@ -1,0 +1,7 @@
+{
+  "columns": [ "Id", "Name", "RegistrationTemplateId", "Order", "CreatedDateTime", "ModifiedDateTime", "CreatedByPersonAliasId", "ModifiedByPersonAliasId", "Guid", "ForeignKey", "ForeignGuid", "ForeignId" ],
+  "rows": [
+    [1,"Default Form",1,0,null,null,null,null,"4540c939-08cc-4a56-9914-9e4cc956c719",null,null,null],
+    [2,"Default Form",2,0,null,null,null,null,"87c9f2bf-aa4f-466a-ada5-f158fdd20ea2",null,null,null]
+  ]
+}

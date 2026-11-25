@@ -72,6 +72,8 @@ namespace Rock.Data
             string connectionString = this.Context.Database.Connection.ConnectionString;
             if ( !string.IsNullOrWhiteSpace( connectionString ) )
             {
+                MigrationExecutionScope.ThrowIfMigrationRunning( "used DbService" );
+
                 using ( SqlConnection con = new SqlConnection( connectionString ) )
                 {
                     con.Open();
@@ -133,6 +135,8 @@ namespace Rock.Data
             string connectionString = RockApp.Current.InitializationSettings.ConnectionString;
             if ( !string.IsNullOrWhiteSpace( connectionString ) )
             {
+                MigrationExecutionScope.ThrowIfMigrationRunning( "used DbService" );
+
                 SqlConnection con = new SqlConnection( connectionString );
                 con.Open();
 
@@ -199,6 +203,8 @@ namespace Rock.Data
             }
 
             DataTable resultTable = new DataTable();
+
+            MigrationExecutionScope.ThrowIfMigrationRunning( "used DbService" );
 
             using ( SqlConnection con = new SqlConnection( connectionString ) )
             {
@@ -311,6 +317,8 @@ namespace Rock.Data
             string connectionString = RockApp.Current.InitializationSettings.ConnectionString;
             if ( !string.IsNullOrWhiteSpace( connectionString ) )
             {
+                MigrationExecutionScope.ThrowIfMigrationRunning( "used DbService" );
+
                 using ( SqlConnection con = new SqlConnection( connectionString ) )
                 {
                     con.Open();
@@ -413,6 +421,8 @@ namespace Rock.Data
                 return 0;
             }
 
+            MigrationExecutionScope.ThrowIfMigrationRunning( "used DbService" );
+
             using ( SqlConnection con = new SqlConnection( connectionString ) )
             {
                 con.Open();
@@ -502,6 +512,8 @@ namespace Rock.Data
             {
                 return null;
             }
+
+            MigrationExecutionScope.ThrowIfMigrationRunning( "used DbService" );
 
             using ( SqlConnection con = new SqlConnection( connectionString ) )
             {

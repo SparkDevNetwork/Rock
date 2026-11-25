@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net472</TargetFramework>
+    <IsPackable>False</IsPackable>
+    <RockWebPath>..\RockWeb</RockWebPath>
+    <CopyToRockWeb>True</CopyToRockWeb>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Rock.Common\Rock.Common.csproj" />
+    <ProjectReference Include="..\Rock.Enums\Rock.Enums.csproj" />
+    <ProjectReference Include="..\Rock.Lava.Shared\Rock.Lava.Shared.csproj" />
+    <ProjectReference Include="..\Rock\Rock.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Scripts and JSON data files are compressed and embedded by the SqlScript targets in Directory.Build.targets. -->
+    <None Remove="**\*.sql;**\*.json" />
+    <SqlScript Include="**\*.sql;**\*.json" Exclude="bin\**;obj\**" />
+  </ItemGroup>
+
+</Project>

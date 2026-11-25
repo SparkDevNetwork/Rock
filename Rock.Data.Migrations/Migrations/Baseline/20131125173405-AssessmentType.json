@@ -1,0 +1,10 @@
+{
+  "columns": [ "Id", "Title", "Description", "AssessmentPath", "AssessmentResultsPath", "IsActive", "RequiresRequest", "MinimumDaysToRetake", "ValidDuration", "IsSystem", "CreatedDateTime", "ModifiedDateTime", "CreatedByPersonAliasId", "ModifiedByPersonAliasId", "Guid", "ForeignId", "ForeignGuid", "ForeignKey", "IconCssClass", "BadgeColor", "BadgeSummaryLava" ],
+  "rows": [
+    [1,"DISC","","/DISC","/DISC",true,false,365,730,true,null,null,null,null,"a5cb2e3d-118a-41f2-972b-325a328b0b54",null,null,null,"ti ti-chart-bar","#4E79A7","{{ Person | Attribute:'core_DISCDISCProfile' }}"],
+    [2,"Spiritual Gifts","","/SpiritualGifts","/SpiritualGifts",true,false,365,730,true,null,null,null,null,"b8fbd371-6b32-4be5-872f-51400d16ec5d",null,null,null,"ti ti-gift","#8CD17D","{% assign gifts = Person | Attribute:'core_DominantGifts' %}\r\n{% if gifts contains ',' %}\r\n  {% assign gifts = Person | Attribute:'core_DominantGifts','Object' %}\r\n  {{ gifts | Map:'Value' | Join:', ' | ReplaceLast:',',' and' }}\r\n{% else %}\r\n  {{ gifts }}\r\n{% endif %}"],
+    [3,"Conflict Profile","","/ConflictProfile","/ConflictProfile",true,false,365,730,true,null,null,null,null,"ce7e1986-fdc3-4a3f-9464-26a65d684e29",null,null,null,"ti ti-heart-handshake","#E15759","{{ ConflictTheme }}"],
+    [4,"Emotional Intelligence","","/EQ","/EQ",true,false,365,730,true,null,null,null,null,"de2d65a3-fc36-4472-b5df-fad30eec27a0",null,null,null,"ti ti-masks-theater","#499894","{{ Person | Attribute:'core_EQSelfAwareness' | StripHtml }}"],
+    [5,"Motivators","","/Motivators","/Motivators",true,false,365,730,true,null,null,null,null,"eabe1aba-4a23-44ff-8c7f-6b71383bed09",null,null,null,"ti ti-key","#F28E2B","{% assign gifts = Person | Attribute:'core_MotivatorsTop5Motivators','Object' %}\r\n                {{ gifts | Map:'Value' | Join:', ' | ReplaceLast:',',' and' }}"]
+  ]
+}

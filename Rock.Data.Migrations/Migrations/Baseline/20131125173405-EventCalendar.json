@@ -1,0 +1,7 @@
+{
+  "columns": [ "Id", "Name", "Description", "IconCssClass", "IsActive", "CreatedDateTime", "ModifiedDateTime", "CreatedByPersonAliasId", "ModifiedByPersonAliasId", "Guid", "ForeignKey", "ForeignGuid", "ForeignId", "IsIndexEnabled" ],
+  "rows": [
+    [1,"Public","A calendar for public events that the church hosts and promotes.","ti ti-calendar",true,null,null,null,null,"8a444668-19af-4417-9c74-09f842572974",null,null,null,false],
+    [2,"Internal","A calendar for church staff and staff-like users.","ti ti-lock",true,null,null,null,null,"8c7f7f4e-1c51-41d3-9ac3-02b3f4054798",null,null,null,false]
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "columns": [ "Id", "Name", "Description", "RootPath", "IsActive", "IsSystem", "PurposeValueId", "AdditionalSettingsJson", "CreatedDateTime", "ModifiedDateTime", "CreatedByPersonAliasId", "ModifiedByPersonAliasId", "Guid", "ForeignId", "ForeignGuid", "ForeignKey" ],
+  "rows": [
+    [1,"NextGenCheckin","The default theme for the next generation check-in system.","/Themes/NextGenCheckin",true,true,1248,null,null,"2026-11-17T09:47:42.4930000",null,null,"522183ff-f143-4b31-af46-d11083f6784c",null,null,null],
+    [2,"CheckinAdventureKids",null,"/Themes/CheckinAdventureKids",true,true,1249,null,"2026-11-17T09:47:42.4930000","2026-11-17T09:47:42.4930000",null,null,"cb0aecac-6113-4ee8-b2b5-5267d2554215",null,null,null],
+    [3,"CheckinAero",null,"/Themes/CheckinAero",true,true,1249,null,"2026-11-17T09:47:42.4930000","2026-11-17T09:47:42.4930000",null,null,"cccc8691-ebd2-442a-88d4-2bdcd9a1be88",null,null,null],
+    [4,"CheckinBlueCrystal",null,"/Themes/CheckinBlueCrystal",true,true,1249,null,"2026-11-17T09:47:42.4930000","2026-11-17T09:47:42.4930000",null,null,"1e7887b3-17e5-47df-8fe2-03f497619212",null,null,null],
+    [5,"CheckinElectric",null,"/Themes/CheckinElectric",true,true,1249,null,"2026-11-17T09:47:42.4930000","2026-11-17T09:47:42.4930000",null,null,"d72e5cbc-a493-4dc1-b543-93a273602d40",null,null,null],
+    [6,"CheckinPark",null,"/Themes/CheckinPark",true,true,1249,null,"2026-11-17T09:47:42.4930000","2026-11-17T09:47:42.4930000",null,null,"16944488-2156-48fd-a485-fbbcfbfe55f0",null,null,null],
+    [7,"DashboardStark",null,"/Themes/DashboardStark",true,true,1249,null,"2026-11-17T09:47:42.4930000","2026-11-17T09:47:42.4930000",null,null,"66c9e8cd-413c-44d6-b6f9-597bc82af16b",null,null,null],
+    [8,"Flat",null,"/Themes/Flat",true,false,1249,null,"2026-11-17T09:47:42.4930000","2026-11-17T09:47:42.4930000",null,null,"816b4fd6-789e-49bd-bc4a-53af777fa0dd",null,null,null],
+    [9,"LandingPage",null,"/Themes/LandingPage",true,false,1249,null,"2026-11-17T09:47:42.4930000","2026-11-17T09:47:42.4930000",null,null,"fb40394a-1839-460c-bc67-8488c1dc98e7",null,null,null],
+    [10,"Rock",null,"/Themes/Rock",true,true,1249,null,"2026-11-17T09:47:42.4930000","2026-11-17T09:47:42.4930000",null,null,"b7efe967-9856-47c3-90c8-f30a4d541c75",null,null,null],
+    [11,"RockManager",null,"/Themes/RockManager",true,true,1249,null,"2026-11-17T09:47:42.4930000","2026-11-17T09:47:42.4930000",null,null,"ac670c35-0cc8-4c34-9234-b2aa1a4f33ab",null,null,null],
+    [12,"RockManagerNextGen","The default theme for the Rock Check-in Manager - Next Gen.","/Themes/RockManagerNextGen",true,true,1250,null,"2026-11-17T09:47:42.4930000","2026-11-17T09:47:42.4930000",null,null,"afd50ba6-dff2-4e69-8b09-ed3acb484004",null,null,null],
+    [13,"RockNextGen","The default theme for the RockV2.","/Themes/RockNextGen",true,true,1250,null,"2026-11-17T09:47:42.4930000","2026-11-17T09:47:42.4930000",null,null,"10e7be5c-6bd2-4459-b48b-7ac21e5ea015",null,null,null],
+    [14,"Stark",null,"/Themes/Stark",true,true,1249,null,"2026-11-17T09:47:42.4930000","2026-11-17T09:47:42.4930000",null,null,"3f45f070-be42-48b3-a0f9-bbf1bacabb6b",null,null,null]
+  ]
+}

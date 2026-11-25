@@ -552,13 +552,13 @@ namespace RockWeb.Blocks.Core
         {
             var pendingStartupRunOnceJobs = new Rock.Model.ServiceJobService( RockApp.Current.CreateRockContext() )
                 .Queryable()
-                .Where( j => Rock.Migrations.RockStartup.DataMigrationsStartup.startupRunOnceJobGuids.Contains( j.Guid ) )
+                .Where( j => Rock.Jobs.DataMigrationsStartup.startupRunOnceJobGuids.Contains( j.Guid ) )
                 .Select( j => j.Name )
                 .ToList();
 
             var pendingScheduledRunOnceJobs = new Rock.Model.ServiceJobService( RockApp.Current.CreateRockContext() )
                 .Queryable()
-                .Where( j => Rock.Migrations.RockStartup.DataMigrationsStartup.scheduledRunOnceJobGuids.Contains( j.Guid)  )
+                .Where( j => Rock.Jobs.DataMigrationsStartup.scheduledRunOnceJobGuids.Contains( j.Guid)  )
                 .Select( j => j.Name )
                 .ToList();
 

@@ -1,0 +1,22 @@
+{
+  "columns": [ "Id", "GroupId", "LocationId", "GroupLocationTypeValueId", "IsMailingLocation", "IsMappedLocation", "Guid", "CreatedDateTime", "ModifiedDateTime", "CreatedByPersonAliasId", "ModifiedByPersonAliasId", "ForeignKey", "GroupMemberPersonAliasId", "ForeignGuid", "ForeignId", "Order", "IsOverflowLocation" ],
+  "rows": [
+    [1,25,4,null,false,false,"95363486-2a66-4916-8dff-7a4c67200a4a",null,null,null,null,null,null,null,null,0,false],
+    [2,26,5,null,false,false,"9fec12c8-1131-4881-8eb5-3a40ffc1d4c8",null,null,null,null,null,null,null,null,0,false],
+    [3,27,6,null,false,false,"36b7b587-44b1-44de-9bd5-64d1bf73c25e",null,null,null,null,null,null,null,null,0,false],
+    [4,28,7,null,false,false,"d3da525c-65dc-4ddf-bce9-2697753736ac",null,null,null,null,null,null,null,null,0,false],
+    [5,29,8,null,false,false,"fefdee04-65bf-4f38-9203-0872bfe17d7c",null,null,null,null,null,null,null,null,0,false],
+    [6,30,9,null,false,false,"f281b5af-250f-4329-bcec-3f00b3b4761c",null,null,null,null,null,null,null,null,0,false],
+    [7,31,10,null,false,false,"1f1f3271-8e18-4ab7-8f1b-d7c32ab0e328",null,null,null,null,null,null,null,null,0,false],
+    [8,32,11,null,false,false,"2f421e6e-d5c4-4910-80f6-e76ef7cbbb2e",null,null,null,null,null,null,null,null,0,false],
+    [9,24,4,null,false,false,"74da1496-d174-4dff-8f6a-d917178c799e",null,null,null,null,null,null,null,null,0,false],
+    [10,24,5,null,false,false,"647c4970-cf45-47b4-883e-34b2ca52cd6e",null,null,null,null,null,null,null,null,0,false],
+    [11,24,6,null,false,false,"f66a0b0c-9fef-4116-aa86-0a1ab7ee329b",null,null,null,null,null,null,null,null,0,false],
+    [12,24,7,null,false,false,"4e0f78a8-7383-45fb-9a12-fdd6e7edf09e",null,null,null,null,null,null,null,null,0,false],
+    [13,24,8,null,false,false,"959ae62b-d104-4e99-8a42-5d8e821fd6dc",null,null,null,null,null,null,null,null,0,false],
+    [14,24,9,null,false,false,"7decfe28-ef68-4a03-baea-5e3af0e2939a",null,null,null,null,null,null,null,null,0,false],
+    [15,24,10,null,false,false,"2f13bac1-b75d-4fdd-b513-4651f5145cce",null,null,null,null,null,null,null,null,0,false],
+    [16,24,11,null,false,false,"7c558b94-02a4-4e04-a812-42daea49e97b",null,null,null,null,null,null,null,null,0,false],
+    [17,68,2,null,false,false,"eb60179f-d832-47d2-bfee-53efcb6b85c4",null,null,null,null,null,null,null,null,0,false]
+  ]
+}

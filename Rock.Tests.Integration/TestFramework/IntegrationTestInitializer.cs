@@ -158,7 +158,6 @@ namespace Rock.Tests.Integration.TestFramework
             var targetDatabaseName = csb.InitialCatalog;
 
             manager.DatabaseCreatorKey = ConfigurationManager.AppSettings["DatabaseCreatorKey"].ToStringSafe();
-            manager.TargetMigrationName = ConfigurationManager.AppSettings["LocalDbResetMigrationName"].ToStringSafe();
             manager.ArchiveRetentionDays = ConfigurationManager.AppSettings["LocalDbArchiveRetentionDays"].ToIntSafe();
 
             // To enable database resets, the configured reset database name must match the database name in the connection string.

@@ -49,4 +49,34 @@
         Files="@(_FilesToCopyToRockWeb)"
         Exclude="$(ExcludeFromRockWebCopy)" />
   </Target>
+
+  <!--
+  SQL migration scripts and JSON data files. A project lists them as SqlScript
+  items. Each file is compressed into obj\sql\ and the compressed copy is
+  embedded with the logical name "{file name}.gz", so names never depend on
+  folders. The file itself is never embedded. See specs/261027-sql-migrations-on-net-framework.md.
+  -->
+  <ItemGroup>
+    <!-- Lets Visual Studio's fast up-to-date check see edits to scripts. -->
+    <UpToDateCheckInput Include="@(SqlScript)" />
+  </ItemGroup>
+
+  <!-- Recompresses only the scripts that changed since the last build. -->
+  <Target Name="_CompressSqlScripts" Condition="'@(SqlScript)' != ''"
+      Inputs="@(SqlScript)"
+      Outputs="@(SqlScript->'$(IntermediateOutputPath)sql\%(Filename)%(Extension).gz')">
+    <GzipFiles Files="@(SqlScript)" OutputDirectory="$(IntermediateOutputPath)sql" />
+  </Target>
+
+  <!--
+  Always runs, so the compressed files are embedded even when compression was
+  skipped, and are recorded in FileWrites so Clean removes them.
+  -->
+  <Target Name="_EmbedSqlScripts" BeforeTargets="BeforeBuild" DependsOnTargets="_CompressSqlScripts" Condition="'@(SqlScript)' != ''">
+    <ItemGroup>
+      <_CompressedSqlScript Include="@(SqlScript->'$(IntermediateOutputPath)sql\%(Filename)%(Extension).gz')" />
+      <EmbeddedResource Include="@(_CompressedSqlScript)" LogicalName="%(Filename)%(Extension)" WithCulture="false" Type="Non-Resx" />
+      <FileWrites Include="@(_CompressedSqlScript)" />
+    </ItemGroup>
+  </Target>
 </Project>

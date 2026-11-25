@@ -1,0 +1,6 @@
+{
+  "columns": [ "Id", "IsSystem", "EntityTypeId", "EntityTypeQualifierColumn", "EntityTypeQualifierValue", "Name", "Order", "Guid", "CreatedDateTime", "ModifiedDateTime", "CreatedByPersonAliasId", "ModifiedByPersonAliasId", "Description", "ForeignKey", "OwnerPersonAliasId", "ForeignGuid", "ForeignId", "IsActive", "CategoryId", "IconCssClass", "BackgroundColor" ],
+  "rows": [
+    [1,false,15,"","","Staff",0,"0e70e933-f07a-4da2-b696-368378e8f6fe",null,null,null,null,null,null,null,null,null,true,null,null,"#9E9EA0"]
+  ]
+}

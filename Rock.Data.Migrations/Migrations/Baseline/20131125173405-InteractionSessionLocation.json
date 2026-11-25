@@ -1,0 +1,6 @@
+{
+  "columns": [ "Id", "IpAddress", "LookupDateTime", "PostalCode", "Location", "ISP", "CountryCode", "CountryValueId", "RegionCode", "RegionValueId", "GeoPoint", "CreatedDateTime", "ModifiedDateTime", "CreatedByPersonAliasId", "ModifiedByPersonAliasId", "Guid", "ForeignId", "ForeignGuid", "ForeignKey" ],
+  "rows": [
+    [1,"ReservedAddress","2026-11-17T09:54:55.5270000",null,null,null,null,null,null,null,null,"2026-11-17T09:56:41.5030000","2026-11-17T09:56:41.5030000",null,null,"e540bdac-d046-4d3e-8d1e-5a4369bea8ba",null,null,null]
+  ]
+}

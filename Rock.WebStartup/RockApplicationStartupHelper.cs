@@ -18,7 +18,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Configuration;
-using System.Data.Entity.Migrations.Infrastructure;
 using System.Data.SqlClient;
 using System.Diagnostics;
 using System.IO;
@@ -133,9 +132,8 @@ namespace Rock.WebStartup
             // In most cases, that'll be when GC is collected. So it won't happen immediately.
             TaskScheduler.UnobservedTaskException += TaskScheduler_UnobservedTaskException;
 
-            LogStartupMessage( "Checking for EntityFramework Migrations" );
+            LogStartupMessage( "Checking for Database Migrations" );
             var runMigrationFileInfo = new FileInfo( System.IO.Path.Combine( AppDomain.CurrentDomain.BaseDirectory, "App_Data\\Run.Migration" ) );
-            bool hasPendingEFMigrations = runMigrationFileInfo.Exists || HasPendingEFMigrations();
             var (isNewInstallation, installationDateTime) = IsNewInstallation();
 
             // If we have an install datetime and this is not a new installation,
@@ -146,7 +144,18 @@ namespace Rock.WebStartup
                 SetInstallationDateTime( installationDateTime.Value );
             }
 
-            bool ranEFMigrations = MigrateDatabase( hasPendingEFMigrations );
+            /*
+                10/29/26 - CLAUDE
+
+                The SQL migration runner replaces the EF6 DbMigrator.
+                HasPendingEFMigrations and MigrateDatabase are obsolete
+                and do nothing: on a database built from the baseline
+                there is no __MigrationHistory table, and the EF6 migrator
+                would then run every EF6 migration.
+
+                Reason: Run Rock.Data.Migrations instead of EF6 migrations.
+            */
+            bool ranMigrations = RunSqlMigrations();
 
             // If we have an install datetime and this IS a new installation,
             // then we set the install datetime after running migrations so
@@ -156,12 +165,12 @@ namespace Rock.WebStartup
                 SetInstallationDateTime( installationDateTime.Value );
             }
 
-            if ( ranEFMigrations )
+            if ( ranMigrations )
             {
-                LogStartupMessage( "EntityFramework Migrations Were Applied" );
+                LogStartupMessage( "Database Migrations Were Applied" );
             }
 
-            ShowDebugTimingMessage( "EF Migrations" );
+            ShowDebugTimingMessage( "Database Migrations" );
 
             // Register Entity SaveHooks.
             LogStartupMessage( "Configuring Entity SaveHooks" );
@@ -169,7 +178,7 @@ namespace Rock.WebStartup
 
             ShowDebugTimingMessage( "Configure Entity SaveHooks" );
 
-            // Now that EF Migrations have gotten the Schema in sync with our Models,
+            // Now that the migrations have gotten the Schema in sync with our Models,
             // get the RockContext initialized (which can take several seconds).
             // This will help reduce the chances of multiple RockWeb instances causing problems,
             // like creating duplicate attributes, or running the same migration in parallel.
@@ -202,7 +211,7 @@ namespace Rock.WebStartup
 
             using ( ObservabilityHelper.StartActivity( "Startup: Application Startup Stage 1" ) )
             {
-                RunApplicationStartupStage1( runMigrationFileInfo, ranEFMigrations );
+                RunApplicationStartupStage1( runMigrationFileInfo, ranMigrations );
             }
         }
 
@@ -212,8 +221,8 @@ namespace Rock.WebStartup
         /// observability also be configured.
         /// </summary>
         /// <param name="runMigrationFileInfo">The FileInfo that represents the 'Run.Migration' file.</param>
-        /// <param name="ranEFMigrations"><c>true</c> if EF migrations were executed.</param>
-        private static void RunApplicationStartupStage1( FileInfo runMigrationFileInfo, bool ranEFMigrations )
+        /// <param name="ranMigrations"><c>true</c> if any database migration ran.</param>
+        private static void RunApplicationStartupStage1( FileInfo runMigrationFileInfo, bool ranMigrations )
         {
             // Configure the values for RockDateTime.
             // To avoid the overhead of initializing the GlobalAttributesCache prior to LoadCacheObjects(), load these from the database instead.
@@ -284,7 +293,7 @@ namespace Rock.WebStartup
                 }
             }
 
-            if ( ranEFMigrations || anyPluginMigrations )
+            if ( ranMigrations || anyPluginMigrations )
             {
                 // If any migrations ran (version was likely updated)
                 SendVersionUpdateNotifications();
@@ -707,64 +716,26 @@ namespace Rock.WebStartup
             }
         }
 
+        /*
+            10/30/26 - CLAUDE
+
+            The SQL migration runner replaced EF6 migrations, so nothing calls
+            this. Its old body would run every EF6 migration against a
+            database built from the baseline, which has no __MigrationHistory
+            table, so it now reports that nothing is pending.
+
+            Reason: EF6 migrations are no longer run.
+        */
         /// <summary>
-        /// uses Reflection and a query on __MigrationHistory to determine whether we need to check for pending EF Migrations
+        /// Previously checked for pending EF6 migrations. Rock's migrations
+        /// are now run by the SQL migration runner, so there are never any.
         /// </summary>
-        /// <returns>
-        ///   <c>true</c> if [has pending ef migrations]; otherwise, <c>false</c>.
-        /// </returns>
+        /// <returns>Always <c>false</c>.</returns>
+        [RockObsolete( "21.0" )]
+        [Obsolete( "Rock's migrations are run by the SQL migration runner. There are never pending EF6 migrations." )]
         public static bool HasPendingEFMigrations()
         {
-            /* MDP 2020-03-20
-             * We had previously used the presence of a "~/App_Data/Run.Migration" file to see if there are migrations to run.
-             * We did this to avoid the ~5 second delay that asking EF if there were pending migrations.
-             * However, we ran into a few cases where the Run.Migration method may have gotten deleted even though there were still migrations that needed to be run.
-             * To avoid this problem, we use Reflection plus querying the __MigrationHistory table to see if migrations need to be run. This only takes a few milliseconds
-             * and eliminates the need for a Run.Migration file. Now migrations will run as needed in both dev and prod environments.
-             */
-
-            // First see if the _MigrationHistory table exists. If it doesn't, then this is probably an empty database.
-            var migrationHistoryTableExists = false;
-            try
-            {
-                migrationHistoryTableExists = DbService.ExecuteScalar(
-                    @"SELECT convert(bit, 1) [Exists] 
-                    FROM INFORMATION_SCHEMA.TABLES
-                    WHERE TABLE_SCHEMA = 'dbo'
-                    AND TABLE_NAME = '__MigrationHistory'" ) as bool? ?? false;
-            }
-            catch ( System.Data.SqlClient.SqlException ex )
-            {
-                if ( ex.Message.Contains( "Cannot open database" ) && System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
-                {
-                    // This pretty much means the database does not exist, so we'll need to assume there are pending migrations
-                    // (such as the create database migration) that need to run first.
-                    migrationHistoryTableExists = false;
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            if ( !migrationHistoryTableExists )
-            {
-                // _MigrationHistory table doesn't exist, so we need to run EF Migrations
-                return true;
-            }
-
-            // use reflection to find the last EF Migration (last Rock.Migrations.RockMigration since that is what all of Rock's EF migrations are based on)
-            var migrationTypes = Rock.Reflection.SearchAssembly( typeof( Rock.Migrations.RockMigration ).Assembly, typeof( Rock.Migrations.RockMigration ) ).ToList();
-            var migrationTypeInstances = migrationTypes.Select( a => Activator.CreateInstance( a.Value ) as IMigrationMetadata ).ToList();
-            var lastRockMigrationId = migrationTypeInstances.Max( a => a.Id );
-
-            // Now look in __MigrationHistory table to see what the last migration that ran was.
-            // Note that if you accidentally run an older branch (v11.1) against a database that was created from a newer branch (v12), it'll think you need to run migrations.
-            // But it will end up figuring that out when we ask it to run migrations
-            var lastDbMigrationId = DbService.ExecuteScalar( "select max(MigrationId) from __MigrationHistory" ) as string;
-
-            // if they aren't the same, run EF Migrations
-            return lastDbMigrationId != lastRockMigrationId;
+            return false;
         }
 
         /// <summary>
@@ -788,68 +759,146 @@ namespace Rock.WebStartup
         }
 
         /// <summary>
-        /// If EF migrations need to be done, does MF Migrations on the database 
+        /// Runs the migrations in <c>Rock.Data.Migrations</c>: the baseline on a
+        /// new database, then every migration not yet recorded in <c>[RockMigration]</c>.
+        /// A database built by EF6 has its history imported first. What the
+        /// runner reports goes to <c>MigrationLog.csv</c>, after the system
+        /// information, so a start that finds nothing to do writes nothing there.
         /// </summary>
-        /// <returns>True if at least one migration was run</returns>
-        public static bool MigrateDatabase( bool hasPendingEFMigrations )
+        /// <returns><c>true</c> if at least one migration ran.</returns>
+        private static bool RunSqlMigrations()
         {
-            if ( !hasPendingEFMigrations )
+            var isSystemInfoLogged = false;
+
+            Action<string> logMigrationMessage = message =>
             {
-                return false;
-            }
+                if ( !isSystemInfoLogged )
+                {
+                    isSystemInfoLogged = true;
+                    LogMigrationSystemInfo();
+                }
 
-            // get the pendingmigrations sorted by name (in the order that they run), then run to the latest migration
-            var migrator = new System.Data.Entity.Migrations.DbMigrator( new Rock.Migrations.Configuration( false ) );
-            var pendingMigrations = migrator.GetPendingMigrations().OrderBy( a => a );
+                WriteMigrationLog( message );
+            };
 
-            // double check if there are migrations to run
-            if ( pendingMigrations.Any() )
+            try
             {
-                var lastMigration = pendingMigrations.Last();
+                var result = SqlMigrationRunner.Run( new SqlMigrationRunnerOptions
+                {
+                    ConnectionString = RockApp.Current.GetRequiredService<IConnectionStringProvider>().ConnectionString,
+                    RockVersion = new Version( Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber() ),
+                    Assemblies = new[] { Assembly.Load( "Rock.Data.Migrations" ) },
+                    IsDevelopmentEnvironment = System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment,
+                    Log = logMigrationMessage
+                } );
 
-                // create a logger, and enable the migration output to go to a file
-                var migrationLogger = new Rock.Migrations.RockMigrationsLogger() { LogVerbose = false, LogInfo = true, LogWarning = false };
-
-                var migratorLoggingDecorator = new MigratorLoggingDecorator( migrator, migrationLogger );
-
-                LogMigrationSystemInfo( migrationLogger );
-                // NOTE: we need to specify the last migration vs null so it won't detect/complain about pending changes
-                migratorLoggingDecorator.Update( lastMigration );
-                migrationLogger.LogCompletedMigration();
-                return true;
+                return result.AppliedMigrationNames.Any();
             }
+            catch ( SqlMigrationException ex )
+            {
+                // Testers send in MigrationLog.csv, so it says why startup stopped.
+                logMigrationMessage( $"ERROR: {ex.Message}{( ex.InnerException != null ? $" {ex.InnerException.Message}" : string.Empty )}" );
 
-            return false;
+                // The startup code shows a RockStartupException's message as
+                // the reason startup stopped, rather than wrapping it.
+                throw new RockStartupException( ex.Message, ex.InnerException );
+            }
+            catch ( Exception ex )
+            {
+                logMigrationMessage( $"ERROR: {ex.Message}" );
+
+                throw;
+            }
         }
 
         /// <summary>
-        /// Logs all the system related info to Migration Log
+        /// Writes the Rock version and the database server's details to
+        /// <c>MigrationLog.csv</c>, so a log sent in from a test install shows
+        /// what it ran on.
         /// </summary>
-        private static void LogMigrationSystemInfo( Migrations.RockMigrationsLogger migrationLogger )
+        private static void LogMigrationSystemInfo()
         {
             try
             {
                 var databaseConfig = RockApp.Current.GetDatabaseConfiguration();
-                migrationLogger.LogSystemInfo( "Rock Version", $"{VersionInfo.VersionInfo.GetRockProductVersionFullName()} ({VersionInfo.VersionInfo.GetRockProductVersionNumber()})" );
+
+                WriteMigrationLog( $"Rock Version: {VersionInfo.VersionInfo.GetRockProductVersionFullName()} ({VersionInfo.VersionInfo.GetRockProductVersionNumber()})" );
+
                 if ( databaseConfig.Version.IsNotNullOrWhiteSpace() )
                 {
-                    migrationLogger.LogSystemInfo( "Database Version", databaseConfig.Version );
-                    migrationLogger.LogSystemInfo( "Database Compatibility Version", databaseConfig.GetVersionFriendlyName() );
+                    WriteMigrationLog( $"Database Version: {databaseConfig.Version}" );
+                    WriteMigrationLog( $"Database Compatibility Version: {databaseConfig.GetVersionFriendlyName()}" );
+
                     if ( databaseConfig.Platform == DatabasePlatform.AzureSql )
                     {
-                        migrationLogger.LogSystemInfo( "Azure Service Tier Objective", databaseConfig.ServiceObjective );
+                        WriteMigrationLog( $"Azure Service Tier Objective: {databaseConfig.ServiceObjective}" );
                     }
 
-                    migrationLogger.LogSystemInfo( "Allow Snapshot Isolation", databaseConfig.IsSnapshotIsolationAllowed.ToYesNo() );
-                    migrationLogger.LogSystemInfo( "Is Read Committed Snapshot On", databaseConfig.IsReadCommittedSnapshotEnabled.ToYesNo() );
-                    migrationLogger.LogSystemInfo( "Processor Count", Environment.ProcessorCount.ToStringSafe() );
-                    migrationLogger.LogSystemInfo( "Working Memory", Environment.WorkingSet.FormatAsMemorySize() ); // 1024*1024*1024
+                    WriteMigrationLog( $"Allow Snapshot Isolation: {databaseConfig.IsSnapshotIsolationAllowed.ToYesNo()}" );
+                    WriteMigrationLog( $"Is Read Committed Snapshot On: {databaseConfig.IsReadCommittedSnapshotEnabled.ToYesNo()}" );
                 }
+
+                WriteMigrationLog( $"Processor Count: {Environment.ProcessorCount}" );
+                WriteMigrationLog( $"Working Memory: {Environment.WorkingSet.FormatAsMemorySize()}" );
             }
             catch ( Exception ex )
             {
-                ExceptionLogService.LogException( ex, null );
+                // The database may not exist yet (a new development database),
+                // so the reason goes to the file rather than the exception log.
+                WriteMigrationLog( $"System information is not available: {ex.Message}" );
             }
+        }
+
+        /// <summary>
+        /// Appends a line to <c>App_Data\Logs\MigrationLog.csv</c> in the format
+        /// the EF6 migration logger used.
+        /// </summary>
+        /// <param name="message">The message.</param>
+        private static void WriteMigrationLog( string message )
+        {
+            if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
+            {
+                Debug.WriteLine( message );
+            }
+
+            try
+            {
+                var directory = Path.Combine( AppDomain.CurrentDomain.BaseDirectory, "App_Data", "Logs" );
+
+                if ( !Directory.Exists( directory ) )
+                {
+                    Directory.CreateDirectory( directory );
+                }
+
+                File.AppendAllText( Path.Combine( directory, "MigrationLog.csv" ), $"{RockDateTime.Now:MM/dd/yyyy HH:mm:ss.fff},{message}\r\n" );
+            }
+            catch
+            {
+                // Intentionally ignored: the log is diagnostic, and failing to
+                // write it must not stop startup.
+            }
+        }
+
+        /*
+            10/30/26 - CLAUDE
+
+            The SQL migration runner replaced EF6 migrations, so nothing calls
+            this. Running the EF6 DbMigrator against a database the runner
+            maintains would rerun every EF6 migration.
+
+            Reason: EF6 migrations are no longer run.
+        */
+        /// <summary>
+        /// Previously ran pending EF6 migrations. Rock's migrations are now
+        /// run by the SQL migration runner, so this does nothing.
+        /// </summary>
+        /// <param name="hasPendingEFMigrations">Ignored.</param>
+        /// <returns>Always <c>false</c>, meaning no migration ran.</returns>
+        [RockObsolete( "21.0" )]
+        [Obsolete( "Rock's migrations are run by the SQL migration runner at startup. This does nothing." )]
+        public static bool MigrateDatabase( bool hasPendingEFMigrations )
+        {
+            return false;
         }
 
         /// <summary>

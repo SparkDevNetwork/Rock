@@ -1,6 +1,6 @@
 # Migrations and Hotfixes
 
-Load when the code touches `Rock.Migrations/`, `Rock/Plugin/HotFixes/`, data migrations, or
+Load when the code touches `Rock.Data.Migrations/`, `Rock.Migrations/`, `Rock/Plugin/HotFixes/`, data migrations, or
 `Auth` rows.
 
 - **No dynamic SQL from input.** Watch for interpolated `$@"..."` strings with values that

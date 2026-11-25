@@ -22,7 +22,6 @@
     <ProjectReference Include="..\Rock.Lava.Fluid\Rock.Lava.Fluid.csproj" />
     <ProjectReference Include="..\Rock.Lava.Shared\Rock.Lava.Shared.csproj" />
     <ProjectReference Include="..\Rock.Lava\Rock.Lava.csproj" />
-    <ProjectReference Include="..\Rock.Migrations\Rock.Migrations.csproj" />
     <ProjectReference Include="..\Rock.Rest\Rock.Rest.csproj" />
     <ProjectReference Include="..\Rock.Version\Rock.Version.csproj" />
     <ProjectReference Include="..\Rock\Rock.csproj" />

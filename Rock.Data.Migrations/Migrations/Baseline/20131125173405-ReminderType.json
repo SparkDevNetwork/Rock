@@ -1,0 +1,7 @@
+{
+  "columns": [ "Id", "Name", "Description", "IsActive", "NotificationType", "NotificationWorkflowTypeId", "ShouldShowNote", "Order", "EntityTypeId", "ShouldAutoCompleteWhenNotified", "HighlightColor", "CreatedDateTime", "ModifiedDateTime", "CreatedByPersonAliasId", "ModifiedByPersonAliasId", "Guid", "ForeignId", "ForeignGuid", "ForeignKey" ],
+  "rows": [
+    [1,"Personal Reminder","Used for general reminders for people.",true,0,null,true,0,226,false,"rgb(33,159,243)",null,null,null,null,"a9baaa29-f306-4e35-9273-4b299676b252",null,null,null],
+    [2,"Group Reminder","General reminder type for groups.",true,0,null,true,0,16,false,"rgb(76,175,80)",null,null,null,null,"cf5d8f88-8bf0-4880-88bc-102b2ae6159d",null,null,null]
+  ]
+}

@@ -30,7 +30,6 @@ using Rock.Configuration;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
-using Rock.Plugin.HotFixes;
 using Rock.Security;
 using Rock.Utility;
 using Rock.Web.Cache;

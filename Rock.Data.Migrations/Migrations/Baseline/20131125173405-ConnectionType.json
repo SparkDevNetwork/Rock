@@ -1,0 +1,6 @@
+{
+  "columns": [ "Id", "Name", "Description", "IconCssClass", "EnableFutureFollowup", "EnableFullActivityList", "OwnerPersonAliasId", "CreatedDateTime", "ModifiedDateTime", "CreatedByPersonAliasId", "ModifiedByPersonAliasId", "Guid", "ForeignKey", "ForeignGuid", "ForeignId", "RequiresPlacementGroupToConnect", "DaysUntilRequestIdle", "IsActive", "EnableRequestSecurity", "ConnectionRequestDetailPageId", "ConnectionRequestDetailPageRouteId", "DefaultView", "RequestHeaderLava", "RequestBadgeLava", "Order", "SnippetCategoryId", "DueDateCalculationMode", "RequestDueSoonOffsetInDays", "EnabledFeatures", "EnabledViews", "IsSequentialStatusEnforced", "AdditionalSettingsJson", "RequestDueDateOffsetInDays" ],
+  "rows": [
+    [1,"Involvement","A connection type for church member involvement.","ti ti-leaf",true,true,null,null,null,null,null,"dd565087-a4be-4943-b123-bf22777e8426",null,null,null,false,14,true,false,null,null,0,null,null,0,null,0,5,7,31,false,null,7]
+  ]
+}

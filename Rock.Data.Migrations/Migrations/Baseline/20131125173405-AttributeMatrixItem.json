@@ -1,0 +1,8 @@
+{
+  "columns": [ "Id", "AttributeMatrixId", "Order", "CreatedDateTime", "ModifiedDateTime", "CreatedByPersonAliasId", "ModifiedByPersonAliasId", "Guid", "ForeignId", "ForeignGuid", "ForeignKey", "AttributeMatrixTemplateId" ],
+  "rows": [
+    [1,1,0,null,null,null,null,"7369e4c3-322a-4a00-897b-3beb719d86a9",null,null,null,1],
+    [2,1,0,null,null,null,null,"78b7fcad-5565-4785-9e3a-de6ebd4e4629",null,null,null,1],
+    [3,1,0,null,null,null,null,"64ca41ad-907f-4452-87f1-6820a6b14c13",null,null,null,1]
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "columns": [ "Id", "IsSystem", "Name", "Description", "CategoryId", "EntityTypeId", "DataViewId", "Guid", "CreatedDateTime", "ModifiedDateTime", "CreatedByPersonAliasId", "ModifiedByPersonAliasId", "FetchTop", "ForeignKey", "ForeignGuid", "ForeignId", "QueryHint", "LastRunDateTime", "RunCount", "TimeToRunDurationMilliseconds" ],
+  "rows": [
+    [1,false,"Self Inactivated Individuals","People who have marked themselves as not part of the church.",143,15,5,"87d3e118-ada8-4424-b63b-9482a7d9e609","2014-04-29T13:38:11.0000000","2014-04-29T13:38:11.0000000",null,null,500,null,null,null,null,null,null,null],
+    [2,false,"Pending Individuals","People who have have a status of pending.",143,15,4,"4e3ecae0-9d36-4c22-994d-ad31de0f6fb7",null,null,null,null,null,null,null,null,null,null,null,null],
+    [3,false,"Individuals with Duplicate Phone Numbers","People who have duplicate phone numbers.",143,15,13,"cccbf8d5-3968-42d1-87e9-ca909a9b5d00",null,null,null,null,null,null,null,null,null,null,null,null],
+    [4,false,"Individuals with Duplicate Emails","People who have duplicate email addresses.",143,15,14,"69d012db-bebd-4a83-bfb6-880655e1b571",null,null,null,null,null,null,null,null,null,null,null,null]
+  ]
+}

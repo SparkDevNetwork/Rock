@@ -1,0 +1,6 @@
+{
+  "columns": [ "Id", "Name", "IsActive", "Order", "SmsActionComponentEntityTypeId", "ContinueAfterProcessing", "CreatedDateTime", "ModifiedDateTime", "CreatedByPersonAliasId", "ModifiedByPersonAliasId", "Guid", "ForeignId", "ForeignGuid", "ForeignKey", "SmsPipelineId", "ExpireDate", "IsInteractionLoggedAfterProcessing" ],
+  "rows": [
+    [1,"SMS Conversations",true,0,493,false,"2020-10-30T11:31:49.8970000","2020-10-30T11:31:49.8970000",null,null,"80b36973-7683-4b57-b315-1fd645abd0a6",null,null,null,1,null,false]
+  ]
+}

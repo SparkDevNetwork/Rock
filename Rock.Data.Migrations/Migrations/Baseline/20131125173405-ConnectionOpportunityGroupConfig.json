@@ -1,0 +1,8 @@
+{
+  "columns": [ "Id", "ConnectionOpportunityId", "GroupTypeId", "GroupMemberRoleId", "GroupMemberStatus", "UseAllGroupsOfType", "CreatedDateTime", "ModifiedDateTime", "CreatedByPersonAliasId", "ModifiedByPersonAliasId", "Guid", "ForeignId", "ForeignGuid", "ForeignKey" ],
+  "rows": [
+    [1,1,23,19,2,false,null,null,null,null,"f2515a42-bcd8-472b-810e-c2ce71d09f0a",null,null,null],
+    [2,2,23,19,2,false,null,null,null,null,"130b5bec-432a-40d2-ac79-60566fb7bdd4",null,null,null],
+    [3,3,23,19,2,false,null,null,null,null,"4cd9cb6a-d5bc-4bb2-8a73-00094fbd423e",null,null,null]
+  ]
+}

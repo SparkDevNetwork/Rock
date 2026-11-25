@@ -1,0 +1,6 @@
+{
+  "columns": [ "Id", "Name", "Description", "StructureType", "StructureEntityId", "EnableAttendance", "RequiresEnrollment", "OccurrenceFrequency", "StartDate", "OccurrenceMap", "IsActive", "CreatedDateTime", "ModifiedDateTime", "CreatedByPersonAliasId", "ModifiedByPersonAliasId", "Guid", "ForeignId", "ForeignGuid", "ForeignKey", "FirstDayOfWeek", "StructureSettingsJSON" ],
+  "rows": [
+    [1,"Weekly Attendance","",0,null,true,false,1,"2026-11-17T00:00:00.0000000","AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAM=",true,null,null,null,null,"b9fadd97-38a4-4141-b6db-48154563a2a9",null,null,null,null,null]
+  ]
+}

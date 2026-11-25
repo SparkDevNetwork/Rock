@@ -1,0 +1,8 @@
+{
+  "columns": [ "Id", "MetricValueType", "XValue", "YValue", "MetricId", "Note", "MetricValueDateTime", "CreatedDateTime", "ModifiedDateTime", "CreatedByPersonAliasId", "ModifiedByPersonAliasId", "Guid", "ForeignKey", "ForeignGuid", "ForeignId", "MetricValueDateKey" ],
+  "rows": [
+    [1,0,null,2.00,3,null,"2020-10-30T11:30:22.0000000",null,null,null,null,"34325795-9016-47e9-a9d9-6283d1a84275",null,null,null,20201030],
+    [2,0,"",0.00,5,"","2020-10-30T11:30:22.0000000",null,null,null,null,"90cd5a83-3079-4656-b7ce-bfa21055c980",null,null,null,20201030],
+    [3,0,"",2.00,4,"","2020-10-30T11:30:22.0000000",null,null,null,null,"932479dd-9612-4d07-b9cd-9227976cf5dd",null,null,null,20201030]
+  ]
+}

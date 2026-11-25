@@ -1,0 +1,6 @@
+{
+  "columns": [ "Id", "Name", "Description", "CanExpire", "ExpireInDays", "RequirementCheckType", "SqlExpression", "DataViewId", "PositiveLabel", "NegativeLabel", "CheckboxLabel", "CreatedDateTime", "ModifiedDateTime", "CreatedByPersonAliasId", "ModifiedByPersonAliasId", "Guid", "ForeignKey", "WarningSqlExpression", "WarningDataViewId", "WarningLabel", "ForeignGuid", "ForeignId", "IconCssClass", "DueDateType", "DueDateOffsetInDays", "CategoryId", "DoesNotMeetWorkflowTypeId", "ShouldAutoInitiateDoesNotMeetWorkflow", "DoesNotMeetWorkflowLinkText", "WarningWorkflowTypeId", "ShouldAutoInitiateWarningWorkflow", "WarningWorkflowLinkText", "Summary" ],
+  "rows": [
+    [1,"Background Check Required","Returns people that have been background checked within the last three years",true,30,1,null,6,"Background Checked","No Current Background Check",null,null,null,null,null,"1c21c346-a861-4a9a-bd6d-baa7d92419d5",null,null,7,"Background Check Expiring Soon",null,null,null,0,null,null,null,false,null,null,false,null,null]
+  ]
+}

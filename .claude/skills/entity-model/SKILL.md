@@ -137,7 +137,7 @@ Read `references/common-pitfalls.md` and run through the checklist before presen
 
 **Output:** Write the files and show their contents in conversation. Remind the user of next steps:
 1. Run `Rock.CodeGeneration` (WPF app) to generate the `[Entity]Service.CodeGenerated.cs` file
-2. Use `/migration` to scaffold and write the EF migration that creates the table
+2. Use `/migration` to create the SQL migration that creates the table, in the same change as the entity
 
 ---
 

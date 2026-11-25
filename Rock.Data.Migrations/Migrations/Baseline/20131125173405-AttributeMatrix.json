@@ -1,0 +1,6 @@
+{
+  "columns": [ "Id", "AttributeMatrixTemplateId", "CreatedDateTime", "ModifiedDateTime", "CreatedByPersonAliasId", "ModifiedByPersonAliasId", "Guid", "ForeignId", "ForeignGuid", "ForeignKey" ],
+  "rows": [
+    [1,1,null,null,null,null,"d62b9776-25bc-48f7-854a-2b49b8a26fc3",null,null,null]
+  ]
+}

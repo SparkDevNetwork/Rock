@@ -1,0 +1,6 @@
+{
+  "columns": [ "Id", "AIAgentId", "AISkillId", "AdditionalSettingsJson", "Guid", "ForeignId", "ForeignGuid", "ForeignKey" ],
+  "rows": [
+    [1,1,1,"{ \"AgentSkillSettings\": { \"EnabledTools\": [\"d34e7821-36e0-f2bc-4496-7a82e1ce4475\", \"544f23d7-6d28-41ea-bd43-249c976beba0\", \"efdbc338-cc1c-46d2-a7f6-7ae5081147ae\", \"2142a382-6ab2-0995-4480-69b641ae2cdc\", \"dd7510bb-9176-4463-9b23-665000992a62\", \"a02698ca-3c3a-48ed-adba-36f6f9b29cae\", \"ab6cb80c-352a-f895-4233-09ba9da69ccc\", \"39244a1e-57bf-476b-af88-65ebc205f25d\", \"29b7a989-59c4-4956-9c45-1d1297d3e673\", \"03093b11-a02d-f794-4a5e-9aea2c6ef63e\", \"873afc46-1872-999f-4e6c-94409654f6bc\", \"a1198a34-fcf2-4f58-83fa-7d02dd69830e\", \"89a9f9c5-87f2-9197-46da-5c96d0bda628\"] } }","e60ac9fe-b63b-47b1-beec-8549ebca775d",null,null,null]
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "columns": [ "Id", "ConnectionOpportunityId", "CampusId", "ConnectorGroupId", "CreatedDateTime", "ModifiedDateTime", "CreatedByPersonAliasId", "ModifiedByPersonAliasId", "Guid", "ForeignKey", "ForeignGuid", "ForeignId" ],
+  "rows": [
+    [1,1,null,60,null,null,null,null,"d0c38fb9-b0aa-4028-b559-8c5054cb0279",null,null,null],
+    [2,2,null,60,null,null,null,null,"1c8e42be-f411-469e-b977-c244d8c2f760",null,null,null],
+    [3,3,null,60,null,null,null,null,"08f95db5-54f1-42c0-9150-ea08059da111",null,null,null]
+  ]
+}

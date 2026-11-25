@@ -1,0 +1,17 @@
+{
+  "columns": [ "Id", "IsActive", "IsSystem", "Name", "PublicName", "ScopeId", "Value", "CreatedDateTime", "ModifiedDateTime", "CreatedByPersonAliasId", "ModifiedByPersonAliasId", "Guid", "ForeignId", "ForeignGuid", "ForeignKey" ],
+  "rows": [
+    [1,true,true,"address","Address",1,null,"2026-11-17T09:40:38.3470000","2026-11-17T09:40:38.3470000",null,null,"7b3de196-7283-44d5-b3d6-ca00bd5c966d",null,null,null],
+    [2,true,true,"email","Email Address",2,null,"2026-11-17T09:40:38.3470000","2026-11-17T09:40:38.3470000",null,null,"0dc78ffe-a239-4aea-8664-1fb660c368e1",null,null,null],
+    [3,true,true,"phone_number","Phone Number",4,null,"2026-11-17T09:40:38.3470000","2026-11-17T09:40:38.3470000",null,null,"9502def4-4905-4bdf-aa9b-5449ae37ba5b",null,null,null],
+    [4,true,true,"name","Full Name",5,null,"2026-11-17T09:40:38.3470000","2026-11-17T09:40:38.3470000",null,null,"a6153e0e-2b63-48b0-b476-4a9f22db3b6f",null,null,null],
+    [5,true,true,"family_name","Last Name",5,null,"2026-11-17T09:40:38.3470000","2026-11-17T09:40:38.3470000",null,null,"aa41727c-f7ff-422a-89ac-a8be4ad74d41",null,null,null],
+    [6,true,true,"given_name","First Name",5,null,"2026-11-17T09:40:38.3470000","2026-11-17T09:40:38.3470000",null,null,"1358af1d-8784-4fd0-85bd-d14198be1872",null,null,null],
+    [7,true,true,"middle_name","Middle Name",5,null,"2026-11-17T09:40:38.3470000","2026-11-17T09:40:38.3470000",null,null,"8450237a-aa32-4d60-8cf0-5e3e00c675c6",null,null,null],
+    [8,true,true,"nickname","Nickname",5,null,"2026-11-17T09:40:38.3470000","2026-11-17T09:40:38.3470000",null,null,"4a15b979-0bcc-425a-bd17-65946784768f",null,null,null],
+    [9,true,true,"preferred_username","Full Name",5,null,"2026-11-17T09:40:38.3470000","2026-11-17T09:40:38.3470000",null,null,"2379f8af-53ec-43fe-9339-8d534af26412",null,null,null],
+    [10,true,true,"picture","Photo",5,null,"2026-11-17T09:40:38.3470000","2026-11-17T09:40:38.3470000",null,null,"6e54786a-c5a8-458e-822c-5a9ef8113541",null,null,null],
+    [11,true,true,"gender","Gender",5,null,"2026-11-17T09:40:38.3470000","2026-11-17T09:40:38.3470000",null,null,"64f35e88-553f-4eff-b0bd-dc60af9d32eb",null,null,null],
+    [12,true,true,"offline_access","Send Refresh Token",3,null,"2026-11-17T09:40:49.7030000","2026-11-17T09:40:49.7030000",null,null,"8b36c3ff-c546-4b8e-9995-c990c29f86aa",null,null,null]
+  ]
+}

@@ -1,0 +1,6 @@
+{
+  "columns": [ "Id", "IsSystem", "Name", "ShortCode", "LocationId", "Guid", "CreatedDateTime", "ModifiedDateTime", "CreatedByPersonAliasId", "ModifiedByPersonAliasId", "ForeignKey", "PhoneNumber", "LeaderPersonAliasId", "ServiceTimes", "Description", "IsActive", "Url", "ForeignGuid", "ForeignId", "Order", "TimeZoneId", "CampusStatusValueId", "CampusTypeValueId", "TeamGroupId", "OpenedDate", "ClosedDate", "TitheMetric", "BeaconId", "AverageWeekendAttendance" ],
+  "rows": [
+    [1,false,"Main Campus","MAIN",2,"76882ae3-1ce8-42a6-a2b6-8c0b29cf8cf8",null,null,null,null,null,null,null,null,null,true,null,null,null,0,null,765,768,69,null,null,null,1,null]
+  ]
+}

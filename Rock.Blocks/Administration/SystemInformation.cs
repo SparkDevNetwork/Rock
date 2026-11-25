@@ -194,8 +194,19 @@ namespace Rock.Blocks.Administration
         /// <returns>A tuple of the last core migration name and the list of plugin migrations.</returns>
         private (string LastCoreMigration, List<PluginMigrationBag> PluginMigrations) GetMigrationData()
         {
+            /*
+                10/30/26 - CLAUDE
+
+                Core migrations are recorded in [RockMigration] by the SQL
+                migration runner, which imports any EF6 __MigrationHistory rows
+                first. A database built from the baseline has no
+                __MigrationHistory table. [Id] order is the order migrations
+                were recorded, so the last row is the last one applied.
+
+                Reason: Read the migration history the SQL migration runner keeps.
+            */
             var lastCoreMigration = DbService.ExecuteScalar(
-                "SELECT TOP 1 [MigrationId] FROM [__MigrationHistory] ORDER BY [MigrationId] DESC",
+                "SELECT TOP 1 CONCAT( [MigrationId], '_', [MigrationName] ) FROM [RockMigration] ORDER BY [Id] DESC",
                 CommandType.Text,
                 null ) as string;
 

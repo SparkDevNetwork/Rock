@@ -69,11 +69,6 @@ If not specified or set to "false", tests that perform utility actions will retu
 A name that is embedded in databases created by the integration tests project, to distinguish them from other LocalDB databases on your system.
 The name is stored in the Rock System Settings Key `com.rockrms.test.DatabaseCreator`.
 
-### LocalDbResetMigrationName
-This setting specifies an optional migration to which the test database should be reset.
-If not specified, the most recent migration is restored.
-This can be useful for testing new migrations.
-
 ### LocalDbArchiveRetentionDays
 This setting specifies the number of days after which a database image will be deleted from the local file system.
 If not specified or set to "0", database images will be retained indefinitely.

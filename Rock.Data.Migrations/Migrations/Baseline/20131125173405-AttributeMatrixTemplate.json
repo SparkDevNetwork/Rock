@@ -1,0 +1,6 @@
+{
+  "columns": [ "Id", "Name", "Description", "IsActive", "MinimumRows", "MaximumRows", "FormattedLava", "CreatedDateTime", "ModifiedDateTime", "CreatedByPersonAliasId", "ModifiedByPersonAliasId", "Guid", "ForeignId", "ForeignGuid", "ForeignKey" ],
+  "rows": [
+    [1,"Internal Article List","",true,1,3,"{% if AttributeMatrixItems != empty %}\r\n<div class=\"row\">\r\n{% for attributeMatrixItem in AttributeMatrixItems %}\r\n    <div class=\"homepage-article col-md-4\">\r\n      <div class=\"photo\" style=\"background-image: url('./GetImage.ashx?Guid={{ attributeMatrixItem | Attribute:'ArticleImage','RawValue' }}\" alt=\"{{ attributeMatrixItem | Attribute:'ArticleTitle' }}');\"></div>\r\n      <div class=\"body\">\r\n        <h5 class=\"title\">{{ attributeMatrixItem | Attribute:'ArticleTitle' }}</h5>\r\n        <div class=\"body\">{{ attributeMatrixItem | Attribute:'ArticleContent' }}</div>\r\n        {% assign articleLink = attributeMatrixItem | Attribute:'ArticleLink','RawValue' -%}\r\n        {% if articleLink != empty -%}\r\n            <a class=\"btn btn-xs btn-link p-0\" href=\"{{ articleLink }}\">More Info</a>\r\n        {% endif -%}\r\n     </div>\r\n    </div>\r\n    {% cycle '', '', '</div><div class=\"row\">' %}\r\n{% endfor %}\r\n</div>\r\n{% endif %}",null,null,null,null,"1d24694e-445c-4852-b5bc-64cdea6f7175",null,null,null]
+  ]
+}

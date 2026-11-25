@@ -1,0 +1,6 @@
+{
+  "columns": [ "Id", "Name", "Order", "ProviderComponentEntityTypeId", "IsSystem", "IsActive", "Description", "CreatedDateTime", "ModifiedDateTime", "CreatedByPersonAliasId", "ModifiedByPersonAliasId", "Guid", "ForeignId", "ForeignGuid", "ForeignKey" ],
+  "rows": [
+    [1,"Open AI",0,1012,true,true,"Provider to use the OpenAI API for use in Rock.",null,null,null,null,"2aa26b14-94cb-4a30-9e97-c7250ba464bb",null,null,null]
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "columns": [ "Id", "Name", "Description", "Order", "IsSystem", "IsActive", "CreatedDateTime", "ModifiedDateTime", "CreatedByPersonAliasId", "ModifiedByPersonAliasId", "Guid", "ForeignId", "ForeignGuid", "ForeignKey" ],
+  "rows": [
+    [1,"Personal Growth","Discover how to grow in your faith and become the person God created you to be with these articles on personal growth.",1,true,true,null,null,null,null,"5cada157-efd4-f55f-a2e4-1b864a867d56",null,null,null],
+    [2,"Relationships","Discover biblical principles for building healthy relationships with family, friends, and romantic partners in this collection of Christian articles.",2,true,true,null,null,null,null,"49d7311c-ce75-0b58-b600-543a00068230",null,null,null],
+    [3,"Beliefs","Explore the foundational beliefs of Christianity, including the nature of God, salvation, and the role of Jesus Christ in this collection of articles.",3,true,true,null,null,null,null,"7fe85941-b062-8bbb-e65d-8c01ef1f0297",null,null,null],
+    [4,"Disciplines","Explore the importance of spiritual disciplines in the Christian life and how they can deepen your relationship with God.",4,true,true,null,null,null,null,"0a657bcd-4bee-54c6-e9c6-649ed9b25ef0",null,null,null],
+    [5,"Growing Faith","Discover practical tips and biblical insights to help you cultivate a deeper and more vibrant faith in God through this collection of articles.",5,true,true,null,null,null,null,"aa8577c8-54d0-0caa-ca3c-4a1ce36aef6b",null,null,null],
+    [6,"Explore Faith","Discover the power of faith and how it can transform your life. Explore different aspects of faith and learn how to deepen your relationship with God.",6,true,true,null,null,null,null,"a9680bc8-9da2-f41c-908a-840439cc7418",null,null,null],
+    [7,"Barriers","Overcoming Barriers: How to Break Down Obstacles in Your Spiritual Journey. Learn how to identify and overcome the obstacles that hinder your relationship with God.",7,true,true,null,null,null,null,"ba343b3d-cc27-f1b8-648f-682b305e5fb7",null,null,null],
+    [8,"Culture","Exploring the intersection of Christianity and culture, examining how faith can shape and be shaped by the world around us.",8,true,true,null,null,null,null,"1dc8c0d7-9951-2bb8-e22e-e4afda02d63f",null,null,null],
+    [9,"Community","Discover the importance of community in the Christian faith and how it can strengthen your relationship with God and others.",9,true,true,null,null,null,null,"f45bd38c-3c9e-3272-f0e6-b18ae5ce9d88",null,null,null],
+    [10,"Seasons","Explore the spiritual significance of the changing seasons and how they can deepen our faith and connection with God.",10,true,true,null,null,null,null,"d1dbfce0-42a3-bc86-be16-5a36e0b526a3",null,null,null]
+  ]
+}

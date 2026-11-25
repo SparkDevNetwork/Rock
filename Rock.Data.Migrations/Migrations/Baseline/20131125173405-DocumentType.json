@@ -1,0 +1,7 @@
+{
+  "columns": [ "Id", "IsSystem", "Name", "EntityTypeId", "EntityTypeQualifierColumn", "EntityTypeQualifierValue", "UserSelectable", "IconCssClass", "Order", "BinaryFileTypeId", "DefaultDocumentNameTemplate", "CreatedDateTime", "ModifiedDateTime", "CreatedByPersonAliasId", "ModifiedByPersonAliasId", "Guid", "ForeignId", "ForeignGuid", "ForeignKey", "MaxDocumentsPerEntity", "IsImage" ],
+  "rows": [
+    [1,true,"General Person Document",15,null,null,true,"ti ti-file",0,16,null,null,null,null,null,"2face26d-fc22-4041-aa76-81be4a914b5e",null,null,null,null,false],
+    [2,true,"Giving Statement",15,null,null,true,"ti ti-heart",0,17,"{{ NickName }} {{ LastName }} - {{ DocumentTypeName }} - {{ DocumentPurposeKey }}",null,null,null,null,"e8513f11-165d-4edb-ac27-9204b84fb016",null,null,null,null,false]
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "columns": [ "Id", "ParentAccountId", "CampusId", "Name", "PublicName", "Description", "IsTaxDeductible", "GlCode", "Order", "IsActive", "StartDate", "EndDate", "AccountTypeValueId", "Guid", "CreatedDateTime", "ModifiedDateTime", "CreatedByPersonAliasId", "ModifiedByPersonAliasId", "ForeignKey", "ImageBinaryFileId", "Url", "PublicDescription", "IsPublic", "ForeignGuid", "ForeignId", "UsesCampusChildAccounts" ],
+  "rows": [
+    [1,null,null,"General Fund","General Fund","General giving fund",true,null,0,true,null,null,null,"4410306f-3fb5-4a57-9a80-09a3f9d40d0c",null,null,null,null,null,null,null,null,true,null,null,false],
+    [2,null,null,"Building Fund","Building Fund","Building giving fund",true,null,1,true,null,null,null,"67c6181c-1d8c-44d7-b262-b81e746f06d8",null,null,null,null,null,null,null,null,true,null,null,false],
+    [3,null,null,"Mission Fund","Mission Fund","Missions giving fund",true,null,2,true,null,null,null,"bab250ee-cae6-4a41-9756-ad9327408be0",null,null,null,null,null,null,null,null,true,null,null,false],
+    [4,null,null,"Event Registration",null,null,false,null,1,true,null,null,null,"2a6f9e5f-6859-44f1-ab0e-ce9cf6b08ee5",null,null,null,null,null,null,null,null,null,null,null,false]
+  ]
+}

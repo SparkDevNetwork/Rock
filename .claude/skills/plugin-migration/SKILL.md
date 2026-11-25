@@ -8,12 +8,15 @@ description: >-
   "audit hotfix migration", or needs to create a data fix, configuration change,
   attribute update, or stored procedure update that ships as a plugin migration.
   Also use when the user describes a fix or change that targets Rock/Plugin/HotFixes/.
-  Do NOT use for EF migrations in Rock.Migrations/ — use /migration instead.
-  Do NOT use for standalone SQL scripts — use /sql instead.
+  HotFixes are only for branches without the SQL migration runner (release and
+  hotfix branches); on a branch that has Rock.Data.Migrations (develop), this
+  skill sends the fix to /migration instead.
+  Do NOT use for SQL migrations in Rock.Data.Migrations/; use /migration instead.
+  Do NOT use for standalone SQL scripts; use /sql instead.
 argument-hint: "Describe what the plugin migration should do, or say 'review' to review an existing one (e.g., 'fix the HTML content for the SQL runner warning block')"
 compatibility: Requires Claude Code with access to the Rock RMS codebase.
 metadata:
-  version: "1.3"
+  version: "1.4"
   author: "Maxwell Eley"
 ---
 
@@ -27,33 +30,44 @@ You are creating or reviewing a plugin migration (hotfix) in the Rock RMS codeba
 
 ## Reference Routing Table
 
-Load reference files progressively — only when needed.
+Load reference files progressively, only when needed.
 
 | Reference File | Load When |
 |---|---|
 | `references/hotfix-patterns.md` | Before writing migration logic (always in write mode) |
 | `references/methods-and-sql.md` | When choosing methods, writing SQL, or working with stored procedures |
-| `references/common-pitfalls.md` | Before finalizing any migration — both write and review modes |
+| `references/common-pitfalls.md` | Before finalizing any migration, in both write and review modes |
 
 **Do NOT read all files upfront.** Read `hotfix-patterns.md` always for write mode; read others only when their trigger condition is met.
 
 ---
 
-## Step 1 — Understand the Request and Determine Mode
+## Step 0: Check Whether This Branch Uses HotFixes
+
+Rock fixes are written as HotFixes only on branches that do not have the SQL migration runner. Check first:
+
+```
+Glob: Rock.Data.Migrations/Migrations/**/*.cs
+```
+
+- **Found (develop, and any branch made from it after the switch):** this branch has no `Rock/Plugin/HotFixes` folder, and a HotFix written here would fail the stray-file guard and never run. Do not write a HotFix. Tell the user so, and use the `/migration` skill in write mode for the fix. A HotFix that reached this branch through a merge is converted with `/migration` convert mode.
+- **Not found (release and hotfix branches):** continue with Step 1.
+
+## Step 1: Understand the Request and Determine Mode
 
 Parse what the migration needs to do and determine which mode to use:
 
-**Write mode** — The user describes what the migration should accomplish, or says "create", "write", "new". Proceed to **Step 2 (Write Mode)**.
+**Write mode:** The user describes what the migration should accomplish, or says "create", "write", "new". Proceed to **Step 2 (Write Mode)**.
 
-**Review mode** — The user says "review", "check", "audit", or names an existing migration file. Proceed to **Step 2 (Review Mode)**.
+**Review mode:** The user says "review", "check", "audit", or names an existing migration file. Proceed to **Step 2 (Review Mode)**.
 
 Migration categories (for write mode):
-- **Data fix** — UPDATE/INSERT/DELETE records to correct bad data
-- **Configuration change** — update page layouts, block settings, HTML content
-- **Attribute update** — add/modify block type attributes, person attributes, defined values
-- **Stored procedure update** — create or alter a stored procedure
-- **Post-update job** — add a run-once service job
-- **Block type change** — add/update/remove block types and entity types
+- **Data fix:** UPDATE/INSERT/DELETE records to correct bad data
+- **Configuration change:** update page layouts, block settings, HTML content
+- **Attribute update:** add/modify block type attributes, person attributes, defined values
+- **Stored procedure update:** create or alter a stored procedure
+- **Post-update job:** add a run-once service job
+- **Block type change:** add/update/remove block types and entity types
 
 If ambiguous, ask clarifying questions before proceeding.
 
@@ -61,7 +75,7 @@ If ambiguous, ask clarifying questions before proceeding.
 
 # Write Mode
 
-## Step 2 — Determine Migration Number and Version
+## Step 2: Determine Migration Number and Version
 
 1. Find the highest existing migration number across every active chain branch (hotfix-17.13, hotfix-18.9, hotfix-19.9, release-20.0, hotfix-20.1, develop), not just the current checkout. For example, run `git ls-tree origin/<branch> Rock/Plugin/HotFixes/` on each branch. Parse the leading number from each filename (e.g., `279_MigrationRollupsForV18_3_0_1.cs` → 279).
 
@@ -69,15 +83,18 @@ If ambiguous, ask clarifying questions before proceeding.
 
 3. Set the `[MigrationNumber( n, "x.y" )]` version to the release of the branch the PR targets, taken from the branch name:
    - `hotfix-X.Y` and `release-X.Y` give "X.Y" (for example `hotfix-19.9` gives "19.9", `hotfix-17.13` gives "17.13").
-   - `develop` has no release in its name: use the major.minor of `<Version>` in its `Directory.Build.props`.
-   - Never copy the version from the previous migration, and do not trust the branch's version files on hotfix or release branches (they are often bumped only at packaging).
-   - A value above the branch release silently skips the migration.
+   - Never copy the version from the previous HotFix, and do not trust the branch's version files (they are often bumped only at packaging).
+   - It is a minimum version gate, so a value above the branch's release makes the HotFix silently skip.
+   - When the HotFix is merged up to develop, it is converted to a SQL migration whose target version is this value as written, and that version decides where it runs on a new install. A value far from the release it ships in is reported as a source error during the conversion.
    - The mirror's PR check enforces this.
+   - If the branch name gives no version, ask the user.
 
-4. Generate filename: `{number}_{PascalCaseDescription}.cs`
+4. Check the number is unused on every branch (`git grep "MigrationNumber( {number}," <branch>` on each release and hotfix branch, and on develop's converted migrations via `ReplacesHotFixNumber = {number}`). Two branches that pick the same number overwrite each other's history.
+
+5. Generate filename: `{number}_{PascalCaseDescription}.cs`
    - Class name = the PascalCase description (without the number prefix)
 
-## Step 3 — Research the Schema
+## Step 3: Research the Schema
 
 Before writing the migration, you must understand the actual database schema. Do not guess column names, types, or relationships.
 
@@ -100,7 +117,7 @@ Before writing the migration, you must understand the actual database schema. Do
 - Read `references/hotfix-patterns.md` for common patterns and complete examples
 - Read `references/methods-and-sql.md` if using RockMigrationHelper, stored procedures, or complex SQL
 
-## Step 4 — Write the Migration File
+## Step 4: Write the Migration File
 
 Use the following template. The copyright block, namespace, class structure, and XML doc comments must match exactly:
 
@@ -154,7 +171,7 @@ namespace Rock.Plugin.HotFixes
 
 For available methods (`Sql()`, `SqlScalar()`, `RockMigrationHelper.*`, EF wrappers), SQL formatting rules, string escaping, stored procedure patterns, and code organization conventions, consult `references/methods-and-sql.md`.
 
-## Step 5 — Validate
+## Step 5: Validate
 
 Read `references/common-pitfalls.md` and run through the pre-finalization checklist before presenting.
 
@@ -164,7 +181,7 @@ Read `references/common-pitfalls.md` and run through the pre-finalization checkl
 
 # Review Mode
 
-## Step 2 (Review Mode) — Find the Migration
+## Step 2 (Review Mode): Find the Migration
 
 1. If `$ARGUMENTS` names a specific file or migration number, find it in `Rock/Plugin/HotFixes/`
 2. Otherwise, find the most recently created .cs file (highest number prefix):
@@ -173,17 +190,17 @@ Read `references/common-pitfalls.md` and run through the pre-finalization checkl
    ```
 3. Read the full .cs file
 
-## Step 3 (Review Mode) — Research for Comparison
+## Step 3 (Review Mode): Research for Comparison
 
 Before reviewing, gather the context needed to judge correctness:
 
-- Read the actual model files (`Rock/Model/[Domain]/[Entity]/[Entity].cs`) for every entity the migration touches — verify column types, `[Required]`, `[MaxLength]`, nullable, FK navigation properties
+- Read the actual model files (`Rock/Model/[Domain]/[Entity]/[Entity].cs`) for every entity the migration touches, and verify column types, `[Required]`, `[MaxLength]`, nullable, FK navigation properties
 - Check `Rock/SystemGuid/` files if the migration references GUIDs
 - Check `Rock.Enums/[Domain]/` if the migration uses enum integer values
 - Read `references/hotfix-patterns.md` for expected patterns
 - Read `references/common-pitfalls.md` for known failure modes
 
-## Step 4 (Review Mode) — Audit the Migration
+## Step 4 (Review Mode): Audit the Migration
 
 Run through the **pre-finalization checklist from `references/common-pitfalls.md`**, plus these additional review-specific checks:
 
@@ -197,15 +214,15 @@ Run through the **pre-finalization checklist from `references/common-pitfalls.md
 - If migration uses RockMigrationHelper methods, verify parameter order matches method signatures
 - Check for potential conflicts with other recent migrations
 
-## Step 5 (Review Mode) — Report Findings
+## Step 5 (Review Mode): Report Findings
 
 Present findings using severity levels:
 
 | Severity | Meaning | Examples |
 |---|---|---|
-| **CRITICAL** | Must fix — will cause errors or data loss | Wrong block type method, missing string escaping, SQL syntax error |
-| **WARNING** | Should fix — could cause issues or violates conventions | Missing IF NOT EXISTS guard, magic string GUIDs, wrong GUID casing |
-| **NOTE** | Consider — minor improvement or style suggestion | Missing XML doc comment, could use `private const string` for repeated GUIDs |
+| **CRITICAL** | Must fix: will cause errors or data loss | Wrong block type method, missing string escaping, SQL syntax error |
+| **WARNING** | Should fix: could cause issues or violates conventions | Missing IF NOT EXISTS guard, magic string GUIDs, wrong GUID casing |
+| **NOTE** | Consider: minor improvement or style suggestion | Missing XML doc comment, could use `private const string` for repeated GUIDs |
 
 Format each finding as:
 
@@ -291,4 +308,4 @@ Result: Severity-based findings report with actionable fix suggestions and a go/
 
 **String escaping errors at runtime:** Single quotes must be doubled in SQL within C# strings (`'O''Brien'`). Curly braces must be doubled in `$@"..."` strings (`{{`, `}}`). See `references/common-pitfalls.md` for full examples.
 
-**Wrong block type method (data loss risk):** Never use `UpdateBlockTypeByGuid()` for Obsidian or Mobile blocks — it can delete entity-based block types. Use `AddOrUpdateEntityBlockType()` instead. See `references/common-pitfalls.md` for details.
+**Wrong block type method (data loss risk):** Never use `UpdateBlockTypeByGuid()` for Obsidian or Mobile blocks, because it can delete entity-based block types. Use `AddOrUpdateEntityBlockType()` instead. See `references/common-pitfalls.md` for details.

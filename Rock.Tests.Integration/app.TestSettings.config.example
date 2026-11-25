@@ -26,10 +26,6 @@
        In this case, changes made to the test database will persist for subsequent test runs, which may cause unexpected results and test failures. -->
   <!--<add key="LocalDbResetDatabaseName" value="" />-->
   
-  <!-- The LocalDbResetMigrationName specifies the migration to which the test database should be reset.
-       If not specified, the most recent migration is restored. -->
-  <!--<add key="LocalDbResetMigrationName" value="" />-->
-
   <!-- The LocalDbArchiveRetentionDays specifies the number of days after which a database image will be deleted from the local file system.
        If not specified, database images will be retained indefinitely. -->
   <add key="LocalDbArchiveRetentionDays" value="180" />

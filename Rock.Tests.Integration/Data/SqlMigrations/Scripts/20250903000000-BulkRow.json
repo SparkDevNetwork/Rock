@@ -1,0 +1,9 @@
+{
+  "generateGuid": true,
+  "columns": [ "Id", "Name", "Code", "Amount", "IsActive", "Created", "Data", "Reference", "Shape" ],
+  "rows": [
+    [5,"Comma, \"quoted\" Ünïcödé","M",1.50,true,"2026-10-28T13:45:00.1234567","Af8=","6f9619ff-8b86-d011-b42d-00c04fc964ff","5hAAAAEMYcPTK2W5QEDb+X5qvARcwA=="],
+    [7,"",null,null,false,null,null,null,null],
+    [9,"Line one\r\nline two",null,null,null,null,null,null,null]
+  ]
+}

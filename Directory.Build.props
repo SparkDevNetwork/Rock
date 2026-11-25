@@ -48,6 +48,10 @@
       TaskName="Rock.Build.Tasks.CopyToRockWeb"
       AssemblyFile="$(RockBuildTasksAssemblyFile)" />
 
+  <UsingTask
+      TaskName="Rock.Build.Tasks.GzipFiles"
+      AssemblyFile="$(RockBuildTasksAssemblyFile)" />
+
   <PropertyGroup>
     <!-- Exclude linux native binaries from Grpc.Core. -->
     <ExcludeFromRockWebCopy>$(ExcludeFromRockWebCopy);libgrpc_csharp_ext.x64.so;libgrpc_csharp_ext.x64.dylib</ExcludeFromRockWebCopy>

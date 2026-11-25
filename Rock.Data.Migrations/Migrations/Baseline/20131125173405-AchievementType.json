@@ -1,0 +1,7 @@
+{
+  "columns": [ "Id", "ComponentEntityTypeId", "AchievementStartWorkflowTypeId", "AchievementFailureWorkflowTypeId", "AchievementStepTypeId", "AchievementStepStatusId", "BadgeLavaTemplate", "ResultsLavaTemplate", "AchievementIconCssClass", "MaxAccomplishmentsAllowed", "AllowOverAchievement", "CategoryId", "IsActive", "CreatedDateTime", "ModifiedDateTime", "CreatedByPersonAliasId", "ModifiedByPersonAliasId", "Guid", "ForeignId", "ForeignGuid", "ForeignKey", "Name", "Description", "AchievementSuccessWorkflowTypeId", "SourceEntityTypeId", "AchieverEntityTypeId", "ComponentConfigJson", "IsPublic", "ImageBinaryFileId", "CustomSummaryLavaTemplate", "HighlightColor", "AlternateImageBinaryFileId", "TargetCount" ],
+  "rows": [
+    [1,521,null,null,null,null,null,null,null,5,false,null,true,null,null,null,null,"21e6cc63-702b-4a5d-bc92-503b0f5caf5d",null,null,null,"Ten Weeks in a Row","",null,601,226,"{\"StreakType\":\"B9FADD97-38A4-4141-B6DB-48154563A2A9\"}",true,84,"",null,84,10],
+    [2,520,null,null,null,null,null,null,null,5,false,null,true,null,null,null,null,"67ea551d-c3a6-4339-9f39-f6f4e4dab4ea",null,null,null,"Twenty Weeks in a Year","",null,601,226,"{\"StreakType\":\"B9FADD97-38A4-4141-B6DB-48154563A2A9\"}",true,83,"",null,83,20]
+  ]
+}

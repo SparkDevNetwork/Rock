@@ -1,0 +1,10 @@
+{
+  "columns": [ "GroupTypeId", "LocationTypeValueId" ],
+  "rows": [
+    [10,19],
+    [10,20],
+    [10,137],
+    [23,209],
+    [25,209]
+  ]
+}

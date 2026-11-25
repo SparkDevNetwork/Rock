@@ -1,0 +1,8 @@
+{
+  "columns": [ "Id", "Name", "Description", "IsActive", "CreatedDateTime", "ModifiedDateTime", "CreatedByPersonAliasId", "ModifiedByPersonAliasId", "Guid", "ForeignId", "ForeignGuid", "ForeignKey" ],
+  "rows": [
+    [1,"Pass/Fail","The Pass/Fail grading system evaluates students simply as \"Pass\" if they meet the course requirements, or \"Fail\" if they do not.",true,"2026-11-17T09:45:49.2270000","2026-11-17T09:45:49.2270000",null,null,"99d9914b-7ccb-4e32-bd2d-541acd7a1b22",null,null,null],
+    [2,"Letter Grade","The Letter Grade system assigns grades ranging from A (excellent) to F (failing), reflecting a student's performance in a course. ",true,"2026-11-17T09:45:49.2270000","2026-11-17T09:45:49.2270000",null,null,"1ebba9f7-e3df-4930-9677-639d0915caa3",null,null,null],
+    [3,"Completion","The Completion grading system focuses solely on whether an activity has been completed. Any completion is considered passing.",true,"2026-11-17T09:45:59.8700000","2026-11-17T09:45:59.8700000",null,null,"48a4efcd-6b59-481f-9e09-0c06193a77fc",null,null,null]
+  ]
+}

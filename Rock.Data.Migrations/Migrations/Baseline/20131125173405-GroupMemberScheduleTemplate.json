@@ -1,0 +1,9 @@
+{
+  "columns": [ "Id", "Name", "GroupTypeId", "ScheduleId", "CreatedDateTime", "ModifiedDateTime", "CreatedByPersonAliasId", "ModifiedByPersonAliasId", "Guid", "ForeignId", "ForeignGuid", "ForeignKey" ],
+  "rows": [
+    [1,"Every Week",null,15,null,null,null,null,"7aa70d4a-ae06-4402-8b63-0e7136a44560",null,null,null],
+    [2,"Every Other Week",null,16,null,null,null,null,"51bdc208-9f97-452e-ba75-d69f37640d49",null,null,null],
+    [3,"1st and 3rd Week",null,17,null,null,null,null,"fbf8aa40-3378-4a13-b11c-749fc0d60960",null,null,null],
+    [4,"2nd and 4th Week",null,18,null,null,null,null,"73cdbe0a-0921-4284-ae7b-076635040c7b",null,null,null]
+  ]
+}

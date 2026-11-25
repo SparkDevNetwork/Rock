@@ -1,0 +1,47 @@
+<!--
+// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+//</copyright>
+-->
+
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net472</TargetFramework>
+    <RootNamespace>Rock.BaselineTool</RootNamespace>
+    <AssemblyName>Rock.BaselineTool</AssemblyName>
+    <LangVersion>latest</LangVersion>
+    <!--
+        This tool builds the baseline for any Rock version B, so it does not
+        reference Rock. It reads B's source tree and RockWeb folder for what it
+        needs and talks to the database with SqlClient and SMO.
+    -->
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Match the version Rock.csproj uses. -->
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="6.1.4" />
+    <PackageReference Include="Microsoft.SqlServer.SqlManagementObjects" Version="181.37.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+    <PackageReference Include="System.Text.Json" Version="10.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Rock.Tests.Integration" />
+  </ItemGroup>
+
+</Project>

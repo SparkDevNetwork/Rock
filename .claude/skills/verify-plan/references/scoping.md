@@ -43,7 +43,7 @@ Classify every changed file into a layer, then a domain. Present the result as a
 | Check-in | `Rock/CheckIn/**`, `Rock.Blocks/CheckIn/**` (also counts as Obsidian blocks) |
 | Finance and communication engines | `Rock/Financial/**`, `Rock/Communication/**` |
 | Cache and other core | everything else under `Rock/**`, `Rock.Common/**`, `Rock.Enums/**` |
-| Migrations and data | `Rock.Migrations/**`, `Rock/Plugin/HotFixes/**`, SQL scripts |
+| Migrations and data | `Rock.Data.Migrations/**`, `Rock.Migrations/**`, `Rock/Plugin/HotFixes/**`, SQL scripts |
 | Styles and themes | `RockWeb/Styles/**`, `RockWeb/Themes/**`, `*.less`, `*.scss`, `*.css` |
 | Automated tests | `Rock.Tests*/**` (not tested by hand; signals which automated tests to run) |
 | Not testable | `.claude/**`, `docs/**`, `specs/**`, build scripts, `*.d.ts` and `Framework/ViewModels/**` (generated), project files with only file-list changes, binaries |

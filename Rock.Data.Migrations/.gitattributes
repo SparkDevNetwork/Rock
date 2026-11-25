@@ -1,0 +1,5 @@
+# Migration scripts are stored byte for byte, with no line ending conversion.
+# Line breaks inside procedures, views, functions, triggers and string
+# literals become part of the database, so every checkout must build the
+# same scripts that were exported and tested.
+*.sql -text

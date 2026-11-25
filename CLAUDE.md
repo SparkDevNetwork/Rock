@@ -37,7 +37,7 @@ This does **not** apply to questions already settled by Rock conventions (rules,
 | Obsidian partials | `Rock.JavaScript.Obsidian.Blocks/src/[Domain]/[blockName]/` |
 | Entity model | `Rock/Model/[Domain]/[EntityName]/` |
 | Enums | `Rock.Enums/[Domain]/` |
-| Migrations | `Rock.Migrations/Migrations/` |
+| Migrations | `Rock.Data.Migrations/Migrations/Version x.y/` (SQL migrations; use the `/migration` skill) |
 | SystemGuid constants | `Rock/SystemGuid/` |
 
 ---

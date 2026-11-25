@@ -87,9 +87,10 @@ There is no screen for a service method, so tests go through the features that c
 ### Migrations and data
 
 - `Data`: the schema or data change is present (`INFORMATION_SCHEMA`, or query the rows). Stock pages and blocks a migration adds are reachable and work.
-- Hotfix migrations (`Rock/Plugin/HotFixes`): run on startup; check the `PluginMigration` row for the number exists, then check the change itself.
+- SQL migrations (`Rock.Data.Migrations`, on develop): run on startup; check the `[RockMigration]` row for the migration's ID exists, then check the change itself.
+- Hotfix migrations (`Rock/Plugin/HotFixes`, on release and hotfix branches): run on startup; check the `PluginMigration` row for the number exists, then check the change itself.
 - Data-fix migrations: give a SQL query that would have found the bad data and should now return nothing.
-- Do not plan tests that require running a migration's `Down()`; note in Scope that rollbacks were not tested.
+- Do not plan tests that require undoing a migration (SQL migrations have no `Down()`); note in Scope that rollbacks were not tested.
 
 ### Automated tests
 

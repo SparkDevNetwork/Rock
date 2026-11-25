@@ -1,0 +1,20 @@
+{
+  "columns": [ "Id", "Name", "Description", "BadgeComponentEntityTypeId", "Order", "CreatedDateTime", "ModifiedDateTime", "CreatedByPersonAliasId", "ModifiedByPersonAliasId", "Guid", "ForeignKey", "ForeignGuid", "ForeignId", "IsActive", "EntityTypeId", "EntityTypeQualifierColumn", "EntityTypeQualifierValue" ],
+  "rows": [
+    [2,"Campus","Shows the campus of the individual.",40,1,null,null,null,null,"b21dcd49-ac35-4b2b-9857-75213209b643",null,null,null,true,15,null,null],
+    [5,"Family Attendance","Shows a chart of the attendance history with each bar representing one month.",44,5,null,null,null,null,"3f7d648d-d6ba-4f03-931c-afbdfa24bbd8",null,null,null,true,15,null,null],
+    [7,"Family 16 Week Attendance","Shows a the number of times a family attended in the last 16 weeks.",182,6,null,null,null,null,"66972bff-42cd-49ab-9a7a-e1b9deca4eba",null,null,null,true,15,null,null],
+    [8,"Baptism","Shows if individual has been baptized.",185,7,null,null,null,null,"66972bff-42cd-49ab-9a7a-e1b9deca4ebe",null,null,null,true,15,null,null],
+    [9,"Connection Status","Displays the connection status as a label.",185,0,null,null,null,null,"66972bff-42cd-49ab-9a7a-e1b9deca4ebf",null,null,null,true,15,null,null],
+    [10,"Record Status","Displays label if record status is inactive.",185,2,null,null,null,null,"66972bff-42cd-49ab-9a7a-e1b9deca4eca",null,null,null,true,15,null,null],
+    [11,"Attending Duration","Displays how long the individual has been attending.",183,4,null,null,null,null,"260ead7d-5073-4f88-a6a9-427f6e95985e",null,null,null,true,15,null,null],
+    [12,"In Serving Team","Show if individual is in a serving team.",184,8,null,null,null,null,"e0455598-82b0-4f49-b806-c3a41c71e9da",null,null,null,true,15,null,null],
+    [13,"Last Visit on External Site","Shows the number of days since the last visit to the external site and links to the details of the person's page views.",188,3,null,null,null,null,"8a9ad88e-359f-46fd-9ba1-8b0603644f17",null,null,null,true,15,null,null],
+    [14,"DISC Personality Assessment Result","Shows a small chart of a person's DISC personality assessment results and links to the details of their assessment.",224,0,null,null,null,null,"6c491a10-e942-4ca5-8d13-acbc28511714",null,null,null,true,15,null,null],
+    [15,"eRA","Shows if someone is an eRA.",185,6,null,null,null,null,"7fc986b9-ca1e-cbb7-4e63-c79eac34f39d",null,null,null,true,15,null,null],
+    [16,"Top Person Signal","Shows the top person badge and the number of signals.",459,0,null,null,null,null,"b4b336ce-137e-44be-9123-27740d0064c2",null,null,null,true,15,null,null],
+    [17,"Personal Devices","Badge showing the number of personal devices that have been associated to a person.",462,0,null,null,null,null,"307cb56d-140c-4cc9-8b54-dd551cc40174",null,null,null,true,15,null,null],
+    [18,"Assessments","Shows the person's Personality Assessments.",476,0,null,null,null,null,"cce09793-89f6-4042-a98a-ed38392bcfcc",null,null,null,true,15,null,null],
+    [19,"Group Requirements","Shows if a group has requirements.",185,0,null,null,null,null,"132f9c2a-0af4-4ad9-87ef-7730b284e10e",null,null,null,true,16,null,null]
+  ]
+}

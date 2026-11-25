@@ -1,0 +1,8 @@
+{
+  "columns": [ "Id", "MetricPartitionId", "MetricValueId", "EntityId", "CreatedDateTime", "ModifiedDateTime", "CreatedByPersonAliasId", "ModifiedByPersonAliasId", "Guid", "ForeignId", "ForeignGuid", "ForeignKey" ],
+  "rows": [
+    [1,5,1,null,null,null,null,null,"d72e40cf-2e85-44b9-b864-140a37e85afd",null,null,null],
+    [2,7,2,null,null,null,null,null,"465d1cad-0798-4e3c-8671-b53c032a0eac",null,null,null],
+    [3,6,3,null,null,null,null,null,"d7af2f13-8f7d-46a0-b91a-424c6b080afb",null,null,null]
+  ]
+}

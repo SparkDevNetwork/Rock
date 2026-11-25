@@ -1,0 +1,6 @@
+{
+  "columns": [ "Id", "Name", "Description", "IsActive", "RequestLavaTemplate", "CreatedDateTime", "ModifiedDateTime", "CreatedByPersonAliasId", "ModifiedByPersonAliasId", "Guid", "ForeignId", "ForeignGuid", "ForeignKey", "ShowFinancialResults", "AdditionalSettingsJson" ],
+  "rows": [
+    [1,"Benevolence","The default benevolence type.",true,null,"2026-11-17T09:42:09.0000000","2026-11-17T09:42:09.0000000",null,null,"b4a7c50b-e399-452e-ba37-1abd6b15482c",null,null,null,true,null]
+  ]
+}
