@@ -164,7 +164,7 @@ namespace Rock.Blocks.Mobile
 
             box.NavigationUrls = GetBoxNavigationUrls();
 
-            if ( entity != null && ( entity.Id == 0 || entity.SiteType == SiteType.Mobile ) )
+            if ( entity != null && ( entity.Id == 0 || ( entity.SiteType == SiteType.Mobile && entity.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) ) ) )
             {
                 box.Options = GetBoxOptions( entity, box.IsEditable );
                 box.SecurityGrantToken = GetSecurityGrantToken( entity );
@@ -222,6 +222,12 @@ namespace Rock.Blocks.Mobile
             if ( entity.Id != 0 && entity.SiteType != SiteType.Mobile )
             {
                 box.ErrorMessage = "This block only supports mobile sites.";
+                return;
+            }
+
+            if ( entity.Id != 0 && !entity.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+            {
+                box.ErrorMessage = EditModeMessage.NotAuthorizedToView( "mobile application" );
                 return;
             }
 
@@ -656,6 +662,12 @@ namespace Rock.Blocks.Mobile
                 return false;
             }
 
+            if ( entity.Id != 0 && !entity.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+            {
+                error = ActionBadRequest( EditModeMessage.NotAuthorizedToView( "mobile application" ) );
+                return false;
+            }
+
             if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
                 error = ActionBadRequest( EditModeMessage.NotAuthorizedToEdit( "mobile application" ) );
@@ -861,7 +873,7 @@ namespace Rock.Blocks.Mobile
 
             if ( entity == null )
             {
-                return ActionBadRequest( "Mobile application not found." );
+                return GetResolveSiteError();
             }
 
             var settings = GetAdditionalSettings( entity );
@@ -992,7 +1004,7 @@ namespace Rock.Blocks.Mobile
             var entity = ResolveSite();
             if ( entity == null || entity.Id == 0 )
             {
-                return ActionBadRequest( "Mobile application not found." );
+                return GetResolveSiteError();
             }
 
             using ( var rockContext = RockApp.Current.CreateRockContext() )
@@ -1143,12 +1155,18 @@ namespace Rock.Blocks.Mobile
             }
 
             var site = ResolveSite();
+
+            if ( site == null )
+            {
+                return GetResolveSiteError();
+            }
+
             var layoutService = new LayoutService( RockContext );
             var layout = layoutService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
 
             // The layouts grid only lists layouts of the mobile application
             // being viewed, so only those may be deleted.
-            if ( site == null || layout == null || layout.SiteId != site.Id )
+            if ( layout == null || layout.SiteId != site.Id )
             {
                 return ActionBadRequest( "Layout not found." );
             }
@@ -1176,12 +1194,18 @@ namespace Rock.Blocks.Mobile
             }
 
             var site = ResolveSite();
+
+            if ( site == null )
+            {
+                return GetResolveSiteError();
+            }
+
             var pageService = new PageService( RockContext );
             var page = pageService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
 
             // The pages grid only lists pages of the mobile application being
             // viewed, so only those may be deleted.
-            if ( site == null || page == null || page.Layout?.SiteId != site.Id )
+            if ( page == null || page.Layout?.SiteId != site.Id )
             {
                 return ActionBadRequest( "Page not found." );
             }
@@ -1211,7 +1235,7 @@ namespace Rock.Blocks.Mobile
             var entity = ResolveSite();
             if ( entity == null )
             {
-                return ActionBadRequest( "Mobile application not found." );
+                return GetResolveSiteError();
             }
 
             var pageService = new PageService( RockContext );
@@ -1250,7 +1274,7 @@ namespace Rock.Blocks.Mobile
             var entity = ResolveSite();
             if ( entity == null )
             {
-                return ActionBadRequest( "Mobile application not found." );
+                return GetResolveSiteError();
             }
 
             var settings = GetAdditionalSettings( entity );
@@ -1288,7 +1312,7 @@ namespace Rock.Blocks.Mobile
             var entity = ResolveSite();
             if ( entity == null )
             {
-                return ActionBadRequest( "Mobile application not found." );
+                return GetResolveSiteError();
             }
 
             var settings = GetAdditionalSettings( entity );
@@ -1360,8 +1384,8 @@ namespace Rock.Blocks.Mobile
         /// <summary>
         /// Resolves the active Site from the SiteId page parameter, honoring
         /// the IdKey-vs-Id setting on the current site. Returns null when
-        /// the parameter is missing, the site does not exist, or the site is
-        /// not a mobile site.
+        /// the parameter is missing, the site does not exist, the site is
+        /// not a mobile site, or the current person cannot view the site.
         /// </summary>
         private Site ResolveSite()
         {
@@ -1376,12 +1400,33 @@ namespace Rock.Blocks.Mobile
 
             // The initial page load refuses to show non-mobile sites, so the
             // actions that work on the page's site must not reach them either.
-            if ( site == null || site.SiteType != SiteType.Mobile )
+            if ( site == null || site.SiteType != SiteType.Mobile || !site.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
             {
                 return null;
             }
 
             return site;
+        }
+
+        /// <summary>
+        /// Gets the error result to return when <see cref="ResolveSite"/>
+        /// returns null. Returns a not authorized message when the mobile
+        /// site exists but the current person cannot view it, otherwise a
+        /// not found message.
+        /// </summary>
+        private BlockActionResult GetResolveSiteError()
+        {
+            var siteIdParam = PageParameter( PageParameterKey.SiteId );
+            var site = siteIdParam.IsNotNullOrWhiteSpace()
+                ? new SiteService( RockContext ).Get( siteIdParam, !PageCache.Layout.Site.DisablePredictableIds )
+                : null;
+
+            if ( site != null && site.SiteType == SiteType.Mobile && !site.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+            {
+                return ActionBadRequest( EditModeMessage.NotAuthorizedToView( "mobile application" ) );
+            }
+
+            return ActionBadRequest( "Mobile application not found." );
         }
 
         /// <summary>
