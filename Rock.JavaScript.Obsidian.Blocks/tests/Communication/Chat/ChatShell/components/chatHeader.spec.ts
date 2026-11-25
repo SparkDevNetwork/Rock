@@ -553,9 +553,9 @@ describe("the end of an outage", () => {
 
 // One members button, for a channel and a group alike, opens the members panel, before Threads: up
 // to three of the room's other people, a channel's leaders first, then "+N" for everyone not
-// drawn, or where no face can be shown (a hidden roster, someone not in the room) the people icon
-// and the head count. A count past 999 is shortened and the label keeps it whole. A conversation of
-// two has none. On a phone it folds into the menu.
+// drawn. Where no face can be shown (someone not in the room, people not loaded yet) the button is
+// not drawn at all: it is only ever faces. A count past 999 is shortened and the label keeps it
+// whole. A conversation of two has none. On a phone it folds into the menu.
 describe("the way into the members panel", () => {
     /** A room's facts in the exact shape chat_get_channel answers. */
     function facts(overrides: Partial<ChannelFacts> = {}): ChannelFacts {
@@ -590,7 +590,7 @@ describe("the way into the members panel", () => {
     const grace = leader(2, "Grace", "Kim");
     const jordan = leader(3, "Jordan", "Lee");
 
-    /** The disc after the faces: "+N" for the people not drawn, or the head count after the people icon. */
+    /** The disc after the faces: "+N" for the people not drawn. */
     function countOf(button: ReturnType<VueWrapper["get"]>): string | null {
         const disc = button.find("[data-testid='header-members-count']");
         return disc.exists() ? disc.text() : null;
@@ -628,23 +628,35 @@ describe("the way into the members panel", () => {
         expect(pile.attributes("aria-label")).toBe("3 members, open member list");
     });
 
-    test("draws the people icon and the count where no face can be shown, and says one member", () => {
+    test("is not drawn for a room of one, the reader alone, since no other face exists", () => {
         const w = mountHeader({ kind: "channel", isMembersOffered: true, facts: facts({ member_count: 1 }) });
 
-        const pile = w.get("[data-testid='header-members']");
-        expect(pile.attributes("aria-label")).toBe("1 member, open member list");
-        expect(pile.findAll(".chat-av")).toHaveLength(0);
-        expect(hasIcon(w, pile, "users")).toBe(true);
-        expect(countOf(pile)).toBe("1");
+        expect(w.find("[data-testid='header-members']").exists()).toBe(false);
     });
 
-    test("shows no faces to someone not in the room, only the icon and the whole count", () => {
-        const w = mountHeader({ kind: "channel", isMembersOffered: true, facts: facts({ is_member: false, leaders: [tom], faces: [tom] }) });
+    test("is not drawn for someone not in the channel, whose facts carry no faces", () => {
+        const w = mountHeader({ kind: "channel", isMembersOffered: true, isThreadsOffered: true, facts: facts({ is_member: false, leaders: [tom], faces: [tom] }) });
 
-        const pile = w.get("[data-testid='header-members']");
-        expect(pile.findAll(".chat-av")).toHaveLength(0);
-        expect(hasIcon(w, pile, "users")).toBe(true);
-        expect(countOf(pile)).toBe("42");
+        expect(w.find("[data-testid='header-members']").exists()).toBe(false);
+        expect(w.find(".chat-header-pile").exists()).toBe(false);
+        expect(w.find("[data-testid='header-threads']").exists()).toBe(true);
+    });
+
+    test("is not drawn while no face is loaded, for a channel or a group, and comes in with the first face", async () => {
+        const channel = mountHeader({ kind: "channel", isMembersOffered: true, facts: facts({ member_count: 42, faces: [] }) });
+        expect(channel.find("[data-testid='header-members']").exists()).toBe(false);
+
+        await channel.setProps({ facts: facts({ member_count: 42, faces: [tom] }) });
+        const pile = channel.get("[data-testid='header-members']");
+        expect(pile.findAll(".chat-av")).toHaveLength(1);
+        expect(countOf(pile)).toBe("+40");
+        channel.unmount();
+
+        const group = mountHeader({ title: "Hike planning", kind: "group", people: [], otherCount: 4, isMembersOffered: true });
+        expect(group.find("[data-testid='header-members']").exists()).toBe(false);
+
+        await group.setProps({ people: [person(1, "Caleb", "Brooks")] });
+        expect(group.get("[data-testid='header-members']").findAll(".chat-av")).toHaveLength(1);
     });
 
     test("shortens a count past 999 and keeps it whole in the label", async () => {
@@ -656,11 +668,12 @@ describe("the way into the members panel", () => {
         expect(countOf(pile())).toBe("+1k");
         expect(pile().attributes("aria-label")).toBe("1,004 members, open member list");
 
-        await w.setProps({ facts: facts({ is_member: false, member_count: 1250 }) });
-        expect(countOf(pile())).toBe("1.2k");
+        // 1,250 less the reader and the three drawn
+        await w.setProps({ facts: facts({ member_count: 1250, faces: [tom, grace, jordan] }) });
+        expect(countOf(pile())).toBe("+1.2k");
 
-        await w.setProps({ facts: facts({ is_member: false, member_count: 13536 }) });
-        expect(countOf(pile())).toBe("13k");
+        await w.setProps({ facts: facts({ member_count: 13536, faces: [tom, grace, jordan] }) });
+        expect(countOf(pile())).toBe("+13k");
         expect(pile().attributes("aria-label")).toBe("13,536 members, open member list");
     });
 
@@ -692,7 +705,7 @@ describe("the way into the members panel", () => {
     });
 
     test("says the person is reaching for it, on hover, focus or press, so the panel's rights are read before the click", async () => {
-        const channel = mountHeader({ kind: "channel", isMembersOffered: true, facts: facts() });
+        const channel = mountHeader({ kind: "channel", isMembersOffered: true, facts: facts({ faces: [tom] }) });
         const pile = channel.get("[data-testid='header-members']");
         await pile.trigger("pointerenter");
         await pile.trigger("focus");
@@ -701,13 +714,13 @@ describe("the way into the members panel", () => {
         expect(channel.emitted("members")).toBeUndefined();
         channel.unmount();
 
-        const group = mountHeader({ title: "Hike planning", kind: "group", people: [], isMembersOffered: true, facts: facts({ channel_type: "dm", member_count: 4 }) });
+        const group = mountHeader({ title: "Hike planning", kind: "group", people: [person(1, "Caleb", "Brooks")], isMembersOffered: true, facts: facts({ channel_type: "dm", member_count: 4 }) });
         await group.get("[data-testid='header-members']").trigger("pointerenter");
         expect(group.emitted("membersIntent")).toHaveLength(1);
     });
 
     test("shows as expanded while the members panel is open", async () => {
-        const w = mountHeader({ kind: "channel", isMembersOffered: true, facts: facts() });
+        const w = mountHeader({ kind: "channel", isMembersOffered: true, facts: facts({ faces: [tom] }) });
         expect(w.get("[data-testid='header-members']").attributes("aria-expanded")).toBe("false");
 
         await w.setProps({ isMembersOpen: true });
@@ -715,7 +728,7 @@ describe("the way into the members panel", () => {
     });
 
     test("is not drawn unless offered", () => {
-        const w = mountHeader({ kind: "channel", facts: facts() });
+        const w = mountHeader({ kind: "channel", facts: facts({ faces: [tom] }) });
 
         expect(w.find("[data-testid='header-members']").exists()).toBe(false);
     });
@@ -970,7 +983,8 @@ describe("the header is this conversation", () => {
     });
 
     test("the members button shows the head count as its tooltip", async () => {
-        const w = mountHeader({ title: "Staff", kind: "channel", isMembersOffered: true, facts: roomFacts() });
+        const face = { person_alias_guid: "a0000001-0000-4000-8000-000000000000", nick_name: "Tom", last_name: "Hale", avatar_url: null };
+        const w = mountHeader({ title: "Staff", kind: "channel", isMembersOffered: true, facts: roomFacts({ faces: [face] }) });
 
         expect(await tipOn(w.get("[data-testid='header-members']").element)).toBe("42 members");
     });
@@ -1038,9 +1052,10 @@ describe("the header is this conversation", () => {
     });
 });
 
-// A platform older than this client sends a room's facts without faces; the header still draws.
+// A platform older than this client sends a room's facts without faces; the header still draws,
+// with no members button, since the button is only ever faces.
 describe("facts from an older platform", () => {
-    test("without faces draw the people icon and the count", () => {
+    test("without faces draw the header and no members button", () => {
         const facts = {
             channel_id: "c0000001-0000-4000-8000-000000000000", name: "young-adults", icon_url: null, channel_type: "shared",
             is_member: true, can_post: true, can_post_code: null, can_post_reason: null, max_length: 5000, can_leave: true,
@@ -1049,9 +1064,8 @@ describe("facts from an older platform", () => {
         };
         const w = mountHeader({ kind: "channel", isMembersOffered: true, facts });
 
-        const pile = w.get("[data-testid='header-members']");
-        expect(pile.findAll(".chat-av")).toHaveLength(0);
-        expect(pile.text()).toContain("42");
+        expect(w.get("[data-testid='header-title']").text()).toBe("worship-team");
+        expect(w.find("[data-testid='header-members']").exists()).toBe(false);
     });
 });
 
