@@ -1066,6 +1066,15 @@ namespace Rock.Blocks.Group
                 return ActionBadRequest( "Group not found." );
             }
 
+            // Roles are only needed to add a member, so require the same
+            // rights that AddGroupMember does.
+            var currentPerson = RequestContext.CurrentPerson;
+            if ( !group.IsAuthorized( Authorization.EDIT, currentPerson )
+                && !group.IsAuthorized( Authorization.MANAGE_MEMBERS, currentPerson ) )
+            {
+                return ActionBadRequest( "You are not authorized to add members to this group." );
+            }
+
             var syncedRoleIds = new GroupSyncService( RockContext )
                 .Queryable()
                 .Where( s => s.GroupId == group.Id )

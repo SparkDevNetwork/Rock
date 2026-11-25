@@ -1913,8 +1913,15 @@ namespace Rock.Blocks.Group
             string errorMessage;
             bool canDelete;
 
+            // Each branch needs the right Save uses for that collection, and
+            // only answers for records of the page's group.
             if ( entityKey == EntityKey.GroupRequirement )
             {
+                if ( !TryGetPageGroupForAction( true, out var group, out var error ) )
+                {
+                    return error;
+                }
+
                 var service = new GroupRequirementService( RockContext );
                 var entity = service.Get( request.EntityGuid );
                 if ( entity == null )
@@ -1922,10 +1929,20 @@ namespace Rock.Blocks.Group
                     return ActionOk( new CanDeleteResponseBag { CanDelete = true } );
                 }
 
+                if ( entity.GroupId != group.Id )
+                {
+                    return ActionBadRequest( "Invalid entity." );
+                }
+
                 canDelete = service.CanDelete( entity, out errorMessage );
             }
             else if ( entityKey == EntityKey.GroupMemberWorkflowTrigger )
             {
+                if ( !TryGetPageGroupForAction( false, out var group, out var error ) )
+                {
+                    return error;
+                }
+
                 var service = new GroupMemberWorkflowTriggerService( RockContext );
                 var entity = service.Get( request.EntityGuid );
                 if ( entity == null )
@@ -1933,10 +1950,20 @@ namespace Rock.Blocks.Group
                     return ActionOk( new CanDeleteResponseBag { CanDelete = true } );
                 }
 
+                if ( entity.GroupId != group.Id )
+                {
+                    return ActionBadRequest( "Invalid entity." );
+                }
+
                 canDelete = service.CanDelete( entity, out errorMessage );
             }
             else if ( entityKey == EntityKey.GroupSync )
             {
+                if ( !TryGetPageGroupForAction( true, out var group, out var error ) )
+                {
+                    return error;
+                }
+
                 var service = new GroupSyncService( RockContext );
                 var entity = service.Get( request.EntityGuid );
                 if ( entity == null )
@@ -1944,15 +1971,30 @@ namespace Rock.Blocks.Group
                     return ActionOk( new CanDeleteResponseBag { CanDelete = true } );
                 }
 
+                if ( entity.GroupId != group.Id )
+                {
+                    return ActionBadRequest( "Invalid entity." );
+                }
+
                 canDelete = service.CanDelete( entity, out errorMessage );
             }
             else if ( entityKey == EntityKey.GroupLocation )
             {
+                if ( !TryGetPageGroupForAction( false, out var group, out var error ) )
+                {
+                    return error;
+                }
+
                 var service = new GroupLocationService( RockContext );
                 var entity = service.Get( request.EntityGuid );
                 if ( entity == null )
                 {
                     return ActionOk( new CanDeleteResponseBag { CanDelete = true } );
+                }
+
+                if ( entity.GroupId != group.Id )
+                {
+                    return ActionBadRequest( "Invalid entity." );
                 }
 
                 canDelete = service.CanDelete( entity, out errorMessage );
@@ -2061,6 +2103,11 @@ namespace Rock.Blocks.Group
         [BlockAction]
         public BlockActionResult GetGroupRequirementOptions( int? groupTypeId )
         {
+            if ( !TryGetPageGroupForAction( true, out _, out var error ) )
+            {
+                return error;
+            }
+
             var groupType = groupTypeId.HasValue && groupTypeId.Value > 0
                 ? GroupTypeCache.Get( groupTypeId.Value )
                 : null;
@@ -2079,6 +2126,11 @@ namespace Rock.Blocks.Group
         [BlockAction]
         public BlockActionResult GetGroupSyncOptions()
         {
+            if ( !TryGetPageGroupForAction( true, out _, out var error ) )
+            {
+                return error;
+            }
+
             return ActionOk( BuildSystemCommunicationOptions() );
         }
 
@@ -2159,6 +2211,49 @@ namespace Rock.Blocks.Group
             }
 
             return GetAuthorizedChildGroupTypes( entity ).Any();
+        }
+
+        /// <summary>
+        /// Gets the page's group if the current person may use an edit panel
+        /// helper action on it: Administrate when <paramref name="requireAdministrate"/>
+        /// is set (the right Save needs for requirements and syncs), otherwise
+        /// the right to enter edit mode.
+        /// </summary>
+        /// <param name="requireAdministrate">Whether Administrate is required instead of Edit.</param>
+        /// <param name="group">The page's group, or a new one on the Add path.</param>
+        /// <param name="error">The error to return when the group is not found or not authorized.</param>
+        /// <returns><c>true</c> if the group was found and the person is authorized; otherwise <c>false</c>.</returns>
+        private bool TryGetPageGroupForAction( bool requireAdministrate, out Model.Group group, out BlockActionResult error )
+        {
+            /*
+                11/25/2026 - MSE
+
+                The edit panel helper actions only answer for the page's group,
+                with the same right the edit panel uses to show the feature and
+                Save uses to persist it.
+
+                Reason: Prevent reading group settings and options without the right to change them.
+            */
+            group = GetInitialEntity();
+            error = null;
+
+            if ( group == null )
+            {
+                error = ActionBadRequest( $"{Model.Group.FriendlyTypeName} not found." );
+                return false;
+            }
+
+            var isAuthorized = requireAdministrate
+                ? group.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson )
+                : IsAuthorizedToEdit( group );
+
+            if ( !isAuthorized )
+            {
+                error = ActionBadRequest( $"Not authorized to edit {Model.Group.FriendlyTypeName}." );
+                return false;
+            }
+
+            return true;
         }
 
         /// <summary>
