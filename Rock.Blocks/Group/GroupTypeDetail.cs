@@ -763,6 +763,41 @@ namespace Rock.Blocks.Group
         }
 
         /// <summary>
+        /// Gets the page's group type if the current person is authorized to edit it.
+        /// Used by the edit panel helper actions, which do not change the group type.
+        /// </summary>
+        /// <param name="groupType">The page's group type, or a new one when the page has none.</param>
+        /// <param name="error">The error to return when the group type is not found or not editable.</param>
+        /// <returns><c>true</c> if the group type was found and can be edited; otherwise, <c>false</c>.</returns>
+        private bool TryGetPageGroupTypeForEdit( out GroupType groupType, out BlockActionResult error )
+        {
+            /*
+                11/25/2026 - MSE
+
+                The edit panel helper actions are only used while editing, so they
+                need the same Edit right that Save requires on the page's group type.
+
+                Reason: Prevent reading group type details without Edit rights.
+            */
+            groupType = GetInitialEntity();
+            error = null;
+
+            if ( groupType == null )
+            {
+                error = ActionBadRequest( $"{GroupType.FriendlyTypeName} not found." );
+                return false;
+            }
+
+            if ( !groupType.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            {
+                error = ActionBadRequest( $"Not authorized to edit {GroupType.FriendlyTypeName}." );
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
         /// Synchronizes related entities by comparing existing entities with incoming data, deleting removed items,
         /// and adding or updating entities as needed.
         /// </summary>
@@ -1830,16 +1865,18 @@ namespace Rock.Blocks.Group
         [BlockAction]
         public BlockActionResult GetChatEnabledGroupCount()
         {
-            var key = PageParameter( PageParameterKey.GroupTypeId );
-            var groupTypeId = new GroupTypeService( RockContext ).GetSelect( key, gt => ( int? ) gt.Id );
+            if ( !TryGetPageGroupTypeForEdit( out var groupType, out var error ) )
+            {
+                return error;
+            }
 
-            if ( !groupTypeId.HasValue || groupTypeId.Value == 0 )
+            if ( groupType.Id == 0 )
             {
                 return ActionOk( 0 );
             }
 
             var count = new GroupTypeService( RockContext )
-                .GetChatEnabledGroupCount( groupTypeId.Value );
+                .GetChatEnabledGroupCount( groupType.Id );
 
             return ActionOk( count );
         }
@@ -1858,6 +1895,12 @@ namespace Rock.Blocks.Group
                 return ActionBadRequest( "Invalid entity." );
             }
 
+            if ( !TryGetPageGroupTypeForEdit( out var pageGroupType, out var error ) )
+            {
+                return error;
+            }
+
+            // Each branch below only answers for records of the page's group type.
             var entityKey = request.EntityKey;
             string errorMessage;
             bool canDelete;
@@ -1871,6 +1914,11 @@ namespace Rock.Blocks.Group
                     return ActionOk( new CanDeleteResponseBag { CanDelete = true } );
                 }
 
+                if ( entity.GroupTypeId != pageGroupType.Id )
+                {
+                    return ActionBadRequest( "Invalid entity." );
+                }
+
                 canDelete = service.CanDelete( entity, out errorMessage );
             }
             else if ( entityKey == EntityKey.ScheduleExclusion )
@@ -1880,6 +1928,11 @@ namespace Rock.Blocks.Group
                 if ( entity == null )
                 {
                     return ActionOk( new CanDeleteResponseBag { CanDelete = true } );
+                }
+
+                if ( entity.GroupTypeId != pageGroupType.Id )
+                {
+                    return ActionBadRequest( "Invalid entity." );
                 }
 
                 canDelete = service.CanDelete( entity, out errorMessage );
@@ -1893,6 +1946,11 @@ namespace Rock.Blocks.Group
                     return ActionOk( new CanDeleteResponseBag { CanDelete = true } );
                 }
 
+                if ( entity.GroupTypeId != pageGroupType.Id )
+                {
+                    return ActionBadRequest( "Invalid entity." );
+                }
+
                 canDelete = service.CanDelete( entity, out errorMessage );
             }
             else if ( entityKey == EntityKey.GroupMemberWorkflowTrigger )
@@ -1902,6 +1960,11 @@ namespace Rock.Blocks.Group
                 if ( entity == null )
                 {
                     return ActionOk( new CanDeleteResponseBag { CanDelete = true } );
+                }
+
+                if ( entity.GroupTypeId != pageGroupType.Id )
+                {
+                    return ActionBadRequest( "Invalid entity." );
                 }
 
                 canDelete = service.CanDelete( entity, out errorMessage );
@@ -1921,6 +1984,11 @@ namespace Rock.Blocks.Group
         [BlockAction]
         public BlockActionResult GetInheritedAttributes( Guid inheritedGroupTypeGuid )
         {
+            if ( !TryGetPageGroupTypeForEdit( out _, out var error ) )
+            {
+                return error;
+            }
+
             var responseBag = new GetInheritedAttributesResponseBag
             {
                 InheritedGroupAttributes = new List<GroupTypeInheritedAttributeBag>(),
@@ -1953,6 +2021,20 @@ namespace Rock.Blocks.Group
                         if ( !visitedGroupTypeIds.Add( inheritedGroupType.Id ) )
                         {
                             return ActionBadRequest( "A circular Group Type inheritance relationship was detected. Please examine the 'Inherited Group Type' setting." );
+                        }
+
+                        /*
+                            11/25/2026 - MSE
+
+                            Stop at a group type the person cannot view, so its attribute
+                            definitions (and those of the types it inherits from) are not
+                            listed.
+
+                            Reason: Prevent reading attributes of group types without View rights.
+                        */
+                        if ( !inheritedGroupType.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+                        {
+                            break;
                         }
 
                         var qualifierValue = inheritedGroupType.Id.ToString();
