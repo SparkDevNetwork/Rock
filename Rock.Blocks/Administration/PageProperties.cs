@@ -511,11 +511,26 @@ namespace Rock.Blocks.Administration
             box.IfValidProperty( nameof( box.Bag.HeaderContent ),
                 () => entity.HeaderContent = box.Bag.HeaderContent );
 
+            var existingIconBinaryFileId = entity.IconBinaryFileId;
+
             box.IfValidProperty( nameof( box.Bag.IconBinaryFile ),
                 () => entity.IconBinaryFileId = box.Bag.IconBinaryFile.GetEntityId<BinaryFile>( RockContext ) );
 
             box.IfValidProperty( nameof( box.Bag.IconBinaryFileId ),
                 () => entity.IconBinaryFileId = box.Bag.IconBinaryFileId );
+
+            /*
+                11/25/2026 - MSE
+
+                The icon file comes from the client, so only the current icon or a
+                new file the person uploaded is accepted, the same as Site Detail.
+
+                Reason: Any existing file could be set as the page icon.
+            */
+            if ( !new BinaryFileService( RockContext ).IsUploadedBinaryFileAllowedForPerson( entity.IconBinaryFileId, existingIconBinaryFileId, RequestContext.CurrentPerson ) )
+            {
+                return false;
+            }
 
             box.IfValidProperty( nameof( box.Bag.IconCssClass ),
                 () => entity.IconCssClass = box.Bag.IconCssClass );
