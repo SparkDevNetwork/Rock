@@ -1115,12 +1115,18 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="Rock.Web.UI.Controls.RowEventArgs" /> instance containing the event data.</param>
         protected void DeleteOrArchiveGroupMember_Click( object sender, Rock.Web.UI.Controls.RowEventArgs e )
         {
+            // The delete column is only shown to people who can edit the block or the group's members.
+            if ( _group == null || !CanEditBlock() )
+            {
+                return;
+            }
+
             RockContext rockContext = new RockContext();
             GroupMemberService groupMemberService = new GroupMemberService( rockContext );
 
             GroupMemberHistoricalService groupMemberHistoricalService = new GroupMemberHistoricalService( rockContext );
             GroupMember groupMember = groupMemberService.Get( e.RowKeyId );
-            if ( groupMember != null )
+            if ( groupMember != null && groupMember.GroupId == _group.Id )
             {
                 bool archive = false;
                 if ( _groupTypeCache.EnableGroupHistory == true && groupMemberHistoricalService.Queryable().Any( a => a.GroupMemberId == groupMember.Id ) )
@@ -1273,6 +1279,12 @@ namespace RockWeb.Blocks.Groups
 
         protected void lbGroupSync_Click( object sender, EventArgs e )
         {
+            // Syncing adds, removes and archives members, so it follows the same rule as editing members.
+            if ( !CanSyncGroup )
+            {
+                return;
+            }
+
             var groupSyncService = new GroupSyncService( new RockContext() );
             var task = Task.Run( () =>
             {
@@ -1572,6 +1584,21 @@ namespace RockWeb.Blocks.Groups
         {
             return IsUserAuthorized( Authorization.EDIT )
                 || ( _group != null && ( _group.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) || _group.IsAuthorized( Authorization.MANAGE_MEMBERS, this.CurrentPerson ) ) );
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether the current person can start a sync of the group's members.
+        /// Used by the markup to only render the Sync Now button for these people.
+        /// </summary>
+        /// <value><c>true</c> if the current person can sync the group; otherwise, <c>false</c>.</value>
+        protected bool CanSyncGroup
+        {
+            get
+            {
+                return _group != null
+                    && _group.IsAuthorized( Authorization.VIEW, this.CurrentPerson )
+                    && CanEditBlock();
+            }
         }
 
         /// <summary>

@@ -212,11 +212,13 @@
                         }, 100);
                     });
 
+                    <% if ( CanSyncGroup ) { %>
                     $(document).ready(function () {
                         $("#<%= spanSyncLink.ClientID %>").attr("data-content", function (i, val) {
                             return val + "<br /> <a id=\"sync-button\" href=\"#\" class='btn btn-default btn-xs'>Sync Now</a>"
                         }); 
                     })
+                    <% } %>
 
                    // $('.js-person-popover').popover('show'); // uncomment for styling
 
