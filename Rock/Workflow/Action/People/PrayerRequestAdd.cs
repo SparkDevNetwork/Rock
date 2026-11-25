@@ -270,13 +270,39 @@ namespace Rock.Workflow.Action
 
         #endregion Keys
 
-        #region Instance Properties
+        #region Execution Context
 
-        private Dictionary<string, object> _mergeFields;
-        private WorkflowAction _action;
-        private RockContext _rockContext;
+        /*
+            11/25/2026 - MSE
 
-        #endregion Instance Properties
+            Action components are shared singletons: one instance runs every workflow.
+            Per-run values live in this object, built in Execute and passed to each
+            helper. Do not move them to fields on this class.
+
+            Reason: Fields on the component let one run read another run's values.
+        */
+        /// <summary>
+        /// The values for a single run of this action.
+        /// </summary>
+        private sealed class ExecutionContext
+        {
+            /// <summary>
+            /// Gets or sets the workflow action being run.
+            /// </summary>
+            public WorkflowAction Action { get; set; }
+
+            /// <summary>
+            /// Gets or sets the rock context for this run.
+            /// </summary>
+            public RockContext RockContext { get; set; }
+
+            /// <summary>
+            /// Gets or sets the merge fields for this run.
+            /// </summary>
+            public Dictionary<string, object> MergeFields { get; set; }
+        }
+
+        #endregion Execution Context
 
         /// <summary>
         /// Executes the specified workflow.
@@ -290,40 +316,42 @@ namespace Rock.Workflow.Action
         {
             errorMessages = new List<string>();
 
-            // Initialize instance properties
-            _action = action;
-            _rockContext = rockContext;
-            _mergeFields = GetMergeFields( action );
+            var context = new ExecutionContext
+            {
+                Action = action,
+                RockContext = rockContext,
+                MergeFields = GetMergeFields( action )
+            };
 
             // Create the prayer request
             var prayerRequestService = new PrayerRequestService( rockContext );
-            var isApproved = GetBoolean( AttributeKey.IsApproved );
+            var isApproved = GetBoolean( context, AttributeKey.IsApproved );
             var now = RockDateTime.Now;
-            var category = GetCategory();
+            var category = GetCategory( context );
 
             var prayerRequest = new PrayerRequest
             {
-                AllowComments = GetBooleanFromSelectedAttribute( AttributeKey.AreCommentsAllowed ),
+                AllowComments = GetBooleanFromSelectedAttribute( context, AttributeKey.AreCommentsAllowed ),
                 ApprovedOnDateTime = isApproved == true ? now : ( DateTime? ) null,
                 IsApproved = isApproved,
-                CampusId = GetCampusId(),
+                CampusId = GetCampusId( context ),
                 CategoryId = category?.Id,
                 EnteredDateTime = now,
-                ExpirationDate = GetExpirationDate( now ),
+                ExpirationDate = GetExpirationDate( context, now ),
                 IsActive = true,
-                IsPublic = GetBooleanFromSelectedAttribute( AttributeKey.IsPublic ),
-                IsUrgent = GetBooleanFromSelectedAttribute( AttributeKey.IsUrgent ),
-                Text = GetResolvedLava( AttributeKey.Request )
+                IsPublic = GetBooleanFromSelectedAttribute( context, AttributeKey.IsPublic ),
+                IsUrgent = GetBooleanFromSelectedAttribute( context, AttributeKey.IsUrgent ),
+                Text = GetResolvedLava( context, AttributeKey.Request )
             };
 
             // Set the requestor fields dependent on the attributes set
-            var requestor = GetRequestor();
+            var requestor = GetRequestor( context );
 
             if ( requestor == null )
             {
-                prayerRequest.Email = GetTextFromSelectedAttribute( AttributeKey.Email );
-                prayerRequest.FirstName = GetTextFromSelectedAttribute( AttributeKey.FirstName );
-                prayerRequest.LastName = GetTextFromSelectedAttribute( AttributeKey.LastName );
+                prayerRequest.Email = GetTextFromSelectedAttribute( context, AttributeKey.Email );
+                prayerRequest.FirstName = GetTextFromSelectedAttribute( context, AttributeKey.FirstName );
+                prayerRequest.LastName = GetTextFromSelectedAttribute( context, AttributeKey.LastName );
             }
             else
             {
@@ -383,20 +411,22 @@ namespace Rock.Workflow.Action
         /// <summary>
         /// Gets the nullable boolean attribute value.
         /// </summary>
+        /// <param name="context">The values for this run.</param>
         /// <param name="attributeKey">The attribute key.</param>
         /// <returns></returns>
-        private bool? GetBoolean( string attributeKey )
+        private bool? GetBoolean( ExecutionContext context, string attributeKey )
         {
-            return GetAttributeValue( _action, attributeKey ).AsBooleanOrNull();
+            return GetAttributeValue( context.Action, attributeKey ).AsBooleanOrNull();
         }
 
         /// <summary>
         /// Gets the campus identifier.
         /// </summary>
+        /// <param name="context">The values for this run.</param>
         /// <returns></returns>
-        private int? GetCampusId()
+        private int? GetCampusId( ExecutionContext context )
         {
-            var guid = GetGuidFromTextOrAttribute( AttributeKey.Campus );
+            var guid = GetGuidFromTextOrAttribute( context, AttributeKey.Campus );
 
             if ( !guid.HasValue )
             {
@@ -409,10 +439,11 @@ namespace Rock.Workflow.Action
         /// <summary>
         /// Gets the category.
         /// </summary>
+        /// <param name="context">The values for this run.</param>
         /// <returns></returns>
-        private CategoryCache GetCategory()
+        private CategoryCache GetCategory( ExecutionContext context )
         {
-            var guid = GetGuidFromSelectedAttribute( AttributeKey.Category );
+            var guid = GetGuidFromSelectedAttribute( context, AttributeKey.Category );
 
             if ( !guid.HasValue )
             {
@@ -425,10 +456,12 @@ namespace Rock.Workflow.Action
         /// <summary>
         /// Gets the expiration date.
         /// </summary>
+        /// <param name="context">The values for this run.</param>
+        /// <param name="now">The current date and time.</param>
         /// <returns></returns>
-        private DateTime GetExpirationDate( DateTime now )
+        private DateTime GetExpirationDate( ExecutionContext context, DateTime now )
         {
-            var days = GetAttributeValue( _action, AttributeKey.ExpireAfterDays ).AsIntegerOrNull();
+            var days = GetAttributeValue( context.Action, AttributeKey.ExpireAfterDays ).AsIntegerOrNull();
 
             if ( !days.HasValue || days.Value < 1 )
             {
@@ -441,16 +474,17 @@ namespace Rock.Workflow.Action
         /// <summary>
         /// Gets the lava resolved string using a text value or text from an attribute value.
         /// </summary>
+        /// <param name="context">The values for this run.</param>
         /// <param name="attributeKey">The attribute key.</param>
         /// <returns></returns>
-        private string GetResolvedLava( string attributeKey )
+        private string GetResolvedLava( ExecutionContext context, string attributeKey )
         {
-            var attributeGuid = GetAttributeValue( _action, attributeKey ).AsGuidOrNull();
+            var attributeGuid = GetAttributeValue( context.Action, attributeKey ).AsGuidOrNull();
 
             // If it's just text then get the text and resolve the lava
             if ( !attributeGuid.HasValue )
             {
-                return GetAttributeValue( _action, attributeKey ).ResolveMergeFields( _mergeFields );
+                return GetAttributeValue( context.Action, attributeKey ).ResolveMergeFields( context.MergeFields );
             }
 
             /*
@@ -463,21 +497,22 @@ namespace Rock.Workflow.Action
                 Reason: Attribute values can hold untrusted input and must not run as Lava.
             */
             // If it's text within an attribute then use the attribute value as data.
-            return _action.GetWorkflowAttributeValue( attributeGuid.Value ) ?? string.Empty;
+            return context.Action.GetWorkflowAttributeValue( attributeGuid.Value ) ?? string.Empty;
         }
 
         /// <summary>
         /// Gets the requestor person either from the attribute or using person matching if allowed
         /// </summary>
+        /// <param name="context">The values for this run.</param>
         /// <returns></returns>
-        private Person GetRequestor()
+        private Person GetRequestor( ExecutionContext context )
         {
             Person person;
-            var personAliasGuid = GetGuidFromTextOrAttribute( AttributeKey.Requestor );
+            var personAliasGuid = GetGuidFromTextOrAttribute( context, AttributeKey.Requestor );
 
             if ( personAliasGuid.HasValue )
             {
-                var personAliasService = new PersonAliasService( _rockContext );
+                var personAliasService = new PersonAliasService( context.RockContext );
                 person = personAliasService.GetPerson( personAliasGuid.Value );
 
                 if ( person != null )
@@ -486,14 +521,14 @@ namespace Rock.Workflow.Action
                 }
             }
 
-            if ( GetBoolean( AttributeKey.IsPersonMatchingEnabled ) != true )
+            if ( GetBoolean( context, AttributeKey.IsPersonMatchingEnabled ) != true )
             {
                 return null;
             }
 
-            var email = GetTextFromSelectedAttribute( AttributeKey.Email );
-            var firstName = GetTextFromSelectedAttribute( AttributeKey.FirstName );
-            var lastName = GetTextFromSelectedAttribute( AttributeKey.LastName );
+            var email = GetTextFromSelectedAttribute( context, AttributeKey.Email );
+            var firstName = GetTextFromSelectedAttribute( context, AttributeKey.FirstName );
+            var lastName = GetTextFromSelectedAttribute( context, AttributeKey.LastName );
 
             // Email, first, and last name are all required to do person matching
             if ( email.IsNullOrWhiteSpace() || firstName.IsNullOrWhiteSpace() || lastName.IsNullOrWhiteSpace() )
@@ -501,7 +536,7 @@ namespace Rock.Workflow.Action
                 return null;
             }
 
-            var personService = new PersonService( _rockContext );
+            var personService = new PersonService( context.RockContext );
             var query = new PersonService.PersonMatchQuery( firstName, lastName, email, null );
             return personService.FindPerson( query, false, true, false );
         }
@@ -509,9 +544,10 @@ namespace Rock.Workflow.Action
         /// <summary>
         /// Gets the unique identifier from text or attribute.
         /// </summary>
+        /// <param name="context">The values for this run.</param>
         /// <param name="attributeKey">The attribute key.</param>
         /// <returns></returns>
-        private Guid? GetGuidFromTextOrAttribute( string attributeKey )
+        private Guid? GetGuidFromTextOrAttribute( ExecutionContext context, string attributeKey )
         {
             /*
                 10/26/2026 - MSE
@@ -522,44 +558,47 @@ namespace Rock.Workflow.Action
 
                 Reason: Attribute values can hold untrusted input and must not run as Lava.
             */
-            return GetTextOrAttributeValue( _action, attributeKey, _mergeFields ).AsGuidOrNull();
+            return GetTextOrAttributeValue( context.Action, attributeKey, context.MergeFields ).AsGuidOrNull();
         }
 
         /// <summary>
         /// Get a string value from a workflow attribute
         /// </summary>
+        /// <param name="context">The values for this run.</param>
         /// <param name="attributeKey"></param>
         /// <returns></returns>
-        private string GetTextFromSelectedAttribute( string attributeKey )
+        private string GetTextFromSelectedAttribute( ExecutionContext context, string attributeKey )
         {
-            var attributeGuid = GetAttributeValue( _action, attributeKey ).AsGuidOrNull();
+            var attributeGuid = GetAttributeValue( context.Action, attributeKey ).AsGuidOrNull();
 
             if ( !attributeGuid.HasValue )
             {
                 return string.Empty;
             }
 
-            return _action.GetWorkflowAttributeValue( attributeGuid.Value );
+            return context.Action.GetWorkflowAttributeValue( attributeGuid.Value );
         }
 
         /// <summary>
         /// Get a bool value from a workflow attribute
         /// </summary>
+        /// <param name="context">The values for this run.</param>
         /// <param name="attributeKey"></param>
         /// <returns></returns>
-        private bool? GetBooleanFromSelectedAttribute( string attributeKey )
+        private bool? GetBooleanFromSelectedAttribute( ExecutionContext context, string attributeKey )
         {
-            return GetTextFromSelectedAttribute( attributeKey ).AsBooleanOrNull();
+            return GetTextFromSelectedAttribute( context, attributeKey ).AsBooleanOrNull();
         }
 
         /// <summary>
         /// Get a guid value from a workflow attribute
         /// </summary>
+        /// <param name="context">The values for this run.</param>
         /// <param name="attributeKey"></param>
         /// <returns></returns>
-        private Guid? GetGuidFromSelectedAttribute( string attributeKey )
+        private Guid? GetGuidFromSelectedAttribute( ExecutionContext context, string attributeKey )
         {
-            return GetTextFromSelectedAttribute( attributeKey ).AsGuidOrNull();
+            return GetTextFromSelectedAttribute( context, attributeKey ).AsGuidOrNull();
         }
     }
 }
