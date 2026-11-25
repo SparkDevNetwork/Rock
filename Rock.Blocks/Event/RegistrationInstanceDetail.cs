@@ -691,6 +691,44 @@ namespace Rock.Blocks.Event
         }
 
         /// <summary>
+        /// Sets the template of a new instance from a template key sent by the
+        /// client, when the page did not supply one (such as when copying an
+        /// instance), and checks edit rights again against that template.
+        /// </summary>
+        /// <param name="entity">The instance loaded by <see cref="TryGetEntityForEditAction"/>.</param>
+        /// <param name="templateKey">The registration template identifier key from the client.</param>
+        /// <param name="error">Contains the action error result when <c>false</c> is returned.</param>
+        /// <returns><c>true</c> if the instance may still be edited.</returns>
+        private bool TrySetNewInstanceTemplateFromKey( RegistrationInstance entity, string templateKey, out BlockActionResult error )
+        {
+            error = null;
+
+            if ( entity.Id != 0 || entity.RegistrationTemplateId != 0 || templateKey.IsNullOrWhiteSpace() )
+            {
+                return true;
+            }
+
+            var resolvedTemplateId = new RegistrationTemplateService( RockContext )
+                .GetSelect( templateKey, t => ( int? ) t.Id, !PageCache.Layout.Site.DisablePredictableIds );
+            if ( !resolvedTemplateId.HasValue )
+            {
+                return true;
+            }
+
+            entity.RegistrationTemplateId = resolvedTemplateId.Value;
+
+            // The registration template came from the client, so edit rights are checked again against it.
+            entity.RegistrationTemplate = new RegistrationTemplateService( RockContext ).Get( resolvedTemplateId.Value );
+            if ( !IsAuthorizedForEdit( entity ) )
+            {
+                error = ActionForbidden( $"Not authorized to edit {RegistrationInstance.FriendlyTypeName}." );
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
         /// Gets the registration template, including its financial gateway.
         /// </summary>
         /// <param name="registrationTemplateId">The registration template identifier.</param>
@@ -1088,23 +1126,9 @@ namespace Rock.Blocks.Event
 
                  Reason: Ensure copied Registration Instances keep the correct Registration Template.
             */
-            if ( entity.Id == 0
-                && entity.RegistrationTemplateId == 0
-                && box.Bag.RegistrationTemplateIdKey.IsNotNullOrWhiteSpace() )
+            if ( !TrySetNewInstanceTemplateFromKey( entity, box.Bag.RegistrationTemplateIdKey, out actionError ) )
             {
-                var resolvedTemplateId = new RegistrationTemplateService( RockContext )
-                    .GetSelect( box.Bag.RegistrationTemplateIdKey, t => ( int? ) t.Id, !PageCache.Layout.Site.DisablePredictableIds );
-                if ( resolvedTemplateId.HasValue )
-                {
-                    entity.RegistrationTemplateId = resolvedTemplateId.Value;
-
-                    // The registration template came from the client, so edit rights are checked again against it.
-                    entity.RegistrationTemplate = new RegistrationTemplateService( RockContext ).Get( resolvedTemplateId.Value );
-                    if ( !IsAuthorizedForEdit( entity ) )
-                    {
-                        return ActionForbidden( $"Not authorized to edit {RegistrationInstance.FriendlyTypeName}." );
-                    }
-                }
+                return actionError;
             }
 
             if ( !UpdateEntityFromBox( entity, box ) )
@@ -1402,20 +1426,42 @@ namespace Rock.Blocks.Event
         /// Returns the fund list for a selected gateway merchant. Used by the edit
         /// panel to cascade the fund dropdown when the merchant changes.
         /// </summary>
-        /// <param name="templateKey">The registration template identifier key (from the bag).
-        /// The template — not the instance — owns the gateway, so this works for both
-        /// existing and new (unsaved) instances.</param>
+        /// <param name="key">The identifier key of the instance being edited, or <c>null</c> for a new instance.</param>
+        /// <param name="templateKey">The registration template identifier key from the bag. Only used
+        /// for a new instance when the page does not supply the template (such as a copy).</param>
         /// <param name="merchantId">The selected merchant identifier.</param>
         [BlockAction]
-        public BlockActionResult GetGatewayFunds( string templateKey, string merchantId )
+        public BlockActionResult GetGatewayFunds( string key, string templateKey, string merchantId )
         {
-            if ( templateKey.IsNullOrWhiteSpace() || merchantId.IsNullOrWhiteSpace() )
+            if ( merchantId.IsNullOrWhiteSpace() )
             {
                 return ActionOk( new List<ListItemBag>() );
             }
 
-            var gateway = new RegistrationTemplateService( RockContext )
-                .GetSelect( templateKey, t => t.FinancialGateway, !PageCache.Layout.Site.DisablePredictableIds );
+            /*
+                11/25/2026 - MSE
+
+                Only the edit panel calls this, so require the same edit access as
+                Save, take the gateway from the instance's template and only ask the
+                gateway about a merchant it offers.
+
+                Reason: View-only people must not query the payment gateway.
+            */
+            if ( !TryGetEntityForEditAction( key, out var entity, out var actionError ) )
+            {
+                return actionError;
+            }
+
+            if ( !TrySetNewInstanceTemplateFromKey( entity, templateKey, out actionError ) )
+            {
+                return actionError;
+            }
+
+            var templateId = entity.RegistrationTemplateId;
+            var gateway = new RegistrationTemplateService( RockContext ).Queryable()
+                .Where( t => t.Id == templateId )
+                .Select( t => t.FinancialGateway )
+                .FirstOrDefault();
 
             if ( gateway == null || !gateway.IsRedirectionGateway() )
             {
@@ -1423,6 +1469,11 @@ namespace Rock.Blocks.Event
             }
 
             if ( !( gateway.GetGatewayComponent() is IRedirectionGatewayComponent gatewayComponent ) )
+            {
+                return ActionOk( new List<ListItemBag>() );
+            }
+
+            if ( !gatewayComponent.GetMerchants().Any( m => m.Key == merchantId ) )
             {
                 return ActionOk( new List<ListItemBag>() );
             }
