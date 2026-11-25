@@ -1454,6 +1454,7 @@ namespace Rock.Blocks.Group
             var oldPhotoId = entity.PhotoId;
             var oldChatChannelAvatarId = entity.ChatChannelAvatarBinaryFileId;
             var oldScheduleId = entity.ScheduleId;
+            var oldParentGroupId = entity.ParentGroupId;
 
             // The schedule picker only offers named schedules, so a newly
             // selected named schedule must have a name. Otherwise a tampered
@@ -1495,6 +1496,28 @@ namespace Rock.Blocks.Group
             if ( !ValidateGroup( entity, box.Bag, out var validationMessage ) )
             {
                 return ActionBadRequest( validationMessage );
+            }
+
+            /*
+                11/25/2026 - MSE
+
+                Moving an existing group under a different parent requires
+                EDIT on the new parent, not just the VIEW that ValidateGroup
+                checks. EDIT on the group itself does not say anything about
+                the destination. The parent is loaded by id because the
+                ParentGroup navigation can still hold the old parent after
+                the FK changed.
+
+                Reason: Require EDIT on the destination parent when a group
+                is moved.
+            */
+            if ( !isNew && entity.ParentGroupId.HasValue && entity.ParentGroupId != oldParentGroupId )
+            {
+                var newParentGroup = new GroupService( RockContext ).Get( entity.ParentGroupId.Value );
+                if ( newParentGroup == null || !newParentGroup.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+                {
+                    return ActionBadRequest( "Not authorized to move the group under the selected parent group." );
+                }
             }
 
             /*
