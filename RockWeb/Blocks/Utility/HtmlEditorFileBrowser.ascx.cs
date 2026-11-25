@@ -263,8 +263,17 @@ namespace RockWeb.Blocks.Utility
                 BuildFolderTreeView();
             }
 
+            /*
+                11/25/2026 - MSE
+
+                Read the postback argument from the posted form only, not Request.Params,
+                which also includes the query string.
+
+                Reason: Only run file and folder actions from a real postback.
+            */
+
             // handle custom postback events
-            string postbackArgs = Request.Params["__EVENTARGUMENT"];
+            string postbackArgs = Page.IsPostBack ? Request.Form["__EVENTARGUMENT"] : null;
             if ( !string.IsNullOrWhiteSpace( postbackArgs ) )
             {
                 string[] nameValue = postbackArgs.Split( new char[] { ':' } );

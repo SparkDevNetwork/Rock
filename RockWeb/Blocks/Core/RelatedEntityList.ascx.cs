@@ -41,14 +41,15 @@ using System.Web;
     RelatedEntityGuid|PurposeKey|ConfirmationMessage
 
     ConfirmationMessage (optional) - If you don't provide one no confirmation will be displayed. Be sure that this message is escaped if you think it could contain unsafe characters.
-    PurposeKey (optional) - If you don't provide one the first key from the block setting will be used.
+    PurposeKey (optional) - Not used. The relationship must already be listed by this block.
 
     AddRelationship
     --------------------
     SourceEntity(Id/Guid)|TargetEntity(Id/Guid)|PurposeKey|ConfirmationMessage
 
+    SourceEntity - Not used. The source is always the block's own source (the current person, or the Source page parameter).
     ConfirmationMessage (optional) - If you don't provide one no confirmation will be displayed. Be sure that this message is escaped if you think it could contain unsafe characters.
-    PurposeKey (optional) - If you don't provide one the first key from the block setting will be used.
+    PurposeKey (optional) - Must be one of the keys in the block setting (case-insensitive). If you don't provide one the first key from the block setting will be used.
 
     Sample:
     {% assign safeMinifigName = minifig.Value | EscapeDataString %}
@@ -559,44 +560,56 @@ namespace RockWeb.Blocks.Core
         private void ProcessAddRequest( List<string> parms )
         {
             var confirmationMessage = string.Empty;
-            var purposeKey = PurposeKeys.First() ?? string.Empty;
 
-            Guid sourceEntityGuid;
-            Guid targetEntityGuid;
-
-            // Get source entity id
-            if ( Guid.TryParse( parms[0], out sourceEntityGuid ) )
-            {
-                var sourceEntityId = Reflection.GetEntityIdForEntityType( sourceEntityTypeId, sourceEntityGuid );
-                this.CurrentSourceEntityId = sourceEntityId.HasValue ? sourceEntityId.Value : 0;
-            }
-            else
-            {
-                this.CurrentSourceEntityId = parms[0].AsInteger();
-            }
-
-            // Get target entity id
-            if ( Guid.TryParse( parms[1], out targetEntityGuid ) )
-            {
-                var targetEntityId = Reflection.GetEntityIdForEntityType( targetEntityTypeId, targetEntityGuid );
-                this.CurrentTargetEntityId = targetEntityId.HasValue ? targetEntityId.Value : 0;
-            }
-            else
-            {
-                this.CurrentTargetEntityId = parms[1].AsInteger();
-            }
-
-            // Check that we have valid entity ids
-            if (this.CurrentSourceEntityId == 0 || this.CurrentTargetEntityId == 0 )
+            if ( parms.Count < 2 )
             {
                 return;
             }
 
-            // Get purpose key
-            if ( parms.Count >= 3 )
+            /*
+                11/25/2026 - MSE
+
+                The source entity comes from the block's own setup (the current person or the
+                Source page parameter), not from the posted arguments, and the purpose key must be
+                one of the keys configured on the block. The posted source value is ignored.
+
+                Reason: Only add relationships for the source and purposes this block is configured for.
+            */
+            if ( !sourceEntityId.HasValue || sourceEntityId.Value == 0 || sourceEntityTypeId == 0 || targetEntityTypeId == 0 )
             {
-                this.CurrentPurposeKey = parms[2];
+                return;
             }
+
+            Guid targetEntityGuid;
+            int targetEntityId;
+
+            // Get target entity id
+            if ( Guid.TryParse( parms[1], out targetEntityGuid ) )
+            {
+                targetEntityId = Reflection.GetEntityIdForEntityType( targetEntityTypeId, targetEntityGuid ) ?? 0;
+            }
+            else
+            {
+                targetEntityId = parms[1].AsInteger();
+            }
+
+            // Check that we have a valid target entity id
+            if ( targetEntityId == 0 )
+            {
+                return;
+            }
+
+            // Get purpose key, which must be one of the configured keys. Default to the first configured key.
+            var purposeKey = GetConfiguredPurposeKey( parms.Count >= 3 ? parms[2] : string.Empty );
+
+            if ( purposeKey == null )
+            {
+                return;
+            }
+
+            this.CurrentSourceEntityId = sourceEntityId.Value;
+            this.CurrentTargetEntityId = targetEntityId;
+            this.CurrentPurposeKey = purposeKey;
 
             // Get confirmation message
             if ( parms.Count >= 4 )
@@ -621,6 +634,25 @@ namespace RockWeb.Blocks.Core
         /// </summary>
         private void AddRelationship()
         {
+            /*
+                11/25/2026 - MSE
+
+                The confirm add dialog saves from ViewState, so check the saved values again here
+                against the block's own source and configured purpose keys before adding.
+
+                Reason: Only add relationships for the source and purposes this block is configured for.
+            */
+            if ( !sourceEntityId.HasValue
+                 || sourceEntityId.Value == 0
+                 || sourceEntityTypeId == 0
+                 || targetEntityTypeId == 0
+                 || CurrentSourceEntityId != sourceEntityId.Value
+                 || CurrentTargetEntityId == 0
+                 || GetConfiguredPurposeKey( CurrentPurposeKey ) != CurrentPurposeKey )
+            {
+                return;
+            }
+
             var rockContext = RockApp.Current.CreateRockContext();
             var relatedEntityService = new RelatedEntityService( rockContext );
 
@@ -640,13 +672,28 @@ namespace RockWeb.Blocks.Core
         }
 
         /// <summary>
+        /// Gets the configured purpose key that matches the given key, ignoring case, or
+        /// the first configured key when the given key is empty.
+        /// </summary>
+        /// <param name="purposeKey">The purpose key.</param>
+        /// <returns>The configured spelling of the key, or <c>null</c> if it is not configured.</returns>
+        private string GetConfiguredPurposeKey( string purposeKey )
+        {
+            if ( purposeKey.IsNullOrWhiteSpace() )
+            {
+                return PurposeKeys.FirstOrDefault() ?? string.Empty;
+            }
+
+            return PurposeKeys.FirstOrDefault( k => k.Equals( purposeKey, StringComparison.OrdinalIgnoreCase ) );
+        }
+
+        /// <summary>
         /// Displays the delete relationship.
         /// </summary>
         /// <param name="relationshipId">The relationship identifier.</param>
         private void ProcessDeleteRequest( List<string> parms )
         {
             var confirmationMessage = string.Empty;
-            var purposeKey = PurposeKeys.First() ?? string.Empty;
 
             Guid relationshipGuid ;
 
@@ -655,11 +702,7 @@ namespace RockWeb.Blocks.Core
                 return; // Invalid related entity guid provided
             }
 
-            // Get purpose key
-            if ( parms.Count >= 2 )
-            {
-                purposeKey = parms[1];
-            }
+            // The second parameter is the purpose key. Delete does not need it.
 
             // Get confirmation message
             if ( parms.Count >= 3 )
@@ -675,7 +718,6 @@ namespace RockWeb.Blocks.Core
             {
                 // Persist the relationship id for use in partial postbacks
                 this.CurrentRelationshipId = relatedEntity.Id;
-                this.CurrentPurposeKey = purposeKey;
 
                 // If no confirmation message process delete now.
                 if ( confirmationMessage.IsNullOrWhiteSpace() )
