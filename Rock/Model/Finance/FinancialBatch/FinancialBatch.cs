@@ -170,6 +170,7 @@ namespace Rock.Model
         /// <value>
         /// The Batch Key
         /// </value>
+        [MaxLength( 50 )]
         [StringValidation( StringValidationProfile.PlainText )]
         public string RemoteSettlementBatchKey { get; set; }
 

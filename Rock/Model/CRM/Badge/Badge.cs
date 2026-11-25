@@ -143,7 +143,7 @@ namespace Rock.Model
         public BadgeConfiguration()
         {
             HasRequired( b => b.BadgeComponentEntityType ).WithMany().HasForeignKey( b => b.BadgeComponentEntityTypeId ).WillCascadeOnDelete( false );
-            HasRequired( b => b.EntityType ).WithMany().HasForeignKey( b => b.EntityTypeId ).WillCascadeOnDelete( false );
+            HasOptional( b => b.EntityType ).WithMany().HasForeignKey( b => b.EntityTypeId ).WillCascadeOnDelete( false );
         }
     }
 

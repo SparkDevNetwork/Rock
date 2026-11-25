@@ -3,12 +3,6 @@
     {
       "Check": "mapping",
       "Code": "LengthMismatch",
-      "Object": "dbo.FinancialBatch.RemoteSettlementBatchKey",
-      "Reason": "Known drift found by the first mapping check on develop (2026-10-27): the model has no [MaxLength( 50 )], so EF maps nvarchar(max). Not fixed yet; add [MaxLength( 50 )] to the model, then remove this entry."
-    },
-    {
-      "Check": "mapping",
-      "Code": "LengthMismatch",
       "Object": "dbo.PhoneNumber.NumberReversed",
       "Reason": "Computed column ([DatabaseGenerated( Computed )]) that EF only reads; the model leaves the length unset, so EF maps nvarchar(max)."
     },
@@ -101,36 +95,6 @@
       "Code": "NullabilityMismatch",
       "Object": "dbo.AttributeValue.ValueChecksum",
       "Reason": "Computed column. SQL Server reports computed columns as nullable, but the expression never returns NULL, so EF reads it safely."
-    },
-    {
-      "Check": "mapping",
-      "Code": "NullabilityMismatch",
-      "Object": "dbo.Badge.EntityTypeId",
-      "Reason": "Known drift found by the first mapping check on develop (2026-10-27): the model requires a value but the column allows NULL. Not fixed yet; make the column NOT NULL with a migration, then remove this entry."
-    },
-    {
-      "Check": "mapping",
-      "Code": "NullabilityMismatch",
-      "Object": "dbo.MetaLastNameLookup.LastName",
-      "Reason": "Known drift found by the first mapping check on develop (2026-10-27): the model requires a value but the column allows NULL. Not fixed yet; make the column NOT NULL with a migration, then remove this entry."
-    },
-    {
-      "Check": "mapping",
-      "Code": "NullabilityMismatch",
-      "Object": "dbo.RegistrationTemplate.Description",
-      "Reason": "Known drift found by the first mapping check on develop (2026-10-27): the model allows NULL but the column is NOT NULL, so saving a null fails. Not fixed yet; fix with a migration or [Required], then remove this entry."
-    },
-    {
-      "Check": "mapping",
-      "Code": "NullabilityMismatch",
-      "Object": "dbo.StepProgram.StepTerm",
-      "Reason": "Known drift found by the first mapping check on develop (2026-10-27): the model allows NULL but the column is NOT NULL, so saving a null fails. Not fixed yet; fix with a migration or [Required], then remove this entry."
-    },
-    {
-      "Check": "mapping",
-      "Code": "NullabilityMismatch",
-      "Object": "dbo.WorkflowActionForm.PersonEntrySpouseLabel",
-      "Reason": "Known drift found by the first mapping check on develop (2026-10-27): the model allows NULL but the column is NOT NULL, so saving a null fails. Not fixed yet; fix with a migration or [Required], then remove this entry."
     },
     {
       "Check": "names",

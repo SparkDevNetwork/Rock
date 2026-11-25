@@ -88,6 +88,7 @@ namespace Rock.Model
         /// <summary>
         /// Gets or sets the term used for steps within this program. This property is required.
         /// </summary>
+        [Required]
         [MaxLength( 100 )]
         [DataMember]
         [StringValidation( StringValidationProfile.PlainText )]
