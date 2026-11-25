@@ -15,6 +15,9 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 
 using Newtonsoft.Json;
 
@@ -38,6 +41,14 @@ namespace Rock.Rest.Swagger
         /// <param name="type">The object type this schema represents.</param>
         public void Apply( Schema schema, SchemaRegistry schemaRegistry, Type type )
         {
+            var enumType = Nullable.GetUnderlyingType( type ) ?? type;
+
+            if ( enumType.IsEnum )
+            {
+                ApplyEnumNames( schema, enumType );
+                return;
+            }
+
             if ( typeof( Rock.Data.IEntity ).IsAssignableFrom( type ) )
             {
                 try
@@ -56,6 +67,59 @@ namespace Rock.Rest.Swagger
                     schema.example = new object();
                 }
             }
+        }
+
+        /// <summary>
+        /// Adds the enum member names to an integer enum schema so that client
+        /// code generators can create named members instead of _0, _1, etc.
+        /// </summary>
+        /// <param name="schema">The inline schema that describes the enum.</param>
+        /// <param name="enumType">The enum type being described.</param>
+        private static void ApplyEnumNames( Schema schema, Type enumType )
+        {
+            // Enums with a string converter are already described by name.
+            if ( schema.type != "integer" )
+            {
+                return;
+            }
+
+            /*
+                11/25/26 - CLAUDE
+
+                Some enums have more than one name for the same value, usually
+                an obsolete name kept for compatibility (AttendanceRule has
+                AlreadyBelongs and AlreadyEnrolledInGroup both = 2). Swashbuckle
+                lists such a value twice, which makes generated clients declare
+                a duplicate member and fail to compile. We list each value once
+                and prefer the name that is not obsolete.
+
+                The x-enumNames extension is read by NSwag and x-enum-varnames
+                by OpenAPI Generator. Both must line up with the enum list.
+
+                Reason: Give REST v2 client generators usable enum member names.
+            */
+            var members = enumType.GetFields( BindingFlags.Public | BindingFlags.Static )
+                .Select( f => new
+                {
+                    f.Name,
+                    Value = Convert.ChangeType( f.GetRawConstantValue(), Enum.GetUnderlyingType( enumType ) ),
+                    IsObsolete = f.GetCustomAttribute<ObsoleteAttribute>() != null
+                } )
+                .GroupBy( m => m.Value )
+                .Select( g => g.OrderBy( m => m.IsObsolete ).First() )
+                .ToList();
+
+            var names = members.Select( m => m.Name ).ToList();
+
+            schema.@enum = members.Select( m => m.Value ).ToList();
+
+            if ( schema.vendorExtensions == null )
+            {
+                schema.vendorExtensions = new Dictionary<string, object>();
+            }
+
+            schema.vendorExtensions["x-enumNames"] = names;
+            schema.vendorExtensions["x-enum-varnames"] = names;
         }
 
         /// <summary>

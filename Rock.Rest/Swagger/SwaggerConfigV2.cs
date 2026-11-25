@@ -97,6 +97,10 @@ namespace Rock.Rest.Swagger
                     c.DocumentFilter<RockV2DocumentFilter>();
                     c.SchemaFilter<RockV2SchemaFilter>();
 
+                    // Run schema filters on inline schemas too, otherwise
+                    // enum schemas never reach RockV2SchemaFilter.
+                    c.ApplyFiltersToAllSchemas();
+
                     // In contrast to WebApi, Swagger 2.0 does not include the query string component when mapping a URL
                     // to an action. As a result, Swashbuckle will raise an exception if it encounters multiple actions
                     // with the same path (sans query string) and HTTP method. You can workaround this by providing a
