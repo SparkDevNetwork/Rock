@@ -387,10 +387,19 @@ namespace Rock.Web
             }
             catch ( Exception ex )
             {
+                /*
+                    11/25/2026 - MSE
+
+                    Keep the exception in this request's Items so only the error page
+                    built for this request can read it. Do not set the "66" level here:
+                    it shows details to everyone and is only for startup failures. The
+                    error page shows details to active administrators.
+
+                    Reason: Error details must not be shared across requests or shown to everyone.
+                */
                 if ( requestContext.HttpContext != null )
                 {
-                    requestContext.HttpContext.Cache["RockExceptionOrder"] = "66";
-                    requestContext.HttpContext.Cache["RockLastException"] = ex;
+                    requestContext.HttpContext.Items["RockLastException"] = ex;
                 }
 
                 return ( System.Web.UI.Page ) BuildManager.CreateInstanceFromVirtualPath( "~/Error.aspx", typeof( System.Web.UI.Page ) );
