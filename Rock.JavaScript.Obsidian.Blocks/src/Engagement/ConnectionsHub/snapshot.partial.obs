@@ -3,6 +3,7 @@
     <div class="snapshot-container">
         <div class="header">{{ metrics?.dashboardTitle }} • <span class="subtext">Last 28 Days</span></div>
         <CompletionMetricsPanel :metrics="metrics"
+                                :hasError="hasError"
                                 footerSuffix=" vs. Previous 28 Days" />
     </div>
 </template>
@@ -18,12 +19,18 @@
 
     defineProps({
         /**
-         * The completion metrics payload. When null or undefined the tiles render
-         * placeholder dashes.
+         * The completion metrics payload. When null or undefined the cards render
+         * their loading state.
          */
         metrics: {
             type: Object as PropType<CompletionMetricsBag | null | undefined>,
             default: null
+        },
+
+        /** When true the cards show their error state, such as after the metrics request failed. */
+        hasError: {
+            type: Boolean as PropType<boolean>,
+            default: false
         }
     });
 </script>

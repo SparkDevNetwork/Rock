@@ -1,24 +1,29 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <GalleryAndResult :importCode="importCode" :exampleCode="exampleCode">
-        <KpiContainer :columns="columns"
-                      :note="note || undefined"
-                      :updatedDateTime="isUpdatedShown ? updatedDateTime : undefined">
-            <KpiCard v-for="card in visibleCards"
-                     :key="card.title"
-                     :title="card.title"
-                     :help="card.help"
-                     :iconCssClass="card.iconCssClass"
-                     :value="card.value"
-                     :valueFormat="card.valueFormat"
-                     :valueTrend="card.valueTrend"
-                     :valueDescription="card.valueDescription"
-                     :isLowerBetter="card.isLowerBetter"
-                     :chart="card.chart"
-                     :content="card.content"
-                     :action="card.action"
-                     :footerText="card.footerText" />
-        </KpiContainer>
+        <div :style="previewStyle">
+            <KpiContainer :columns="columns"
+                          :isDense="isDense"
+                          :isFlush="isFlush"
+                          :note="note || undefined"
+                          :updatedDateTime="isUpdatedShown ? updatedDateTime : undefined">
+                <KpiCard v-for="card in visibleCards"
+                         :key="card.title"
+                         :title="card.title"
+                         :help="card.help"
+                         :iconCssClass="card.iconCssClass"
+                         :layout="layout"
+                         :value="card.value"
+                         :valueFormat="card.valueFormat"
+                         :valueTrend="card.valueTrend"
+                         :valueDescription="card.valueDescription"
+                         :isLowerBetter="card.isLowerBetter"
+                         :chart="card.chart"
+                         :content="card.content"
+                         :action="card.action"
+                         :footerText="card.footerText" />
+            </KpiContainer>
+        </div>
 
         <template #settings>
             <div class="row">
@@ -37,11 +42,27 @@
                 <div class="col-md-3">
                     <CheckBox v-model="isUpdatedShown" label="Show Updated Date" />
                 </div>
+                <div class="col-md-3">
+                    <DropDownList v-model="layout" :items="layoutItems" label="Card Layout" :showBlankItem="false" />
+                </div>
+                <div class="col-md-3">
+                    <DropDownList v-model="previewWidth" :items="previewWidthItems" label="Preview Width" :showBlankItem="false" />
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-3">
+                    <CheckBox v-model="isDense" label="Dense" help="Lets cards shrink to 180px instead of 240px so more cards fit in a narrow parent." />
+                </div>
+                <div class="col-md-3">
+                    <CheckBox v-model="isFlush" label="Flush" help="Removes the container's padding and background so the cards line up with the surrounding content." />
+                </div>
             </div>
         </template>
 
         <template #usageNotes>
             <p>Resize the window to see the columns drop from 4 to 2 to 1. The card sections line up across each row even though the Avg. Time on Page card has a longer footer.</p>
+            <p>Turn on Dense and set the Preview Width to 460px to fit two compact cards side by side in a narrow parent. Turn on Flush to line the cards up with the edges of the content around them.</p>
         </template>
     </GalleryAndResult>
 </template>
@@ -56,7 +77,7 @@
     import KpiContainer from "@Obsidian/Controls/kpiContainer.obs";
     import NumberBox from "@Obsidian/Controls/numberBox.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
-    import { KpiAction, KpiChart, KpiContent, KpiHelpSection, KpiTrend, KpiValue, KpiValueFormat } from "@Obsidian/Core/Controls/kpi";
+    import { KpiAction, KpiChart, KpiContent, KpiHelpSection, KpiLayout, KpiTrend, KpiValue, KpiValueFormat } from "@Obsidian/Core/Controls/kpi";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
@@ -82,6 +103,19 @@
         { value: "2", text: "2" },
         { value: "3", text: "3" },
         { value: "4", text: "4" }
+    ];
+
+    const layoutItems: ListItemBag[] = [
+        { value: KpiLayout.Default, text: "Default" },
+        { value: KpiLayout.Compact, text: "Compact" }
+    ];
+
+    // Narrow widths show how the container fits a sidebar or panel column.
+    const previewWidthItems: ListItemBag[] = [
+        { value: "", text: "Full Width" },
+        { value: "720px", text: "720px" },
+        { value: "460px", text: "460px" },
+        { value: "320px", text: "320px" }
     ];
 
     const labels = ["2026-06-01", "2026-07-01", "2026-08-01", "2026-09-01"];
@@ -147,6 +181,10 @@
     const note = ref("Note that our interaction data does not include time on page for the exit page.");
     const isUpdatedShown = ref(true);
     const updatedDateTime = RockDateTime.now().addDays(-3).toISOString();
+    const isDense = ref(false);
+    const isFlush = ref(false);
+    const layout = ref<KpiLayout>(KpiLayout.Default);
+    const previewWidth = ref("");
 
     // #endregion Values
 
@@ -156,16 +194,24 @@
 
     const visibleCards = computed((): GalleryCard[] => cards.slice(0, cardCount.value ?? cards.length));
 
+    const previewStyle = computed((): Record<string, string> => {
+        return previewWidth.value ? { maxWidth: previewWidth.value } : {};
+    });
+
     const exampleCode = computed((): string => {
         const attributes = [
             `:columns="${columns.value}"`,
+            isDense.value ? "isDense" : "",
+            isFlush.value ? "isFlush" : "",
             note.value ? `note="${note.value}"` : "",
             isUpdatedShown.value ? `updatedDateTime="${updatedDateTime}"` : ""
         ].filter(attribute => attribute !== "");
 
+        const cardAttributes = layout.value === KpiLayout.Compact ? ` layout="${KpiLayout.Compact}"` : "";
+
         return `<KpiContainer ${attributes.join("\n              ")}>
-    <KpiCard ... />
-    <KpiCard ... />
+    <KpiCard${cardAttributes} ... />
+    <KpiCard${cardAttributes} ... />
 </KpiContainer>`;
     });
 

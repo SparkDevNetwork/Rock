@@ -48,15 +48,8 @@ namespace RockWeb.Themes.Flat.Layouts
                 bool showDetails = errorLevel.HasValue && errorLevel.Value == 66;
                 if ( !showDetails )
                 {
-                    try
-                    {
-                        // check to see if the user is an admin, if so allow them to view the error details
-                        var userLogin = Rock.Model.UserLoginService.GetCurrentUser();
-                        GroupService service = new GroupService( RockApp.Current.CreateRockContext() );
-                        Group adminGroup = service.GetByGuid( new Guid( Rock.SystemGuid.Group.GROUP_ADMINISTRATORS ) );
-                        showDetails = userLogin != null && adminGroup.Members.Where( m => m.PersonId == userLogin.PersonId ).Count() > 0;
-                    }
-                    catch { }
+                    // Only active administrators may view the error details.
+                    showDetails = Rock.Web.ErrorDetailsAccess.IsActiveAdministrator();
                 }
 
                 if ( showDetails )
@@ -99,8 +92,9 @@ namespace RockWeb.Themes.Flat.Layouts
         /// <returns></returns>
         private object GetSavedValue( string key )
         {
-            object item = null;
-            if ( Context.Session != null )
+            // Values saved for this request come first.
+            object item = Context.Items[key];
+            if ( item == null && Context.Session != null )
             {
                 item = Context.Session[key];
             }
@@ -117,6 +111,7 @@ namespace RockWeb.Themes.Flat.Layouts
         /// <param name="key">The key.</param>
         private void ClearSavedValue( string key )
         {
+            Context.Items.Remove( key );
             if ( Context.Session != null )
             {
                 Context.Session.Remove( key );

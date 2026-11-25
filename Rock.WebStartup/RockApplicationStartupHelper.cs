@@ -1582,6 +1582,16 @@ namespace Rock.WebStartup
         /// </summary>
         private static void SetError66()
         {
+            /*
+                11/25/2026 - MSE
+
+                Level 66 makes the error page show exception details to everyone.
+                Only use it for startup failures, when no one can sign in to view
+                the details. Other errors leave it unset so only active administrators
+                see the details (see Rock.Web.ErrorDetailsAccess).
+
+                Reason: Exception details must not be shown to everyone.
+            */
             HttpContext context = HttpContext.Current;
             if ( context != null )
             {

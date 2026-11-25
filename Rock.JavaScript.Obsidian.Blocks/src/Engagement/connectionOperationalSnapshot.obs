@@ -3,219 +3,211 @@
         {{ config.errorMessage }}
     </NotificationBox>
 
-    <BreakpointObserver v-else @breakpointHelper="breakpointHelper = $event">
-        <div class="connection-operational-snapshot">
-            <ContextSlicer class="context-slicer"
-                           showCampus
-                           title="Filters">
-                <template #default>
-                    <DropDownList v-model="selectedOpportunityGuidOrDefaultText"
-                                  :items="config.options?.connectionOpportunities ?? []"
-                                  :blankValue="blankConnectionOpportunityValue" />
-                </template>
-            </ContextSlicer>
+    <div v-else class="connection-operational-snapshot">
+        <ContextSlicer class="context-slicer"
+                       showCampus
+                       title="Filters">
+            <template #default>
+                <DropDownList v-model="selectedOpportunityGuidOrDefaultText"
+                              :items="config.options?.connectionOpportunities ?? []"
+                              :blankValue="blankConnectionOpportunityValue" />
+            </template>
+        </ContextSlicer>
 
-            <div class="row">
-                <div class="col-md-5">
-                    <Panel :title="config.options?.connectionTypeName || 'Connection Type'" titleIconCssClass="ti ti-seeding">
-                        <div class="involvement-container">
-                            <div class="panel-section-title">Current Metrics</div>
+        <div class="row">
+            <div class="col-md-5">
+                <Panel :title="config.options?.connectionTypeName || 'Connection Type'" titleIconCssClass="ti ti-seeding">
+                    <div class="involvement-container">
+                        <div class="panel-section-title">Current Metrics</div>
 
-                            <div class="row row-grouped gutter-0" :class="breakpointHelper?.breakpoint">
-                                <div class="col-lg-3 col-md-6 col-sm-3 col-xs-6">
-                                    <KpiTile isBorderless label="Active" :value="currentMetricsKpis.active.value" />
-                                </div>
+                        <KpiContainer :columns="2" isDense isFlush>
+                            <KpiCard title="Active"
+                                     iconCssClass="ti ti-inbox"
+                                     layout="compact"
+                                     :value="currentMetricsKpis.active" />
 
-                                <div class="col-lg-3 col-md-6 col-sm-3 col-xs-6">
-                                    <KpiTile isBorderless label="Unassigned" :value="currentMetricsKpis.unassigned.value" />
-                                </div>
+                            <KpiCard title="Unassigned"
+                                     iconCssClass="ti ti-user-question"
+                                     layout="compact"
+                                     :value="currentMetricsKpis.unassigned" />
 
-                                <div class="col-lg-3 col-md-6 col-sm-3 col-xs-6">
-                                    <KpiTile isBorderless label="Due Soon" :value="currentMetricsKpis.dueSoon.value" :valueColor="currentMetricsKpis.dueSoon.color" />
-                                </div>
+                            <KpiCard title="Due Soon"
+                                     iconCssClass="ti ti-clock-exclamation"
+                                     layout="compact"
+                                     accent="warning"
+                                     :value="currentMetricsKpis.dueSoon" />
 
-                                <div class="col-lg-3 col-md-6 col-sm-3 col-xs-6">
-                                    <KpiTile isBorderless label="Overdue" :value="currentMetricsKpis.overdue.value" :valueColor="currentMetricsKpis.overdue.color" />
-                                </div>
-                            </div>
+                            <KpiCard title="Overdue"
+                                     iconCssClass="ti ti-alert-triangle"
+                                     layout="compact"
+                                     accent="danger"
+                                     :value="currentMetricsKpis.overdue" />
+                        </KpiContainer>
 
-                            <ChartPanel>
-                                <LinearGaugeChart legendAlign="start"
-                                                  :series="linearGaugeChartData"
-                                                  title="Request Health Overview"
-                                                  titleAlign="start"
-                                                  :tooltip="formatRequestHealthOverviewTooltip"
-                                                  tooltipTitle="Current Status" />
-                            </ChartPanel>
+                        <ChartPanel label="Request Health Overview"
+                                    iconCssClass="ti ti-activity">
+                            <LinearGaugeChart legendAlign="start"
+                                              :series="linearGaugeChartData"
+                                              :tooltip="formatRequestHealthOverviewTooltip"
+                                              tooltipTitle="Current Status" />
+                        </ChartPanel>
 
-                            <ChartPanel v-if="config.options?.isFutureFollowUpEnabled"
-                                        label="Upcoming Future Follow-Ups">
-                                <BarChart hideLegend
-                                          :labels="upcomingFutureFollowUpsLabels"
-                                          stack
-                                          :series="upcomingFutureFollowUpsSeries"
-                                          :tooltip="(ctx) => ctx.value === null ? '' : ctx.formattedValue"
-                                          valueHideGridLines
-                                          :valuePrecision="0" />
-                            </ChartPanel>
+                        <ChartPanel v-if="config.options?.isFutureFollowUpEnabled"
+                                    label="Upcoming Future Follow-Ups"
+                                    iconCssClass="ti ti-calendar-event">
+                            <BarChart hideLegend
+                                      :labels="upcomingFutureFollowUpsLabels"
+                                      stack
+                                      :series="upcomingFutureFollowUpsSeries"
+                                      :tooltip="(ctx) => ctx.value === null ? '' : ctx.formattedValue"
+                                      valueHideGridLines
+                                      :valuePrecision="0" />
+                        </ChartPanel>
 
-                            <ChartPanel label="Count By Status">
-                                <BarChart hideLegend
-                                          :labels="countByStatusLabels"
-                                          stack
-                                          :series="countByStatusSeries"
-                                          :tooltip="(ctx) => ctx.value === null ? '' : ctx.formattedValue"
-                                          :tooltipTitle="formatCountByStatusTooltipTitle"
-                                          valueHideGridLines
-                                          :valuePrecision="0" />
-                            </ChartPanel>
+                        <ChartPanel label="Count By Status"
+                                    iconCssClass="ti ti-select">
+                            <BarChart hideLegend
+                                      :labels="countByStatusLabels"
+                                      stack
+                                      :series="countByStatusSeries"
+                                      :tooltip="(ctx) => ctx.value === null ? '' : ctx.formattedValue"
+                                      :tooltipTitle="formatCountByStatusTooltipTitle"
+                                      valueHideGridLines
+                                      :valuePrecision="0" />
+                        </ChartPanel>
 
-                            <div class="panel-section-title">Completion Metrics</div>
+                        <div class="panel-section-title">Completion Metrics</div>
 
-                            <div class="row">
-                                <div class="col-sm-6">
-                                    <DropDownList v-model="selectedDateRangeOrEmptyString"
-                                                  :items="dateRangeItems"
-                                                  label="Date Range"
-                                                  :showBlankItem="false" />
-                                </div>
-                            </div>
-
-                            <div class="row row-grid gutter-4" :class="{ [`${breakpointHelper?.breakpoint}-actual`]: true, [`${breakpointHelper?.breakpoints}`]: true, 'stacked': breakpointHelper?.isXsOrSmaller || breakpointHelper?.isMd }">
-                                <div class="col-lg-6 col-md-12 col-sm-6">
-                                    <KpiTile label="Timeliness"
-                                             help="The percentage of completed requests that were finished on or before their due date during this period."
-                                             :value="completionMetricsKpis.timeliness.value">
-                                        <template #footer>
-                                            <span :style="{ color: completionMetricsKpis.timeliness.color }">{{ completionMetricsKpis.timeliness.difference || '-' }}</span> {{ completionMetricsKpiFooterSuffix }}
-                                        </template>
-                                    </KpiTile>
-                                </div>
-
-                                <div class="col-lg-6 col-md-12 col-sm-6">
-                                    <KpiTile label="Responsiveness (Rsp)"
-                                             help="The average number of days between when a request was submitted and when a connector first acted on it during this period."
-                                             :value="completionMetricsKpis.responsiveness.value">
-                                        <template #footer>
-                                            <span :style="{ color: completionMetricsKpis.responsiveness.color }">{{ completionMetricsKpis.responsiveness.difference || '-' }}</span> {{ completionMetricsKpiFooterSuffix }}
-                                        </template>
-                                    </KpiTile>
-                                </div>
-
-                                <div class="col-lg-6 col-md-12 col-sm-6">
-                                    <KpiTile label="Requests Completed"
-                                             help="The total number of requests marked as completed during this period."
-                                             :value="completionMetricsKpis.requestsCompleted.value">
-                                        <template #footer>
-                                            <span :style="{ color: completionMetricsKpis.requestsCompleted.color }">{{ completionMetricsKpis.requestsCompleted.difference || '-' }}</span> {{ completionMetricsKpiFooterSuffix }}
-                                        </template>
-                                    </KpiTile>
-                                </div>
-
-                                <div class="col-lg-6 col-md-12 col-sm-6">
-                                    <KpiTile label="Average Time to Complete"
-                                             help="The average number of days from request submission to completion, across all requests closed in this period."
-                                             :value="completionMetricsKpis.averageTimeToComplete.value">
-                                        <template #footer>
-                                            <span :style="{ color: completionMetricsKpis.averageTimeToComplete.color }">{{ completionMetricsKpis.averageTimeToComplete.difference || '-' }}</span> {{ completionMetricsKpiFooterSuffix }}
-                                        </template>
-                                    </KpiTile>
-                                </div>
+                        <div class="row">
+                            <div class="col-sm-6 completion-date-range">
+                                <DropDownList v-model="selectedDateRangeOrEmptyString"
+                                              :items="dateRangeItems"
+                                              label="Date Range"
+                                              :showBlankItem="false" />
                             </div>
                         </div>
-                    </Panel>
-                </div>
 
-                <div class="col-md-7">
-                    <Grid comfy
-                          :definition="config.gridDefinition ?? undefined"
-                          :data="gridDataSource"
-                          :entityTypeGuid="EntityType.PersonAlias"
-                          itemTerm="Connector"
-                          :keyField="getGridRowPropertyName('idKey')"
-                          :onSelectItem="onConnectorRowClicked"
-                          title="Connectors"
-                          titleIconCssClass="ti ti-user-circle">
-                        <Column name="overdue-indicator"
-                                width="8px"
-                                disableSort
-                                headerClass="indicator-column"
-                                itemClass="indicator-column">
-                            <template #format="{ row }">
-                                <div v-if="(row as ConnectorBag).overdueRequestCount > 0"
-                                     class="overdue-indicator">
-                                </div>
-                            </template>
-                        </Column>
+                        <KpiContainer :columns="2" isDense isFlush>
+                            <KpiCard title="Timeliness"
+                                     iconCssClass="ti ti-clock-check"
+                                     :help="timelinessHelp"
+                                     layout="compact"
+                                     emptyHelpText="No completed requests in this period."
+                                     :value="completionMetricsKpis.timeliness.value"
+                                     :valueTrend="completionMetricsKpis.timeliness.trend"
+                                     :valueDescription="completionMetricsKpis.timeliness.description" />
 
-                        <PersonColumn :field="getGridRowPropertyName('person')"
-                                      :name="getGridRowPropertyName('person')"
-                                      title="Name"
-                                      :filter="pickExistingValueFilter" />
+                            <KpiCard title="Responsiveness (Rsp)"
+                                     iconCssClass="ti ti-message-reply"
+                                     :help="responsivenessHelp"
+                                     layout="compact"
+                                     emptyHelpText="No completed requests in this period."
+                                     :value="completionMetricsKpis.responsiveness.value"
+                                     :valueTrend="completionMetricsKpis.responsiveness.trend"
+                                     :valueDescription="completionMetricsKpis.responsiveness.description"
+                                     isLowerBetter />
 
-                        <NumberColumn :field="getGridRowPropertyName('activeRequestCount')"
-                                      :name="getGridRowPropertyName('activeRequestCount')"
-                                      title="Active"
-                                      :filterable="true"
-                                      :filterFunction="numberValueFilter"
-                                      :sortField="getGridRowPropertyName('activeRequestCount')"
-                                      width="100px" />
+                            <KpiCard title="Completed"
+                                     iconCssClass="ti ti-circle-check"
+                                     :help="requestsCompletedHelp"
+                                     layout="compact"
+                                     emptyHelpText="No completed requests in this period."
+                                     :value="completionMetricsKpis.requestsCompleted.value"
+                                     :valueTrend="completionMetricsKpis.requestsCompleted.trend"
+                                     :valueDescription="completionMetricsKpis.requestsCompleted.description" />
 
-                        <Column :name="getGridRowPropertyName('overdueRequestCount')"
-                                title="Overdue"
-                                :filterable="true"
-                                columnType="number"
-                                :filterFunction="numberValueFilter"
-                                :sortField="getGridRowPropertyName('overdueRequestCount')"
-                                width="100px">
-                            <template #format="{ row }">
-                                <div class="overdue-column-data" :class="{ 'has-value': (row as ConnectorBag).overdueRequestCount > 0 }">
-                                    {{ (row as ConnectorBag).overdueRequestCount }}
-                                </div>
-                            </template>
-                        </Column>
+                            <KpiCard title="Avg. Time to Complete"
+                                     iconCssClass="ti ti-calendar-check"
+                                     :help="averageTimeToCompleteHelp"
+                                     layout="compact"
+                                     emptyHelpText="No completed requests in this period."
+                                     :value="completionMetricsKpis.averageTimeToComplete.value"
+                                     :valueTrend="completionMetricsKpis.averageTimeToComplete.trend"
+                                     :valueDescription="completionMetricsKpis.averageTimeToComplete.description"
+                                     isLowerBetter />
+                        </KpiContainer>
+                    </div>
+                </Panel>
+            </div>
 
-                        <Column name="performance"
-                                title="Performance (Last 28d)"
-                                disableSort
-                                width="180px">
-                            <template #format="{ row }">
-                                <div class="performance-column-data">
-                                    <div v-tooltip.overflow="`Completed: ${(row as ConnectorBag).completedRequestCount}`"><i class="ti ti-circle-check"></i> Completed: {{ (row as ConnectorBag).completedRequestCount }}</div>
-                                    <div v-tooltip.overflow="`Avg Time: ${(row as ConnectorBag).averageCompletionDays.toLocaleString(undefined, { maximumFractionDigits: 1 })}d`"><i class="ti ti-calendar-check"></i> Avg Time: {{ (row as ConnectorBag).averageCompletionDays.toLocaleString(undefined, { maximumFractionDigits: 1 }) }}d</div>
-                                </div>
-                            </template>
-                        </Column>
+            <div class="col-md-7">
+                <Grid comfy
+                      :definition="config.gridDefinition ?? undefined"
+                      :data="gridDataSource"
+                      :entityTypeGuid="EntityType.PersonAlias"
+                      itemTerm="Connector"
+                      :keyField="getGridRowPropertyName('idKey')"
+                      :onSelectItem="onConnectorRowClicked"
+                      title="Connectors"
+                      titleIconCssClass="ti ti-user-circle">
+                    <Column name="overdue-indicator"
+                            width="8px"
+                            disableSort
+                            headerClass="indicator-column"
+                            itemClass="indicator-column">
+                        <template #format="{ row }">
+                            <div v-if="(row as ConnectorBag).overdueRequestCount > 0"
+                                 class="overdue-indicator">
+                            </div>
+                        </template>
+                    </Column>
 
-                        <Column name="navigate"
-                                title=""
-                                disableSort
-                                width="54px">
-                            <template #format>
-                                <i class="ti ti-chevron-right"></i>
-                            </template>
-                        </Column>
-                    </Grid>
-                </div>
+                    <PersonColumn :field="getGridRowPropertyName('person')"
+                                  :name="getGridRowPropertyName('person')"
+                                  title="Name"
+                                  :filter="pickExistingValueFilter" />
+
+                    <NumberColumn :field="getGridRowPropertyName('activeRequestCount')"
+                                  :name="getGridRowPropertyName('activeRequestCount')"
+                                  title="Active"
+                                  :filterable="true"
+                                  :filterFunction="numberValueFilter"
+                                  :sortField="getGridRowPropertyName('activeRequestCount')"
+                                  width="100px" />
+
+                    <Column :name="getGridRowPropertyName('overdueRequestCount')"
+                            title="Overdue"
+                            :filterable="true"
+                            columnType="number"
+                            :filterFunction="numberValueFilter"
+                            :sortField="getGridRowPropertyName('overdueRequestCount')"
+                            width="100px">
+                        <template #format="{ row }">
+                            <div class="overdue-column-data" :class="{ 'has-value': (row as ConnectorBag).overdueRequestCount > 0 }">
+                                {{ (row as ConnectorBag).overdueRequestCount }}
+                            </div>
+                        </template>
+                    </Column>
+
+                    <Column name="performance"
+                            title="Performance (Last 28d)"
+                            disableSort
+                            width="180px">
+                        <template #format="{ row }">
+                            <div class="performance-column-data">
+                                <div v-tooltip.overflow="`Completed: ${(row as ConnectorBag).completedRequestCount}`"><i class="ti ti-circle-check"></i> Completed: {{ (row as ConnectorBag).completedRequestCount }}</div>
+                                <div v-tooltip.overflow="`Avg Time: ${(row as ConnectorBag).averageCompletionDays.toLocaleString(undefined, { maximumFractionDigits: 1 })}d`"><i class="ti ti-calendar-check"></i> Avg Time: {{ (row as ConnectorBag).averageCompletionDays.toLocaleString(undefined, { maximumFractionDigits: 1 }) }}d</div>
+                            </div>
+                        </template>
+                    </Column>
+
+                    <Column name="navigate"
+                            title=""
+                            disableSort
+                            width="54px">
+                        <template #format>
+                            <i class="ti ti-chevron-right"></i>
+                        </template>
+                    </Column>
+                </Grid>
             </div>
         </div>
-    </BreakpointObserver>
+    </div>
 </template>
 
 <style scoped>
 .context-slicer {
     margin-bottom: var(--spacing-large);
-}
-
-.connection-operational-snapshot {
-    --gutter-0: 0;
-    --gutter-1: var(--spacing-tiny);
-    --gutter-2: var(--spacing-xsmall);
-    --gutter-3: var(--spacing-small);
-    --gutter-4: var(--spacing-medium);
-    --gutter-5: var(--spacing-large);
-    --gutter-6: var(--spacing-xlarge);
-    --gutter-7: var(--spacing-huge);
 }
 
 .involvement-container {
@@ -230,98 +222,8 @@
     color: var(--color-interface-strong);
 }
 
-.row.row-grouped {
-    border: 1px solid var(--color-interface-soft);
-    border-radius: var(--rounded-medium);
-    padding: 0;
-    margin-left: 0;
-    margin-right: 0;
-}
-
-.row.row-grouped > [class*="col-"] {
-    padding: 0;
-}
-
-.row.row-grouped.xl > .col-xl-3:not(:nth-child(4n + 1)),
-.row.row-grouped.lg > .col-lg-3:not(:nth-child(4n + 1)),
-.row.row-grouped.md > .col-md-3:not(:nth-child(4n + 1)),
-.row.row-grouped.sm > .col-sm-3:not(:nth-child(4n + 1)),
-.row.row-grouped.xs > .col-xs-3:not(:nth-child(4n + 1)) {
-    border-left: solid 1px var(--color-interface-soft);
-}
-
-.row.row-grouped.xl > .col-xl-3:nth-child(n + 5),
-.row.row-grouped.lg > .col-lg-3:nth-child(n + 5),
-.row.row-grouped.md > .col-md-3:nth-child(n + 5),
-.row.row-grouped.sm > .col-sm-3:nth-child(n + 5),
-.row.row-grouped.xs > .col-xs-3:nth-child(n + 5) {
-    border-top: solid 1px var(--color-interface-soft);
-}
-
-.row.row-grouped.xl > .col-xl-6:nth-child(even),
-.row.row-grouped.lg > .col-lg-6:nth-child(even),
-.row.row-grouped.md > .col-md-6:nth-child(even),
-.row.row-grouped.sm > .col-sm-6:nth-child(even),
-.row.row-grouped.xs > .col-xs-6:nth-child(even) {
-    border-left: 1px solid var(--color-interface-soft);
-}
-
-.row.row-grouped.xl > .col-xl-6:nth-child(n + 3),
-.row.row-grouped.lg > .col-lg-6:nth-child(n + 3),
-.row.row-grouped.md > .col-md-6:nth-child(n + 3),
-.row.row-grouped.sm > .col-sm-6:nth-child(n + 3),
-.row.row-grouped.xs > .col-xs-6:nth-child(n + 3) {
-    border-top: solid 1px var(--color-interface-soft);
-}
-
-.row.row-grouped.xl > .col-xl-6:nth-child(n + 3),
-.row.row-grouped.lg > .col-lg-6:nth-child(n + 3),
-.row.row-grouped.md > .col-md-6:nth-child(n + 3),
-.row.row-grouped.sm > .col-sm-6:nth-child(n + 3),
-.row.row-grouped.xs > .col-xs-6:nth-child(n + 3) {
-    border-top: solid 1px var(--color-interface-soft);
-}
-
-.row.row-grid.gutter-4.xl > .col-xl-6:nth-child(odd),
-.row.row-grid.gutter-4.lg > .col-lg-6:nth-child(odd),
-.row.row-grid.gutter-4.md > .col-md-6:nth-child(odd),
-.row.row-grid.gutter-4.sm > .col-sm-6:nth-child(odd),
-.row.row-grid.gutter-4.xs > .col-xs-6:nth-child(odd) {
-    padding-right: calc(var(--gutter-4) / 2);
-}
-
-.row.row-grid.gutter-4.xl > .col-xl-6:nth-child(even),
-.row.row-grid.gutter-4.lg > .col-lg-6:nth-child(even),
-.row.row-grid.gutter-4.md > .col-md-6:nth-child(even),
-.row.row-grid.gutter-4.sm > .col-sm-6:nth-child(even),
-.row.row-grid.gutter-4.xs > .col-xs-6:nth-child(even) {
-    padding-left: calc(var(--gutter-4) / 2);
-}
-
-.row.row-grid.gutter-4.xl > .col-xl-6:nth-child(n + 3),
-.row.row-grid.gutter-4.lg > .col-lg-6:nth-child(n + 3),
-.row.row-grid.gutter-4.md > .col-md-6:nth-child(n + 3),
-.row.row-grid.gutter-4.sm > .col-sm-6:nth-child(n + 3),
-.row.row-grid.gutter-4.xs > .col-xs-6:nth-child(n + 3) {
-    margin-top: var(--gutter-4);
-}
-
-.row.row-grid.gutter-4.stacked.xl > .col-xl-6,
-.row.row-grid.gutter-4.stacked.lg > .col-lg-6,
-.row.row-grid.gutter-4.stacked.md > .col-md-6,
-.row.row-grid.gutter-4.stacked.sm > .col-sm-6,
-.row.row-grid.gutter-4.stacked.xs > .col-xs-6 {
-    /* Set to default col-sm-6 padding */
-    padding-right: 15px;
-    padding-left: 15px;
-}
-
-.row.row-grid.gutter-4.stacked > .col-xl-6:nth-child(n + 2),
-.row.row-grid.gutter-4.stacked > .col-lg-6:nth-child(n + 2),
-.row.row-grid.gutter-4.stacked > .col-md-6:nth-child(n + 2),
-.row.row-grid.gutter-4.stacked > .col-sm-6:nth-child(n + 2),
-.row.row-grid.gutter-4.stacked > .col-xs-6:nth-child(n + 2) {
-    margin-top: var(--gutter-4);
+.panel-section-title:not(:first-child) {
+    margin-top: var(--spacing-medium);
 }
 
 :deep(.indicator-column) {
@@ -357,14 +259,13 @@
 
 <script setup lang="ts">
     import { computed, ref, watch } from "vue";
-    import BreakpointObserver from "./ConnectionOperationalSnapshot/breakpointObserver.partial.obs";
     import ChartPanel from "./ConnectionOperationalSnapshot/chartPanel.partial.obs";
     import { vTooltip } from "@Obsidian/Directives/tooltip";
-    import KpiTile from "@Obsidian/Controls/kpiTile.obs";
-    import { BreakpointHelper } from "./ConnectionOperationalSnapshot/types.partial";
     import BarChart from "@Obsidian/Controls/barChart.obs";
     import ContextSlicer from "@Obsidian/Controls/contextSlicer.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import KpiCard from "@Obsidian/Controls/kpiCard.obs";
+    import KpiContainer from "@Obsidian/Controls/kpiContainer.obs";
     import Grid, {
         Column,
         NumberColumn,
@@ -376,6 +277,7 @@
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
     import { BarSeries, LinearGaugeSeries, TooltipContext } from "@Obsidian/Core/Controls/chart";
+    import { KpiHelpSection, KpiTrend, KpiTrendDirection } from "@Obsidian/Core/Controls/kpi";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import { ContextEntityChangedData, Message } from "@Obsidian/Types/Utility/browserBus";
     import {
@@ -404,7 +306,6 @@
 
     const config = useConfigurationValues<ListBlockBox<OptionsBag>>();
     const personPreferences = usePersonPreferences();
-    const breakpointHelper = ref<BreakpointHelper>();
     const invokeBlockAction = useInvokeBlockAction();
     const reloadBlock = useReloadBlock();
     const browserBus = useBlockBrowserBus();
@@ -412,9 +313,14 @@
     // #region Types
 
     type CompletionMetric = {
-        value: string;
-        difference: string;
-        color: TrendColor;
+        /** The formatted value, or null when there is no completion data for the period. */
+        value: string | null;
+
+        /** The direction of the change from the previous period. */
+        trend: KpiTrend | null;
+
+        /** The change from the previous period, such as "+0.5 vs. Previous 7 Days". */
+        description: string | null;
     };
 
     type CompletionMetrics = {
@@ -424,18 +330,28 @@
         averageTimeToComplete: CompletionMetric;
     };
 
-    enum TrendColor {
-        Positive = "var(--color-success-strong)",
-        Negative = "var(--color-danger-strong)",
-        Neutral = "var(--color-interface-medium)"
-    }
-
     const selectedDateRangeFilterPreferenceKey = "SelectedDateRangeFilter";
     const blankConnectionOpportunityValue = "All Opportunities";
 
     // #endregion Types
 
     // #region Values
+
+    const timelinessHelp: KpiHelpSection[] = [
+        { text: "The percentage of completed requests that were finished on or before their due date during this period." }
+    ];
+
+    const responsivenessHelp: KpiHelpSection[] = [
+        { text: "The average number of days between when a request was submitted and when a connector first acted on it during this period." }
+    ];
+
+    const requestsCompletedHelp: KpiHelpSection[] = [
+        { text: "The total number of requests marked as completed during this period." }
+    ];
+
+    const averageTimeToCompleteHelp: KpiHelpSection[] = [
+        { text: "The average number of days from request submission to completion, across all requests closed in this period." }
+    ];
 
     const gridDataSource = ref<Promise<GridDataBag>>();
     const requestState = ref<RequestStateBag | null | undefined>(config.options?.requestState);
@@ -493,59 +409,52 @@
         const state = requestState.value;
 
         return {
-            active: {
-                value: state?.totalActive ?? 0
-            },
-            unassigned: {
-                value: state?.totalUnassigned ?? 0
-            },
-            dueSoon: {
-                value: state?.totalDueSoon ?? 0,
-                color: "var(--color-caution-primary)"
-            },
-            overdue: {
-                value: state?.totalOverdue ?? 0,
-                color: "var(--color-negative-primary)"
-            }
+            active: state?.totalActive ?? 0,
+            unassigned: state?.totalUnassigned ?? 0,
+            dueSoon: state?.totalDueSoon ?? 0,
+            overdue: state?.totalOverdue ?? 0
         };
     });
 
     const completionMetricsKpis = computed<CompletionMetrics>(() => {
         const metrics = completionMetrics.value;
 
+        // With no value the cards show their empty state, so they need no trend or description.
         if (isNullish(metrics)) {
+            const emptyMetric: CompletionMetric = { value: null, trend: null, description: null };
+
             return {
-                timeliness: { value: "-", difference: "", color: TrendColor.Neutral },
-                responsiveness: { value: "-", difference: "", color: TrendColor.Neutral },
-                requestsCompleted: { value: "-", difference: "", color: TrendColor.Neutral },
-                averageTimeToComplete: { value: "-", difference: "", color: TrendColor.Neutral }
+                timeliness: emptyMetric,
+                responsiveness: emptyMetric,
+                requestsCompleted: emptyMetric,
+                averageTimeToComplete: emptyMetric
             };
         }
         else {
             return {
                 timeliness: {
                     value: metrics.timelinessPercent.toLocaleString(undefined, { style: "percent" }),
-                    difference: formatDeltaPercent(metrics.timelinessPercentDelta),
-                    color: getTrendColor(metrics.timelinessPercentDelta)
+                    trend: getTrendDirection(metrics.timelinessPercentDelta),
+                    description: getDeltaDescription(formatDeltaPercent(metrics.timelinessPercentDelta))
                 },
                 responsiveness: {
                     value: metrics.averageResponsivenessDays === 1 ? "1 Day" : `${metrics.averageResponsivenessDays.toLocaleString(undefined, { style: "decimal", maximumFractionDigits: 1 })} Days`,
-                    difference: formatDeltaDecimal(metrics.averageResponsivenessDaysDelta),
-                    // For responsiveness, an increase is a negative trend.
-                    color: getTrendColorInverted(metrics.averageResponsivenessDaysDelta)
+                    // The card is lower-is-better, so an increase shows as a negative trend.
+                    trend: getTrendDirection(metrics.averageResponsivenessDaysDelta),
+                    description: getDeltaDescription(formatDeltaDecimal(metrics.averageResponsivenessDaysDelta))
                 },
                 requestsCompleted: {
                     value: metrics.requestsCompletedCount.toLocaleString(),
-                    difference: formatDeltaDecimal(metrics.requestsCompletedCountDelta),
-                    color: getTrendColor(metrics.requestsCompletedCountDelta)
+                    trend: getTrendDirection(metrics.requestsCompletedCountDelta),
+                    description: getDeltaDescription(formatDeltaDecimal(metrics.requestsCompletedCountDelta))
                 },
                 averageTimeToComplete: {
                     value:
                         metrics.averageCompletionDays === 1 ? "1 Day"
                             : `${metrics.averageCompletionDays.toLocaleString(undefined, { style: "decimal", maximumFractionDigits: 1 })} Days`,
-                    difference: formatDeltaDecimal(metrics.averageCompletionDaysDelta),
-                    // For average time to complete, an increase is a negative trend.
-                    color: getTrendColorInverted(metrics.averageCompletionDaysDelta)
+                    // The card is lower-is-better, so an increase shows as a negative trend.
+                    trend: getTrendDirection(metrics.averageCompletionDaysDelta),
+                    description: getDeltaDescription(formatDeltaDecimal(metrics.averageCompletionDaysDelta))
                 }
             };
         }
@@ -670,28 +579,37 @@
         }
     }
 
-    function getTrendColor(deltaPercent: number): TrendColor {
-        if (deltaPercent === 0) {
-            return TrendColor.Neutral;
+    /**
+     * Gets the trend direction of a change from the previous period.
+     *
+     * The deltas are percentage points, days or counts, not percent changes, so the card gets
+     * a direction only and the delta itself is shown in the value description.
+     *
+     * @param delta The change from the previous period.
+     *
+     * @returns The trend direction.
+     */
+    function getTrendDirection(delta: number): KpiTrend {
+        if (delta > 0) {
+            return KpiTrendDirection.Up;
         }
-        else if (deltaPercent > 0) {
-            return TrendColor.Positive;
+        else if (delta < 0) {
+            return KpiTrendDirection.Down;
         }
         else {
-            return TrendColor.Negative;
+            return KpiTrendDirection.Flat;
         }
     }
 
-    function getTrendColorInverted(deltaPercent: number): TrendColor {
-        if (deltaPercent === 0) {
-            return TrendColor.Neutral;
-        }
-        else if (deltaPercent > 0) {
-            return TrendColor.Negative;
-        }
-        else {
-            return TrendColor.Positive;
-        }
+    /**
+     * Gets the value description of a completion metric, such as "+0.5 vs. Previous 7 Days".
+     *
+     * @param formattedDelta The formatted change from the previous period.
+     *
+     * @returns The value description.
+     */
+    function getDeltaDescription(formattedDelta: string): string {
+        return `${formattedDelta}${completionMetricsKpiFooterSuffix.value}`;
     }
 
     async function loadGridData(): Promise<GridDataBag> {
