@@ -477,6 +477,8 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnSaveGroup_Click( object sender, EventArgs e )
         {
+            nbInactivateChildGroups.Visible = false;
+
             var rockContext = RockApp.Current.CreateRockContext();
             GroupService groupService = new GroupService( rockContext );
 
@@ -572,6 +574,29 @@ namespace RockWeb.Blocks.Groups
                     }
                 }
 
+                /*
+                    11/25/2026 - MSE
+
+                    Check EDIT on every active descendant before saving anything, so the
+                    parent's changes are not saved when the child group check fails. A
+                    leader's role gives EDIT on the group they lead, not on its child groups.
+
+                    Reason: Edit rights on a parent group do not grant edit rights on its child groups.
+                */
+                List<Group> childGroupsToInactivate = null;
+                if ( group.IsActive == false && cbInactivateChildGroups.Checked )
+                {
+                    childGroupsToInactivate = groupService.GetAllDescendentGroups( group.Id, false );
+
+                    var unauthorizedCount = childGroupsToInactivate.Count( g => !g.IsAuthorized( Authorization.EDIT, CurrentPerson ) );
+                    if ( unauthorizedCount > 0 )
+                    {
+                        nbInactivateChildGroups.Text = string.Format( "You are not authorized to inactivate {0} of {1} child groups. No groups were changed.", unauthorizedCount, childGroupsToInactivate.Count );
+                        nbInactivateChildGroups.Visible = true;
+                        return;
+                    }
+                }
+
                 rockContext.WrapTransaction( () =>
                 {
 
@@ -579,11 +604,9 @@ namespace RockWeb.Blocks.Groups
 
                     group.SaveAttributeValues( rockContext );
 
-                    if ( group.IsActive == false && cbInactivateChildGroups.Checked )
+                    if ( childGroupsToInactivate != null )
                     {
-                        var allActiveChildGroupsId = groupService.GetAllDescendentGroupIds( group.Id, false );
-                        var allActiveChildGroups = groupService.GetByIds( allActiveChildGroupsId );
-                        foreach ( var childGroup in allActiveChildGroups )
+                        foreach ( var childGroup in childGroupsToInactivate )
                         {
                             if ( childGroup.IsActive )
                             {
@@ -1066,6 +1089,7 @@ namespace RockWeb.Blocks.Groups
         private void DisplayEditGroup()
         {
             this.IsEditingGroup = true;
+            nbInactivateChildGroups.Visible = false;
 
             if ( _groupId != -1 )
             {
