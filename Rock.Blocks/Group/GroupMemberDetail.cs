@@ -1492,8 +1492,8 @@ namespace Rock.Blocks.Group
         /// <summary>
         /// Validates the signed document file the client sent. Any file other
         /// than the one already on the person's current signed document must
-        /// be a fresh upload: still flagged temporary and of the template's
-        /// file type. This stops a crafted request from attaching an arbitrary
+        /// be a fresh upload: still flagged temporary, of the template's
+        /// file type and not uploaded by somebody else. This stops a crafted request from attaching an arbitrary
         /// binary file by guid, which the save would later mark for deletion.
         /// Must run before the entity is updated so the current document is
         /// read unmodified.
@@ -1524,16 +1524,28 @@ namespace Rock.Blocks.Group
                 return true;
             }
 
-            var binaryFile = new BinaryFileService( RockContext )
+            var binaryFileService = new BinaryFileService( RockContext );
+            var binaryFile = binaryFileService
                 .Queryable().AsNoTracking()
                 .Where( f => f.Guid == binaryFileGuid.Value )
                 .Select( f => new { f.IsTemporary, f.BinaryFileTypeId } )
                 .FirstOrDefault();
 
+            /*
+                11/25/2026 - MSE
+
+                A temporary file is not enough: it must also not have been uploaded
+                by somebody else, or an editor could attach another person's pending
+                upload by its guid.
+
+                Reason: Only the current file or the editor's own upload may be attached.
+            */
+
             // The uploader creates files as temporary, and only this save clears the flag, so temporary means just uploaded.
             var isFreshUpload = binaryFile != null
                 && binaryFile.IsTemporary
-                && ( !template.BinaryFileTypeId.HasValue || binaryFile.BinaryFileTypeId == template.BinaryFileTypeId.Value );
+                && ( !template.BinaryFileTypeId.HasValue || binaryFile.BinaryFileTypeId == template.BinaryFileTypeId.Value )
+                && binaryFileService.IsUploadedBinaryFileAllowedForPerson( binaryFileGuid, currentBinaryFileGuid, RequestContext.CurrentPerson );
 
             if ( !isFreshUpload )
             {
