@@ -85,6 +85,7 @@
 <script setup lang="ts">
     import { ComponentPublicInstance, computed, PropType, provide, ref } from "vue";
     import { newGuid } from "@Obsidian/Utility/guid";
+    import { useSurfacePages } from "./surfacePages.partial";
     import { isMotionReduced } from "./viewport.partial";
 
     const props = defineProps({
@@ -146,6 +147,9 @@
      * below hold on the screen while the edge comes down. The surface owns that screen motion.
      */
     const placeOf = new WeakMap<Element, number>();
+
+    /** The pages of the surface the group is drawn in, whose edge follows the list's own closing; null outside one. */
+    const surfacePages = useSurfacePages();
 
     // #endregion Values
 
@@ -250,6 +254,10 @@
                 row.addEventListener("transitionend", onGlided);
             }
         }
+
+        // The box closed by a move the list draws, so a surface that follows its content glides its
+        // edge over it. Told after the rows are read, since the edge's glide moves them on the screen.
+        surfacePages?.followMove();
 
         if (rows.length === 0) {
             emit("empty");

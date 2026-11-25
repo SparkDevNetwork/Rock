@@ -117,6 +117,13 @@ export type SurfacePages = {
     /** Goes back one page: the top page's owner is asked to close it. */
     back: () => void;
 
+    /**
+     * The content has just changed its height by a move it draws itself, as a list closing over a
+     * row that has gone, and the change is laid out: a surface that follows its content glides its
+     * edge over the same move. Any change of the content's height not told this way is set at once.
+     */
+    followMove: () => void;
+
     /** A page opened: it goes on top, and focus moves into it. */
     turnTo: (entry: SurfacePageEntry) => void;
 
@@ -263,11 +270,13 @@ export function provideSurfacePages(parts: SurfaceParts): SurfacePages {
     }
 
     /**
-     * A surface that follows its content glides its edge as the content changes height within a
-     * page, over the content's own move, so on a surface held at its bottom the head and the rows
-     * above glide with the edge while the rows below hold. A change of the box the surface stands
-     * in, as a keyboard rising or a turn of the phone, changes the height at once. The content box
-     * is watched rather than the surface, whose own glide would report every frame.
+     * A surface that follows its content glides its edge only with a move the content draws and
+     * tells it of (followMove), so on a surface held at its bottom the head and the rows above
+     * glide with the edge while the rows below hold. The content is laid out from its top, so
+     * gliding any other change, as an ask closing at once, would draw the rows below it jumping
+     * and gliding back: every other change of the content's height, and a change of the box the
+     * surface stands in, as a keyboard rising or a turn of the phone, sets the height at once. The
+     * content box is watched rather than the surface, whose own glide would report every frame.
      *
      * Inside a surface that follows its content, anything that moves its content measures in its
      * own box, never on the screen: the surface owns the screen motion of its edge.
@@ -278,17 +287,28 @@ export function provideSurfacePages(parts: SurfaceParts): SurfacePages {
             return;
         }
 
+        // a turn, or the content's own move, has already played this change
         const isFrameChange = entries.some(entry => entry.target === surface.parentElement);
         const content = entries.find(entry => entry.target !== surface.parentElement);
-        if (isFrameChange || shownHeight === null || !content) {
-            resizing?.cancel();
-            resizing = null;
-            noteHeights();
+        if (!isFrameChange && content && content.contentRect.height === contentHeight) {
             return;
         }
 
-        // a turn has already played this change
-        if (content.contentRect.height === contentHeight) {
+        resizing?.cancel();
+        resizing = null;
+        noteHeights();
+    }
+
+    /** The content has drawn a move of its own to its new height: the edge glides over the same move. */
+    function followMove(): void {
+        const surface = parts.surface();
+        const content = parts.content?.();
+        if (!surface || !content || !parts.isOpen() || shownHeight === null) {
+            return;
+        }
+
+        const height = content.getBoundingClientRect().height;
+        if (height === contentHeight) {
             return;
         }
 
@@ -298,7 +318,7 @@ export function provideSurfacePages(parts: SurfaceParts): SurfacePages {
         resizing = null;
         const to = surface.getBoundingClientRect().height;
         shownHeight = to;
-        contentHeight = content.contentRect.height;
+        contentHeight = height;
 
         const style = getComputedStyle(surface);
         const duration = parseFloat(style.getPropertyValue("--chat-d-move"));
@@ -420,6 +440,7 @@ export function provideSurfacePages(parts: SurfaceParts): SurfacePages {
             firstElement = element;
         },
         back: () => top.value?.back(),
+        followMove,
         turnTo,
         turnFrom
     };
