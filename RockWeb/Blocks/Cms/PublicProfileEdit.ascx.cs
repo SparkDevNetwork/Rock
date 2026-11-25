@@ -808,7 +808,8 @@ namespace RockWeb.Blocks.Cms
 
         /// <summary>
         /// Verifies that the given binary file can become a person's new photo: either no photo (removing it),
-        /// or a temporary file of the person image type, which is what a fresh upload through the photo editor creates.
+        /// or a temporary file of the person image type that the current person uploaded, which is what a fresh
+        /// upload through the photo editor creates.
         /// </summary>
         /// <param name="binaryFileId">The binary file identifier.</param>
         /// <param name="rockContext">The rock context.</param>
@@ -823,11 +824,15 @@ namespace RockWeb.Blocks.Cms
             }
 
             var personImageFileTypeGuid = Rock.SystemGuid.BinaryFiletype.PERSON_IMAGE.AsGuid();
+            var binaryFileService = new BinaryFileService( rockContext );
 
-            return new BinaryFileService( rockContext ).Queryable()
+            var isTemporaryPersonImage = binaryFileService.Queryable()
                 .Any( bf => bf.Id == binaryFileId.Value
                     && bf.IsTemporary
                     && bf.BinaryFileType.Guid == personImageFileTypeGuid );
+
+            return isTemporaryPersonImage
+                && binaryFileService.IsUploadedBinaryFileAllowedForPerson( binaryFileId, null, CurrentPerson );
         }
 
         /// <summary>
@@ -1275,7 +1280,9 @@ namespace RockWeb.Blocks.Cms
                             // if they used the ImageEditor, and cropped it, the original file is still in BinaryFile. So clean it up.
                             if ( imgPhoto.CropBinaryFileId.HasValue )
                             {
-                                if ( imgPhoto.CropBinaryFileId != person.PhotoId )
+                                // Only clean up the uncropped file if it is the person's own upload.
+                                if ( imgPhoto.CropBinaryFileId != person.PhotoId
+                                    && new BinaryFileService( rockContext ).IsUploadedBinaryFileAllowedForPerson( imgPhoto.CropBinaryFileId, null, CurrentPerson ) )
                                 {
                                     BinaryFileService binaryFileService = new BinaryFileService( rockContext );
                                     var binaryFile = binaryFileService.Get( imgPhoto.CropBinaryFileId.Value );
