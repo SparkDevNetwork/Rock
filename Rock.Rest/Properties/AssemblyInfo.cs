@@ -17,3 +17,4 @@
 using System.Runtime.CompilerServices;
 
 [assembly: InternalsVisibleTo( "Rock.Blocks" )]
+[assembly: InternalsVisibleTo( "Rock.Tests" )]
