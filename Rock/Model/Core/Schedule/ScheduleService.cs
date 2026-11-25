@@ -107,6 +107,12 @@ namespace Rock.Model
         public Schedule Copy( string id )
         {
             var schedule = Get( id );
+
+            if ( schedule == null )
+            {
+                return null;
+            }
+
             var newSchedule = schedule.CloneWithoutIdentity();
             newSchedule.Name += " - Copy";
             this.Add( newSchedule );
