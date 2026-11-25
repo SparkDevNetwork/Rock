@@ -162,7 +162,7 @@ namespace Rock.Workflow.Action
             }
 
             // Validate the step type exists. Could be a step type id or a guid
-            var stepType = GetStepType( rockContext, action, out var errorMessage );
+            var stepType = GetStepType( rockContext, action, mergeFields, out var errorMessage );
 
             if ( !errorMessage.IsNullOrWhiteSpace() )
             {
@@ -177,7 +177,7 @@ namespace Rock.Workflow.Action
             }
 
             // Validate the step status exists and is in the same program as the step type
-            var stepStatus = GetStepStatus( stepType, action, out errorMessage );
+            var stepStatus = GetStepStatus( stepType, action, mergeFields, out errorMessage );
 
             if ( !errorMessage.IsNullOrWhiteSpace() )
             {
@@ -192,10 +192,10 @@ namespace Rock.Workflow.Action
             }
 
             // Get the start and end dates
-            var startDate = GetLavaAttributeValue( action, AttributeKey.StartDate ).AsDateTime() ?? RockDateTime.Now;
-            var endDate = GetLavaAttributeValue( action, AttributeKey.EndDate ).AsDateTime();
+            var startDate = GetLavaAttributeValue( action, AttributeKey.StartDate, mergeFields ).AsDateTime() ?? RockDateTime.Now;
+            var endDate = GetLavaAttributeValue( action, AttributeKey.EndDate, mergeFields ).AsDateTime();
 
-            var campusAttributeValue = GetLavaAttributeValue( action, AttributeKey.Campus );
+            var campusAttributeValue = GetLavaAttributeValue( action, AttributeKey.Campus, mergeFields );
             var campusId = campusAttributeValue.AsIntegerOrNull();
             var campusGuid = campusAttributeValue.AsGuidOrNull();
 
@@ -298,15 +298,16 @@ namespace Rock.Workflow.Action
         /// </summary>
         /// <param name="rockContext"></param>
         /// <param name="action">The action.</param>
+        /// <param name="mergeFields">The merge fields for this workflow run.</param>
         /// <param name="errorMessage">The error message.</param>
         /// <returns></returns>
-        private StepType GetStepType( RockContext rockContext, WorkflowAction action, out string errorMessage )
+        private StepType GetStepType( RockContext rockContext, WorkflowAction action, Dictionary<string, object> mergeFields, out string errorMessage )
         {
             errorMessage = string.Empty;
             var stepTypeIncludes = "StepProgram.StepStatuses";
             var stepTypeService = new StepTypeService( rockContext );
             StepType stepType = null;
-            var stepTypeValue = GetLavaAttributeValue( action, AttributeKey.StepProgramStepType );
+            var stepTypeValue = GetLavaAttributeValue( action, AttributeKey.StepProgramStepType, mergeFields );
 
             // Check if the value is a guid. This method works for stepProgram|stepType or simply just step type guids
             Field.Helper.ParseStepProgramStepTypeDelimitedGuids( stepTypeValue, out var unused1, out var stepTypeGuid );
@@ -362,13 +363,14 @@ namespace Rock.Workflow.Action
         /// </summary>
         /// <param name="stepType">Type of the step.</param>
         /// <param name="action">The action.</param>
+        /// <param name="mergeFields">The merge fields for this workflow run.</param>
         /// <param name="errorMessage">The error message.</param>
         /// <returns></returns>
-        private StepStatus GetStepStatus( StepType stepType, WorkflowAction action, out string errorMessage )
+        private StepStatus GetStepStatus( StepType stepType, WorkflowAction action, Dictionary<string, object> mergeFields, out string errorMessage )
         {
             errorMessage = string.Empty;
             StepStatus stepStatus = null;
-            var stepStatusValue = GetLavaAttributeValue( action, AttributeKey.StepProgramStepStatus );
+            var stepStatusValue = GetLavaAttributeValue( action, AttributeKey.StepProgramStepStatus, mergeFields );
 
             if ( stepType == null || stepType.StepProgram == null || stepType.StepProgram.StepStatuses == null )
             {
@@ -430,18 +432,21 @@ namespace Rock.Workflow.Action
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="attributeKey">The attribute key.</param>
+        /// <param name="mergeFields">The merge fields for this workflow run.</param>
         /// <returns></returns>
-        private string GetLavaAttributeValue( WorkflowAction action, string attributeKey )
+        private string GetLavaAttributeValue( WorkflowAction action, string attributeKey, Dictionary<string, object> mergeFields )
         {
-            if ( _mergeFields == null )
-            {
-                _mergeFields = GetMergeFields( action );
-            }
+            /*
+                11/25/2026 - MSE
 
+                Action components are shared singletons, so the merge fields must come from
+                the caller for each run. Do not cache them in a field on this class.
+
+                Reason: A cached field rendered every run's Lava with the first run's values.
+            */
             var value = GetAttributeValue( action, attributeKey, true );
-            return value.ResolveMergeFields( _mergeFields );
+            return value.ResolveMergeFields( mergeFields );
         }
-        private Dictionary<string, object> _mergeFields = null;
 
         /// <summary>
         /// Sets the Guid of the created item as the Workflow value of the attribute specified by the attributeKey.
