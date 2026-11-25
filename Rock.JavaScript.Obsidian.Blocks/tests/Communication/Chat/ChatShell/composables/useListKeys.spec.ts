@@ -215,6 +215,31 @@ describe("a list of row components, as the feed draws its messages", () => {
         expect(document.activeElement).toBe(document.querySelector("[data-inner='1']"));
     });
 
+    test("Down reaches a row that moved into the group above it, as a direct message first drawn as a channel joins a quote to its run", async () => {
+        // Each group is its own keyed element, so the moved row is drawn anew in the group it joins
+        // before its old group, and the row in it, is taken away.
+        const groupsPart = defineComponent({
+            props: { groups: { type: Array as PropType<number[][]>, required: true } },
+            setup(props) {
+                const keys = (): string[] => props.groups.flat().map(String);
+                provideRowKeys(useListKeys(keys, { isRowOnly: true, defaultKey: () => keys()[keys().length - 1] ?? null }));
+                return () => h("div", props.groups.map(group => h("div", { key: `g${group[0]}` }, group.map(id => h(rowPart, { key: id, id })))));
+            }
+        });
+        wrapper = mount(groupsPart, { props: { groups: [[1], [2], [3]] }, attachTo: document.body });
+        await settle();
+        await wrapper.setProps({ groups: [[1, 2], [3]] });
+        await settle();
+
+        row(1).focus();
+        await settle();
+        press("ArrowDown");
+        await settle();
+
+        expect(document.activeElement).toBe(row(2));
+        expect(row(2).tabIndex).toBe(0);
+    });
+
     test("a row drawn with no list around it is focusable but no stop", async () => {
         wrapper = mount(rowPart, { props: { id: 7 }, attachTo: document.body });
         await settle();
