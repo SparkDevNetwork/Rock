@@ -37,7 +37,7 @@
 
         <SecurityColumn :itemTitle="'title'" />
 
-        <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
+        <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" :rowDisabled="(row) => !row.isDeleteEnabled" />
     </Grid>
 </template>
 

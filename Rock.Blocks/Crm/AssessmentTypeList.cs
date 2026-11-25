@@ -146,6 +146,7 @@ namespace Rock.Blocks.Crm
                 .AddField( "isActive", a => a.IsActive )
                 .AddField( "isSystem", a => a.IsSystem )
                 .AddField( "isSecurityDisabled", a => !a.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
+                .AddField( "isDeleteEnabled", a => a.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
                 .AddAttributeFields( GetGridAttributes() );
         }
 
@@ -172,6 +173,11 @@ namespace Rock.Blocks.Crm
                 }
 
                 if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+                {
+                    return ActionBadRequest( $"Not authorized to delete {AssessmentType.FriendlyTypeName}." );
+                }
+
+                if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
                 {
                     return ActionBadRequest( $"Not authorized to delete {AssessmentType.FriendlyTypeName}." );
                 }
