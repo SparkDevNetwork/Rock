@@ -73,7 +73,7 @@ namespace Rock.Blocks.Crm
             var builder = GetGridBuilder();
 
             box.IsAddEnabled = GetIsAddEnabled();
-            box.IsDeleteEnabled = true;
+            box.IsDeleteEnabled = BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
             box.ExpectedRowCount = null;
             box.NavigationUrls = GetBoxNavigationUrls();
             box.Options = GetBoxOptions();
@@ -132,6 +132,7 @@ namespace Rock.Blocks.Crm
                 .AddTextField( "badgeComponent", a => a.BadgeComponentEntityType.FriendlyName )
                 .AddTextField( "badgeDescription", a => a.Description )
                 .AddField( "isSecurityDisabled", a => !a.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
+                .AddField( "isDeleteEnabled", a => a.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
                 .AddAttributeFields( GetGridAttributes() );
         }
 
@@ -148,6 +149,11 @@ namespace Rock.Blocks.Crm
         [BlockAction]
         public BlockActionResult ReorderItem( string key, string beforeKey )
         {
+            if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            {
+                return ActionBadRequest( "Not authorized to reorder items." );
+            }
+
             using ( var rockContext = new RockContext() )
             {
                 // Get the queryable and make sure it is ordered correctly.
@@ -187,6 +193,11 @@ namespace Rock.Blocks.Crm
                 }
 
                 if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+                {
+                    return ActionBadRequest( $"Not authorized to delete {Model.Badge.FriendlyTypeName}." );
+                }
+
+                if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
                 {
                     return ActionBadRequest( $"Not authorized to delete {Model.Badge.FriendlyTypeName}." );
                 }
