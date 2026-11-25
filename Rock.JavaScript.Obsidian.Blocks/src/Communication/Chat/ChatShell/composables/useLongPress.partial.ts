@@ -77,7 +77,12 @@ export function useLongPress(element: Ref<HTMLElement | undefined | null>, optio
             : event.isPrimary !== false && (event.pointerType !== "mouse" || event.button === 0);
     }
 
-    /** Swallows the next click once, unless a press comes first. */
+    /**
+     * Takes the release of a fired hold from being a tap, unless a press comes first. A finger's
+     * release is cancelled, so the browser makes no mouse press of it: that press would land where
+     * the finger was, by now the scrim of the sheet the hold opened, and take focus out of the
+     * sheet. The next click is swallowed once, for a pen or mouse hold and any browser that clicks.
+     */
     function armSwallow(): void {
         disarm?.();
         const onClick = (event: Event): void => {
@@ -86,11 +91,18 @@ export function useLongPress(element: Ref<HTMLElement | undefined | null>, optio
             disarm?.();
         };
         const onDown = (): void => disarm?.();
+        const onTouchEnd = (event: Event): void => {
+            event.preventDefault();
+            window.removeEventListener("touchend", onTouchEnd, true);
+        };
         document.addEventListener("click", onClick, true);
         document.addEventListener("pointerdown", onDown, true);
+        // Not passive, or the browser ignores the cancel.
+        window.addEventListener("touchend", onTouchEnd, { capture: true, passive: false });
         disarm = (): void => {
             document.removeEventListener("click", onClick, true);
             document.removeEventListener("pointerdown", onDown, true);
+            window.removeEventListener("touchend", onTouchEnd, true);
             disarm = null;
         };
     }
