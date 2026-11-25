@@ -783,7 +783,9 @@ function roomFacts(overrides: Partial<ChannelFacts> & { channel_id: string }): C
         is_public: true,
         member_count: 0,
         leaders: [],
-        faces: [],
+        // Someone in a room is shown at least one other person's face, which is what draws the
+        // header's members button.
+        faces: [{ person_alias_guid: "a0000009-0000-4000-8000-000000000000", nick_name: "Tom", last_name: "Hale", avatar_url: null }],
         people: [],
         ...overrides
     };
