@@ -440,6 +440,7 @@ namespace RockWeb.Blocks.Administration
             }
 
             btnSecurity.Visible = page.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
+            btnCopy.Visible = CanCopyPage( page.Id );
             btnSecurity.Title = page.InternalName;
             btnSecurity.EntityId = page.Id;
 
@@ -488,6 +489,22 @@ namespace RockWeb.Blocks.Administration
         private bool CanEditPage( Rock.Model.Page page )
         {
             return page.IsAuthorized( Authorization.EDIT, CurrentPerson ) || this.IsUserAuthorized( Authorization.EDIT );
+        }
+
+        /// <summary>
+        /// Determines whether the current person can copy the page. Requires VIEW on
+        /// the page and EDIT on its parent page (or on the page itself when it has no parent).
+        /// </summary>
+        /// <param name="pageId">The identifier of the page to copy.</param>
+        /// <returns><c>true</c> if the current person can copy the page; otherwise, <c>false</c>.</returns>
+        private bool CanCopyPage( int pageId )
+        {
+            var page = pageId != 0 ? PageCache.Get( pageId ) : null;
+            var pageToCheck = page?.ParentPage ?? page;
+
+            return page != null
+                && page.IsAuthorized( Authorization.VIEW, CurrentPerson )
+                && pageToCheck.IsAuthorized( Authorization.EDIT, CurrentPerson );
         }
 
         /// <summary>
@@ -1294,6 +1311,13 @@ namespace RockWeb.Blocks.Administration
             // The page id comes from a hidden field, so it must be the page this block is showing.
             if ( sourcePageId != PageParameter( PageParamKey.Page ).AsInteger() )
             {
+                mdCopyPage.Hide();
+                return;
+            }
+
+            if ( !CanCopyPage( sourcePageId ) )
+            {
+                nbEditModeMessage.Text = EditModeMessage.NotAuthorizedToEdit( Rock.Model.Page.FriendlyTypeName );
                 mdCopyPage.Hide();
                 return;
             }

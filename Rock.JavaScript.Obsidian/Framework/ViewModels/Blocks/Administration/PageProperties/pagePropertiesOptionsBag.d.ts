@@ -28,6 +28,9 @@ export type PagePropertiesOptionsBag = {
     /** Gets or sets a value indicating whether this instance can administrate. */
     canAdministrate: boolean;
 
+    /** Gets or sets a value indicating whether the current person can copy the page. */
+    canCopyPage: boolean;
+
     /** Gets or sets the display when items. */
     displayWhenItems?: ListItemBag[] | null;
 

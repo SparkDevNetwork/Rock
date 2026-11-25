@@ -166,12 +166,14 @@
                 type: "default",
                 handler: onChildPagesClick
             });
-            actions.push({
-                iconCssClass: "fa fa-clone",
-                title: "Copy",
-                type: "default",
-                handler: onCopyClick
-            });
+            if (config.options?.canCopyPage) {
+                actions.push({
+                    iconCssClass: "fa fa-clone",
+                    title: "Copy",
+                    type: "default",
+                    handler: onCopyClick
+                });
+            }
 
             if (config.options?.canAdministrate) {
                 actions.push({
