@@ -174,7 +174,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 if ( nameValue.Count() == 2 )
                 {
                     string eventParam = nameValue[0];
-                    if ( eventParam.Equals( "re-order-panel-widget" ) )
+                    if ( _allowEdit && eventParam.Equals( "re-order-panel-widget" ) )
                     {
                         string[] values = nameValue[1].Split( new char[] { ';' } );
                         if ( values.Count() == 2 )
@@ -255,7 +255,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             }
 
             var lReorderIcon = e.Item.FindControl( "lReorderIcon" ) as Control;
-            lReorderIcon.Visible = _showReorderIcon;
+            lReorderIcon.Visible = _showReorderIcon && _allowEdit;
 
             if ( e.Item.FindControl( "rptrMembers" ) is Repeater rptrMembers )
             {
@@ -415,7 +415,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             if ( e.Item.FindControl( "lbVerify" ) is LinkButton lbVerify )
             {
-                if ( Rock.Address.VerificationContainer.Instance.Components.Any( c => c.Value.Value.IsActive ) )
+                if ( _allowEdit && Rock.Address.VerificationContainer.Instance.Components.Any( c => c.Value.Value.IsActive ) )
                 {
                     lbVerify.Visible = true;
                     lbVerify.CommandArgument = groupLocation.Location.Id.ToString();
@@ -455,6 +455,11 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         switch ( e.CommandName )
                         {
                             case "verify":
+                                if ( !_allowEdit )
+                                {
+                                    break;
+                                }
+
                                 service.Verify( location, true );
                                 rockContext.SaveChanges();
                                 break;
