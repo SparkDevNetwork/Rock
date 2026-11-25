@@ -150,7 +150,11 @@
                     }
 
                     if (iconClass !== "") {
-                        tag.prepend('<span class="tag-icon"><i class="'+iconClass+'"></i></span>');
+                        tag.prepend(
+                            $('<span class="tag-icon">').append(
+                                $('<i>').addClass(iconClass)
+                            )
+                        );
                     }
 
                     if (tagColor !== "") {

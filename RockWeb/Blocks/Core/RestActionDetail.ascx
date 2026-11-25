@@ -86,11 +86,11 @@
             }
 
             function handleFail(a) {
-                $('#result-data').html('FAIL:' + a.status + '<br/>' + a.statusText + '<br/><br/>' + a.responseText);
+                $('#result-data').text('FAIL:' + a.status + '\n' + a.statusText + '\n\n' + a.responseText);
             }
 
             function handleDone(resultData) {
-                $('#result-data').html(JSON.stringify(resultData, null, 2));
+                $('#result-data').text(JSON.stringify(resultData, null, 2));
             }
 
             function getPayload() {

@@ -216,7 +216,7 @@ namespace Rock.Rest.Controllers
                 groupList.Add( group );
                 var treeViewItem = new TreeViewItem();
                 treeViewItem.Id = group.Id.ToString();
-                treeViewItem.Name = group.Name;
+                treeViewItem.Name = System.Web.HttpUtility.HtmlEncode( group.Name );
                 treeViewItem.IsActive = group.IsActive;
 
                 // if there a IconCssClass is assigned, use that as the Icon.
