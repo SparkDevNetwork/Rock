@@ -874,7 +874,11 @@ namespace Rock.Blocks.Group
             }
             catch ( Exception ex )
             {
-                Logger.LogWarning( ex, "Group Finder could not geocode the origin '{Origin}'.", origin );
+                // The origin is what the visitor typed, so only the exception
+                // type and input length are logged. The geocode runs through
+                // Task.Run(...).Result, so log the type of the base exception
+                // rather than the AggregateException wrapper.
+                Logger.LogWarning( "Group Finder could not geocode the origin ({ExceptionType}, input length {InputLength}).", ex.GetBaseException().GetType().Name, origin?.Length ?? 0 );
                 return (null, null);
             }
         }
