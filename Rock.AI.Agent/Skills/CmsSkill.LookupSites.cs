@@ -19,6 +19,7 @@ using System.Linq;
 
 using Rock.AI.Agent.Classes.Skills.CmsSkill;
 using Rock.Enums.AI.Agent;
+using Rock.Security;
 using Rock.SystemGuid;
 
 using Rock.Web.Cache;
@@ -34,6 +35,7 @@ internal sealed partial class CmsSkill
     public AgentToolResult LookupSites()
     {
         var sites = SiteCache.All( AgentRequestContext.RockContext )
+            .Where( s => s.IsAuthorized( Authorization.VIEW, AgentRequestContext.CurrentPerson ) )
             .Where( s => s.IsActive || AgentRequestContext.AudienceType == AudienceType.Internal );
 
         var siteList = sites.Select( s => new SiteResult

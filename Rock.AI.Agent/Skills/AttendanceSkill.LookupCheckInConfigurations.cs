@@ -19,6 +19,7 @@ using System.Linq;
 
 using Rock.AI.Agent.Annotations;
 using Rock.AI.Agent.Classes.Common;
+using Rock.Security;
 using Rock.SystemGuid;
 using Rock.Web.Cache;
 
@@ -37,7 +38,7 @@ internal sealed partial class AttendanceSkill
         var checkInConfigurationPurposeId = DefinedValueCache.Get( DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE.AsGuid(), AgentRequestContext.RockContext ).Id;
 
         var checkInConfigurations = GroupTypeCache.All( AgentRequestContext.RockContext )
-            .Where( gt => gt.GroupTypePurposeValueId == checkInConfigurationPurposeId );
+            .Where( gt => gt.GroupTypePurposeValueId == checkInConfigurationPurposeId && gt.IsAuthorized( Authorization.VIEW, AgentRequestContext.CurrentPerson ) );
 
         var checkInConfigurationResults = checkInConfigurations
             .Select( c => KeyNameResult.FromCache( c ) )
