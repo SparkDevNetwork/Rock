@@ -768,7 +768,14 @@ namespace Rock.Blocks.Engagement
                 {
                     breadCrumbName = new PersonAliasService( rockContext ).GetPersonNoTracking( enrollment.PersonAliasId )?.FullName ?? "";
                 }
-                var breadCrumb = new BreadCrumbLink( breadCrumbName, breadCrumbPageRef );
+                /*
+                    11/25/2026 - MSE
+
+                    The breadcrumb name is written to the page as HTML, so the person's name must be encoded.
+
+                    Reason: Prevent stored HTML in a person name from rendering in the breadcrumb.
+                */
+                var breadCrumb = new BreadCrumbLink( breadCrumbName.EncodeHtml(), breadCrumbPageRef );
 
                 return new BreadCrumbResult
                 {
