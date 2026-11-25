@@ -439,6 +439,14 @@ namespace RockWeb.Blocks.Security.Oidc
                 scopes.Add( publicName.IfEmpty( requestedScope ) );
             }
 
+            // A client with user API access can call any REST API as the
+            // individual, regardless of the scopes it requested. Make sure
+            // the individual knows that before they approve it.
+            if ( authClient.AllowUserApiAccess )
+            {
+                scopes.Add( "Full API Access (call any API and act as you)" );
+            }
+
             return scopes;
         }
 
