@@ -462,7 +462,21 @@ namespace RockWeb.Blocks.Cms
                 for ( int i = 0; i < Request.Files.Count; i++ )
                 {
                     var uploadedFile = Request.Files[i];
-                    if ( uploadedFile.ContentLength > 0 && uploadedFile.FileName.IsNotNullOrWhiteSpace() )
+
+                    /*
+                        11/25/2026 - MSE
+
+                        Attachments are posted straight to this block instead of going through
+                        the file uploader, so they are checked here. A file is skipped when the
+                        content file type lists block its extension, or when the Default file
+                        type has a size limit and the file is larger than it.
+
+                        Reason: Attachments skipped the file type and size rules.
+                    */
+                    var isAllowedFile = Rock.Utility.FileUtilities.IsFileTypeAllowed( uploadedFile.FileName )
+                        && ( !binaryFileType.MaxFileSizeBytes.HasValue || uploadedFile.ContentLength <= binaryFileType.MaxFileSizeBytes.Value );
+
+                    if ( uploadedFile.ContentLength > 0 && uploadedFile.FileName.IsNotNullOrWhiteSpace() && isAllowedFile )
                     {
                         var binaryFile = new BinaryFile();
                         binaryFileService.Add( binaryFile );

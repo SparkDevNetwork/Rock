@@ -17,6 +17,8 @@
 using System;
 
 using Rock.Data;
+using Rock.Model;
+using Rock.Net;
 
 namespace Rock.Cms.StructuredContent
 {
@@ -75,6 +77,40 @@ namespace Rock.Cms.StructuredContent
         public virtual bool ApplyDatabaseChanges( StructuredContentHelper helper, StructuredContentChanges changes, RockContext rockContext )
         {
             return false;
+        }
+
+        /// <summary>
+        /// Determines whether a file newly referenced by the content may be
+        /// marked as permanent. A file that is already permanent, a save that
+        /// does not come from a web request, or the current person's own
+        /// temporary upload is allowed.
+        /// </summary>
+        /// <param name="binaryFile">The binary file referenced by the content.</param>
+        /// <param name="binaryFileService">The binary file service to check the file with.</param>
+        /// <returns><c>true</c> if the file may be marked as permanent; otherwise <c>false</c>.</returns>
+        internal static bool CanMarkFileAsPermanent( BinaryFile binaryFile, BinaryFileService binaryFileService )
+        {
+            /*
+                11/25/2026 - MSE
+
+                The file references come from the content sent by the client, so a
+                temporary file is only kept when the person saving uploaded it. Saves
+                outside a web request (jobs) keep the previous behavior.
+
+                Reason: Any temporary file could be kept by referencing it in the content.
+            */
+            if ( !binaryFile.IsTemporary )
+            {
+                return true;
+            }
+
+            var requestContext = RockRequestContextAccessor.Current;
+            if ( requestContext == null )
+            {
+                return true;
+            }
+
+            return binaryFileService.IsUploadedBinaryFileAllowedForPerson( binaryFile.Id, null, requestContext.CurrentPerson );
         }
     }
 }
