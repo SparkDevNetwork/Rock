@@ -4647,6 +4647,7 @@
     <Compile Include="Utility\SparkLinkHelper.cs" />
     <Compile Include="Utility\StringAsLiteralJavascriptJsonConverter.cs" />
     <Compile Include="Web\DescriptionList.cs" />
+    <Compile Include="Web\ErrorDetailsAccess.cs" />
     <Compile Include="Web\FileUploadException.cs" />
     <Compile Include="Web\Fingerprint.cs" />
     <Compile Include="Web\FingerprintExpressionBuilder.cs" />

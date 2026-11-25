@@ -385,6 +385,7 @@
     <Compile Include="Web\UI\Controls\KeyValueListTests.cs" />
     <Compile Include="Web\Cache\PageShortLinkCacheTests.cs" />
     <Compile Include="Web\Cache\SiteCacheTests.cs" />
+    <Compile Include="Web\ErrorDetailsAccessTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Lava\Tags\StylesheetLessCompilerTests.less" />
