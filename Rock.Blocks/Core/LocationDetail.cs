@@ -677,6 +677,11 @@ namespace Rock.Blocks.Core
 
             var originalParentLocationId = entity.ParentLocationId;
 
+            if ( box.IsValidProperty( nameof( box.Bag.Image ) ) && !new BinaryFileService( RockContext ).IsUploadedBinaryFileAllowedForPerson( box.Bag.Image.GetEntityId<BinaryFile>( RockContext ), entity.ImageId, RequestContext.CurrentPerson ) )
+            {
+                return ActionBadRequest( "Invalid image." );
+            }
+
             // Update the entity instance from the information in the bag.
             if ( !UpdateEntityFromBox( entity, box ) )
             {
@@ -685,6 +690,16 @@ namespace Rock.Blocks.Core
 
             // Location security inherits from the parent location, so make
             // sure the person can edit the parent location if it was changed.
+            if ( originalParentLocationId.HasValue && entity.ParentLocationId != originalParentLocationId )
+            {
+                var originalParent = entityService.Get( originalParentLocationId.Value );
+
+                if ( originalParent == null || !originalParent.IsAuthorized( Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson ) )
+                {
+                    return ActionBadRequest( "You are not authorized to move this location out of its current parent location." );
+                }
+            }
+
             if ( entity.ParentLocationId.HasValue && entity.ParentLocationId != originalParentLocationId )
             {
                 var parentLocation = new LocationService( RockContext ).Get( entity.ParentLocationId.Value );
