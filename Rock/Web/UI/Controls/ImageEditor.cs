@@ -724,6 +724,23 @@ namespace Rock.Web.UI.Controls
 
                 // load image from database
                 var binaryFile = binaryFileService.Get( CropBinaryFileId ?? 0 );
+
+                /*
+                    11/25/2026 - MSE
+
+                    The file to crop comes from a hidden field, so it is checked with the same
+                    view rules GetImage.ashx uses before its content is copied. The copy keeps
+                    the source's parent record so it stays protected the same way.
+
+                    Reason: The posted file id was copied without checking it could be viewed.
+                */
+                if ( binaryFile != null && !IsCropSourceViewable( binaryFile, ( Page as RockPage )?.CurrentPerson ) )
+                {
+                    _nbErrorMessage.Visible = true;
+                    _mdImageDialog.Hide();
+                    return;
+                }
+
                 if ( binaryFile != null )
                 {
                     var croppedBinaryFile = new BinaryFile();
@@ -733,6 +750,8 @@ namespace Rock.Web.UI.Controls
                     croppedBinaryFile.MimeType = binaryFile.MimeType;
                     croppedBinaryFile.FileName = binaryFile.FileName;
                     croppedBinaryFile.Description = binaryFile.Description;
+                    croppedBinaryFile.ParentEntityTypeId = binaryFile.ParentEntityTypeId;
+                    croppedBinaryFile.ParentEntityId = binaryFile.ParentEntityId;
 
                     using ( var sourceStream = binaryFile.ContentStream )
                     {
@@ -765,6 +784,30 @@ namespace Rock.Web.UI.Controls
                 _nbImageWarning.Text = string.Format( "The image size exceeds the maximum resolution of {0}x{1}. Press cancel and try selecting a smaller image.", sizeLimits.TotalSize.Width, sizeLimits.TotalSize.Height );
                 _mdImageDialog.Show();
             }
+        }
+
+        /// <summary>
+        /// Determines whether the person may view the file being cropped. This
+        /// follows GetImage.ashx: a parent record decides first, otherwise the
+        /// file is checked when its type requires view security.
+        /// </summary>
+        /// <param name="binaryFile">The binary file being cropped.</param>
+        /// <param name="person">The person cropping the file.</param>
+        /// <returns><c>true</c> if the person may view the file; otherwise <c>false</c>.</returns>
+        private static bool IsCropSourceViewable( BinaryFile binaryFile, Person person )
+        {
+            var parentEntityAllowsView = binaryFile.ParentEntityAllowsView( person );
+            if ( parentEntityAllowsView.HasValue )
+            {
+                return parentEntityAllowsView.Value;
+            }
+
+            if ( binaryFile.BinaryFileType?.RequiresViewSecurity != true )
+            {
+                return true;
+            }
+
+            return binaryFile.IsAuthorized( Rock.Security.Authorization.VIEW, person );
         }
 
         /// <summary>

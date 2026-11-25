@@ -74,6 +74,8 @@ namespace Rock.Cms.StructuredContent.BlockTypes
             {
                 var filesToAdd = binaryFileService.Queryable()
                     .Where( b => addedBinaryFileIds.Contains( b.Id ) )
+                    .ToList()
+                    .Where( b => CanMarkFileAsPermanent( b, binaryFileService ) )
                     .ToList();
 
                 filesToAdd.ForEach( b => b.IsTemporary = false );
