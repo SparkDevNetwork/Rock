@@ -266,10 +266,12 @@
 /*
     Tinted while the column's bar is on the row, not under any pointer, so one message is lit at a
     time; on a pointer screen also while focus is inside it, an open editor above all, which has no
-    bar. A touch screen's tap focuses what it lands on, so there a focus inside lights nothing.
+    bar. A touch screen's tap focuses what it lands on, so there a focus inside lights nothing; a
+    keyboard's focus on the row still does, since a tap never matches focus-visible.
 */
 .chat-msg.is-community.is-hot,
-.chat-msg.is-community:not(.is-touch):focus-within {
+.chat-msg.is-community:not(.is-touch):focus-within,
+.chat-msg.is-community:focus-visible {
     background-image: linear-gradient(var(--chat-hover), var(--chat-hover));
 }
 
