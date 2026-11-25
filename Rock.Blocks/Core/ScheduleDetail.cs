@@ -191,8 +191,8 @@ namespace Rock.Blocks.Core
                 return;
             }
 
-            var isViewable = BlockCache.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson );
-            box.IsEditable = BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
+            var isViewable = BlockCache.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) && ( entity.Id == 0 || entity.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) );
+            box.IsEditable = BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) && ( entity.Id == 0 || entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) );
 
             entity.LoadAttributes( rockContext );
 
@@ -477,6 +477,12 @@ namespace Rock.Blocks.Core
                 return false;
             }
 
+            if ( entity.Id != 0 && !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            {
+                error = ActionBadRequest( $"Not authorized to edit {Schedule.FriendlyTypeName}." );
+                return false;
+            }
+
             return true;
         }
 
@@ -500,7 +506,22 @@ namespace Rock.Blocks.Core
                 return ActionNotFound();
             }
 
-            var copiedEntity = new ScheduleService( new RockContext() ).Copy( key );
+            var rockContext = new RockContext();
+            var source = new ScheduleService( rockContext ).Get( key, !PageCache.Layout.Site.DisablePredictableIds );
+
+            if ( source == null || !source.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+            {
+                return ActionNotFound();
+            }
+
+            var sourceCategory = source.CategoryId.HasValue ? CategoryCache.Get( source.CategoryId.Value ) : null;
+
+            if ( sourceCategory != null && !sourceCategory.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            {
+                return ActionForbidden( $"Not authorized to copy {Schedule.FriendlyTypeName}." );
+            }
+
+            var copiedEntity = new ScheduleService( rockContext ).Copy( source.IdKey );
 
             return ActionContent( System.Net.HttpStatusCode.Created, this.GetCurrentPageUrl( new Dictionary<string, string>
             {
@@ -553,10 +574,22 @@ namespace Rock.Blocks.Core
                     return actionError;
                 }
 
+                var originalCategoryId = entity.CategoryId;
+
                 // Update the entity instance from the information in the bag.
                 if ( !UpdateEntityFromBox( entity, box, rockContext ) )
                 {
                     return ActionBadRequest( "Invalid data." );
+                }
+
+                if ( entity.CategoryId.HasValue && entity.CategoryId != 0 && ( entity.Id == 0 || entity.CategoryId != originalCategoryId ) )
+                {
+                    var category = CategoryCache.Get( entity.CategoryId.Value );
+
+                    if ( category == null || !category.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+                    {
+                        return ActionBadRequest( "You are not authorized to add a schedule to the selected category." );
+                    }
                 }
 
                 // Ensure everything is valid before saving.
