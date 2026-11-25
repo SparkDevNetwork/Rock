@@ -129,6 +129,7 @@ namespace Rock.Blocks.Administration
                 IsBlockVisible = PageParameter( PageParameterKey.Page ).IsNotNullOrWhiteSpace(),
                 SiteName = site?.Name,
                 CanAdministrate = entity.IsAuthorized( Authorization.ADMINISTRATE, GetCurrentPerson() ),
+                CanCopyPage = CanCopyPage( entity.Id ),
                 SitesItems = LoadSites(),
                 LayoutItems = LoadLayouts( site ),
                 DisplayWhenItems = typeof( DisplayInNavWhen ).ToEnumListItemBag(),
@@ -137,6 +138,22 @@ namespace Rock.Blocks.Administration
                 Countries = DefinedTypeCache.GetLocationCountryListItemBagList( true )
             };
             return options;
+        }
+
+        /// <summary>
+        /// Determines whether the current person can copy the page. Requires VIEW on
+        /// the page and EDIT on its parent page (or on the page itself when it has no parent).
+        /// </summary>
+        /// <param name="pageId">The identifier of the page to copy.</param>
+        /// <returns><c>true</c> if the current person can copy the page; otherwise, <c>false</c>.</returns>
+        private bool CanCopyPage( int pageId )
+        {
+            var page = pageId != 0 ? PageCache.Get( pageId ) : null;
+            var pageToCheck = page?.ParentPage ?? page;
+
+            return page != null
+                && page.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson )
+                && pageToCheck.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
         }
 
         /// <summary>
@@ -610,8 +627,15 @@ namespace Rock.Blocks.Administration
             box.IfValidProperty( nameof( box.Bag.PageRoute ),
                 () => SavePageRoutes( box.Bag, entity ) );
 
-            box.IfValidProperty( nameof( box.Bag.PageRoute ),
-                () => SaveContexts( box.Bag, entity ) );
+            box.IfValidProperty( nameof( box.Bag.BlockContexts ), () =>
+            {
+                if ( entity.Id != 0
+                    && box.Bag.BlockContexts != null
+                    && PageCache.Get( entity.Id )?.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) == true )
+                {
+                    SaveContexts( box.Bag, entity );
+                }
+            } );
 
             box.IfValidProperty( nameof( box.Bag.AttributeValues ),
                 () =>
@@ -1189,6 +1213,11 @@ namespace Rock.Blocks.Administration
             if ( page != null && !page.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
             {
                 return ActionBadRequest( $"Not authorized to view {Page.FriendlyTypeName}." );
+            }
+
+            if ( page != null && !CanCopyPage( page.Id ) )
+            {
+                return ActionBadRequest( EditModeMessage.NotAuthorizedToEdit( Page.FriendlyTypeName ) );
             }
 
             if ( page != null )
