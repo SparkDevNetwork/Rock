@@ -27,6 +27,14 @@ These are techniques learned while running Rock verification plans in a browser 
 - **Block EDIT versus ADMINISTRATE**: many actions gate on block Edit, but some (reorder on certain lists, Run Now on metrics, Link to Existing Person in SMS Conversations) need Administrate or both. Read the block's C# to see which.
 - **Restricting a record to admins only**: add View Allow for RSR - Rock Administration and then View Deny for All Users on the item.
 - **Auth rows changed with SQL are cached**: after inserting or deleting `Auth` rows by SQL, clear the cache or restart before testing. Prefer the lock icon UI, which refreshes the cache itself.
+- **REST v2 model endpoints need an Execute action grant, even for admin**: `/api/v2/models/...` returns 401 to every logged-in user, admin included, until someone is granted the Execute action that endpoint checks. Admin passing other checks does not cover it. The action depends on the endpoint, so read its `[Secured( ... )]` attribute in `Rock.Rest/v2/Models/CodeGenerated/<Name>Controller.CodeGenerated.cs`: GETs accept `ExecuteRead` (or `ExecuteUnrestrictedRead`), POST/PUT/PATCH/DELETE need `ExecuteWrite`, and `POST .../search` accepts only `ExecuteUnrestrictedRead`. For a test, look up the `Rock.Model.RestController` entity type Id, the `[RestController].[Id]` whose `[ClassName]` is `Rock.Rest.v2.Models.<Name>Controller`, and admin's PersonAliasId, then add a temporary person rule with that action:
+
+  ```sql
+  INSERT INTO [Auth] ([EntityTypeId],[EntityId],[Order],[Action],[AllowOrDeny],[SpecialRole],[PersonAliasId],[Guid])
+  VALUES (@RestControllerEntityTypeId, @RestControllerId, 0, 'ExecuteRead', 'A', 0, @AdminPersonAliasId, NEWID())
+  ```
+
+  Clear the cache, run the call, then delete the row by its Id and clear the cache again.
 - **Stale form technique**: a check behind a button that is not rendered for the user cannot be reached by posting (event validation rejects it). Grant the right, open the form as that user, revoke the right from a second session, then submit the already open form.
 - **Revoke security grant tokens**: Admin Tools > Settings > System Configuration, Experimental Settings, Revoke Grants stores `core_SecurityGrantTokenEarliestDate`; tokens issued before it then return 401.
 - **VIEW is allowed when no rule exists**: with no View rules anywhere up an entity's chain (for example registration template category, template, instance, registration), every logged in staff user can view it. A test that expects "no rights means no view" needs an explicit Deny View for the person.
