@@ -158,6 +158,34 @@ describe("a long press", () => {
         expect(reached).toHaveBeenCalledTimes(1);
     });
 
+    // The finger lifting off a fired hold is not a tap: the browser would make a mouse press of
+    // it where the finger was, now the sheet's scrim, and that press takes focus out of the sheet.
+    // Cancelling the release's touchend stops the browser making it. An unfired press's release,
+    // and a release after the next press, are taps and keep their mouse press.
+    test("cancels the touchend that ends a fired hold, and no other", async () => {
+        held();
+        await nextTick();
+        at("word").dispatchEvent(pointer("pointerdown"));
+        jest.advanceTimersByTime(100);
+        window.dispatchEvent(pointer("pointerup"));
+        const early = new Event("touchend", { bubbles: true, cancelable: true });
+        at("word").dispatchEvent(early);
+        expect(early.defaultPrevented).toBe(false);
+
+        at("word").dispatchEvent(pointer("pointerdown"));
+        jest.advanceTimersByTime(450);
+        window.dispatchEvent(pointer("pointerup"));
+        const release = new Event("touchend", { bubbles: true, cancelable: true });
+        at("word").dispatchEvent(release);
+        expect(release.defaultPrevented).toBe(true);
+
+        at("word").dispatchEvent(pointer("pointerdown"));
+        window.dispatchEvent(pointer("pointerup"));
+        const tap = new Event("touchend", { bubbles: true, cancelable: true });
+        at("word").dispatchEvent(tap);
+        expect(tap.defaultPrevented).toBe(false);
+    });
+
     // A hold the browser ends with no click, then a press somewhere else, in a sheet drawn
     // outside the held element: that press disarms the swallow, so its own click goes through.
     test("a hold that ends with no click does not eat the next tap, even outside the element", async () => {
