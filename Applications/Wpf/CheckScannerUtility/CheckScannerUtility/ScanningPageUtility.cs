@@ -23,8 +23,8 @@ using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
 using Rock.Apps.CheckScannerUtility.Models;
-using Rock.Client;
-using Rock.Client.Enums;
+using Rock.Apps.CheckScannerUtility.Client;
+using Rock.Apps.CheckScannerUtility.Client.Enums;
 using Rock.Net;
 
 namespace Rock.Apps.CheckScannerUtility
@@ -225,7 +225,7 @@ namespace Rock.Apps.CheckScannerUtility
             if ( scannedDocInfo.FrontImageData != null )
             {
                 string frontImageFileName = string.Format( "image1_{0}.png", DateTime.Now.ToString( "o" ).RemoveSpecialCharacters() );
-                frontImageBinaryFileId = client.UploadBinaryFile( frontImageFileName, Rock.Client.SystemGuid.BinaryFiletype.CONTRIBUTION_IMAGE.AsGuid(), scannedDocInfo.FrontImagePngBytes, false );
+                frontImageBinaryFileId = client.UploadBinaryFile( frontImageFileName, Client.SystemGuid.BinaryFiletype.CONTRIBUTION_IMAGE.AsGuid(), scannedDocInfo.FrontImagePngBytes, false );
             }
 
             // upload image of back of doc (if it exists)
@@ -234,7 +234,7 @@ namespace Rock.Apps.CheckScannerUtility
             {
                 // upload image of back of doc
                 string backImageFileName = string.Format( "image2_{0}.png", DateTime.Now.ToString( "o" ).RemoveSpecialCharacters() );
-                backImageBinaryFileId = client.UploadBinaryFile( backImageFileName, Rock.Client.SystemGuid.BinaryFiletype.CONTRIBUTION_IMAGE.AsGuid(), scannedDocInfo.BackImagePngBytes, false );
+                backImageBinaryFileId = client.UploadBinaryFile( backImageFileName, Client.SystemGuid.BinaryFiletype.CONTRIBUTION_IMAGE.AsGuid(), scannedDocInfo.BackImagePngBytes, false );
             }
 
             FinancialPaymentDetail financialPaymentDetail = new FinancialPaymentDetail();
@@ -353,8 +353,8 @@ namespace Rock.Apps.CheckScannerUtility
 
             if ( binaryFileTypeContribution == null || transactionTypeValueContribution == null )
             {
-                binaryFileTypeContribution = UploadScannedItemClient.GetDataByGuid<BinaryFileType>( "api/BinaryFileTypes", new Guid( Rock.Client.SystemGuid.BinaryFiletype.CONTRIBUTION_IMAGE ) );
-                transactionTypeValueContribution = UploadScannedItemClient.GetDataByGuid<DefinedValue>( "api/DefinedValues", new Guid( Rock.Client.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION ) );
+                binaryFileTypeContribution = UploadScannedItemClient.GetDataByGuid<BinaryFileType>( "api/BinaryFileTypes", new Guid( Client.SystemGuid.BinaryFiletype.CONTRIBUTION_IMAGE ) );
+                transactionTypeValueContribution = UploadScannedItemClient.GetDataByGuid<DefinedValue>( "api/DefinedValues", new Guid( Client.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION ) );
             }
 
             return UploadScannedItemClient;

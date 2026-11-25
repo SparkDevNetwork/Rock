@@ -113,12 +113,27 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="..\..\..\..\Rock.Version\AssemblySharedInfo.cs">
-      <Link>AssemblySharedInfo.cs</Link>
-    </Compile>
     <Compile Include="BatchItemDetailPage.xaml.cs">
       <DependentUpon>BatchItemDetailPage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Client\Attribute.cs" />
+    <Compile Include="Client\AttributeValue.cs" />
+    <Compile Include="Client\BinaryFile.cs" />
+    <Compile Include="Client\BinaryFileType.cs" />
+    <Compile Include="Client\Campus.cs" />
+    <Compile Include="Client\ControlTotalResult.cs" />
+    <Compile Include="Client\DefinedType.cs" />
+    <Compile Include="Client\DefinedValue.cs" />
+    <Compile Include="Client\Enums.cs" />
+    <Compile Include="Client\FinancialAccount.cs" />
+    <Compile Include="Client\FinancialBatch.cs" />
+    <Compile Include="Client\FinancialPaymentDetail.cs" />
+    <Compile Include="Client\FinancialTransaction.cs" />
+    <Compile Include="Client\FinancialTransactionDetail.cs" />
+    <Compile Include="Client\FinancialTransactionImage.cs" />
+    <Compile Include="Client\FinancialTransactionScannedCheck.cs" />
+    <Compile Include="Client\Person.cs" />
+    <Compile Include="Client\SystemGuid.cs" />
     <Compile Include="ImageSafe\CheckData.cs" />
     <Compile Include="ImageSafe\ImageSafeHelper.cs" />
     <Compile Include="MicrImageHostPage.xaml.cs">
@@ -256,10 +271,6 @@
     </COMReference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\Rock.Client\Rock.Client.csproj">
-      <Project>{6ea64bb9-9740-453a-939b-df43ad9ac164}</Project>
-      <Name>Rock.Client</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\..\..\Rock.RestClient\Rock.RestClient.csproj">
       <Project>{7794b7f5-b449-46d5-94cc-1c58eb726d3f}</Project>
       <Name>Rock.RestClient</Name>

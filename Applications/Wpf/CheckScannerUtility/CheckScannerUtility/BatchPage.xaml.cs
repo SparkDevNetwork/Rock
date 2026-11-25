@@ -28,8 +28,8 @@ using System.Xml;
 using ImageSafeInterop;
 
 using Rock.Apps.CheckScannerUtility.Models;
-using Rock.Client;
-using Rock.Client.Enums;
+using Rock.Apps.CheckScannerUtility.Client;
+using Rock.Apps.CheckScannerUtility.Client.Enums;
 using Rock.Net;
 
 namespace Rock.Apps.CheckScannerUtility
@@ -508,13 +508,13 @@ namespace Rock.Apps.CheckScannerUtility
                 cboCampus.Items.Add( campus );
             }
 
-            var currencyTypeDefinedType = client.GetDataByGuid<DefinedType>( "api/DefinedTypes", Rock.Client.SystemGuid.DefinedType.FINANCIAL_CURRENCY_TYPE.AsGuid() );
+            var currencyTypeDefinedType = client.GetDataByGuid<DefinedType>( "api/DefinedTypes", Client.SystemGuid.DefinedType.FINANCIAL_CURRENCY_TYPE.AsGuid() );
             this.CurrencyValueList = client.GetData<List<DefinedValue>>( "api/DefinedValues", "DefinedTypeId eq " + currencyTypeDefinedType.Id.ToString() );
 
             //// load all the Transaction Source values and fetch the attributes so that we can filter the selectable ones (core.ShowInCheckScanner=true) 
             //// when populating the dropdown on the scanning prompt page.
             //// don't filter them here because we might be viewing transactions that have an unselectable Transaction Source Type
-            var sourceTypeDefinedType = client.GetDataByGuid<DefinedType>( "api/DefinedTypes", Rock.Client.SystemGuid.DefinedType.FINANCIAL_SOURCE_TYPE.AsGuid() );
+            var sourceTypeDefinedType = client.GetDataByGuid<DefinedType>( "api/DefinedTypes", Client.SystemGuid.DefinedType.FINANCIAL_SOURCE_TYPE.AsGuid() );
             var sourceTypeUri = string.Format( "api/DefinedValues?$filter=DefinedTypeId eq {0}&loadAttributes=simple", sourceTypeDefinedType.Id.ToString() );
             this.SourceTypeValueList = client.GetData<List<DefinedValue>>( sourceTypeUri );
         }

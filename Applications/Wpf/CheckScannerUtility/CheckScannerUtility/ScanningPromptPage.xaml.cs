@@ -19,7 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls.Primitives;
-using Rock.Client;
+using Rock.Apps.CheckScannerUtility.Client;
 
 namespace Rock.Apps.CheckScannerUtility
 {
@@ -61,7 +61,7 @@ namespace Rock.Apps.CheckScannerUtility
                 btnToggle.IsChecked = btnToggle == btnToggleSelected;
             }
 
-            var scanningChecks = ( Guid ) btnToggleSelected.Tag == Rock.Client.SystemGuid.DefinedValue.CURRENCY_TYPE_CHECK.AsGuid();
+            var scanningChecks = ( Guid ) btnToggleSelected.Tag == Client.SystemGuid.DefinedValue.CURRENCY_TYPE_CHECK.AsGuid();
             UpdateUI( scanningChecks );
         }
 
@@ -171,7 +171,7 @@ namespace Rock.Apps.CheckScannerUtility
             cboTransactionSourceType.ItemsSource = this.BatchPage.SourceTypeValueListSelectable.OrderBy( a => a.Order ).ThenBy( a => a.Value ).ToList();
             cboTransactionSourceType.SelectedItem = ( cboTransactionSourceType.ItemsSource as List<DefinedValue> ).FirstOrDefault( a => a.Guid == rockConfig.SourceTypeValueGuid.AsGuid() );
 
-            var scanningChecks = rockConfig.TenderTypeValueGuid.AsGuid() == Rock.Client.SystemGuid.DefinedValue.CURRENCY_TYPE_CHECK.AsGuid();
+            var scanningChecks = rockConfig.TenderTypeValueGuid.AsGuid() == Client.SystemGuid.DefinedValue.CURRENCY_TYPE_CHECK.AsGuid();
 
             UpdateUI(scanningChecks);
         }

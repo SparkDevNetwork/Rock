@@ -24,7 +24,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using ImageSafeInterop;
 using Rock.Apps.CheckScannerUtility.Models;
-using Rock.Client;
+using Rock.Apps.CheckScannerUtility.Client;
 using Rock.Net;
 
 namespace Rock.Apps.CheckScannerUtility

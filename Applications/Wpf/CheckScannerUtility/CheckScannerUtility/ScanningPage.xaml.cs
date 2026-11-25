@@ -91,7 +91,7 @@ namespace Rock.Apps.CheckScannerUtility
 
             var rockConfig = RockConfig.Load();
 
-            bool scanningChecks = rockConfig.TenderTypeValueGuid.AsGuid() == Rock.Client.SystemGuid.DefinedValue.CURRENCY_TYPE_CHECK.AsGuid();
+            bool scanningChecks = rockConfig.TenderTypeValueGuid.AsGuid() == Client.SystemGuid.DefinedValue.CURRENCY_TYPE_CHECK.AsGuid();
             imgScannedItemNone.Visibility = Visibility.Collapsed;
 
             // f they don't enable smart scan, don't warn about bad MICRs, they might be scanning a mixture of checks and envelopes.
@@ -666,7 +666,7 @@ namespace Rock.Apps.CheckScannerUtility
             btnNext.Visibility = Visibility.Collapsed;
             btnComplete.Visibility = Visibility.Collapsed;
 
-            bool scanningChecks = rockConfig.TenderTypeValueGuid.AsGuid() == Rock.Client.SystemGuid.DefinedValue.CURRENCY_TYPE_CHECK.AsGuid();
+            bool scanningChecks = rockConfig.TenderTypeValueGuid.AsGuid() == Client.SystemGuid.DefinedValue.CURRENCY_TYPE_CHECK.AsGuid();
 
             if ( rockConfig.ScannerInterfaceType == RockConfig.InterfaceType.MICRImageRS232 )
             {
@@ -744,7 +744,7 @@ namespace Rock.Apps.CheckScannerUtility
                 // show a "No Items" warning if they clicked Start but it stopped because of MainHopperEmpty
                 if ( rangerFeedingStoppedReason == RangerFeedingStoppedReasons.MainHopperEmpty )
                 {
-                    bool scanningChecks = rockConfig.TenderTypeValueGuid.AsGuid() == Rock.Client.SystemGuid.DefinedValue.CURRENCY_TYPE_CHECK.AsGuid();
+                    bool scanningChecks = rockConfig.TenderTypeValueGuid.AsGuid() == Client.SystemGuid.DefinedValue.CURRENCY_TYPE_CHECK.AsGuid();
                     var noItemfound = string.Format( "No {0} detected in scanner. Make sure {0} are properly in the feed tray.", scanningChecks ? "checks" : "items" );
                     DisplayAlertMessage( AlertMessageType.Warning, noItemfound );
                 }
@@ -1065,7 +1065,7 @@ namespace Rock.Apps.CheckScannerUtility
                     }
                 }
 
-                bool scanningChecks = RockConfig.Load().TenderTypeValueGuid.AsGuid() == Rock.Client.SystemGuid.DefinedValue.CURRENCY_TYPE_CHECK.AsGuid();
+                bool scanningChecks = RockConfig.Load().TenderTypeValueGuid.AsGuid() == Client.SystemGuid.DefinedValue.CURRENCY_TYPE_CHECK.AsGuid();
                 if ( scannedDoc.BackImageData == null && rockConfig.PromptToScanRearImage )
                 {
                     // scanning the front image, but still need to scan the back
@@ -1167,7 +1167,7 @@ namespace Rock.Apps.CheckScannerUtility
             // set the _currentMagtekScannedDoc in case we are going to scan the back of the image
             _currentMagtekScannedDoc = scannedDoc;
 
-            bool scanningChecks = RockConfig.Load().TenderTypeValueGuid.AsGuid() == Rock.Client.SystemGuid.DefinedValue.CURRENCY_TYPE_CHECK.AsGuid();
+            bool scanningChecks = RockConfig.Load().TenderTypeValueGuid.AsGuid() == Client.SystemGuid.DefinedValue.CURRENCY_TYPE_CHECK.AsGuid();
             if ( e.HasError )
             {
                 var timeoutError = e.ErrorMessage.Contains( "Timeout" );

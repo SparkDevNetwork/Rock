@@ -13,9 +13,6 @@ RMDIR "Rock.Blocks\Obj" /S /Q
 RMDIR "Rock.Checkr\Bin" /S /Q
 RMDIR "Rock.Checkr\Obj" /S /Q
 
-RMDIR "Rock.Client\Bin" /S /Q
-RMDIR "Rock.Client\Obj" /S /Q
-
 RMDIR "Rock.CodeGeneration\Bin" /S /Q
 RMDIR "Rock.CodeGeneration\Obj" /S /Q
 

@@ -24,7 +24,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media.Imaging;
 using Rock.Apps.CheckScannerUtility.Models;
-using Rock.Client;
+using Rock.Apps.CheckScannerUtility.Client;
 using Rock.Net;
 using Rock;
 
@@ -223,7 +223,7 @@ namespace Rock.Apps.CheckScannerUtility
 
                 var filterString = string.Join( " and ", filters );
 
-                var securitySettings = client.GetData<List<Rock.Client.Attribute>>( $"api/Attributes?$filter={filterString}" );
+                var securitySettings = client.GetData<List<Client.Attribute>>( $"api/Attributes?$filter={filterString}" );
                 var setting = securitySettings.FirstOrDefault();
                 if ( setting != null )
                 {

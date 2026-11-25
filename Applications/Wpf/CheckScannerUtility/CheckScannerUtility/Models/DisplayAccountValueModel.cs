@@ -18,7 +18,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Windows;
-using Rock.Client;
+using Rock.Apps.CheckScannerUtility.Client;
 
 namespace Rock.Apps.CheckScannerUtility.Models
 {

@@ -21,7 +21,7 @@ using System.Net;
 using System.Linq;
 using System.Windows;
 using System.Windows.Input;
-using Rock.Client;
+using Rock.Apps.CheckScannerUtility.Client;
 using Rock.Net;
 
 namespace Rock.Apps.CheckScannerUtility

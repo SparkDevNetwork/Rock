@@ -25,14 +25,14 @@ namespace Rock.Apps.CheckScannerUtility.Models
     /// <seealso cref="System.ComponentModel.INotifyPropertyChanged" />
     public class DisplayFinancialTransactionDetailModel: INotifyPropertyChanged
     {
-        private Rock.Client.FinancialTransactionDetail _financialTransactionDetail;
+        private Client.FinancialTransactionDetail _financialTransactionDetail;
         private decimal? _amount;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DisplayFinancialTransactionDetailModel"/> class.
         /// </summary>
         /// <param name="financialTransactionDetail">The financial transaction detail.</param>
-        public DisplayFinancialTransactionDetailModel( Rock.Client.FinancialTransactionDetail financialTransactionDetail )
+        public DisplayFinancialTransactionDetailModel( Client.FinancialTransactionDetail financialTransactionDetail )
         {
             _financialTransactionDetail = financialTransactionDetail;
             if ( financialTransactionDetail.Amount == decimal.Zero && financialTransactionDetail.Id == 0 )
