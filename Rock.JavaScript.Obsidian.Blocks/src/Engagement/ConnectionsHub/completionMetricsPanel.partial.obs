@@ -1,38 +1,56 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div class="completion-metrics-grid">
-        <KpiTile v-for="tile in tiles"
-                 isBorderless
-                 :key="tile.label"
-                 variant="light"
-                 :label="tile.label"
+    <KpiContainer :columns="4" isFlush>
+        <KpiCard v-for="tile in tiles"
+                 :key="tile.title"
+                 :title="tile.title"
                  :help="tile.help"
-                 :value="tile.value">
-            <template #footer>
-                <span :style="{ color: tile.color }">{{ tile.difference || '-' }}</span> {{ footerSuffix }}
-            </template>
-        </KpiTile>
-    </div>
+                 :value="tile.value"
+                 :valueTrend="tile.valueTrend"
+                 :valueTrendTooltip="tile.valueTrendTooltip"
+                 :valueDescription="tile.valueDescription"
+                 :isLowerBetter="tile.isLowerBetter"
+                 :hasError="hasError"
+                 :isLoading="!metrics && !hasError" />
+    </KpiContainer>
 </template>
 
 <script setup lang="ts">
     /**
-     * completionMetricsPanel.partial.obs - Renders the four connection completion metric tiles
-     * (Timeliness, Responsiveness, Requests Completed, Average Time to Complete) for the
-     * Connections Hub snapshot, each showing a current value and a color-coded delta versus
-     * the comparison period.
+     * completionMetricsPanel.partial.obs - Renders the four connection completion metric cards
+     * (Timeliness, Responsiveness, Completed, Avg. Time to Complete) for the
+     * Connections Hub snapshot, each showing a current value and the change versus the
+     * comparison period.
      *
-     * The tile presentation comes from the shared KpiTile control; this partial owns only the
-     * metric-to-tile mapping (value/delta formatting and trend coloring).
+     * The card presentation comes from the shared KpiCard control; this partial owns only the
+     * metric-to-card mapping (value and delta formatting). Every delta is an absolute
+     * difference (percentage points, days or a count), not a percent change, so the card's
+     * trend is given as a direction and the signed difference is written out beside it.
      */
     import { computed, PropType } from "vue";
-    import KpiTile from "@Obsidian/Controls/kpiTile.obs";
+    import KpiCard from "@Obsidian/Controls/kpiCard.obs";
+    import KpiContainer from "@Obsidian/Controls/kpiContainer.obs";
+    import { KpiHelpSection, KpiTrendDirection } from "@Obsidian/Core/Controls/kpi";
     import { CompletionMetricsBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/completionMetricsBag";
+
+    // #region Types
+
+    type CompletionTile = {
+        title: string;
+        help: KpiHelpSection[];
+        value: string | null;
+        valueTrend: KpiTrendDirection | null;
+        valueTrendTooltip: string | null;
+        valueDescription: string;
+        isLowerBetter: boolean;
+    };
+
+    // #endregion Types
 
     const props = defineProps({
         /**
-         * The completion metrics payload. When null or undefined the tiles render
-         * placeholder dashes.
+         * The completion metrics payload. When null or undefined the cards render
+         * their loading state.
          */
         metrics: {
             type: Object as PropType<CompletionMetricsBag | null | undefined>,
@@ -40,7 +58,16 @@
         },
 
         /**
-         * Suffix text appended after each tile's signed delta (e.g. " vs. Previous 28 Days").
+         * When true the cards show their error state instead of loading, such as after the
+         * metrics request failed. Takes precedence over the loading state.
+         */
+        hasError: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /**
+         * Suffix text appended after each card's signed delta (e.g. " vs. Previous 28 Days").
          * Pass an empty string to suppress the comparative context.
          */
         footerSuffix: {
@@ -49,20 +76,76 @@
         }
     });
 
-    // Color tokens for the delta indicator. Strings are CSS variable references so they follow the theme.
-    const positiveColor = "var(--color-success-strong)";
-    const negativeColor = "var(--color-danger-strong)";
-    const neutralColor = "var(--color-interface-medium)";
+    // #region Values
 
-    type CompletionTile = {
-        label: string;
-        value: string;
-        help: string;
-        difference: string;
-        color: string;
-    };
+    const timelinessHelp: KpiHelpSection[] = [
+        { text: "The percentage of completed requests that were finished on or before their due date during this period." }
+    ];
+    const responsivenessHelp: KpiHelpSection[] = [
+        { text: "The average number of days between when a request was submitted and when a connector first acted on it during this period." }
+    ];
+    const requestsCompletedHelp: KpiHelpSection[] = [
+        { text: "The total number of requests marked as completed during this period." }
+    ];
+    const averageCompletionHelp: KpiHelpSection[] = [
+        { text: "The average number of days from request submission to completion, across all requests closed in this period." }
+    ];
 
-    /** Formats a percentage delta for the tile footer. */
+    // #endregion Values
+
+    // #region Computed Values
+
+    const tiles = computed<CompletionTile[]>(() => {
+        const metrics = props.metrics;
+
+        if (!metrics) {
+            return [
+                makeTile("Timeliness", timelinessHelp, null, null, false),
+                makeTile("Responsiveness (Rsp)", responsivenessHelp, null, null, true),
+                makeTile("Completed", requestsCompletedHelp, null, null, false),
+                makeTile("Avg. Time to Complete", averageCompletionHelp, null, null, true)
+            ];
+        }
+
+        return [
+            makeTile(
+                "Timeliness",
+                timelinessHelp,
+                metrics.timelinessPercent.toLocaleString(undefined, { style: "percent" }),
+                { text: formatDeltaPercent(metrics.timelinessPercentDelta), delta: metrics.timelinessPercentDelta },
+                false
+            ),
+            // For responsiveness, an increase is a negative trend.
+            makeTile(
+                "Responsiveness (Rsp)",
+                responsivenessHelp,
+                formatDays(metrics.averageResponsivenessDays),
+                { text: formatDeltaDecimal(metrics.averageResponsivenessDaysDelta), delta: metrics.averageResponsivenessDaysDelta },
+                true
+            ),
+            makeTile(
+                "Completed",
+                requestsCompletedHelp,
+                metrics.requestsCompletedCount.toLocaleString(),
+                { text: formatDeltaDecimal(metrics.requestsCompletedCountDelta), delta: metrics.requestsCompletedCountDelta },
+                false
+            ),
+            // For average time to complete, an increase is a negative trend.
+            makeTile(
+                "Avg. Time to Complete",
+                averageCompletionHelp,
+                formatDays(metrics.averageCompletionDays),
+                { text: formatDeltaDecimal(metrics.averageCompletionDaysDelta), delta: metrics.averageCompletionDaysDelta },
+                true
+            )
+        ];
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /** Formats a percentage delta for the card description. */
     function formatDeltaPercent(deltaPercent: number): string {
         if (deltaPercent > 0) {
             return `+${deltaPercent.toLocaleString(undefined, { style: "percent" })}`;
@@ -75,7 +158,7 @@
         }
     }
 
-    /** Formats a decimal delta for the tile footer. */
+    /** Formats a decimal delta for the card description. */
     function formatDeltaDecimal(deltaDecimal: number): string {
         if (deltaDecimal > 0) {
             return `+${deltaDecimal.toLocaleString(undefined, { style: "decimal", maximumFractionDigits: 1 })}`;
@@ -88,32 +171,6 @@
         }
     }
 
-    /** Returns the trend color for a metric where an increase is good. */
-    function getTrendColor(delta: number): string {
-        if (delta === 0) {
-            return neutralColor;
-        }
-        else if (delta > 0) {
-            return positiveColor;
-        }
-        else {
-            return negativeColor;
-        }
-    }
-
-    /** Returns the trend color for a metric where an increase is bad. */
-    function getTrendColorInverted(delta: number): string {
-        if (delta === 0) {
-            return neutralColor;
-        }
-        else if (delta > 0) {
-            return negativeColor;
-        }
-        else {
-            return positiveColor;
-        }
-    }
-
     /** Formats a day count as "1 Day" or "N Days" (max 1 fraction digit). */
     function formatDays(days: number): string {
         return days === 1
@@ -121,49 +178,44 @@
             : `${days.toLocaleString(undefined, { style: "decimal", maximumFractionDigits: 1 })} Days`;
     }
 
-    const tiles = computed<CompletionTile[]>(() => {
-        const metrics = props.metrics;
-
-        if (!metrics) {
-            return [
-                { label: "Timeliness", value: "-", help: "The percentage of completed requests that were finished on or before their due date during this period.", difference: "", color: neutralColor },
-                { label: "Responsiveness (Rsp)", value: "-", help: "The average number of days between when a request was submitted and when a connector first acted on it during this period.", difference: "", color: neutralColor },
-                { label: "Requests Completed", value: "-", help: "The total number of requests marked as completed during this period.", difference: "", color: neutralColor },
-                { label: "Average Time to Complete", value: "-", help: "The average number of days from request submission to completion, across all requests closed in this period.", difference: "", color: neutralColor }
-            ];
+    /** Gets the card trend direction for a delta. The card colors it using the card's lower-is-better setting. */
+    function getTrendDirection(delta: number): KpiTrendDirection {
+        if (delta > 0) {
+            return KpiTrendDirection.Up;
         }
+        else if (delta < 0) {
+            return KpiTrendDirection.Down;
+        }
+        else {
+            return KpiTrendDirection.Flat;
+        }
+    }
 
-        return [
-            {
-                label: "Timeliness",
-                value: metrics.timelinessPercent.toLocaleString(undefined, { style: "percent" }),
-                help: "The percentage of completed requests that were finished on or before their due date during this period.",
-                difference: formatDeltaPercent(metrics.timelinessPercentDelta),
-                color: getTrendColor(metrics.timelinessPercentDelta)
-            },
-            {
-                label: "Responsiveness (Rsp)",
-                value: formatDays(metrics.averageResponsivenessDays),
-                help: "The average number of days between when a request was submitted and when a connector first acted on it during this period.",
-                difference: formatDeltaDecimal(metrics.averageResponsivenessDaysDelta),
-                // For responsiveness, an increase is a negative trend.
-                color: getTrendColorInverted(metrics.averageResponsivenessDaysDelta)
-            },
-            {
-                label: "Requests Completed",
-                value: metrics.requestsCompletedCount.toLocaleString(),
-                help: "The total number of requests marked as completed during this period.",
-                difference: formatDeltaDecimal(metrics.requestsCompletedCountDelta),
-                color: getTrendColor(metrics.requestsCompletedCountDelta)
-            },
-            {
-                label: "Average Time to Complete",
-                value: formatDays(metrics.averageCompletionDays),
-                help: "The average number of days from request submission to completion, across all requests closed in this period.",
-                difference: formatDeltaDecimal(metrics.averageCompletionDaysDelta),
-                // For average time to complete, an increase is a negative trend.
-                color: getTrendColorInverted(metrics.averageCompletionDaysDelta)
-            }
-        ];
-    });
+    /**
+     * Builds the display model for one card.
+     *
+     * @param title The card title.
+     * @param help The help popover sections.
+     * @param value The formatted headline value, or null when there are no metrics yet.
+     * @param difference The signed difference text and raw delta, or null when there are no metrics yet.
+     * @param isLowerBetter True when a drop in the value is the better outcome.
+     */
+    function makeTile(title: string, help: KpiHelpSection[], value: string | null, difference: { text: string, delta: number } | null, isLowerBetter: boolean): CompletionTile {
+        // The card has no slot for the signed difference, so it leads the description line.
+        const description = difference
+            ? [difference.text, props.footerSuffix.trim()].filter(part => part).join(" ")
+            : "";
+
+        return {
+            title,
+            help,
+            value,
+            valueTrend: difference ? getTrendDirection(difference.delta) : null,
+            valueTrendTooltip: difference?.text ?? null,
+            valueDescription: description,
+            isLowerBetter
+        };
+    }
+
+    // #endregion Functions
 </script>

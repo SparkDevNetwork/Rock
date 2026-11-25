@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div class="kpi-v2-container">
+    <div class="kpi-v2-container" :class="{ 'kpi-v2-container-dense': isDense, 'kpi-v2-container-flush': isFlush }">
         <div class="kpi-v2-container-grid" :class="columnsCssClass">
             <slot />
         </div>
@@ -24,11 +24,29 @@
     const props = defineProps({
         /**
          * The maximum number of cards per row. Rows drop to fewer cards as the container narrows
-         * so no card is narrower than 240px.
+         * so no card is narrower than 240px, or 180px when isDense is true.
          */
         columns: {
             type: Number as PropType<1 | 2 | 3 | 4>,
             default: 4
+        },
+
+        /**
+         * When true cards can shrink to 180px wide instead of 240px, so a narrow parent such as
+         * a sidebar panel still fits two or more cards per row. Best suited to compact cards.
+         */
+        isDense: {
+            type: Boolean,
+            default: false
+        },
+
+        /**
+         * When true the container has no padding or background, so the cards line up flush
+         * with the headings and panel edges around it.
+         */
+        isFlush: {
+            type: Boolean,
+            default: false
         },
 
         /** An optional caveat that applies to every card, shown in the bottom left. */
