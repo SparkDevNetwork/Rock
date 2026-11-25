@@ -155,8 +155,10 @@ namespace Rock.CheckIn.v2.Labels
                 }
                 catch ( Exception ex )
                 {
+                    // The details are in the Exception Log, the kiosk only
+                    // gets a fixed message.
                     ExceptionLogService.LogException( ex );
-                    return new List<string> { $"Unable to print label: {ex.Message}" };
+                    return new List<string> { "Unable to print label. The failure was logged." };
                 }
             }
             else
@@ -180,8 +182,10 @@ namespace Rock.CheckIn.v2.Labels
                 }
                 catch ( Exception ex )
                 {
+                    // The details are in the Exception Log, the kiosk only
+                    // gets a fixed message.
                     ExceptionLogService.LogException( ex );
-                    return new List<string> { $"Unable to print label: {ex.Message}" };
+                    return new List<string> { "Unable to print label. The failure was logged." };
                 }
             }
 

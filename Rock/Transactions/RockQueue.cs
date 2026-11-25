@@ -239,20 +239,20 @@ namespace Rock.Transactions
                 }
                 catch ( Exception ex )
                 {
-                    var transactionType = "Unknown";
-                    var transactionJson = "Unknown";
+                    /*
+                        11/25/2026 - MSE
 
-                    try
-                    {
-                        transactionType = transaction.GetType().Name;
-                        transactionJson = transaction.ToJson();
-                    }
-                    catch
-                    {
-                        // Intentionally ignored, we just want to log the type if we can't get the JSON.
-                    }
+                        Only the transaction type and exception type are put in
+                        the message. Transactions can hold person data, workflow
+                        values and what a visitor typed, so the serialized
+                        transaction is not logged. The exception is kept as the
+                        inner exception.
 
-                    errorHandler( new Exception( $"Unhandled exception in RockQueue.Drain(): {transactionType} {transactionJson}", ex ) );
+                        Reason: Keep transaction contents out of logs.
+                    */
+                    var transactionType = transaction?.GetType().Name ?? "Unknown";
+
+                    errorHandler( new Exception( $"Unhandled exception in RockQueue.Drain(): {transactionType} ({ex.GetType().Name})", ex ) );
                 }
             }
         }
