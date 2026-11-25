@@ -750,6 +750,8 @@ namespace Rock.Blocks.Mobile
                 }
             }
 
+            var existingThumbnailBinaryFileId = entity.ThumbnailBinaryFileId;
+
             if ( !UpdateEntityFromBox( entity, box ) )
             {
                 return ActionBadRequest( "Invalid data." );
@@ -757,9 +759,22 @@ namespace Rock.Blocks.Mobile
 
             var isNew = entity.Id == 0;
             var settings = GetAdditionalSettings( entity );
+            var binaryFileService = new BinaryFileService( RockContext );
+
+            /*
+                11/25/2026 - MSE
+
+                The thumbnail must be the one already attached or a new upload
+                by the current person, the same rule the Site Detail block uses.
+
+                Reason: Only attach files this person uploaded for this application.
+            */
+            if ( !binaryFileService.IsUploadedBinaryFileAllowedForPerson( entity.ThumbnailBinaryFileId, existingThumbnailBinaryFileId, RequestContext.CurrentPerson ) )
+            {
+                return ActionBadRequest( "Invalid file." );
+            }
 
             // Mark any newly attached binary file as permanent.
-            var binaryFileService = new BinaryFileService( RockContext );
             if ( entity.ThumbnailBinaryFileId.HasValue )
             {
                 binaryFileService.Get( entity.ThumbnailBinaryFileId.Value ).IsTemporary = false;
@@ -862,8 +877,27 @@ namespace Rock.Blocks.Mobile
                 settings.DownhillSettings.ApplicationColors = new ApplicationColors();
             }
 
-            entity.FavIconBinaryFileId = bag.LightHeaderImage.GetEntityId<BinaryFile>( RockContext );
-            settings.DarkFavIconBinaryFileId = bag.DarkHeaderImage.GetEntityId<BinaryFile>( RockContext );
+            var lightHeaderImageId = bag.LightHeaderImage.GetEntityId<BinaryFile>( RockContext );
+            var darkHeaderImageId = bag.DarkHeaderImage.GetEntityId<BinaryFile>( RockContext );
+            var binaryFileService = new BinaryFileService( RockContext );
+
+            /*
+                11/25/2026 - MSE
+
+                The header images must be the ones already attached or new
+                uploads by the current person, the same rule the Site Detail
+                block uses.
+
+                Reason: Only attach files this person uploaded for this application.
+            */
+            if ( !binaryFileService.IsUploadedBinaryFileAllowedForPerson( lightHeaderImageId, entity.FavIconBinaryFileId, RequestContext.CurrentPerson )
+                || !binaryFileService.IsUploadedBinaryFileAllowedForPerson( darkHeaderImageId, settings.DarkFavIconBinaryFileId, RequestContext.CurrentPerson ) )
+            {
+                return ActionBadRequest( "Invalid file." );
+            }
+
+            entity.FavIconBinaryFileId = lightHeaderImageId;
+            settings.DarkFavIconBinaryFileId = darkHeaderImageId;
             settings.BarBackgroundColor = bag.BarBackgroundColor;
             settings.IOSEnableBarTransparency = bag.IsNavBarTransparent;
             settings.IOSBarBlurStyle = ( IOSBlurStyle ) bag.NavBarBlurStyle;
@@ -930,7 +964,6 @@ namespace Rock.Blocks.Mobile
             entity.AdditionalSettings = settings.ToJson();
 
             // Mark image binary files permanent.
-            var binaryFileService = new BinaryFileService( RockContext );
             if ( entity.FavIconBinaryFileId.HasValue )
             {
                 binaryFileService.Get( entity.FavIconBinaryFileId.Value ).IsTemporary = false;
