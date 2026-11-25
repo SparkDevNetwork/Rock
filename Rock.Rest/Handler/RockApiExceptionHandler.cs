@@ -14,13 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
-using System.Linq;
 using System.Web.Http.ExceptionHandling;
 using System.Web.Http.Results;
-
-using Rock.Data;
-using Rock.Model;
 
 namespace Rock.Rest
 {
@@ -47,11 +42,8 @@ namespace Rock.Rest
         /// <param name="context">The exception handler context.</param>
         public override void Handle( ExceptionHandlerContext context )
         {
-            // check to see if the user is an admin, if so allow them to view the error details
-            var userLogin = Rock.Model.UserLoginService.GetCurrentUser();
-            GroupService service = new GroupService( new RockContext() );
-            Group adminGroup = service.GetByGuid( new Guid( Rock.SystemGuid.Group.GROUP_ADMINISTRATORS ) );
-            context.RequestContext.IncludeErrorDetail = userLogin != null && adminGroup.Members.Where( m => m.PersonId == userLogin.PersonId ).Count() > 0;
+            // Only active administrators may view the error details.
+            context.RequestContext.IncludeErrorDetail = Rock.Web.ErrorDetailsAccess.IsActiveAdministrator();
 
             ExceptionResult result = context.Result as ExceptionResult;
 
