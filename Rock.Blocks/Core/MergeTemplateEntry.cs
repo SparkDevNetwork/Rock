@@ -628,7 +628,8 @@ namespace Rock.Blocks.Core
         /// <summary>
         /// Determines whether the merge template can be used by the current person. This
         /// matches the picker's <see cref="Rock.Enums.Controls.MergeTemplateOwnership.PersonalAndGlobal"/>
-        /// ownership: global templates, or personal templates owned by the current person.
+        /// ownership: global templates the current person is authorized to VIEW, or personal
+        /// templates owned by the current person.
         /// The template Guid is posted by the browser, so it must be checked here too.
         /// </summary>
         /// <param name="mergeTemplate">The merge template.</param>
@@ -637,7 +638,7 @@ namespace Rock.Blocks.Core
         {
             if ( !mergeTemplate.PersonAliasId.HasValue )
             {
-                return true;
+                return mergeTemplate.IsAuthorized( Rock.Security.Authorization.VIEW, RequestContext.CurrentPerson );
             }
 
             var currentPerson = RequestContext.CurrentPerson;
