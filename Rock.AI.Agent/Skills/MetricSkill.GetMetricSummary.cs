@@ -47,6 +47,15 @@ internal sealed partial class MetricSkill
             return helper.ErrorResult;
         }
 
+        // Only allow metrics in one of the categories configured on this skill.
+        var configuredCategoryGuids = GetConfiguredCategoryGuids();
+
+        if ( !metric.MetricCategories.Any( mc => configuredCategoryGuids.Contains( mc.Category.Guid ) ) )
+        {
+            return Error( "The metricIdKey is not valid." )
+                .WithInstructions( $"Call {nameof( LookupMetrics )} for a list of possible values." );
+        }
+
         var query = new MetricValueService( AgentRequestContext.RockContext )
             .Queryable()
             .Where( mv => mv.MetricId == metric.Id

@@ -14,12 +14,14 @@
 // limitations under the License.
 // </copyright>
 
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 
 using Rock.AI.Agent.Annotations;
 using Rock.AI.Agent.Classes.Common;
 using Rock.Model;
+using Rock.Security;
 using Rock.SystemGuid;
 using Rock.Utility;
 using Rock.Web.Cache;
@@ -50,7 +52,7 @@ internal sealed partial class AttendanceSkill
             ? GroupTypeCache.Get( checkInConfigurationId.Value, AgentRequestContext.RockContext )
             : null;
 
-        if ( checkInConfiguration == null || checkInConfiguration.GroupTypePurposeValueId != checkInConfigurationPurposeId )
+        if ( checkInConfiguration == null || checkInConfiguration.GroupTypePurposeValueId != checkInConfigurationPurposeId || !checkInConfiguration.IsAuthorized( Authorization.VIEW, AgentRequestContext.CurrentPerson ) )
         {
             return Error( "The provided check-in configuration id key is not valid." )
                 .WithInstructions( $"Call {nameof( LookupCheckInConfigurations )} for a list of possible values." );
@@ -76,6 +78,12 @@ internal sealed partial class AttendanceSkill
             } )
             .OrderBy( kn => kn.Name )
             .ToList();
+
+        // Only list groups the current person can view.
+        var viewableGroupIds = new HashSet<int>( GroupCache.GetMany( groupResults.Select( kn => kn.Id.Value ).ToList(), AgentRequestContext.RockContext )
+            .Where( g => g.IsAuthorized( Authorization.VIEW, AgentRequestContext.CurrentPerson ) )
+            .Select( g => g.Id ) );
+        groupResults = groupResults.Where( kn => viewableGroupIds.Contains( kn.Id.Value ) ).ToList();
 
         var result = Success( groupResults );
 

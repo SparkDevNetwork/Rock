@@ -39,18 +39,16 @@ internal partial class MetricSkill
     {
         var helper = new AgentToolHelper( AgentRequestContext, _logger );
 
-        var metricCategoryGuids = ConfigurationValues.GetReadOnlyValueOrDefault( ConfigurationKey.Categories, string.Empty )
-            .SplitDelimitedValues()
-            .AsGuidList();
+        var metricCategoryGuids = GetConfiguredCategoryGuids();
 
         var metricResults = new MetricCategoryService( AgentRequestContext.RockContext )
             .Queryable()
-            .Include( mc => mc.Metric )
+            .Include( mc => mc.Metric.MetricCategories.Select( c => c.Category ) )
             .Where( mc => metricCategoryGuids.Contains( mc.Category.Guid ) )
             .ToList()
-            .Where( mc => mc.IsAuthorized( Authorization.VIEW, AgentRequestContext.CurrentPerson ) )
             .Select( mc => mc.Metric )
             .DistinctBy( m => m.Id )
+            .Where( m => m.IsAuthorized( Authorization.VIEW, AgentRequestContext.CurrentPerson ) )
             .OrderBy( m => m.Title )
             .Select( m => new MetricResult
             {

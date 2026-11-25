@@ -19,7 +19,9 @@ using System.Linq;
 
 using Rock.AI.Agent.Classes.Common;
 using Rock.AI.Agent.Classes.Entity;
+using Rock.Security;
 using Rock.SystemGuid;
+using Rock.Web.Cache;
 
 namespace Rock.AI.Agent.Skills;
 
@@ -33,7 +35,7 @@ internal sealed partial class PrayerSkill
     {
         var queryable = GetPrayerCategoriesQueryable( AgentRequestContext.RockContext );
 
-        var prayerCategories = queryable
+        var prayerCategories = queryable.ToList().Where( pc => CategoryCache.Get( pc.Id, AgentRequestContext.RockContext )?.IsAuthorized( Authorization.VIEW, AgentRequestContext.CurrentPerson ) == true )
             .Select( pc => new CategoryResult
             {
                 Id = pc.Id,
