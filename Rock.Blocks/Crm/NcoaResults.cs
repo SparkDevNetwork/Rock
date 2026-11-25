@@ -596,7 +596,7 @@ namespace Rock.Blocks.Crm
         [BlockAction]
         public BlockActionResult UpdateNcoaHistoryItem(string ncoaHistoryIdKey, bool isMarkProcessed)
         {
-            var ncoaHistoryItem = new NcoaHistoryService( RockContext ).Get( ncoaHistoryIdKey );
+            var ncoaHistoryItem = new NcoaHistoryService( RockContext ).Get( ncoaHistoryIdKey, !PageCache.Layout.Site.DisablePredictableIds );
 
             if ( ncoaHistoryItem == null )
             {

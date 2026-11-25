@@ -164,11 +164,11 @@ namespace Rock.Blocks.Crm.PersonDetail
             box.Options = new GroupMembersOptionsBag
             {
                 IsEditAllowed = isEditAuthorized,
-                IsAddressVerificationAvailable = Rock.Address.VerificationContainer.Instance.Components.Any( c => c.Value.Value.IsActive ),
+                IsAddressVerificationAvailable = isEditAuthorized && Rock.Address.VerificationContainer.Instance.Components.Any( c => c.Value.Value.IsActive ),
 
                 // Only show the reorder handle when there is more than one
                 // group to order.
-                IsReorderVisible = groups.Count > 1
+                IsReorderVisible = isEditAuthorized && groups.Count > 1
             };
 
             return box;
@@ -690,6 +690,11 @@ namespace Rock.Blocks.Crm.PersonDetail
         [BlockAction]
         public BlockActionResult ReorderGroup( string groupIdKey, int newIndex )
         {
+            if ( !IsEditAuthorized() )
+            {
+                return ActionForbidden( "You are not authorized to reorder groups." );
+            }
+
             var person = GetPerson();
 
             if ( person == null || person.Id == 0 )
@@ -738,6 +743,11 @@ namespace Rock.Blocks.Crm.PersonDetail
         [BlockAction]
         public BlockActionResult VerifyLocation( int locationId )
         {
+            if ( !IsEditAuthorized() )
+            {
+                return ActionForbidden( "You are not authorized to verify addresses." );
+            }
+
             var person = GetPerson();
 
             if ( person == null || person.Id == 0 || person.IsNameless() )
