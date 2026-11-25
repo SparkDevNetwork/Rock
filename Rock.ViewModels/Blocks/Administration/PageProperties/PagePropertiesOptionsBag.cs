@@ -50,6 +50,14 @@ namespace Rock.ViewModels.Blocks.Administration.PageProperties
         public bool CanAdministrate { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether the current person can copy the page.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if the current person can copy the page; otherwise, <c>false</c>.
+        /// </value>
+        public bool CanCopyPage { get; set; }
+
+        /// <summary>
         /// Gets or sets the sites items.
         /// </summary>
         /// <value>
