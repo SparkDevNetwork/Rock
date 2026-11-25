@@ -15,6 +15,7 @@
 // </copyright>
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 
 using Microsoft.Extensions.Logging;
@@ -69,6 +70,21 @@ internal sealed partial class MetricSkill : AgentSkillComponent
     public MetricSkill( ILogger<MetricSkill> logger )
     {
         _logger = logger ?? throw new ArgumentNullException( nameof( logger ) );
+    }
+
+    #endregion
+
+    #region Methods
+
+    /// <summary>
+    /// Gets the unique identifiers of the metric categories configured on this skill.
+    /// </summary>
+    /// <returns>A list of category unique identifiers.</returns>
+    private List<Guid> GetConfiguredCategoryGuids()
+    {
+        return ConfigurationValues.GetReadOnlyValueOrDefault( ConfigurationKey.Categories, string.Empty )
+            .SplitDelimitedValues()
+            .AsGuidList();
     }
 
     #endregion

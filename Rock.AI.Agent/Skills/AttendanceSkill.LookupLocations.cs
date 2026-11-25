@@ -14,12 +14,14 @@
 // limitations under the License.
 // </copyright>
 
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 
 using Rock.AI.Agent.Annotations;
 using Rock.AI.Agent.Classes.Common;
 using Rock.Model;
+using Rock.Security;
 using Rock.SystemGuid;
 using Rock.Utility;
 using Rock.Web.Cache;
@@ -47,7 +49,7 @@ internal sealed partial class AttendanceSkill
             ? GroupTypeCache.Get( checkInConfigurationId.Value, AgentRequestContext.RockContext )
             : null;
 
-        if ( checkInConfiguration == null || checkInConfiguration.GroupTypePurposeValueId != checkInConfigurationPurposeId )
+        if ( checkInConfiguration == null || checkInConfiguration.GroupTypePurposeValueId != checkInConfigurationPurposeId || !checkInConfiguration.IsAuthorized( Authorization.VIEW, AgentRequestContext.CurrentPerson ) )
         {
             return Error( "The provided check-in configuration id key is not valid." )
                 .WithInstructions( $"Call {nameof( LookupCheckInConfigurations )} for a list of possible values." );
@@ -55,7 +57,7 @@ internal sealed partial class AttendanceSkill
 
         var groupLocationService = new GroupLocationService( AgentRequestContext.RockContext );
 
-        var locationResults = checkInConfiguration.GetDescendentGroupTypes()
+        var locationRows = checkInConfiguration.GetDescendentGroupTypes()
             .Select( a => a.Id )
             .Chunk( 500 )
             .SelectMany( ids =>
@@ -65,12 +67,28 @@ internal sealed partial class AttendanceSkill
                         && gl.Group.IsActive
                         && gl.Group.GroupType.TakesAttendance
                         && gl.Location.IsActive )
-                    .Select( gl => new KeyNameResult
+                    .Select( gl => new
                     {
-                        Id = gl.LocationId,
-                        Guid = gl.Location.Guid,
-                        Name = gl.Location.Name,
+                        gl.GroupId,
+                        gl.LocationId,
+                        LocationGuid = gl.Location.Guid,
+                        LocationName = gl.Location.Name,
                     } );
+            } )
+            .ToList();
+
+        // Only list rooms used by a group the current person can view.
+        var viewableGroupIds = new HashSet<int>( GroupCache.GetMany( locationRows.Select( r => r.GroupId ).Distinct().ToList(), AgentRequestContext.RockContext )
+            .Where( g => g.IsAuthorized( Authorization.VIEW, AgentRequestContext.CurrentPerson ) )
+            .Select( g => g.Id ) );
+
+        var locationResults = locationRows
+            .Where( r => viewableGroupIds.Contains( r.GroupId ) )
+            .Select( r => new KeyNameResult
+            {
+                Id = r.LocationId,
+                Guid = r.LocationGuid,
+                Name = r.LocationName,
             } )
             .DistinctBy( kn => kn.Id )
             .OrderBy( kn => kn.Name )
