@@ -762,6 +762,7 @@ namespace RockWeb.Blocks.Groups
             bool wasSecurityRole = false;
             bool triggersUpdated = false;
             bool checkinDataUpdated = false;
+            int? originalParentGroupId = null;
 
             var rockContext = new RockContext();
 
@@ -806,6 +807,7 @@ namespace RockWeb.Blocks.Groups
                     return;
                 }
 
+                originalParentGroupId = group.ParentGroupId;
                 wasSecurityRole = group.IsActive && ( group.IsSecurityRole || group.GroupTypeId == roleGroupTypeId );
 
                 // Remove any locations that removed in the UI
@@ -1286,6 +1288,46 @@ namespace RockWeb.Blocks.Groups
                 return;
             }
 
+            /*
+                11/25/2026 - MSE
+
+                When an existing group is moved, the person must be able to edit the new
+                parent group. The EDIT check above is on the moved group, which a group
+                leader keeps through their role no matter which parent is picked.
+
+                Reason: Moving a group changes the tree of the new parent group.
+            */
+            if ( group.Id != 0
+                && group.ParentGroupId.HasValue
+                && group.ParentGroupId != originalParentGroupId
+                && ( group.ParentGroup == null || !group.ParentGroup.IsAuthorized( Authorization.EDIT, CurrentPerson ) ) )
+            {
+                gpParentGroup.ShowErrorMessage( "You are not authorized to move this group under the selected parent group." );
+                return;
+            }
+
+            /*
+                11/25/2026 - MSE
+
+                Check EDIT on every active descendant before saving anything, so the
+                parent's changes are not saved when the child group check fails.
+
+                Reason: Edit rights on a parent group do not grant edit rights on its child groups.
+            */
+            List<Group> childGroupsToInactivate = null;
+            if ( group.Id != 0 && group.IsActive == false && cbInactivateChildGroups.Checked )
+            {
+                childGroupsToInactivate = groupService.GetAllDescendentGroups( group.Id, false );
+
+                var unauthorizedCount = childGroupsToInactivate.Count( g => !g.IsAuthorized( Authorization.EDIT, CurrentPerson ) );
+                if ( unauthorizedCount > 0 )
+                {
+                    cvGroup.IsValid = false;
+                    cvGroup.ErrorMessage = string.Format( "You are not authorized to inactivate {0} of {1} child groups. No groups were changed.", unauthorizedCount, childGroupsToInactivate.Count );
+                    return;
+                }
+            }
+
             // use WrapTransaction since SaveAttributeValues does its own RockContext.SaveChanges()
             rockContext.WrapTransaction( () =>
             {
@@ -1339,11 +1381,9 @@ namespace RockWeb.Blocks.Groups
 
                 rockContext.SaveChanges();
 
-                if ( group.IsActive == false && cbInactivateChildGroups.Checked )
+                if ( childGroupsToInactivate != null )
                 {
-                    var allActiveChildGroupsId = groupService.GetAllDescendentGroupIds( group.Id, false );
-                    var allActiveChildGroups = groupService.GetByIds( allActiveChildGroupsId );
-                    foreach ( var childGroup in allActiveChildGroups )
+                    foreach ( var childGroup in childGroupsToInactivate )
                     {
                         if ( childGroup.IsActive )
                         {
@@ -3313,6 +3353,23 @@ namespace RockWeb.Blocks.Groups
                 parentGroupId = group.ParentGroupId;
 
                 var childGroups = groupService.GetAllDescendentGroups( group.Id, true );
+
+                /*
+                    11/25/2026 - MSE
+
+                    Check EDIT on every descendant before archiving anything, so we honor
+                    each child group's own security and not just the parent's.
+
+                    Reason: Edit rights on a parent group do not grant edit rights on its child groups.
+                */
+                var unauthorizedCount = childGroups.Count( g => !g.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) );
+                if ( unauthorizedCount > 0 )
+                {
+                    mdArchive.Hide();
+                    mdDeleteWarning.Show( string.Format( "You are not authorized to archive {0} of {1} child groups. No groups were archived.", unauthorizedCount, childGroups.Count ), ModalAlertType.Information );
+                    return;
+                }
+
                 foreach ( var childGroup in childGroups )
                 {
                     groupService.Archive( childGroup, this.CurrentPersonAliasId, true );

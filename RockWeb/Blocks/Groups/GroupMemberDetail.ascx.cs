@@ -948,6 +948,7 @@ namespace RockWeb.Blocks.Groups
                     var lastSent = documents.Any( d => d.Status == SignatureDocumentStatus.Sent ) ?
                         documents.Where( d => d.Status == SignatureDocumentStatus.Sent ).Max( d => d.LastInviteDate ) : ( DateTime? ) null;
                     pnlRequiredSignatureDocument.Visible = true;
+                    lbResendDocumentRequest.Visible = CanEditGroup( group );
 
                     if ( lastSent.HasValue )
                     {
@@ -2038,6 +2039,13 @@ namespace RockWeb.Blocks.Groups
                     var groupMember = new GroupMemberService( rockContext ).Get( groupMemberId );
                     if ( groupMember != null && groupMember.Group != null )
                     {
+                        // Sending a signature request acts on the member, so it follows the same rule as editing members.
+                        if ( !CanEditGroup( groupMember.Group ) )
+                        {
+                            maSignatureRequestSent.Show( "You are not authorized to send a signature request for this group member.", Rock.Web.UI.Controls.ModalAlertType.Alert );
+                            return;
+                        }
+
                         var sendErrorMessages = new List<string>();
 
                         string documentName = string.Format( "{0}_{1}", groupMember.Group.Name.RemoveSpecialCharacters(), groupMember.Person.FullName.RemoveSpecialCharacters() );
