@@ -692,7 +692,7 @@ namespace Rock.Blocks.Core
             // sure the person can edit the parent location if it was changed.
             if ( originalParentLocationId.HasValue && entity.ParentLocationId != originalParentLocationId )
             {
-                var originalParent = entityService.Get( originalParentLocationId.Value );
+                var originalParent = new LocationService( RockContext ).Get( originalParentLocationId.Value );
 
                 if ( originalParent == null || !originalParent.IsAuthorized( Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson ) )
                 {
