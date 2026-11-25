@@ -1499,6 +1499,14 @@ describe("the phone's action sheet", () => {
         expect(tinted).not.toMatch(/is-community:focus-within/);
     });
 
+    // A keyboard's focus still shows on a touch screen, a tablet with a keyboard or Jump to latest
+    // pressed by key: the row it reaches is tinted, since a tap never matches focus-visible.
+    test("a keyboard's focus on a touch row still lights its tint", () => {
+        const style = rowStyles().replace(/\/\*[\s\S]*?\*\//g, "");
+        const tinted = [...style.matchAll(/([^{}]+)\{[^}]*background-image:\s*linear-gradient\(var\(--chat-hover\)/g)].map(m => m[1]).join(",");
+        expect(tinted).toMatch(/\.chat-msg\.is-community:focus-visible/);
+    });
+
     test("a focus inside a touch row shows no channel gutter time", () => {
         const style = rowStyles().replace(/\/\*[\s\S]*?\*\//g, "");
         const shown = [...style.matchAll(/([^{}]+)\{[^}]*opacity:\s*1/g)].map(m => m[1]).filter(selectors => selectors.includes(".chat-cm-gutter-time")).join(",");
