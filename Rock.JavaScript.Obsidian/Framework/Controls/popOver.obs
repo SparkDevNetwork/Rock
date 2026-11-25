@@ -2,9 +2,9 @@
 <template>
     <slot name="activator" ref="activatorEl" />
     <div :class="['popover fade', placement]" role="tooltip" ref="popOverEl" :id="popOverId" :style="computedPopOverStyle">
-        <div class="arrow"></div>
+        <div v-if="!isArrowHidden" class="arrow"></div>
         <h3 class="popover-title" style="display: none;"></h3>
-        <div class="popover-content">
+        <div class="popover-content" :style="contentStyle">
             <slot />
         </div>
     </div>
@@ -49,6 +49,30 @@
         anchorX: {
             type: Number as PropType<number>,
             required: false
+        },
+
+        /** If true, the arrow pointing at the activator is not shown. */
+        isArrowHidden: {
+            type: Boolean,
+            default: false
+        },
+
+        /**
+         * The CSS style string to set the maximum height of the popover content.
+         * Content taller than this scrolls. When not set, the content is not limited.
+         */
+        maxHeight: {
+            type: String as PropType<string | undefined>,
+            required: false
+        },
+
+        /**
+         * The CSS style string to set the width of the popover.
+         * When set, this also removes the default maximum width.
+         */
+        width: {
+            type: String as PropType<string | undefined>,
+            required: false
         }
     });
 
@@ -73,7 +97,23 @@
             ...getPositionStyles()
         };
 
+        if (props.width) {
+            styles.width = props.width;
+            styles.maxWidth = "none";
+        }
+
         return styles;
+    });
+
+    const contentStyle = computed((): Record<string, string> => {
+        if (!props.maxHeight) {
+            return {};
+        }
+
+        return {
+            maxHeight: props.maxHeight,
+            overflowY: "auto"
+        };
     });
 
     watch(isHovering, (isHover) => {
@@ -176,9 +216,10 @@
         // Wait until the styles are rendered
         await nextTick();
 
-        // Once the opacity transition is done, finish hiding the popOver fully
+        // Once the opacity transition is done, finish hiding the popOver fully.
+        // Skip it if the popOver was reopened while the transition ran.
         setTimeout(() => {
-            if (!isHovering.value) {
+            if (!isHovering.value && !isPopOverVisible.value) {
                 activatorEl.value?.removeAttribute("aria-describedby");
                 popOverStyle.value = { display: "none" };
             }

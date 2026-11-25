@@ -1,0 +1,86 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="kpi-v2-container">
+        <div class="kpi-v2-container-grid" :class="columnsCssClass">
+            <slot />
+        </div>
+
+        <div v-if="note || updatedText" class="kpi-v2-container-footer">
+            <div v-if="note" class="kpi-v2-container-note">
+                <i class="ti ti-info-circle"></i>
+                <span>{{ note }}</span>
+            </div>
+
+            <span v-if="updatedText" class="kpi-v2-container-updated">{{ updatedText }}</span>
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, provide, Ref, shallowReactive } from "vue";
+    import { KpiContainerValueSizeKey } from "./Internal/KpiCard/utils.partial";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+
+    const props = defineProps({
+        /**
+         * The maximum number of cards per row. Rows drop to fewer cards as the container narrows
+         * so no card is narrower than 240px.
+         */
+        columns: {
+            type: Number as PropType<1 | 2 | 3 | 4>,
+            default: 4
+        },
+
+        /** An optional caveat that applies to every card, shown in the bottom left. */
+        note: {
+            type: String as PropType<string | null | undefined>
+        },
+
+        /** The ISO date and time the data was last updated, shown in the bottom right as "Last Updated: 3 Days Ago". */
+        updatedDateTime: {
+            type: String as PropType<string | null | undefined>
+        }
+    });
+
+    // #region Values
+
+    // Each card's need for the small value size, by card key.
+    const smallValueRequests = shallowReactive(new Map<string, Ref<boolean>>());
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    // The Figma rule: if one card uses the small value size, every card in the container does.
+    const isValueSmall = computed((): boolean => {
+        return [...smallValueRequests.values()].some(needsSmall => needsSmall.value);
+    });
+
+    const columnsCssClass = computed((): string => {
+        const columns = Math.min(Math.max(Math.round(props.columns), 1), 4);
+
+        return `kpi-v2-container-columns-${columns}`;
+    });
+
+    const updatedText = computed((): string => {
+        if (!props.updatedDateTime) {
+            return "";
+        }
+
+        const updated = RockDateTime.parseISO(props.updatedDateTime);
+
+        return updated ? `Last Updated: ${updated.toElapsedString()}` : "";
+    });
+
+    // #endregion Computed Values
+
+    provide(KpiContainerValueSizeKey, {
+        isSmall: isValueSmall,
+        register: (key, needsSmall) => {
+            smallValueRequests.set(key, needsSmall);
+        },
+        unregister: key => {
+            smallValueRequests.delete(key);
+        }
+    });
+</script>

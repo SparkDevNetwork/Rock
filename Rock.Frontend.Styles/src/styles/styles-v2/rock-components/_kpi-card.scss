@@ -1,0 +1,672 @@
+// KPI Card (ROCK COMPONENT)
+
+
+// =============================================================
+// Table of Content
+//  + KPI Container
+//  + KPI Card
+//  + KPI Card Chart
+//  + KPI Card Content
+//  + KPI Trend
+// =============================================================
+//
+// Styles the KpiContainer and KpiCard controls (kpiContainer.obs, kpiCard.obs and the
+// partials in Controls/Internal/KpiCard). Those files have no <style> block; do not
+// reintroduce one, since scoped rules outrank these and silently win over anything
+// declared here.
+
+
+// ======================== KPI CONTAINER ========================
+
+// From kpiContainer.obs
+.kpi-v2-container {
+    /* The grid reacts to the width this container is given, not the browser window. */
+    container-type: inline-size;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-medium);
+    padding: var(--spacing-medium);
+    background-color: var(--color-interface-softest);
+
+    &-grid {
+        display: grid;
+        column-gap: var(--spacing-medium);
+        row-gap: 0;
+        margin-bottom: calc(var(--spacing-medium) * -1);
+
+        > * {
+            margin-bottom: var(--spacing-medium);
+        }
+    }
+
+    &-columns-1 {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    &-columns-2 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    &-columns-3 {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    &-columns-4 {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+}
+
+/* Each breakpoint is the width where columns would drop below 240px (columns x 240px plus the 16px gaps). */
+@container (max-width: 1007px) {
+    .kpi-v2-container-columns-4 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@container (max-width: 751px) {
+    .kpi-v2-container-columns-3 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@container (max-width: 495px) {
+    .kpi-v2-container-grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+.kpi-v2-container-footer {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-medium);
+    font-size: var(--font-size-xsmall);
+    line-height: var(--line-height-normal);
+    color: var(--color-interface-medium);
+}
+
+.kpi-v2-container-note {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    gap: var(--spacing-tiny);
+    min-width: 0;
+}
+
+.kpi-v2-container-updated {
+    margin-left: auto;
+    white-space: nowrap;
+}
+
+// ====================== END KPI CONTAINER ======================
+
+
+// ======================== KPI CARD ========================
+
+// From kpiCard.obs
+/*
+    The card is a subgrid of the KPI container so the header, metric, chart, content and
+    footer line up across every card in a row. Outside a grid it lays out as a single column.
+*/
+.kpi-v2-card {
+    position: relative;
+    display: grid;
+    grid-row: span 5;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: subgrid;
+    row-gap: 0;
+    border: 1px solid var(--color-interface-soft);
+    border-radius: var(--rounded-large);
+    background-color: var(--color-interface-softest);
+
+    /* The card can't clip its overflow because the help popover must be able to spill out of compact cards. */
+    > :first-child {
+        border-top-left-radius: var(--rounded-medium);
+        border-top-right-radius: var(--rounded-medium);
+    }
+
+    > :last-child {
+        border-bottom-left-radius: inherit;
+        border-bottom-right-radius: inherit;
+    }
+
+    /* The Figma accent is a 4px top border that curves down into the card's rounded corners. */
+    &-accent {
+        border-top-width: var(--spacing-tiny);
+    }
+
+    &-accent-success {
+        border-top-color: var(--color-success-strong);
+    }
+
+    &-accent-info {
+        border-top-color: var(--color-info-strong);
+    }
+
+    &-accent-warning {
+        border-top-color: var(--color-warning-strong);
+    }
+
+    &-accent-danger {
+        border-top-color: var(--color-danger-strong);
+    }
+
+    &-accent-category-1 {
+        border-top-color: var(--color-categorical-1);
+    }
+
+    &-accent-category-2 {
+        border-top-color: var(--color-categorical-2);
+    }
+
+    &-accent-category-3 {
+        border-top-color: var(--color-categorical-3);
+    }
+
+    &-accent-category-4 {
+        border-top-color: var(--color-categorical-4);
+    }
+
+    &-accent-category-5 {
+        border-top-color: var(--color-categorical-5);
+    }
+
+    &-accent-category-6 {
+        border-top-color: var(--color-categorical-6);
+    }
+
+    &-accent-category-7 {
+        border-top-color: var(--color-categorical-7);
+    }
+
+    &-accent-category-8 {
+        border-top-color: var(--color-categorical-8);
+    }
+}
+
+/* Each region keeps its own row so it aligns with the same region of the neighboring cards. */
+.kpi-v2-card-header {
+    grid-row: 1;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xsmall);
+    padding: var(--spacing-small);
+    transition: background-color 0.15s linear;
+
+    /* Highlights the header while its help popover is open, in the Obsidian grid row hover color. */
+    &-help-open {
+        background-color: var(--color-info-soft);
+    }
+}
+
+.kpi-v2-card-icon {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    padding: var(--spacing-xsmall);
+    border: 1px solid var(--color-interface-soft);
+    border-radius: var(--rounded-small);
+    background-color: var(--color-interface-softer);
+    font-size: var(--font-size-xsmall);
+    color: var(--color-interface-strong);
+}
+
+.kpi-v2-card-title {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    font-size: var(--font-size-small);
+    font-weight: var(--font-weight-semibold);
+    line-height: var(--line-height-normal);
+    color: var(--color-interface-strong);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.kpi-v2-card-help-wrapper {
+    display: flex;
+    flex-shrink: 0;
+
+    /*
+        Bridges the gap between the header and the popover so crossing it doesn't close the popover.
+        The popover is 80% of the card's width, so 12.5% of its own width on each side spans the whole card.
+    */
+    .popover::before {
+        position: absolute;
+        right: -12.5%;
+        bottom: 100%;
+        left: -12.5%;
+        height: var(--spacing-small);
+        content: "";
+    }
+}
+
+.kpi-v2-card-help {
+    display: flex;
+    padding: 0 var(--spacing-tiny);
+    border: 0;
+    background: none;
+    font-size: var(--font-size-regular);
+    color: var(--color-interface-medium);
+
+    &-content {
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-xsmall);
+        font-size: var(--font-size-xsmall);
+        line-height: var(--line-height-normal);
+    }
+
+    &-title {
+        font-weight: var(--font-weight-semibold);
+        color: var(--color-interface-stronger);
+    }
+
+    &-section-label {
+        color: var(--color-interface-medium);
+    }
+
+    &-section-text {
+        color: var(--color-interface-strong);
+    }
+}
+
+.kpi-v2-card-metric {
+    grid-row: 2;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-tiny);
+    padding: var(--spacing-tiny) var(--spacing-small) var(--spacing-small);
+
+    &-compact {
+        flex-direction: row;
+        align-items: center;
+        gap: var(--spacing-small);
+    }
+
+    &-details {
+        display: flex;
+        flex: 1;
+        flex-direction: column;
+        gap: var(--spacing-tiny);
+        min-width: 0;
+    }
+
+    /* Only beside a chart do compact details shrink to 40% to half the row, so the chart never passes 60%. */
+    &-compact-chart &-details {
+        flex: 0 1 auto;
+        min-width: 40%;
+        max-width: calc((100% - var(--spacing-small)) / 2);
+    }
+
+    &-row {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-xsmall);
+        min-width: 0;
+
+        /* The trend and label are shorter than a standard label, and keep their size when a long value crowds the row. */
+        > .label {
+            --label-height: 20px;
+            flex-shrink: 0;
+        }
+
+        /* An "unknown" trend is drawn with no fill. */
+        > .kpi-v2-trend-plain {
+            background-color: transparent;
+            color: var(--color-interface-medium);
+        }
+    }
+}
+
+/* Clips only sideways for the ellipsis, so the compact line height doesn't cut off letters like "g". */
+.kpi-v2-card-value {
+    min-width: 0;
+    overflow-x: clip;
+    font-size: var(--font-size-h3);
+    font-weight: var(--font-weight-bold);
+    line-height: var(--line-height-compact);
+    color: var(--color-interface-stronger);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    &-small {
+        font-size: var(--font-size-h5);
+    }
+
+    &-description {
+        padding-top: var(--spacing-tiny);
+        font-size: var(--font-size-xsmall);
+        font-weight: var(--font-weight-semibold);
+        line-height: var(--line-height-normal);
+        overflow-wrap: anywhere;
+        color: var(--color-interface-medium);
+    }
+}
+
+.kpi-v2-card-chart {
+    grid-row: 3;
+    height: 100px;
+    padding: var(--spacing-small);
+
+    &-compact {
+        flex: 1;
+        min-width: 0;
+        height: 48px;
+    }
+}
+
+.kpi-v2-card-content-area {
+    grid-row: 4;
+    border-top: 1px solid var(--color-interface-soft);
+    background-color: var(--color-interface-softer);
+}
+
+/*
+    Loading skeleton sizes and shades are the Figma's. The shared .skeleton class supplies the
+    pulse; these rules are written at its selector weight so they win over its pill shape and color.
+*/
+.kpi-v2-card-loading {
+    grid-row: 2 / span 3;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: var(--spacing-tiny) var(--spacing-small) var(--spacing-small);
+
+    .skeleton.kpi-v2-card-loading-bar,
+    .skeleton.kpi-v2-card-loading-block {
+        border-radius: var(--rounded-medium);
+        background-color: color-mix(in srgb, var(--color-interface-soft) 50%, transparent);
+    }
+
+    .skeleton.kpi-v2-card-loading-bar {
+        height: 28px;
+    }
+
+    .skeleton.kpi-v2-card-loading-bar-short {
+        width: 60%;
+        background-color: var(--color-interface-soft);
+    }
+
+    .skeleton.kpi-v2-card-loading-block {
+        flex: 1;
+        min-height: 166px;
+    }
+}
+
+.kpi-v2-card-state {
+    grid-row: 2 / span 3;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: var(--spacing-xsmall) var(--spacing-small) var(--spacing-large);
+    text-align: center;
+
+    &-icon,
+    &-icon-error {
+        margin-bottom: var(--spacing-xsmall);
+        font-size: var(--font-size-h4);
+        color: var(--color-interface-medium);
+    }
+
+    &-icon-error {
+        color: var(--color-danger-strong);
+    }
+
+    &-title {
+        font-size: var(--font-size-small);
+        line-height: var(--line-height-tight);
+        color: var(--color-interface-strong);
+    }
+
+    &-text {
+        font-size: var(--font-size-xsmall);
+        color: var(--color-interface-medium);
+    }
+}
+
+.kpi-v2-card-footer {
+    grid-row: 5;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-xsmall);
+    padding: var(--spacing-xsmall) var(--spacing-small);
+    border-top: 1px solid var(--color-interface-soft);
+    background-color: var(--color-interface-softer);
+
+    /* Card text stays on one line so a long note can't make the footer taller. */
+    &-note {
+        min-width: 0;
+        margin-left: auto;
+        overflow: hidden;
+        font-size: var(--font-size-xsmall);
+        line-height: var(--line-height-normal);
+        color: var(--color-interface-medium);
+        text-align: right;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+}
+
+// ====================== END KPI CARD ======================
+
+
+// ======================== KPI CARD CHART ========================
+
+// From kpiCardChart.partial.obs
+.kpi-v2-card-chart-centered {
+    display: flex;
+    align-items: center;
+    height: 100%;
+
+    > * {
+        flex: 1;
+    }
+}
+
+// ====================== END KPI CARD CHART ======================
+
+
+// ======================== KPI CARD CONTENT ========================
+
+// From kpiCardContent.partial.obs
+.kpi-v2-card-content {
+    /* The micro-card columns react to the width of the card, not the browser window. */
+    container-type: inline-size;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-small);
+    padding: var(--spacing-small);
+
+    &-title {
+        font-size: var(--font-size-xsmall);
+        font-weight: var(--font-weight-semibold);
+        line-height: var(--line-height-normal);
+        color: var(--color-interface-strong);
+    }
+}
+
+.kpi-v2-micro-grid {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xsmall);
+
+    &-item {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-xsmall);
+        padding: var(--spacing-xsmall);
+        border-radius: var(--rounded-xsmall);
+        background-color: var(--color-interface-softest);
+        box-shadow: var(--box-shadow);
+        font-size: var(--font-size-xsmall);
+        line-height: var(--line-height-normal);
+    }
+
+    &-item-position {
+        color: var(--color-interface-medium);
+    }
+
+    &-item-label {
+        flex: 1;
+        min-width: 0;
+        overflow: hidden;
+        padding-right: var(--spacing-small);
+        color: var(--color-interface-strong);
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    /* A fixed minimum width keeps the value column from shifting row to row. */
+    &-item-value {
+        min-width: var(--spacing-xlarge);
+        font-weight: var(--font-weight-semibold);
+        color: var(--color-interface-stronger);
+        text-align: right;
+        white-space: nowrap;
+    }
+
+    /*
+        Every row reserves the same trend width, even a row with no trend or a flat one, so the
+        values stay in one column. A trend wider than the slot only pushes its own row.
+    */
+    &-item-trend {
+        display: flex;
+        flex-shrink: 0;
+        align-items: center;
+        min-width: 3rem;
+    }
+
+    &-item-muted &-item-label,
+    &-item-muted &-item-value {
+        color: var(--color-interface-medium);
+    }
+}
+
+a.kpi-v2-micro-grid-item-label {
+    color: var(--color-primary);
+}
+
+.kpi-v2-micro-cards {
+    display: grid;
+    gap: var(--spacing-xsmall);
+
+    &-columns-2 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    &-columns-3 {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    &-columns-4 {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+}
+
+/*
+    The columns setting is a maximum. Each breakpoint is the width where tiles would drop below
+    100px (columns x 100px plus the 8px gaps), so a label always has room beside its trend.
+*/
+@container (max-width: 423px) {
+    .kpi-v2-micro-cards-columns-4 {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+@container (max-width: 315px) {
+    .kpi-v2-micro-cards-columns-3,
+    .kpi-v2-micro-cards-columns-4 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@container (max-width: 207px) {
+    .kpi-v2-micro-cards {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+.kpi-v2-micro-cards-item {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-tiny);
+    padding: var(--spacing-xsmall);
+    border-radius: var(--rounded-xsmall);
+    background-color: var(--color-interface-softest);
+    box-shadow: var(--box-shadow);
+    font-size: var(--font-size-xsmall);
+    line-height: var(--line-height-normal);
+
+    &-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--spacing-tiny);
+    }
+
+    &-label {
+        min-width: 0;
+        overflow: hidden;
+        color: var(--color-interface-strong);
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    &-value {
+        font-weight: var(--font-weight-semibold);
+        color: var(--color-interface-stronger);
+    }
+
+    &-muted &-label,
+    &-muted &-value {
+        color: var(--color-interface-medium);
+    }
+}
+
+/* A muted item keeps its trend but fades it to match the greyed label and value. */
+.kpi-v2-micro-grid-item-muted .kpi-v2-micro-item-trend,
+.kpi-v2-micro-cards-item-muted .kpi-v2-micro-item-trend {
+    opacity: 0.5;
+}
+
+// ====================== END KPI CARD CONTENT ======================
+
+
+// ======================== KPI TREND ========================
+
+// From kpiTrend.partial.obs
+/* Content rows show the trend as plain colored text with a larger icon. */
+.kpi-v2-trend {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: calc(var(--spacing-tiny) / 2);
+    font-size: var(--font-size-xsmall);
+    font-weight: var(--font-weight-semibold);
+    line-height: var(--line-height-normal);
+    white-space: nowrap;
+
+    i {
+        font-size: var(--font-size-regular);
+    }
+
+    &.positive {
+        color: var(--color-success-strong);
+    }
+
+    &.negative {
+        color: var(--color-danger-strong);
+    }
+
+    &.neutral {
+        color: var(--color-interface-strong);
+    }
+
+    &.plain {
+        color: var(--color-interface-medium);
+    }
+}
+
+// ====================== END KPI TREND ======================

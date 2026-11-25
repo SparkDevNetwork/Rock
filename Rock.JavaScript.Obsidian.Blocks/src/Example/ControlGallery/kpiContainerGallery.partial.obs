@@ -1,0 +1,173 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <GalleryAndResult :importCode="importCode" :exampleCode="exampleCode">
+        <KpiContainer :columns="columns"
+                      :note="note || undefined"
+                      :updatedDateTime="isUpdatedShown ? updatedDateTime : undefined">
+            <KpiCard v-for="card in visibleCards"
+                     :key="card.title"
+                     :title="card.title"
+                     :help="card.help"
+                     :iconCssClass="card.iconCssClass"
+                     :value="card.value"
+                     :valueFormat="card.valueFormat"
+                     :valueTrend="card.valueTrend"
+                     :valueDescription="card.valueDescription"
+                     :isLowerBetter="card.isLowerBetter"
+                     :chart="card.chart"
+                     :content="card.content"
+                     :action="card.action"
+                     :footerText="card.footerText" />
+        </KpiContainer>
+
+        <template #settings>
+            <div class="row">
+                <div class="col-md-3">
+                    <DropDownList v-model="columnsText" :items="columnItems" label="Columns" :showBlankItem="false" />
+                </div>
+                <div class="col-md-3">
+                    <NumberBox v-model="cardCount" label="Cards" :minimumValue="1" :maximumValue="cards.length" />
+                </div>
+                <div class="col-md-6">
+                    <TextBox v-model="note" label="Note" />
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-3">
+                    <CheckBox v-model="isUpdatedShown" label="Show Updated Date" />
+                </div>
+            </div>
+        </template>
+
+        <template #usageNotes>
+            <p>Resize the window to see the columns drop from 4 to 2 to 1. The card sections line up across each row even though the Avg. Time on Page card has a longer footer.</p>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import KpiCard from "@Obsidian/Controls/kpiCard.obs";
+    import KpiContainer from "@Obsidian/Controls/kpiContainer.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { KpiAction, KpiChart, KpiContent, KpiHelpSection, KpiTrend, KpiValue, KpiValueFormat } from "@Obsidian/Core/Controls/kpi";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    type GalleryCard = {
+        title: string;
+        help: KpiHelpSection[];
+        iconCssClass: string;
+        value: KpiValue;
+        valueFormat: KpiValueFormat;
+        valueTrend: KpiTrend;
+        valueDescription: string;
+        isLowerBetter?: boolean;
+        chart: KpiChart;
+        content: KpiContent;
+        action: KpiAction;
+        footerText?: string;
+    };
+
+    const importCode = getSfcControlImportPath("kpiContainer");
+
+    const columnItems: ListItemBag[] = [
+        { value: "1", text: "1" },
+        { value: "2", text: "2" },
+        { value: "3", text: "3" },
+        { value: "4", text: "4" }
+    ];
+
+    const labels = ["2026-06-01", "2026-07-01", "2026-08-01", "2026-09-01"];
+
+    // The four cards from the Figma sample usage.
+    const cards: GalleryCard[] = [
+        {
+            title: "Views",
+            help: [{ label: "What it measures", text: "Counts every page load in the selected date range." }],
+            iconCssClass: "ti ti-eye",
+            value: 1000,
+            valueFormat: "number",
+            valueTrend: 22,
+            valueDescription: "Previous Period: 820",
+            chart: { type: "line", labels, series: [{ label: "Views", data: [620, 710, 820, 1000] }] },
+            content: { display: "microGrid", items: [{ label: "Desktop", value: 550, valueTrend: 8 }, { label: "Mobile", value: 350, valueTrend: 31 }, { label: "Tablet", value: 100, valueTrend: -4 }] },
+            action: { text: "View Report", url: "#" }
+        },
+        {
+            title: "Unique Visitors",
+            help: [{ label: "What it measures", text: "Counts each person once, no matter how many pages they viewed." }],
+            iconCssClass: "ti ti-users",
+            value: 640,
+            valueFormat: "number",
+            valueTrend: -20,
+            valueDescription: "Previous Period: 800",
+            chart: { type: "line", labels, series: [{ label: "Visitors", data: [700, 750, 800, 640] }] },
+            content: { display: "microGrid", items: [{ label: "Desktop", value: 360, valueTrend: -12 }, { label: "Mobile", value: 220, valueTrend: -30 }, { label: "Tablet", value: 60, valueTrend: "flat" }] },
+            action: { text: "View Report", url: "#" }
+        },
+        {
+            title: "Avg. Time on Page",
+            help: [{ label: "What it measures", text: "Average time between a page loading and the next page loading." }],
+            iconCssClass: "ti ti-clock",
+            value: 134,
+            valueFormat: "duration",
+            valueTrend: 8,
+            valueDescription: "Previous Period: 2m 4s",
+            chart: { type: "line", labels, series: [{ label: "Seconds", data: [118, 121, 124, 134] }] },
+            content: { display: "microGrid", valueFormat: "duration", items: [{ label: "Desktop", value: 155, valueTrend: 6 }, { label: "Mobile", value: 105, valueTrend: 11 }, { label: "Tablet", value: 125, valueTrend: "unknown" }] },
+            action: { text: "View Report", url: "#" },
+            footerText: "Exit pages are excluded from the average"
+        },
+        {
+            title: "Bounce Rate",
+            help: [{ label: "What it measures", text: "Percent of visits that left after viewing one page. Lower is better." }],
+            iconCssClass: "ti ti-arrow-back-up",
+            value: 38,
+            valueFormat: "percent",
+            valueTrend: -10,
+            valueDescription: "Previous Period: 42%",
+            isLowerBetter: true,
+            chart: { type: "line", labels, series: [{ label: "Bounce Rate", data: [45, 44, 42, 38] }] },
+            content: { display: "microGrid", valueFormat: "percent", items: [{ label: "Desktop", value: 32, valueTrend: -5 }, { label: "Mobile", value: 46, valueTrend: 3 }, { label: "Tablet", value: 40, valueTrend: -2 }] },
+            action: { text: "View Report", url: "#" }
+        }
+    ];
+
+    // #region Values
+
+    const columnsText = ref("4");
+    const cardCount = ref<number | null>(4);
+    const note = ref("Note that our interaction data does not include time on page for the exit page.");
+    const isUpdatedShown = ref(true);
+    const updatedDateTime = RockDateTime.now().addDays(-3).toISOString();
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const columns = computed((): 1 | 2 | 3 | 4 => Number(columnsText.value) as 1 | 2 | 3 | 4);
+
+    const visibleCards = computed((): GalleryCard[] => cards.slice(0, cardCount.value ?? cards.length));
+
+    const exampleCode = computed((): string => {
+        const attributes = [
+            `:columns="${columns.value}"`,
+            note.value ? `note="${note.value}"` : "",
+            isUpdatedShown.value ? `updatedDateTime="${updatedDateTime}"` : ""
+        ].filter(attribute => attribute !== "");
+
+        return `<KpiContainer ${attributes.join("\n              ")}>
+    <KpiCard ... />
+    <KpiCard ... />
+</KpiContainer>`;
+    });
+
+    // #endregion Computed Values
+</script>

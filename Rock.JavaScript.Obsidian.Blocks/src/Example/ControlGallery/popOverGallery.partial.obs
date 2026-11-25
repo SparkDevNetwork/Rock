@@ -2,8 +2,16 @@
     <GalleryAndResult :importCode="importCode" :exampleCode="exampleCode">
 
         <div class="text-center">
-            <PopOver v-model:isVisible="show" :placement="placement" v-model:triggerUpdate="triggerUpdate">
+            <PopOver v-model:isVisible="show"
+                     :placement="placement"
+                     v-model:triggerUpdate="triggerUpdate"
+                     :isArrowHidden="isArrowHidden"
+                     :maxHeight="maxHeight || undefined"
+                     :width="width || undefined">
                 This is the content that shows up in the popOver
+                <template v-if="isLongContent">
+                    <p v-for="index in 6" :key="index">This is extra content to show how the popOver scrolls when a max height is set.</p>
+                </template>
                 <template #activator="props">
                     <strong v-bind="props">Hover Me</strong>
                 </template>
@@ -18,6 +26,21 @@
                 <div class="col-md-4">
                     <DropDownList v-model="placement" :items="placementOptions" label="Pop Over Placement" :showBlankItem="false" />
                 </div>
+                <div class="col-md-4">
+                    <CheckBox v-model="isArrowHidden" label="Is Arrow Hidden" />
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-4">
+                    <TextBox v-model="width" label="Width" help="CSS size value (e.g., '400px'). Removes the default maximum width when set." />
+                </div>
+                <div class="col-md-4">
+                    <TextBox v-model="maxHeight" label="Max Height" help="CSS size value (e.g., '200px'). Content taller than this scrolls." />
+                </div>
+                <div class="col-md-4">
+                    <CheckBox v-model="isLongContent" label="Long Content" help="Adds extra content to show scrolling." />
+                </div>
             </div>
         </template>
 
@@ -30,15 +53,20 @@
 </template>
 
 <script setup lang="ts">
-    import { ref, watch } from "vue";
+    import { computed, ref, watch } from "vue";
     import GalleryAndResult from "./common/galleryAndResult.partial.obs";
     import PopOver from "@Obsidian/Controls/popOver.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
     import { getSfcControlImportPath } from "./common/utils.partial";
 
     const placement = ref<"right" | "top" | "bottom" | "left">("right");
     const triggerUpdate = ref(false);
+    const isArrowHidden = ref(false);
+    const isLongContent = ref(false);
+    const maxHeight = ref("");
+    const width = ref("");
 
     watch(placement, () => {
         triggerUpdate.value = true;
@@ -52,10 +80,20 @@
     ];
     const show = ref(false);
     const importCode = getSfcControlImportPath("popOver");
-    const exampleCode = `<PopOver v-model:isVisible="isVisible" placement="right">
+    const exampleCode = computed((): string => {
+        const attributes = [
+            `v-model:isVisible="isVisible"`,
+            `placement="${placement.value}"`,
+            isArrowHidden.value ? "isArrowHidden" : "",
+            maxHeight.value ? `maxHeight="${maxHeight.value}"` : "",
+            width.value ? `width="${width.value}"` : ""
+        ].filter(attribute => attribute !== "");
+
+        return `<PopOver ${attributes.join("\n         ")}>
     This is the content that shows up in the popOver
     <template #activator="props">
         <strong v-bind="props">Hover Me</strong>
     </template>
 </PopOver>`;
+    });
 </script>

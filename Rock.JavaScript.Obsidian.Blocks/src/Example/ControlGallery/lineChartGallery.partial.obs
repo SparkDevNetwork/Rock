@@ -3,6 +3,7 @@
 
         <LineChart :labels="labels"
                    :series="series"
+                   :categoryHideAxisLabels="categoryHideAxisLabels"
                    :categoryHideAxisLine="categoryHideAxisLine"
                    :categoryLabel="categoryLabel"
                    :categoryMaxTickCount="categoryMaxTickCount"
@@ -22,6 +23,7 @@
                    :tooltipTitle="tooltipTitle"
                    :type="isPercent ? 'percent' : isPercent === false ? 'number' : undefined"
                    :unfilled="isUnfilled"
+                   :valueHideAxisLabels="valueHideAxisLabels"
                    :valueHideAxisLine="valueHideAxisLine"
                    :valueHideGridLines="valueHideGridLines"
                    :valueLabel="valueLabel"
@@ -153,6 +155,10 @@
                             <NumberBox v-model="categoryMaxTickCount"
                                        label="Max Tick Count" />
 
+                            <Switch :modelValue="categoryHideAxisLabels ?? false"
+                                    label="Hide Axis Labels"
+                                    @update:modelValue="categoryHideAxisLabels = $event" />
+
                             <Switch :modelValue="categoryHideAxisLine ?? false"
                                     label="Hide Axis Line"
                                     @update:modelValue="categoryHideAxisLine = $event" />
@@ -169,6 +175,10 @@
                             <TextBox :modelValue="valueLabel ?? ''"
                                      label="Label"
                                      @update:modelValue="valueLabel = $event" />
+
+                            <Switch :modelValue="valueHideAxisLabels ?? false"
+                                    label="Hide Axis Labels"
+                                    @update:modelValue="valueHideAxisLabels = $event" />
 
                             <Switch :modelValue="valueHideAxisLine ?? false"
                                     label="Hide Axis Line"
@@ -299,8 +309,10 @@
     const minValue = ref<number>(0);
     const maxValue = ref<number>(100);
     const hasCustomTooltip = ref<boolean | undefined>();
+    const categoryHideAxisLabels = ref<boolean | undefined>();
     const categoryHideAxisLine = ref<boolean | undefined>();
     const categoryShowGridLines = ref<boolean | undefined>();
+    const valueHideAxisLabels = ref<boolean | undefined>();
     const valueHideAxisLine = ref<boolean | undefined>();
     const valueHideGridLines = ref<boolean | undefined>();
     const categoryMaxTickCount = ref<number | undefined>();
@@ -354,6 +366,9 @@
             `:series="series"`
         ];
 
+        if (!isNullish(categoryHideAxisLabels.value)) {
+            lineChartProps.push(`:categoryHideAxisLabels="${categoryHideAxisLabels.value}"`);
+        }
         if (!isNullish(categoryHideAxisLine.value)) {
             lineChartProps.push(`:categoryHideAxisLine="${categoryHideAxisLine.value}"`);
         }
@@ -412,6 +427,9 @@
         }
         if (!isNullish(isUnfilled.value)) {
             lineChartProps.push(`unfilled="${isUnfilled.value}"`);
+        }
+        if (!isNullish(valueHideAxisLabels.value)) {
+            lineChartProps.push(`:valueHideAxisLabels="${valueHideAxisLabels.value}"`);
         }
         if (!isNullish(valueHideAxisLine.value)) {
             lineChartProps.push(`:valueHideAxisLine="${valueHideAxisLine.value}"`);

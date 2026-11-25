@@ -5,6 +5,7 @@
              :ref="e => applyTooltip(e, { html: true })"
              class="progress m-0 flex-fill"
              :class="progressCssClass"
+             :style="height ? { height } : undefined"
              role="progressbar"
              data-toggle="tooltip"
              :data-original-title="tooltip">
@@ -44,7 +45,8 @@
     border: 1px solid currentColor;
 }
 
-.progress.progress-default {
+.progress.progress-default,
+.progress.progress-metric {
     border: none;
 }
 
@@ -97,6 +99,10 @@
     background-color: var(--color-interface-medium);
 }
 
+.progress-bar.progress-bar-metric {
+    background-color: var(--color-metric-primary);
+}
+
 .indicator {
     position: absolute;
     top: -1px;
@@ -146,6 +152,10 @@
 .indicator.indicator-warning {
     color: var(--color-warning-shade);
 }
+
+.indicator.indicator-metric {
+    color: var(--color-metric-primary);
+}
 </style>
 
 <script setup lang="ts">
@@ -194,9 +204,19 @@
         type?: ProgressBarType | null | undefined;
     };
 
-    type ProgressBarType = "danger" | "success" | "critical" | "warning" | "info" | "default";
+    type ProgressBarType = "danger" | "success" | "critical" | "warning" | "info" | "metric" | "default";
 
     const props = defineProps({
+        /**
+         * The CSS style string to set the height of the progress bar.
+         * - Accepts any valid CSS height value (e.g., "16px", "2rem").
+         * - When not set, the bar uses its default height of 16px.
+         */
+        height: {
+            type: String as PropType<string | undefined>,
+            required: false
+        },
+
         /**
          * The progress to display in the progress bar.
          *

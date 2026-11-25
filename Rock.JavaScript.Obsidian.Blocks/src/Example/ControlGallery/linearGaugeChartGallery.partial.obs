@@ -1,6 +1,7 @@
 <template>
     <GalleryAndResult :importCode="importCode" :exampleCode="exampleCode">
         <LinearGaugeChart :series="series"
+                          :gaugeHeight="gaugeHeight || undefined"
                           :height="height || 'auto'"
                           :hideLegend="isLegendHidden"
                           :legendAlign="legendAlign"
@@ -51,6 +52,13 @@
                                               :items="sectionStyleItems"
                                               label="Section Style"
                                               :showBlankItem="false" />
+                            </div>
+
+                            <div class="col-md-6">
+                                <TextBox :modelValue="gaugeHeight ?? ''"
+                                         label="Gauge Height"
+                                         help="CSS size value for each gauge bar (e.g., '40px'). Defaults to 30px."
+                                         @update:modelValue="gaugeHeight = $event" />
                             </div>
                         </div>
 
@@ -140,6 +148,7 @@
 
     // #region Values
 
+    const gaugeHeight = ref<string | undefined>();
     const height = ref<string | undefined>();
     const isLegendHidden = ref<boolean | undefined>();
     const legendAlign = ref<LegendAlign | undefined>();
@@ -164,6 +173,9 @@
             `:series="series"`
         ];
 
+        if (gaugeHeight.value) {
+            linearGaugeChartProps.push(`gaugeHeight="${gaugeHeight.value}"`);
+        }
         if (!isNullish(height.value)) {
             linearGaugeChartProps.push(`height="${height.value}"`);
         }
