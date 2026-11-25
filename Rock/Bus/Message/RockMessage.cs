@@ -108,7 +108,8 @@ namespace Rock.Bus.Message
         }
 
         /// <summary>
-        /// Gets the log string.
+        /// Gets the log string. This identifies the queue and message type
+        /// only, it never includes the message body.
         /// </summary>
         /// <typeparam name="TQueue">The type of the queue.</typeparam>
         /// <param name="message">The message.</param>
@@ -116,11 +117,19 @@ namespace Rock.Bus.Message
         public static string GetLogString<TQueue>( IRockMessage<TQueue> message )
             where TQueue : IRockQueue, new()
         {
-            var messageJson = message.ToJson();
+            /*
+                11/25/2026 - MSE
+
+                This text goes into the Exception Log and into exceptions
+                returned to callers. Messages can carry person, address and
+                financial data, so the serialized body is not included.
+
+                Reason: Keep message contents out of logs.
+            */
             var queueName = RockQueue.Get<TQueue>().Name;
             var messageType = message.GetType().FullName;
 
-            return $"Queue: {queueName}\nMessageType: {messageType}\n{messageJson}";
+            return $"Queue: {queueName}\nMessageType: {messageType}";
         }
     }
 }
