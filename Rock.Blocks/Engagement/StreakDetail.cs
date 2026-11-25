@@ -252,7 +252,15 @@ namespace Rock.Blocks.Engagement
 
             var bag = GetCommonEntityBag( entity );
 
-            bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson, enforceSecurity: false );
+            /*
+                11/25/2026 - MSE
+
+                Attribute values shown in the view bag must respect each attribute's
+                own view security, so the person only receives values they may view.
+
+                Reason: Attribute-level security on the streak detail view.
+            */
+            bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson, enforceSecurity: true );
 
             return bag;
         }
