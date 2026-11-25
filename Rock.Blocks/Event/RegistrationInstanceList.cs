@@ -141,11 +141,22 @@ namespace Rock.Blocks.Event
         /// <inheritdoc/>
         protected override IQueryable<RegistrationInstance> GetListQueryable( RockContext rockContext )
         {
-            var templateId = GetRegistrationTemplate()?.Id;
+            var template = GetRegistrationTemplate();
             IEnumerable<RegistrationInstance> registrationInstances = new List<RegistrationInstance>();
 
-            if ( templateId.HasValue )
+            /*
+                11/25/2026 - MSE
+
+                Grid data is loaded by a block action, so the template VIEW
+                check made when the block first renders does not cover it.
+                Check it here too.
+
+                Reason: Do not list instances of a template the person may not view.
+            */
+            if ( template != null && template.IsAuthorized( Authorization.VIEW, GetCurrentPerson() ) )
             {
+                var templateId = template.Id;
+
                 registrationInstances = new RegistrationInstanceService( rockContext ).Queryable()
                     .AsNoTracking()
                     .Where( i => i.RegistrationTemplateId == templateId );
