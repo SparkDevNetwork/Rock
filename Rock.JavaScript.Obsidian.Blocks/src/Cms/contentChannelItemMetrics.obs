@@ -22,47 +22,27 @@
         <SlidingDateRangePicker v-model="selectedDateRange"
                                 label="Date Range" />
 
-        <div class="row kpi-row">
-            <template v-if="isLoading">
-                <div v-for="n in 3" :key="n" class="col-md-4">
-                    <div class="skeleton kpi-skeleton"></div>
-                </div>
-            </template>
-            <template v-else>
-                <div class="col-md-4">
-                    <KpiTile variant="light" label="Total Views" :value="kpis.totalViews.value" isValueAnimated>
-                        <template #footer>
-                            <template v-if="kpis.totalViews.hasPrevious">
-                                <span :style="{ color: kpis.totalViews.deltaColor }">{{ kpis.totalViews.deltaText }}</span> vs. Previous Period
-                            </template>
-                            <template v-else>No Previous Period</template>
-                        </template>
-                    </KpiTile>
-                </div>
+        <KpiContainer :columns="3" isFlush class="kpi-row">
+            <KpiCard title="Total Views"
+                     :value="kpis.totalViews.value"
+                     :valueTrend="kpis.totalViews.valueTrend"
+                     :valueDescription="kpis.totalViews.valueDescription"
+                     :isLoading="isLoading" />
 
-                <div class="col-md-4">
-                    <KpiTile variant="light" label="Unique Views" :help="uniqueViewsHelp" :value="kpis.uniqueViews.value" isValueAnimated>
-                        <template #footer>
-                            <template v-if="kpis.uniqueViews.hasPrevious">
-                                <span :style="{ color: kpis.uniqueViews.deltaColor }">{{ kpis.uniqueViews.deltaText }}</span> vs. Previous Period
-                            </template>
-                            <template v-else>No Previous Period</template>
-                        </template>
-                    </KpiTile>
-                </div>
+            <KpiCard title="Unique Views"
+                     :help="uniqueViewsHelp"
+                     :value="kpis.uniqueViews.value"
+                     :valueTrend="kpis.uniqueViews.valueTrend"
+                     :valueDescription="kpis.uniqueViews.valueDescription"
+                     :isLoading="isLoading" />
 
-                <div class="col-md-4">
-                    <KpiTile variant="light" label="Known People" :help="knownPeopleHelp" :value="kpis.knownPeople.value" isValueAnimated>
-                        <template #footer>
-                            <template v-if="kpis.knownPeople.hasPrevious">
-                                <span :style="{ color: kpis.knownPeople.deltaColor }">{{ kpis.knownPeople.deltaText }}</span> vs. Previous Period
-                            </template>
-                            <template v-else>No Previous Period</template>
-                        </template>
-                    </KpiTile>
-                </div>
-            </template>
-        </div>
+            <KpiCard title="Known People"
+                     :help="knownPeopleHelp"
+                     :value="kpis.knownPeople.value"
+                     :valueTrend="kpis.knownPeople.valueTrend"
+                     :valueDescription="kpis.knownPeople.valueDescription"
+                     :isLoading="isLoading" />
+        </KpiContainer>
 
         <div class="row">
             <div class="col-md-12">
@@ -202,28 +182,24 @@
 </template>
 
 <style scoped>
-/* Match the KPI row's bottom gap to the panels below, whose margin-bottom is --spacing-large.
+/* Match the KPI container's bottom gap to the panels below, whose margin-bottom is --spacing-large.
    The mb-* utilities are rem-based (root font-size is 14px), so none of them equal 24px. */
 .kpi-row {
     margin-bottom: var(--spacing-large);
 }
 
 /* Loading placeholders sized to match the content they stand in for, so nothing shifts when the
-   real charts and tiles arrive. The base .skeleton class supplies the shimmer animation. */
+   real charts arrive. The base .skeleton class supplies the shimmer animation. */
 .metric-skeleton {
     height: 300px;
-    border-radius: var(--rounded-small);
-}
-
-.kpi-skeleton {
-    height: 116px;
     border-radius: var(--rounded-small);
 }
 </style>
 
 <script setup lang="ts">
     import { computed, ref, watch } from "vue";
-    import KpiTile from "@Obsidian/Controls/kpiTile.obs";
+    import KpiCard from "@Obsidian/Controls/kpiCard.obs";
+    import KpiContainer from "@Obsidian/Controls/kpiContainer.obs";
     import NothingToShow from "./ContentChannelItemMetrics/nothingToShow.partial.obs";
     import RankedListBarChart from "@Obsidian/Controls/rankedListBarChart.obs";
     import UtmMetricsCard from "./ContentChannelItemMetrics/utmMetricsCard.partial.obs";
@@ -240,6 +216,7 @@
     import { AlertType } from "@Obsidian/Enums/Controls/alertType";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import { BarSeries, LineSeries, TooltipContext } from "@Obsidian/Core/Controls/chart";
+    import { KpiHelpSection } from "@Obsidian/Core/Controls/kpi";
     import { ContentChannelItemStatus, ContentChannelItemStatusDescription } from "@Obsidian/Enums/Cms/contentChannelItemStatus";
     import { getCssVariableValue } from "@Obsidian/Utility/cssUtils";
     import { debounce } from "@Obsidian/Utility/util";
@@ -262,16 +239,19 @@
 
     type KpiDisplay = {
         value: number;
-        hasPrevious: boolean;
-        deltaText: string;
-        deltaColor: string;
+        valueTrend: number | null;
+        valueDescription: string;
     };
 
     // The catch-all breakdown buckets that render in a neutral color instead of a categorical one.
     const neutralSliceLabels = ["Unknown", "No Status"];
 
-    const uniqueViewsHelp = "The number of distinct browsing sessions that viewed this content, not the number of views. The same person returning on a different day or device counts as a new view.";
-    const knownPeopleHelp = "The number of distinct, identified individuals who viewed this content, not the number of views. Anonymous visits aren't included, even from congregation members who weren't logged in.";
+    const uniqueViewsHelp: KpiHelpSection[] = [
+        { text: "The number of distinct browsing sessions that viewed this content, not the number of views. The same person returning on a different day or device counts as a new view." }
+    ];
+    const knownPeopleHelp: KpiHelpSection[] = [
+        { text: "The number of distinct, identified individuals who viewed this content, not the number of views. Anonymous visits aren't included, even from congregation members who weren't logged in." }
+    ];
 
     // #endregion Types
 
@@ -448,22 +428,20 @@
     // #region Functions
 
     /**
-     * Builds the display model for a single KPI tile from its value and delta.
+     * Builds the display model for a single KPI card from its value and delta.
      *
      * @param value The current period value.
      * @param delta The percent change versus the previous period, or null when unavailable.
      */
     function makeKpi(value: number | undefined, delta: number | null | undefined): KpiDisplay {
         const hasPrevious = delta !== null && delta !== undefined;
-        const rounded = hasPrevious ? Math.round(delta as number) : 0;
 
         return {
             value: value ?? 0,
-            hasPrevious,
-            deltaText: hasPrevious ? `${rounded > 0 ? "+" : ""}${rounded}%` : "",
-            deltaColor: !hasPrevious || rounded === 0
-                ? "var(--color-interface-medium)"
-                : rounded > 0 ? "var(--color-success-strong)" : "var(--color-danger-strong)"
+
+            // The card draws the arrow, the color and the percent from the rounded change.
+            valueTrend: hasPrevious ? Math.round(delta as number) : null,
+            valueDescription: hasPrevious ? "vs. Previous Period" : "No Previous Period"
         };
     }
 

@@ -54,6 +54,12 @@
     &-columns-4 {
         grid-template-columns: repeat(4, minmax(0, 1fr));
     }
+
+    /* Lets the cards line up with the headings and panel edges around the container. */
+    &-flush {
+        padding: 0;
+        background-color: transparent;
+    }
 }
 
 /* Each breakpoint is the width where columns would drop below 240px (columns x 240px plus the 16px gaps). */
@@ -73,6 +79,48 @@
     .kpi-v2-container-grid {
         grid-template-columns: minmax(0, 1fr);
     }
+}
+
+/*
+    Dense containers allow 180px cards. These restate each column count so the 240px breakpoints
+    above don't apply, then drop columns where cards would pass below 180px (columns x 180px plus
+    the 16px gaps).
+*/
+.kpi-v2-container-dense {
+    .kpi-v2-container-columns-2 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .kpi-v2-container-columns-3 {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .kpi-v2-container-columns-4 {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+}
+
+@container (max-width: 767px) {
+    .kpi-v2-container-dense .kpi-v2-container-columns-4 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@container (max-width: 571px) {
+    .kpi-v2-container-dense .kpi-v2-container-columns-3 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@container (max-width: 375px) {
+    .kpi-v2-container-dense .kpi-v2-container-grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+/* Narrow cards drop the trend below the value instead of cutting the value off, mostly beside a compact chart. */
+.kpi-v2-container-dense .kpi-v2-card-metric-row {
+    flex-wrap: wrap;
 }
 
 .kpi-v2-container-footer {
@@ -205,7 +253,7 @@
     padding: var(--spacing-xsmall);
     border: 1px solid var(--color-interface-soft);
     border-radius: var(--rounded-small);
-    background-color: var(--color-interface-softer);
+    background-color: var(--color-interface-softest);
     font-size: var(--font-size-xsmall);
     color: var(--color-interface-strong);
 }

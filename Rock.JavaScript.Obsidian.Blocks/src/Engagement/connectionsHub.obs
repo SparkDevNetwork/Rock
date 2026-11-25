@@ -63,7 +63,7 @@
                       :isSnapshotVisible="isSnapshotVisible"
                       @cardMoved="onCardMoved">
             <template #snapshot>
-                <Snapshot :metrics="snapshotMetrics" />
+                <Snapshot :metrics="snapshotMetrics" :hasError="hasSnapshotError" />
             </template>
             <template #selectedActionToolbar>
                 <div ref="toolbarElement" class="left-actions">
@@ -1168,6 +1168,7 @@
     const areRequestsLoading = ref<boolean>(true);
     const isSnapshotVisible = ref<boolean>(false);
     const snapshotMetrics = ref<CompletionMetricsBag | null>(null);
+    const hasSnapshotError = ref<boolean>(false);
 
     // Modal Configuration
     const modalErrorMessage = ref<string>("");
@@ -4603,8 +4604,11 @@
 
         if (result.isSuccess && result.data) {
             snapshotMetrics.value = result.data;
+            hasSnapshotError.value = false;
         }
         else {
+            // Lets the snapshot cards show their error state instead of loading forever.
+            hasSnapshotError.value = true;
             console.error(result.errorMessage ?? "An unknown error occurred while fetching the snapshot metrics.");
         }
     }

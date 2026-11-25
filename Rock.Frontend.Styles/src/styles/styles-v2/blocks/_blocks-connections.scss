@@ -7,6 +7,7 @@
 // Table of Content
 //  + Connection Request Entry
 //  + Connection Hub
+//  + Connection Operational Snapshot
 // =============================================================
 
 
@@ -672,21 +673,6 @@
                     gap: var(--spacing-tiny);
                 }
             }
-        }
-    }
-
-    // My Connections View
-    .completion-metrics-grid {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: var(--spacing-medium);
-
-        @media (max-width: 1000px) {
-            grid-template-columns: repeat(2, 1fr);
-        }
-
-        @media (max-width: 500px) {
-            grid-template-columns: repeat(1, 1fr);
         }
     }
 }
@@ -1459,3 +1445,13 @@
 }
 
 // ================ END CONNECTION HUB =========================
+
+
+// ================ CONNECTION OPERATIONAL SNAPSHOT =========================
+
+// From connectionOperationalSnapshot.obs; the Date Range sits directly above the Completion Metrics, whose spacing comes from the container gap.
+.completion-date-range .form-group {
+  margin-bottom: 0;
+}
+
+// ================ END CONNECTION OPERATIONAL SNAPSHOT =========================
