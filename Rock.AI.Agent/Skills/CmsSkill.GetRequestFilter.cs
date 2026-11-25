@@ -45,7 +45,7 @@ internal sealed partial class CmsSkill
         var helper = new AgentToolHelper( AgentRequestContext, _logger );
         var rockContext = AgentRequestContext.RockContext;
 
-        var requestFilter = helper.GetRequiredEntity<Model.RequestFilter>( requestFilterIdKey, checkSecurity: false );
+        var requestFilter = helper.GetRequiredEntity<Model.RequestFilter>( requestFilterIdKey );
 
         if ( requestFilter == null )
         {

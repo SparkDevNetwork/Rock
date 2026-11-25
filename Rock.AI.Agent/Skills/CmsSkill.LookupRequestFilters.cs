@@ -20,6 +20,7 @@ using System.Linq;
 using Rock.AI.Agent.Annotations;
 using Rock.AI.Agent.Classes.Common;
 using Rock.AI.Agent.Classes.Skills.CmsSkill;
+using Rock.Security;
 using Rock.SystemGuid;
 using Rock.Web.Cache;
 
@@ -45,6 +46,7 @@ internal sealed partial class CmsSkill
         var rockContext = AgentRequestContext.RockContext;
 
         var results = RequestFilterCache.All( rockContext )
+            .Where( f => f.IsAuthorized( Authorization.VIEW, AgentRequestContext.CurrentPerson ) )
             .OrderBy( f => f.Name )
             .Select( f =>
             {

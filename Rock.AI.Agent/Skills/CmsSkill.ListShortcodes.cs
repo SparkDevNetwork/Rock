@@ -20,6 +20,7 @@ using System.Linq;
 using Rock.AI.Agent.Annotations;
 using Rock.AI.Agent.Classes.Common;
 using Rock.AI.Agent.Classes.Skills.CmsSkill;
+using Rock.Security;
 using Rock.SystemGuid;
 using Rock.Web.Cache;
 
@@ -45,6 +46,7 @@ internal sealed partial class CmsSkill
         var helper = new AgentToolHelper( AgentRequestContext, _logger );
 
         var shortcodes = LavaShortcodeCache.All( AgentRequestContext.RockContext ).AsEnumerable();
+        shortcodes = shortcodes.Where( s => s.IsAuthorized( Authorization.VIEW, AgentRequestContext.CurrentPerson ) );
 
         if ( !includeInactive )
         {
