@@ -172,7 +172,8 @@ namespace RockWeb
             {
                 ExceptionLogService.LogException( ex, context );
                 context.Response.StatusCode = ( int ) System.Net.HttpStatusCode.InternalServerError;
-                context.Response.Write( "error: " + ex.Message );
+                // The details are in the Exception Log; do not send them to the browser.
+                context.Response.Write( "error: An unexpected error occurred while uploading the file." );
             }
         }
 
