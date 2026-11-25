@@ -2,19 +2,30 @@
     <PopOver v-if="tooltip" :placement="tooltipPlacement">
         {{ tooltip }}
         <template #activator="props">
-            <span :class="labelClass" :title="tooltip" :aria-label="tooltip" v-bind="props"><i v-if="iconCssClass" :class="iconCssClass"></i>
+            <span :class="labelClass" :aria-label="ariaLabel" v-bind="{ ...$attrs, ...props }"><i v-if="iconCssClass" :class="iconCssClass"></i>
                 <slot />
             </span>
         </template>
     </PopOver>
-    <span v-else :class="labelClass" :title="tooltip" :aria-label="tooltip"><i v-if="iconCssClass" :class="iconCssClass"></i>
+    <span v-else :class="labelClass" :aria-label="ariaLabel" v-bind="$attrs"><i v-if="iconCssClass" :class="iconCssClass"></i>
         <slot />
     </span>
 </template>
 
 <script setup lang="ts">
-    import { computed, PropType } from "vue";
+    import { computed, PropType, useAttrs } from "vue";
     import PopOver from "./popOver.obs";
+
+    /*
+        11/16/26 - CLAUDE
+
+        PopOver renders more than one root element, so attributes passed to this
+        label (such as a class or an aria-label) were dropped whenever it had a
+        tooltip. They are now bound to the label element in both cases.
+
+        Reason: Keep caller attributes when the label has a tooltip.
+    */
+    defineOptions({ inheritAttrs: false });
 
     const props = defineProps({
         customClass: {
@@ -43,6 +54,8 @@
         }
     });
 
+    const attrs = useAttrs();
+
     const labelClass = computed(() => {
         if (props.labelType === "custom") {
             return "label " + props.customClass;
@@ -50,5 +63,10 @@
         else {
             return "label label-" + props.labelType;
         }
+    });
+
+    // An aria-label from the caller wins over the tooltip, and no empty aria-label is rendered.
+    const ariaLabel = computed((): string | undefined => {
+        return (attrs["aria-label"] as string | undefined) || props.tooltip || undefined;
     });
 </script>
