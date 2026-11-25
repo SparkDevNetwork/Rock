@@ -336,8 +336,26 @@ namespace Rock.Blocks.Group
                 return bag;
             }
 
-            bag.GroupId = group.Id;
-            bag.GroupName = group.Name;
+            /*
+                11/25/2026 - MSE
+
+                The group's name is only for people who can view it. A person who
+                cannot view the group may still view some of its child groups, so
+                the map still loads for them: the REST map layers check View on
+                each group they return. They only get the id when they posted it
+                as the integer id, so the bag reveals nothing they did not send.
+
+                Reason: Prevent showing the name of a group the person cannot view.
+            */
+            if ( group.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+            {
+                bag.GroupId = group.Id;
+                bag.GroupName = group.Name;
+            }
+            else if ( groupKey == group.Id.ToString() )
+            {
+                bag.GroupId = group.Id;
+            }
 
             SetMarkerColors( bag );
 
