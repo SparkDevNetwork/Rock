@@ -27,6 +27,7 @@ using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
 
 using Rock.Configuration;
+using Rock.Data;
 using Rock.Logging;
 
 namespace Rock.Bus.Locking;
@@ -407,6 +408,9 @@ internal sealed class SqlServerDistributedLockProvider : IDistributedLockProvide
     /// override yields a dedicated <c>SqlConnection</c> pool distinct
     /// from Rock's default EF6 pool. Max pool size is read from the
     /// <c>RockDistributedLockMaxPoolSize</c> app setting when present.
+    /// The server certificate is trusted only where EF6's
+    /// <c>System.Data.SqlClient</c> would not check it (see
+    /// <see cref="SqlConnectionStringDefaults"/>).
     /// </summary>
     /// <param name="baseConnectionString">Rock's primary connection string.</param>
     /// <returns>The lock-pool connection string.</returns>
@@ -421,17 +425,9 @@ internal sealed class SqlServerDistributedLockProvider : IDistributedLockProvide
         {
             ApplicationName = ApplicationName,
             MaxPoolSize = ReadConfiguredMaxPoolSize(),
-
-            // Preserves behavioral parity with Rock's EF6 workload, which
-            // uses System.Data.SqlClient and trusts the server certificate
-            // by default. Microsoft.Data.SqlClient reversed that default in
-            // v4.0, so without this override the lock pool would fail to
-            // connect against every SQL Server whose cert isn't in the
-            // client trust chain (localhost dev SQL, on-prem with self-
-            // signed certs, etc.) while EF6 succeeds. Revisit when Rock
-            // itself migrates to Microsoft.Data.SqlClient.
-            TrustServerCertificate = true,
         };
+
+        SqlConnectionStringDefaults.TrustServerCertificateUnlessEncryptionRequested( builder );
 
         return builder.ConnectionString;
     }
