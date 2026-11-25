@@ -1211,6 +1211,20 @@ namespace Rock.Blocks.Event
             var rockContext = new RockContext();
 
             var entity = GetInitialEntity( rockContext );
+
+            /*
+                11/25/2026 - MSE
+
+                This action returns the event's attribute definitions for the
+                edit panel, so it needs the same EDIT check the edit panel uses.
+
+                Reason: View-only people must not read the attribute editor.
+            */
+            if ( entity == null || !IsAuthorizedToEdit( entity, rockContext ) )
+            {
+                return ActionForbidden( $"Not authorized to edit {EventItem.FriendlyTypeName}." );
+            }
+
             var eventIdQualifierValue = entity.Id.ToString();
             var attributes = GetEventAttributes( rockContext, eventIdQualifierValue );
 
