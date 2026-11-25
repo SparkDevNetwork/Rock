@@ -593,7 +593,16 @@ namespace Rock.Blocks.Group
 
                 var group = new GroupService( rockContext ).Get( attendanceInfo.GroupId.Value );
 
-                if ( !group.IsAuthorized( Authorization.VIEW, GetCurrentPerson() ) )
+                /*
+                    11/25/2026 - MSE
+
+                    Attendee details are only for people who can take attendance for
+                    the group, which is the same right the block itself requires.
+                    Group View alone is not enough.
+
+                    Reason: Prevent reading attendee details of any group.
+                */
+                if ( group == null || !IsAuthorizedToTakeAttendance( group ) )
                 {
                     return ActionStatusCode( System.Net.HttpStatusCode.Forbidden );
                 }
@@ -945,7 +954,9 @@ namespace Rock.Blocks.Group
                     return ActionNotFound( "Group not found." );
                 }
 
-                if ( !group.IsAuthorized( Authorization.VIEW, GetCurrentPerson() ) )
+                // Only people who can take attendance for the group may
+                // receive its attendance updates.
+                if ( !IsAuthorizedToTakeAttendance( group ) )
                 {
                     return ActionStatusCode( System.Net.HttpStatusCode.Forbidden );
                 }
@@ -1149,6 +1160,11 @@ namespace Rock.Blocks.Group
             }
             using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
+                if ( !IsPostedGroupAuthorized( rockContext, bag.GroupGuid ) )
+                {
+                    return ActionStatusCode( System.Net.HttpStatusCode.Forbidden );
+                }
+
                 var list = GetGroupLocations( rockContext, bag.GroupGuid.Value );
 
                 return ActionOk( list );
@@ -1165,6 +1181,11 @@ namespace Rock.Blocks.Group
         {
             using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
+                if ( !IsPostedGroupAuthorized( rockContext, bag.GroupGuid ) )
+                {
+                    return ActionStatusCode( System.Net.HttpStatusCode.Forbidden );
+                }
+
                 var schedules = GetGroupLocationSchedules( rockContext, bag.GroupGuid, bag.LocationGuid, bag.Date );
 
                 if ( !schedules.Any() )
@@ -1191,6 +1212,18 @@ namespace Rock.Blocks.Group
 
             using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
+                if ( !IsPostedGroupAuthorized( rockContext, bag.GroupGuid ) )
+                {
+                    return ActionStatusCode( System.Net.HttpStatusCode.Forbidden );
+                }
+
+                // Never expand schedules over more days than the block allows,
+                // including when the request leaves the day count out.
+                if ( !bag.OccurrenceDate.HasValue )
+                {
+                    bag.NumberOfPreviousDaysToShow = Math.Max( 0, Math.Min( bag.NumberOfPreviousDaysToShow ?? this.NumberOfPreviousDaysToShow, this.NumberOfPreviousDaysToShow ) );
+                }
+
                 var list = GetGroupLocationScheduleDateBags( rockContext, bag );
 
                 if ( !list.Any() )
@@ -1205,6 +1238,49 @@ namespace Rock.Blocks.Group
         #endregion
 
         #region Private Methods
+
+        /// <summary>
+        /// Determines whether the posted group is the page group and the current
+        /// person is authorized to take attendance for it.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="groupGuid">The posted group unique identifier.</param>
+        /// <returns><c>true</c> if the posted group is the authorized page group; otherwise, <c>false</c>.</returns>
+        private bool IsPostedGroupAuthorized( RockContext rockContext, Guid? groupGuid )
+        {
+            /*
+                11/25/2026 - MSE
+
+                The picker actions take a group from the request. Only answer for
+                the page group, and only when the person may use this block for it
+                (the same check every other action uses).
+
+                Reason: Prevent reading locations and schedules of any group.
+            */
+            if ( !groupGuid.HasValue )
+            {
+                return false;
+            }
+
+            var group = GetOccurrenceDataClientService( rockContext ).GetGroupIfAuthorized();
+
+            return group != null && group.Guid == groupGuid.Value;
+        }
+
+        /// <summary>
+        /// Determines whether the current person can take attendance for the group,
+        /// which is any of Manage Members, Edit or Take Attendance.
+        /// </summary>
+        /// <param name="group">The group.</param>
+        /// <returns><c>true</c> if the current person can take attendance for the group; otherwise, <c>false</c>.</returns>
+        private bool IsAuthorizedToTakeAttendance( Model.Group group )
+        {
+            var currentPerson = GetCurrentPerson();
+
+            return group.IsAuthorized( Authorization.MANAGE_MEMBERS, currentPerson )
+                || group.IsAuthorized( Authorization.EDIT, currentPerson )
+                || group.IsAuthorized( Authorization.TAKE_ATTENDANCE, currentPerson );
+        }
 
         /// <summary>
         /// Gets the group locations.
