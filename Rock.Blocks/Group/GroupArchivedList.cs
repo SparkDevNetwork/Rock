@@ -316,9 +316,18 @@ namespace Rock.Blocks.Group
                     return ActionBadRequest( $"{Rock.Model.Group.FriendlyTypeName} not found." );
                 }
 
-                if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+                /*
+                    11/25/2026 - MSE
+
+                    Edit rights on this block are not enough to restore a group. The person
+                    must also be able to edit the archived group itself.
+
+                    Reason: Restoring a group changes that group.
+                */
+                if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson )
+                    || !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
                 {
-                    return ActionBadRequest( $"Not authorized to edit ${Rock.Model.Group.FriendlyTypeName}." );
+                    return ActionBadRequest( $"Not authorized to edit {Rock.Model.Group.FriendlyTypeName}." );
                 }
 
                 entity.IsArchived = false;
