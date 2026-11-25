@@ -148,7 +148,7 @@
                     <span class="chat-attach-file-name" data-testid="attachment-file-name">{{ item.name }}</span>
                     <span class="chat-attach-file-size" data-testid="attachment-file-size">{{ linkOf(item)?.isUnavailable ? "Unavailable" : formatFileSize(item.size) }}</span>
                 </span>
-                <Icon v-if="!isPending && !linkOf(item)?.isUnavailable" name="download" size="sm" class="chat-attach-file-get" />
+                <Icon v-if="!linkOf(item)?.isUnavailable" name="download" size="sm" class="chat-attach-file-get" />
             </component>
 
             <Teleport v-if="isViewerMounted" :to="viewerHost ?? 'body'" :disabled="!viewerHost">
