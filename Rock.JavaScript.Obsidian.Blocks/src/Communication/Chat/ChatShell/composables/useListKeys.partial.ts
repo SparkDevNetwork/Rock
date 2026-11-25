@@ -32,7 +32,10 @@ export type ListKeys<K> = {
     /** The row's tab stop and handlers. */
     itemAttrs: (key: K) => ListItemAttrs;
 
-    /** The row's element, bound as its ref, which the arrows move focus to. */
+    /**
+     * The row's element, bound as its ref, which the arrows move focus to. Each ref made lets go of
+     * only the element it set, so a row makes one and keeps it.
+     */
     itemRef: (key: K) => (element: unknown) => void;
 
     /** The row that holds the tab stop, once one has been focused. */
@@ -157,13 +160,22 @@ export function useListKeys<K>(items: () => readonly K[], options: ListKeysOptio
             },
             onKeydown: (event: KeyboardEvent): void => onKeydown(key, event)
         }),
-        itemRef: key => (element: unknown): void => {
-            if (element instanceof HTMLElement) {
-                elements.set(key, element);
-            }
-            else {
-                elements.delete(key);
-            }
+        itemRef: key => {
+            // A row moving into another group is drawn there before its old copy is taken away,
+            // so a ref lets go of the key only while the key still holds the element it set.
+            let held: HTMLElement | null = null;
+            return (element: unknown): void => {
+                if (element instanceof HTMLElement) {
+                    held = element;
+                    elements.set(key, element);
+                    return;
+                }
+
+                if (held && elements.get(key) === held) {
+                    elements.delete(key);
+                }
+                held = null;
+            };
         }
     };
 }

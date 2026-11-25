@@ -621,6 +621,9 @@ img.chat-sheet-glyph {
     /** The column's list of rows, which says whether this row holds the tab stop; null for a row drawn alone. */
     const rowKeys = useRowKeys();
 
+    /** The row's ref in its column's list, made once: the row is drawn under one key for its life. */
+    const listRef = rowKeys && props.rowKey ? rowKeys.itemRef(props.rowKey) : null;
+
     /** The link or the photo a long press was on, which the sheet then offers first. */
     const heldLink = ref<HTMLAnchorElement | null>(null);
     const heldPhotoId = ref<string | null>(null);
@@ -955,9 +958,7 @@ img.chat-sheet-glyph {
     /** The row's element, which its column's list moves focus to as well. */
     function setRowElement(element: unknown): void {
         rowElement.value = element instanceof HTMLElement ? element : undefined;
-        if (rowKeys && props.rowKey) {
-            rowKeys.itemRef(props.rowKey)(element);
-        }
+        listRef?.(element);
     }
 
     /**
