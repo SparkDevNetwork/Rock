@@ -19,6 +19,8 @@
 
             <asp:ValidationSummary ID="vsGroupEdit" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
 
+            <Rock:NotificationBox ID="nbInactivateChildGroups" runat="server" NotificationBoxType="Danger" Visible="false" />
+
             <div class="row">
                 <div class="col-md-6">
                     <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.Group, Rock" PropertyName="Name" />
