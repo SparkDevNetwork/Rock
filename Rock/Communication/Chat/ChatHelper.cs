@@ -543,6 +543,7 @@ namespace Rock.Communication.Chat
             return groupId;
         }
 
+#pragma warning disable CS1574 // XML comment has cref attribute that could not be resolved
         /// <summary>
         /// Determines whether the provided <see cref="ChatChannelType.Key"/> and <see cref="ChatChannel.Key"/> identify
         /// exactly the <see cref="ChatChannel"/> that represents the provided <see cref="Group"/>.
@@ -554,6 +555,7 @@ namespace Rock.Communication.Chat
         /// <param name="chatChannelKey">The <see cref="ChatChannel.Key"/> to check.</param>
         /// <returns>Whether the chat channel type key and chat channel key exactly match the <see cref="Group"/>'s chat channel.</returns>
         internal static bool IsChatChannelForGroup( int groupId, int groupTypeId, string groupChatChannelKey, string chatChannelTypeKey, string chatChannelKey )
+#pragma warning restore CS1574 // XML comment has cref attribute that could not be resolved
         {
             if ( chatChannelTypeKey.IsNullOrWhiteSpace() || chatChannelKey.IsNullOrWhiteSpace() )
             {
