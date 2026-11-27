@@ -6077,6 +6077,60 @@ describe("the members panel", () => {
         expect(document.querySelector("[data-testid='details-close']")).toBeNull();
     });
 
+    // Members is offered only where the header draws faces. A channel the reader is not in and a
+    // room that keeps its list to its leaders carry no faces in their facts, so neither offers a
+    // way in: no button, no Members in a phone's menu, and the details' count is a plain number.
+    test.each([
+        ["a channel the reader is not in", { is_member: false }],
+        ["a room that keeps its list to its leaders", { faces: [] }]
+    ])("offers no way in for %s, on a phone's menu or in the details", async (_room: string, facts: Partial<ChannelFacts>) => {
+        const w = await mountBlock(390);
+        roomsOf().state.facts[team.channel_id] = roomFacts({ channel_id: team.channel_id, name: "Worship Team", member_count: 12, ...facts });
+        await openRow(w, team.channel_id);
+
+        await w.get("[data-testid='header-more'] button").trigger("click");
+        await settle();
+        const items = Array.from(document.querySelectorAll<HTMLElement>("[role='menu'] [role='menuitem']")).map(i => i.textContent?.trim());
+        expect(items).not.toContain("Members");
+        document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+        await settle();
+
+        await w.get("[data-testid='header-details']").trigger("click");
+        await settle();
+        const count = document.querySelector<HTMLElement>("[data-testid='details-members']")!;
+        expect(count.tagName).not.toBe("BUTTON");
+        count.click();
+        await settle();
+        expect(membersOf().open).not.toHaveBeenCalled();
+        expect(w.find("[data-testid='members-panel']").exists()).toBe(false);
+    });
+
+    // The open panel follows the conversation only where Members is still offered, so a room
+    // with no faces to show closes it rather than drawing a list the reader cannot see.
+    test("closes when the room now open carries no faces, or the open room's faces go", async () => {
+        const w = await mountBlock(1200);
+        const choir: SidebarRow = sidebarRow({ channel_id: "c0000021-0000-4000-8000-000000000000", name: "Choir" });
+        (mockShell!.channels as { rows: SidebarRow[] }).rows.push(choir);
+        roomsOf().state.facts[choir.channel_id] = roomFacts({ channel_id: choir.channel_id, name: "Choir", member_count: 30, faces: [] });
+        await openTeam(w);
+        await openMembers(w);
+        expect(w.get("[data-testid='chat-frame']").attributes("data-panel-open")).toBe("true");
+
+        await (mockShell!.selectChannel as jest.Mock)(choir.channel_id);
+        await settle();
+        expect(membersOf().open).not.toHaveBeenCalledWith(choir.channel_id);
+        expect(w.get("[data-testid='chat-frame']").attributes("data-panel-open")).toBe("false");
+
+        await (mockShell!.selectChannel as jest.Mock)(team.channel_id);
+        await settle();
+        await openMembers(w);
+        expect(w.get("[data-testid='chat-frame']").attributes("data-panel-open")).toBe("true");
+
+        roomsOf().state.facts[team.channel_id] = roomFacts({ channel_id: team.channel_id, name: "Worship Team", member_count: 12, faces: [] });
+        await settle();
+        expect(w.get("[data-testid='chat-frame']").attributes("data-panel-open")).toBe("false");
+    });
+
     // The church's badges are the full profile's: Details from a member's card takes the members
     // panel's place, with a way back to the list and its row.
     test("opens a member's card in the panel's room, beside the panel, Escape giving focus back to the row, and Details opens the profile with the church's badges and a way back to Members", async () => {

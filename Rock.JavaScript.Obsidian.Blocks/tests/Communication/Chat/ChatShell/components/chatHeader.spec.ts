@@ -454,7 +454,7 @@ describe("the Mentions button", () => {
     });
 
     test("is not in the phone's overflow menu, which holds Threads, Members, Star and Channel details, its button carrying no dot", async () => {
-        const w = mountHeader({ isPhone: true, kind: "channel", isThreadsOffered: true, isMembersOffered: true, isMentionsOffered: true, hasMentionDot: true, isPrefsOffered: true, notifyMode: "all", facts: roomFacts() });
+        const w = mountHeader({ isPhone: true, kind: "channel", isThreadsOffered: true, isMembersOffered: true, isMentionsOffered: true, hasMentionDot: true, isPrefsOffered: true, notifyMode: "all", facts: roomFacts({ faces: [{ person_alias_guid: "a0000001-0000-4000-8000-000000000000", nick_name: "Tom", last_name: "Hale", avatar_url: null }] }) });
 
         const more = w.get("[data-testid='header-more'] button");
         expect(more.attributes("aria-label")).toBe("More");
@@ -734,7 +734,7 @@ describe("the way into the members panel", () => {
     });
 
     test("moves into the phone's overflow menu as Members, after Threads", async () => {
-        const w = mountHeader({ isPhone: true, kind: "channel", isMembersOffered: true, isThreadsOffered: true, facts: facts() });
+        const w = mountHeader({ isPhone: true, kind: "channel", isMembersOffered: true, isThreadsOffered: true, facts: facts({ faces: [tom] }) });
 
         expect(w.find("[data-testid='header-members']").exists()).toBe(false);
         await w.get("[data-testid='header-more'] button").trigger("click");
@@ -745,6 +745,30 @@ describe("the way into the members panel", () => {
         items[1].click();
         await settle();
         expect(w.emitted("members")).toHaveLength(1);
+    });
+
+    // The menu offers Members where the button would draw faces and nowhere else: a channel the
+    // reader is not in, a room that keeps its list to its leaders, and a room whose people are not
+    // loaded yet hold no Members, and opening the menu reads nothing ahead for it.
+    test("holds no Members on a phone where no face can be shown", async () => {
+        const rooms: Array<Record<string, unknown>> = [
+            { kind: "channel", facts: facts({ is_member: false, faces: [tom] }) },
+            { kind: "channel", facts: facts({ faces: [] }) },
+            { kind: "channel", facts: null },
+            { kind: "group", title: "Hike planning", people: [], facts: null }
+        ];
+
+        for (const room of rooms) {
+            const w = mountHeader({ isPhone: true, isMembersOffered: true, isThreadsOffered: true, ...room });
+            await w.get("[data-testid='header-more'] button").trigger("click");
+            await settle();
+            const items = Array.from(document.querySelectorAll<HTMLElement>("[role='menu'] [role='menuitem']"));
+            expect(items.map(i => i.querySelector(".chat-menu-label")?.textContent?.trim())).not.toContain("Members");
+            expect(w.emitted("membersIntent")).toBeUndefined();
+            w.unmount();
+            wrapper = null;
+            document.body.innerHTML = "";
+        }
     });
 });
 
