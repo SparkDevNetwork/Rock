@@ -508,10 +508,18 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
      * Members is offered where the header draws the room's faces: a channel the reader is in and
      * may see the list of, or a group, never a conversation of two. A room with no faces to show
      * has no way into its list anywhere, so the header's button, a phone's menu and the details'
-     * count all offer it by this, and the panel opens, follows a conversation and stays open by it.
+     * count all offer it by this, and the panel opens by it.
      */
     const isMembersOffered = computed((): boolean => !!activeChannelId.value
         && memberFaces(rooms.activeKind.value, rooms.activeFacts.value, rooms.activePeople.value).length > 0);
+
+    /**
+     * Whether the open room is known to have no faces to show: a conversation of two, or a room
+     * whose facts have landed with none. A room just opened has its facts on their way, so an open
+     * roster follows it there and waits for them rather than closing on nearly every switch.
+     */
+    const isFaceless = computed((): boolean => !isMembersOffered.value
+        && (rooms.activeKind.value === "person" || !!rooms.activeFacts.value));
 
     const shownList = computed((): ShownList | null => shownPanel.value === "activity" ? activityTab.value : shownPanel.value);
 
@@ -1053,7 +1061,6 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
         await askFocus([{ stop: "member", match: `[data-person='${personAliasGuid}']` }, "panel-start"], { within: "panel" });
     }
 
-    /** Closes the panel column, which draws what it held while it narrows, without moving focus. */
     /** Closes a list the open conversation no longer has; focus the person put outside the chat stays there. */
     function closeFollowedPanel(): void {
         if (rootElement.value?.contains(document.activeElement)) {
@@ -1064,6 +1071,7 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
         }
     }
 
+    /** Closes the panel column, which draws what it held while it narrows, without moving focus. */
     function endPanel(): void {
         releasePanel();
         panelKind.value = null;
@@ -1530,16 +1538,17 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
     });
 
     // The threads list and the roster are the open conversation's, so each follows it, re-pointing
-    // at the conversation now open; a draft has neither, and a room with no faces to show no
-    // roster, so they close there, as the header offers them. Activity spans every conversation,
-    // so it stays as it is.
+    // at the conversation now open; a draft has neither, and a room known to have no faces to show
+    // no roster, so they close there, as the header offers them. A room whose facts are still on
+    // their way keeps the roster until they land. Activity spans every conversation, so it stays
+    // as it is.
     watch(activeChannelId, channelId => {
         const kind = panelKind.value;
         if (kind !== "threads" && kind !== "members") {
             return;
         }
 
-        if (!channelId || (kind === "members" && !isMembersOffered.value)) {
+        if (!channelId || (kind === "members" && isFaceless.value)) {
             closeFollowedPanel();
             return;
         }
@@ -1548,10 +1557,11 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
     });
 
     // The roster also closes in the room it shows once its faces go, as the reader leaves or the
-    // room keeps its list to its leaders. A group that drops to two as the reader removes someone
-    // keeps its list open on the people left, since that is where the reader is. Read only while
-    // the roster is open, so the room's facts are not asked for otherwise.
-    watch(() => panelKind.value === "members" && !!activeChannelId.value && rooms.activeKind.value !== "person" && !isMembersOffered.value, isWithdrawn => {
+    // room keeps its list to its leaders, or once a room it followed into has its facts land with
+    // none. A group that drops to two as the reader removes someone keeps its list open on the
+    // people left, since that is where the reader is. Read only while the roster is open, so the
+    // room's facts are not asked for otherwise.
+    watch(() => panelKind.value === "members" && !!activeChannelId.value && rooms.activeKind.value !== "person" && isFaceless.value, isWithdrawn => {
         if (isWithdrawn) {
             closeFollowedPanel();
         }
