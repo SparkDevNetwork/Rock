@@ -37,7 +37,7 @@ namespace Rock.Bus.Consumer
         /// <param name="message">The message.</param>
         public override void Consume( TMessage message )
         {
-            var logString = RockMessage.GetLogString( message );
+            var logString = RockMessage.GetLogString( message ) + "\n" + message.ToJson();
             var consumerName = GetType().FullName;
 
             var expiration = ConsumeContext.ExpirationTime.HasValue ?

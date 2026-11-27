@@ -1949,13 +1949,9 @@ namespace RockWeb.Blocks.Groups
                     }
 
                     // Only accept the document's current file or a new upload, otherwise keep the current file.
-                    if ( binaryFileId.HasValue && binaryFileId != document?.BinaryFileId )
+                    if ( !binaryFileService.IsUploadedBinaryFileAllowedForPerson( binaryFileId, document?.BinaryFileId, CurrentPerson ) )
                     {
-                        var postedBinaryFile = binaryFileService.Get( binaryFileId.Value );
-                        if ( postedBinaryFile == null || !postedBinaryFile.IsTemporary )
-                        {
-                            binaryFileId = document?.BinaryFileId;
-                        }
+                        binaryFileId = document?.BinaryFileId;
                     }
 
                     if ( document == null && binaryFileId.HasValue )

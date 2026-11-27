@@ -393,6 +393,32 @@ namespace Rock.Blocks.Event
                     registration = null;
                 }
 
+                /*
+                    11/25/2026 - MSE
+
+                    A code typed by the person (not an auto-apply code and not the
+                    code already saved on their registration) is counted before it
+                    is looked up, and the count is given back when the code is
+                    valid. Only wrong codes stay counted, so after too many wrong
+                    codes from one address further codes are refused for a while.
+                    Codes belong to the template, so the count is per template (see
+                    GetDiscountCodeAttemptKey).
+
+                    Reason: Prevent guessing discount codes.
+                */
+                var isUnsavedCode = code.IsNotNullOrWhiteSpace()
+                    && ( registration == null
+                        || registration.DiscountCode.IsNullOrWhiteSpace()
+                        || !string.Equals( code, registration.DiscountCode, StringComparison.OrdinalIgnoreCase ) );
+                var discountCodeTemplateId = isUnsavedCode ? GetDiscountCodeTemplateId( rockContext, registrationInstanceId ) : null;
+                var isManualLookup = isUnsavedCode && !IsAutoApplyDiscountCode( rockContext, discountCodeTemplateId, code );
+                var discountCodeAttemptKey = GetDiscountCodeAttemptKey( discountCodeTemplateId );
+
+                if ( isManualLookup && !TryCountDiscountCodeAttempt( discountCodeAttemptKey ) )
+                {
+                    return ActionBadRequest( DiscountCodeTooManyAttemptsMessage );
+                }
+
                 if ( isAutoApply && code.IsNullOrWhiteSpace() && ( registration == null || registration.DiscountCode.IsNullOrWhiteSpace() ) )
                 {
                     // If a manual discount amount or percentage has already been applied to the registration
@@ -460,6 +486,11 @@ namespace Rock.Blocks.Event
                         DiscountPercentage = registration.DiscountPercentage,
                         DiscountMaxRegistrants = discount?.RegistrationTemplateDiscount.MaxRegistrants
                     } );
+                }
+
+                if ( isManualLookup && discount != null )
+                {
+                    ReleaseDiscountCodeAttempt( discountCodeAttemptKey );
                 }
 
                 if ( discount == null || discount.RegistrationUsagesRemaining < 1 )
@@ -4554,8 +4585,9 @@ namespace Rock.Blocks.Event
                     RequestContext.PageParameters.AddOrReplace( PageParameterKey.Slug, session.Slug );
                 }
 
-                // Get a new context with the args
-                context = GetContext( rockContext, args, out errorMessage );
+                // Get a new context with the args. The args come from the saved
+                // session, so the discount code is not counted as an attempt.
+                context = GetContext( rockContext, args, out errorMessage, false );
 
                 // The restored session may name a registration the current
                 // person does not own, in which case there is no context.
@@ -6415,13 +6447,119 @@ namespace Rock.Blocks.Event
         }
 
         /// <summary>
+        /// The number of wrong discount codes allowed from one client address
+        /// for one registration template in <see cref="DiscountCodeAttemptWindow"/>.
+        /// </summary>
+        private const int DiscountCodeMaxFailedAttempts = 10;
+
+        /// <summary>
+        /// The period in which wrong discount codes are counted.
+        /// </summary>
+        private static readonly TimeSpan DiscountCodeAttemptWindow = TimeSpan.FromMinutes( 10 );
+
+        /// <summary>
+        /// The message shown when too many wrong discount codes were entered.
+        /// </summary>
+        private static readonly string DiscountCodeTooManyAttemptsMessage = "Too many attempts. Please wait a few minutes and try again.";
+
+        /// <summary>
+        /// Gets the template identifier of the registration instance, or
+        /// <c>null</c> if the instance does not exist.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="registrationInstanceId">The registration instance identifier.</param>
+        /// <returns>The registration template identifier or <c>null</c>.</returns>
+        private static int? GetDiscountCodeTemplateId( RockContext rockContext, int registrationInstanceId )
+        {
+            return new RegistrationInstanceService( rockContext ).Queryable()
+                .Where( i => i.Id == registrationInstanceId )
+                .Select( i => ( int? ) i.RegistrationTemplateId )
+                .FirstOrDefault();
+        }
+
+        /// <summary>
+        /// Gets the key the discount code attempts are counted under for the
+        /// template of the registration instance.
+        /// </summary>
+        /// <param name="registrationTemplateId">The template identifier from <see cref="GetDiscountCodeTemplateId(RockContext, int)"/>.</param>
+        /// <returns>The rate limiter key.</returns>
+        private static string GetDiscountCodeAttemptKey( int? registrationTemplateId )
+        {
+            /*
+                11/25/2026 - MSE
+
+                Discount codes belong to the registration template and every
+                instance of the template accepts the same codes. The instance id
+                comes from the request, so a count per instance would give a
+                caller 10 guesses for each instance of the template. Count per
+                template instead. A missing instance finds no code, so it can
+                share one key.
+
+                Reason: Prevent getting more guesses by changing the instance.
+            */
+            return $"registration-discount-code-template-{registrationTemplateId?.ToString() ?? "none"}";
+        }
+
+        /// <summary>
+        /// Checks whether another discount code lookup is allowed from the
+        /// client address and, if it is, counts it as a wrong code. Call this
+        /// before looking up a code the person entered, and call
+        /// <see cref="ReleaseDiscountCodeAttempt(string)"/> when the code is valid.
+        /// </summary>
+        /// <param name="attemptKey">The key from <see cref="GetDiscountCodeAttemptKey(int?)"/>.</param>
+        /// <returns><c>true</c> if the lookup is allowed; <c>false</c> if too many wrong codes have been entered.</returns>
+        private bool TryCountDiscountCodeAttempt( string attemptKey )
+        {
+            return RateLimiterCache.TryRecordAction( attemptKey,
+                Rock.CheckIn.PinAttemptLimiter.GetIpAddressKey( RequestContext.ClientInformation?.IpAddress ),
+                DiscountCodeAttemptWindow,
+                DiscountCodeMaxFailedAttempts );
+        }
+
+        /// <summary>
+        /// Gives back a discount code attempt counted by
+        /// <see cref="TryCountDiscountCodeAttempt(string)"/> because the code
+        /// was valid.
+        /// </summary>
+        /// <param name="attemptKey">The key from <see cref="GetDiscountCodeAttemptKey(int?)"/>.</param>
+        private void ReleaseDiscountCodeAttempt( string attemptKey )
+        {
+            RateLimiterCache.ReleaseAction( attemptKey,
+                Rock.CheckIn.PinAttemptLimiter.GetIpAddressKey( RequestContext.ClientInformation?.IpAddress ) );
+        }
+
+        /// <summary>
+        /// Determines whether the code is an auto-apply discount code of the
+        /// registration instance's template. These codes are given to anyone
+        /// by <see cref="CheckDiscountCode(string, int, Guid?, bool)"/>, so
+        /// they are not counted as guesses.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="registrationTemplateId">The template identifier from <see cref="GetDiscountCodeTemplateId(RockContext, int)"/>.</param>
+        /// <param name="code">The discount code.</param>
+        /// <returns><c>true</c> if the code is an auto-apply code of the template.</returns>
+        private static bool IsAutoApplyDiscountCode( RockContext rockContext, int? registrationTemplateId, string code )
+        {
+            if ( !registrationTemplateId.HasValue )
+            {
+                return false;
+            }
+
+            return new RegistrationTemplateDiscountService( rockContext ).Queryable()
+                .Any( d => d.RegistrationTemplateId == registrationTemplateId.Value
+                    && d.AutoApplyDiscount
+                    && d.Code.Equals( code, StringComparison.OrdinalIgnoreCase ) );
+        }
+
+        /// <summary>
         /// Gets the context.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <param name="args">The arguments.</param>
         /// <param name="errorMessage">The error message.</param>
+        /// <param name="countDiscountCodeAttempt">If <c>true</c>, a discount code in <paramref name="args"/> that is not the registration's saved code counts toward the discount code attempt limit when it is not valid.</param>
         /// <returns></returns>
-        private RegistrationContext GetContext( RockContext rockContext, RegistrationEntryArgsBag args, out string errorMessage )
+        private RegistrationContext GetContext( RockContext rockContext, RegistrationEntryArgsBag args, out string errorMessage, bool countDiscountCodeAttempt = true )
         {
             var currentPerson = GetCurrentPerson();
             var registrationInstanceId = GetRegistrationInstanceId( rockContext );
@@ -6445,6 +6583,60 @@ namespace Rock.Blocks.Event
             {
                 errorMessage = "A registrar is required";
                 return null;
+            }
+
+            /*
+                11/25/2026 - MSE
+
+                GetRegistrationContext tells the caller whether the posted discount
+                code is valid, so every action that posts args could be used to
+                guess codes. A posted code that is not the registration's saved
+                code (the same rule GetRegistrationContext uses) is counted here
+                before it is looked up, and the count is given back when the code
+                is valid. Validity is decided by the lookup itself because the
+                context can be null for other reasons after a valid code.
+
+                The template's auto-apply codes are not counted: the client posts
+                the auto-applied code with every action, and CheckDiscountCode
+                already gives these codes to anyone, so a person who never typed
+                a code is not refused when their address is over the limit.
+
+                The initialization box passes false: its args come from the
+                server's saved session, and it finishes a registration after a
+                redirect payment gateway has taken the money, so it must never be
+                refused here.
+
+                Reason: Prevent guessing discount codes.
+            */
+            if ( countDiscountCodeAttempt && args.DiscountCode.IsNotNullOrWhiteSpace() )
+            {
+                var savedDiscountCode = args.RegistrationGuid.HasValue
+                    ? registrationService.Queryable()
+                        .Where( r => r.Guid == args.RegistrationGuid.Value )
+                        .Select( r => r.DiscountCode )
+                        .FirstOrDefault()
+                    : null;
+
+                var isSavedDiscountCode = savedDiscountCode.IsNotNullOrWhiteSpace()
+                    && string.Equals( args.DiscountCode.Trim(), savedDiscountCode.Trim(), StringComparison.OrdinalIgnoreCase );
+
+                var discountCodeTemplateId = isSavedDiscountCode ? null : GetDiscountCodeTemplateId( rockContext, registrationInstanceId );
+
+                if ( !isSavedDiscountCode && !IsAutoApplyDiscountCode( rockContext, discountCodeTemplateId, args.DiscountCode ) )
+                {
+                    var discountCodeAttemptKey = GetDiscountCodeAttemptKey( discountCodeTemplateId );
+
+                    if ( !TryCountDiscountCodeAttempt( discountCodeAttemptKey ) )
+                    {
+                        errorMessage = DiscountCodeTooManyAttemptsMessage;
+                        return null;
+                    }
+
+                    if ( new RegistrationTemplateDiscountService( rockContext ).GetDiscountByCodeIfValid( registrationInstanceId, args.DiscountCode ) != null )
+                    {
+                        ReleaseDiscountCodeAttempt( discountCodeAttemptKey );
+                    }
+                }
             }
 
             var context = registrationService.GetRegistrationContext( registrationInstanceId, args.RegistrationGuid, currentPerson, args.DiscountCode, out errorMessage );
