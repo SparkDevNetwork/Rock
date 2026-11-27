@@ -38,5 +38,31 @@ internal class CodeGenerated_20261118 : Migration
         //   Category: Mobile > Communication
         //   Attribute: Allow Unrestricted Uploads
         RockMigrationHelper.AddOrUpdateBlockTypeAttribute( "4EF4250E-2D22-426C-ADAC-571C1301D18E", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Allow Unrestricted Uploads", "AllowUnrestrictedUploads", "Allow Unrestricted Uploads", @"If true, anyone with access to send messages can upload images or files. Otherwise, it'll use the permissions set for Communication Attachment binary file type.", 3, @"True", "E5FA7341-CA96-40F4-B7DF-59D858406B81" );
+
+        CleanupMigrationHistory();
+    }
+
+    /// <summary>
+    /// Cleanups the migration history records except the last one.
+    /// </summary>
+    private void CleanupMigrationHistory()
+    {
+        /*
+            11/26/26 - MSE
+
+            The EF6 version updated __MigrationHistory unconditionally. A
+            database built from the SQL baseline has no __MigrationHistory
+            table, so the update is skipped there; a database upgraded from
+            EF6 still has its model snapshots cleared.
+
+            Reason: __MigrationHistory exists only on databases built by EF6.
+        */
+        Sql( @"
+IF OBJECT_ID( N'[dbo].[__MigrationHistory]', N'U' ) IS NOT NULL
+BEGIN
+    UPDATE [dbo].[__MigrationHistory]
+    SET [Model] = 0x
+    WHERE MigrationId < (SELECT TOP 1 MigrationId FROM __MigrationHistory ORDER BY MigrationId DESC)
+END" );
     }
 }
