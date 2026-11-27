@@ -373,7 +373,12 @@ namespace Rock.Model
 
                 var rootMatrixAttributeCache = AttributeCache.Get( rootMatrixAttributeValue.AttributeId );
 
-                if ( rootMatrixAttributeCache == null || !rootMatrixAttributeCache.EntityTypeId.HasValue )
+                // A matrix attribute marked Suppress History Logging writes no
+                // history for its cells, the same as add and delete in
+                // AttributeMatrixItem.
+                if ( rootMatrixAttributeCache == null
+                    || !rootMatrixAttributeCache.EntityTypeId.HasValue
+                    || rootMatrixAttributeCache.IsSuppressHistoryLogging )
                 {
                     return;
                 }

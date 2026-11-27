@@ -124,7 +124,7 @@ namespace Rock.Model
             {
                 var attributeCache = AttributeCache.Get( attributeValue.AttributeId );
 
-                if ( attributeCache.IsSuppressHistoryLogging )
+                if ( attributeCache != null && !attributeCache.IsSuppressHistoryLogging )
                 {
                     var formattedOldValue = isDelete ? GetHistoryFormattedValue( attributeValue.Value, attributeCache ) : string.Empty;
                     var formattedNewValue = isDelete ? string.Empty : GetHistoryFormattedValue( attributeValue.Value, attributeCache );
