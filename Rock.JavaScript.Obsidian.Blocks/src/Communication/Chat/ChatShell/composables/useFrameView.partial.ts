@@ -1547,10 +1547,11 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
         void openList(kind);
     });
 
-    // The roster also closes in the room it shows once that room stops offering it, its faces
-    // gone as the reader leaves or the room keeps its list to its leaders. Read only while the
-    // roster is open, so the room's facts are not asked for otherwise.
-    watch(() => panelKind.value === "members" && !!activeChannelId.value && !isMembersOffered.value, isWithdrawn => {
+    // The roster also closes in the room it shows once its faces go, as the reader leaves or the
+    // room keeps its list to its leaders. A group that drops to two as the reader removes someone
+    // keeps its list open on the people left, since that is where the reader is. Read only while
+    // the roster is open, so the room's facts are not asked for otherwise.
+    watch(() => panelKind.value === "members" && !!activeChannelId.value && rooms.activeKind.value !== "person" && !isMembersOffered.value, isWithdrawn => {
         if (isWithdrawn) {
             closeFollowedPanel();
         }
