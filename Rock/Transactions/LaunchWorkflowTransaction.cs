@@ -153,7 +153,9 @@ namespace Rock.Transactions
                     ? this.WorkflowTypeId.ToString()
                     : this.WorkflowTypeGuid.ToString();
 
-                ExceptionLogService.LogException( new Exception( $"Exception while executing workflow ({workflowIdentifier}) {this.ToJson()}", ex ), null );
+                // Log identifiers only. The workflow attribute values can hold
+                // person data or what a visitor typed.
+                ExceptionLogService.LogException( new Exception( $"Exception while executing workflow ({workflowIdentifier}), initiator person alias id {this.InitiatorPersonAliasId?.ToString() ?? "none"}.", ex ), null );
             }
         }
 
