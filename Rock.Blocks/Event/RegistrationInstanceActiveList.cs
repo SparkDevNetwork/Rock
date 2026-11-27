@@ -153,7 +153,7 @@ namespace Rock.Blocks.Event
                 .Where( g => g.IsAuthorized( Rock.Security.Authorization.VIEW, RequestContext.CurrentPerson ) )
                 .ToList();
             
-            return listItems;
+            return securedAttendanceItems;
         }
 
         /// <inheritdoc/>
