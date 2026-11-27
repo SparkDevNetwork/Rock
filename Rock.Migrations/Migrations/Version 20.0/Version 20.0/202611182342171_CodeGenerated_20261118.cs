@@ -40,6 +40,8 @@ namespace Rock.Migrations
             //   Category: Mobile > Communication
             //   Attribute: Allow Unrestricted Uploads
             RockMigrationHelper.AddOrUpdateBlockTypeAttribute( "4EF4250E-2D22-426C-ADAC-571C1301D18E", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Allow Unrestricted Uploads", "AllowUnrestrictedUploads", "Allow Unrestricted Uploads", @"If true, anyone with access to send messages can upload images or files. Otherwise, it'll use the permissions set for Communication Attachment binary file type.", 3, @"True", "E5FA7341-CA96-40F4-B7DF-59D858406B81" );
+
+            CleanupMigrationHistory();
         }
         
         /// <summary>
@@ -58,6 +60,17 @@ namespace Rock.Migrations
             //   Category: CMS
             //   Attribute: Root Folder
             RockMigrationHelper.DeleteAttribute("8E9B8BE9-18B7-40A4-901E-4FCED9322F18");
+        }
+
+        /// <summary>
+        /// Cleanups the migration history records except the last one.
+        /// </summary>
+        private void CleanupMigrationHistory()
+        {
+            Sql( @"
+UPDATE [dbo].[__MigrationHistory]
+SET [Model] = 0x
+WHERE MigrationId < (SELECT TOP 1 MigrationId FROM __MigrationHistory ORDER BY MigrationId DESC)" );
         }
     }
 }

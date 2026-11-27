@@ -784,6 +784,11 @@ namespace Rock.Blocks.Group
                     return ActionBadRequest( "Unable to add person when the meeting did not occur." );
                 }
 
+                if ( !CanAddNewAttendee( occurrenceData.Group ) )
+                {
+                    return ActionBadRequest( "Adding people is not allowed." );
+                }
+
                 if ( string.Equals( this.AddPersonAs, "Group Member", StringComparison.OrdinalIgnoreCase ) )
                 {
                     groupMember = clientService.AddPersonAsGroupMember( occurrenceData, bag );
@@ -991,6 +996,20 @@ namespace Rock.Blocks.Group
 
                 if ( attendance == null )
                 {
+                    /*
+                        11/25/2026 - MSE
+
+                        Only people the page lists may get a new attendance record here. People
+                        who are not on the list are added through AddPerson, which checks the
+                        block's adding-people settings.
+
+                        Reason: Do not let a posted person alias bypass the add-person rules.
+                    */
+                    if ( !clientService.ArePersonAliasesOnRoster( occurrenceData, new[] { bag.PersonAliasId } ) )
+                    {
+                        return ActionBadRequest( "Person is not on this attendance list." );
+                    }
+
                     var personAliasId = bag.PersonAliasId;
 
                     DateTime startDateTime;
@@ -1715,16 +1734,7 @@ namespace Rock.Blocks.Group
                 }
             }
 
-            var allowAddPerson = this.IsNewAttendeeAdditionAllowed;
-
-            if ( this.AddGroupMemberPage.IsNotNullOrWhiteSpace() )
-            {
-                box.IsNewAttendeeAdditionAllowed = allowAddPerson && box.AddPersonAs == "Attendee";
-            }
-            else
-            {
-                box.IsNewAttendeeAdditionAllowed = allowAddPerson;
-            }
+            box.IsNewAttendeeAdditionAllowed = CanAddNewAttendee( group );
 
             box.IsAttendanceOccurrenceTypesSectionShown = allowedAttendanceTypeValues.Count > 1;
             box.AttendanceOccurrenceTypesSectionLabel = this.AttendanceOccurrenceTypesLabel;
@@ -1755,6 +1765,46 @@ namespace Rock.Blocks.Group
             box.Attendances = GetAttendanceBags( rockContext, occurrenceData );
 
             return box;
+        }
+
+        /// <summary>
+        /// Determines whether the current person may add a person who is not
+        /// on the attendance list, as an attendee or as a group member
+        /// depending on the block settings.
+        /// </summary>
+        /// <param name="group">The group the attendance is for.</param>
+        /// <returns><c>true</c> if the current person may add a new attendee; otherwise, <c>false</c>.</returns>
+        private bool CanAddNewAttendee( Model.Group group )
+        {
+            if ( group == null || !this.IsNewAttendeeAdditionAllowed )
+            {
+                return false;
+            }
+
+            if ( !string.Equals( this.AddPersonAs, "Group Member", StringComparison.OrdinalIgnoreCase ) )
+            {
+                return true;
+            }
+
+            // When a group member add page is configured, new group members
+            // are added on that page, not by this block.
+            if ( this.AddGroupMemberPage.IsNotNullOrWhiteSpace() )
+            {
+                return false;
+            }
+
+            /*
+                11/25/2026 - MSE
+
+                This block can be used by people who may only take attendance. Adding a
+                group member needs the same rights the group member blocks require.
+
+                Reason: Take Attendance alone must not allow adding group members.
+            */
+            var currentPerson = GetCurrentPerson();
+
+            return group.IsAuthorized( Authorization.MANAGE_MEMBERS, currentPerson )
+                || group.IsAuthorized( Authorization.EDIT, currentPerson );
         }
 
         /// <summary>
@@ -2166,6 +2216,76 @@ namespace Rock.Blocks.Group
                 return true;
             }
 
+            /// <summary>
+            /// Determines whether every person alias belongs to a person on the
+            /// attendance list: a member of the group, or a person in the
+            /// entity set given to the page.
+            /// </summary>
+            /// <param name="occurrenceData">The occurrence data.</param>
+            /// <param name="personAliasIds">The person alias identifiers to check.</param>
+            /// <returns><c>true</c> if every person is on the attendance list; otherwise, <c>false</c>.</returns>
+            internal bool ArePersonAliasesOnRoster( OccurrenceData occurrenceData, IEnumerable<int> personAliasIds )
+            {
+                var personAliasIdList = personAliasIds.Distinct().ToList();
+
+                if ( !personAliasIdList.Any() )
+                {
+                    return true;
+                }
+
+                if ( occurrenceData.Group == null )
+                {
+                    return false;
+                }
+
+                var personIdByAliasId = _personAliasService
+                    .Queryable()
+                    .Where( a => personAliasIdList.Contains( a.Id ) )
+                    .Select( a => new { a.Id, a.PersonId } )
+                    .ToList();
+
+                if ( personIdByAliasId.Count != personAliasIdList.Count )
+                {
+                    return false;
+                }
+
+                var personIds = personIdByAliasId.Select( a => a.PersonId ).Distinct().ToList();
+                var groupId = occurrenceData.Group.Id;
+
+                var rosterPersonIds = new HashSet<int>( _groupMemberService
+                    .Queryable()
+                    .Where( m => m.GroupId == groupId && personIds.Contains( m.PersonId ) )
+                    .Select( m => m.PersonId ) );
+
+                var notOnRosterPersonIds = personIds.Where( id => !rosterPersonIds.Contains( id ) ).ToList();
+
+                if ( !notOnRosterPersonIds.Any() )
+                {
+                    return true;
+                }
+
+                var entitySetId = _block.EntitySetIdPageParameter.AsIntegerOrNull();
+                var entitySetGuid = _block.EntitySetIdPageParameter.AsGuidOrNull();
+
+                if ( !entitySetId.HasValue && !entitySetGuid.HasValue )
+                {
+                    return false;
+                }
+
+                var entitySetService = new EntitySetService( _rockContext );
+                var entitySetPersonQuery = entitySetId.HasValue
+                    ? entitySetService.GetEntityQuery<Person>( entitySetId.Value )
+                    : entitySetService.GetEntityQuery<Person>( entitySetGuid.Value );
+
+                var entitySetPersonCount = entitySetPersonQuery
+                    .Where( p => notOnRosterPersonIds.Contains( p.Id ) )
+                    .Select( p => p.Id )
+                    .Distinct()
+                    .Count();
+
+                return entitySetPersonCount == notOnRosterPersonIds.Count;
+            }
+
             internal OccurrenceData GetOccurrenceData( AttendanceOccurrenceSearchParameters searchParameters, bool withTracking = false )
             {
                 var occurrenceData = new OccurrenceData()
@@ -2288,8 +2408,16 @@ namespace Rock.Blocks.Group
                 }
 
                 // Add new attendee/group member.
+                int? addedPersonAliasId = null;
+
                 if ( bag.AddedPersonAliasGuid.HasValue )
                 {
+                    if ( !_block.CanAddNewAttendee( occurrenceData.Group ) )
+                    {
+                        occurrenceData.ErrorMessage = "Adding people is not allowed.";
+                        return false;
+                    }
+
                     GroupMember groupMember = null;
                     if ( this.ShouldAddPersonAsGroupMember )
                     {
@@ -2306,6 +2434,7 @@ namespace Rock.Blocks.Group
 
                     // Update if an attendance record already exists.
                     var personAliasId = _personAliasService.GetId( bag.AddedPersonAliasGuid.Value );
+                    addedPersonAliasId = personAliasId;
                     var existingAttendance = bag.UpdatedAttendances.FirstOrDefault( a => a.PersonAliasId == personAliasId );
 
                     if ( existingAttendance != null )
@@ -2324,6 +2453,33 @@ namespace Rock.Blocks.Group
 
                 // Update the attendees.
                 var existingAttendees = occurrenceData.AttendanceOccurrence.Attendees.ToList();
+
+                /*
+                    11/25/2026 - MSE
+
+                    Only people the page lists, existing attendees and the person just added
+                    (checked above) may get a new attendance record.
+
+                    Reason: Do not let a posted person alias bypass the add-person rules.
+                */
+                if ( bag.UpdatedAttendances?.Any() == true )
+                {
+                    var existingAttendeePersonAliasIds = existingAttendees
+                        .Where( a => a.PersonAliasId.HasValue )
+                        .Select( a => a.PersonAliasId.Value )
+                        .ToList();
+
+                    var newPersonAliasIds = bag.UpdatedAttendances
+                        .Select( a => a.PersonAliasId )
+                        .Where( id => id != addedPersonAliasId && !existingAttendeePersonAliasIds.Contains( id ) )
+                        .ToList();
+
+                    if ( !ArePersonAliasesOnRoster( occurrenceData, newPersonAliasIds ) )
+                    {
+                        occurrenceData.ErrorMessage = "Person is not on this attendance list.";
+                        return false;
+                    }
+                }
 
                 var campusId = new Lazy<int?>( () =>
                 {
