@@ -4,7 +4,7 @@
                :subtitle="subtitle"
                :entranceKeys="entranceKeys"
                @close="emit('close')">
-        <template v-if="!refusal" #top>
+        <template #top>
             <div class="chat-mb-top">
                 <Field ref="filterField"
                        type="search"
@@ -28,21 +28,7 @@
              :aria-busy="isLoading ? 'true' : 'false'"
              @pointerover="onPointerOver"
              @pointerleave="onPointerLeave">
-            <EmptyState v-if="refusal === 'not_member'"
-                        data-testid="members-state"
-                        data-state="not_member"
-                        icon="users"
-                        title="Join to see who's here"
-                        :text="`Members of ${channelName} can see its member list.`" />
-
-            <EmptyState v-else-if="refusal === 'no_roster_right'"
-                        data-testid="members-state"
-                        data-state="no_roster_right"
-                        icon="eye-off"
-                        title="Only leaders can see who's here"
-                        :text="`${channelName} keeps its member list private. You can still message people you know.`" />
-
-            <EmptyState v-else-if="error"
+            <EmptyState v-if="error"
                         data-testid="members-state"
                         data-state="error"
                         tone="error"
@@ -357,7 +343,7 @@
     import Menu, { MenuItem } from "../ui/menu.partial.obs";
     import PanelHost from "../ui/panelHost.partial.obs";
     import Skeleton from "../ui/skeleton.partial.obs";
-    import { MemberRemoval, RosterRefusal } from "../composables/useMembers.partial";
+    import { MemberRemoval } from "../composables/useMembers.partial";
     // the roster's own reading of where a search is, named apart from the prop it types
     import type { searchStatus as rosterSearchStatus } from "../composables/useMembers.partial";
     import { useHoverIntent } from "../composables/useHoverIntent.partial";
@@ -449,7 +435,7 @@
             default: false
         },
 
-        /** Why the first page failed, other than a refusal, or null. */
+        /** Why the first page failed, or null. */
         error: {
             type: Object as PropType<ChatError | null>,
             default: null
@@ -458,12 +444,6 @@
         /** Why the last later page failed, or null. */
         moreError: {
             type: Object as PropType<ChatError | null>,
-            default: null
-        },
-
-        /** Why the platform will not list the room for the reader, or null. */
-        refusal: {
-            type: String as PropType<RosterRefusal | null>,
             default: null
         },
 
@@ -609,11 +589,11 @@
 
     const isGroupFull = computed((): boolean => !props.isChannel && (props.memberCount ?? 0) >= groupCapacity);
 
-    /** Offered where Rock lets the reader add, unless the list itself is refused or failed. */
-    const isAddShown = computed((): boolean => props.canManageMembers && !props.refusal && !props.error);
+    /** Offered where Rock lets the reader add, unless the list itself failed. */
+    const isAddShown = computed((): boolean => props.canManageMembers && !props.error);
 
-    /** Add people's place, held while Rock has not answered, unless the list itself is refused or failed. */
-    const isAddHeld = computed((): boolean => !isAddShown.value && props.isAddPending && !props.refusal && !props.error);
+    /** Add people's place, held while Rock has not answered, unless the list itself failed. */
+    const isAddHeld = computed((): boolean => !isAddShown.value && props.isAddPending && !props.error);
 
     // #endregion Computed Values
 
@@ -870,7 +850,7 @@
 
     // A screen reader hears what the first page brought.
     watch(() => props.isLoading, (isLoading, wasLoading) => {
-        if (wasLoading && !isLoading && !props.error && !props.refusal) {
+        if (wasLoading && !isLoading && !props.error) {
             const count = props.members.length;
             announce(props.hasMore ? `First ${count} members loaded` : `${count} ${count === 1 ? "member" : "members"}`);
         }

@@ -29,14 +29,14 @@
         <template v-if="kind === 'channel'">
             <p v-if="description" class="chat-rd-desc" data-testid="details-description">{{ description }}</p>
 
-            <!-- Members is a way to the members panel for whoever may see who is here; a plain count for anyone else. -->
+            <!-- Members is a way to the members panel where the header draws the room's faces; a plain count anywhere else. -->
             <SettingGroup data-testid="details-facts">
                 <SettingRow icon="users"
                             title="Members"
-                            :isButton="canSeeRoster"
+                            :isButton="isMembersOffered"
                             data-testid="details-members"
-                            @click="canSeeRoster && emit('members')">
-                    <span class="chat-rd-value">{{ facts.member_count.toLocaleString() }}<Icon v-if="canSeeRoster" name="right" size="xs" /></span>
+                            @click="isMembersOffered && emit('members')">
+                    <span class="chat-rd-value">{{ facts.member_count.toLocaleString() }}<Icon v-if="isMembersOffered" name="right" size="xs" /></span>
                 </SettingRow>
                 <SettingRow v-if="leaders.length > 0" icon="star" title="Led by" data-testid="details-leaders">
                     <span class="chat-rd-value is-leaders">
@@ -425,8 +425,8 @@
             required: true
         },
 
-        /** Whether the reader may see who is in the room, which makes its member count a way to the members panel. */
-        canSeeRoster: {
+        /** Whether Members is offered, as the header draws the room's faces, which makes its member count a way to the members panel. */
+        isMembersOffered: {
             type: Boolean,
             default: false
         },

@@ -1387,7 +1387,7 @@ describe("online status", () => {
             can_message: true
         }));
         const panel = mount(MembersPanel, {
-            props: { channelName: "young-adults", isChannel: true, members: roster, hasMore: false, isLoading: false, isLoadingMore: false, error: null, moreError: null, refusal: null, query: "", searchStatus: null, personAliasGuid: viewer, isPhone: false }
+            props: { channelName: "young-adults", isChannel: true, members: roster, hasMore: false, isLoading: false, isLoadingMore: false, error: null, moreError: null, query: "", searchStatus: null, personAliasGuid: viewer, isPhone: false }
         });
         try {
             mountSidebar({ rows: [dmOnline, dmBen] });

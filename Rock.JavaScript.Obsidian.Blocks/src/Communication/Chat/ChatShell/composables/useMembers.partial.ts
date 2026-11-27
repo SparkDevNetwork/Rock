@@ -49,9 +49,6 @@ export const rightsReadAheadFor = 5000;
 /** The room's two searches: the panel's filter, and the last leader's dialog's "Find a member". */
 type RoomSearchKey = "search" | "successor";
 
-/** Why the platform will not list a room's people for the reader, each drawn as its own state. */
-export type RosterRefusal = "not_member" | "no_roster_right";
-
 /** The platform's answer for one query of the whole room. */
 export type MemberSearchState = {
     /** The query the rows answer, trimmed; null when no search has been asked. */
@@ -73,12 +70,15 @@ export type MembersState = {
     isLoading: boolean;
     isLoadingMore: boolean;
 
-    /** Why the first page failed, other than a refusal, or null. */
+    /**
+     * Why the first page failed, or null. Members is offered only where the room draws faces for
+     * the reader, so a refusal comes only from a room that changed meanwhile, and its panel closes
+     * as the room's facts catch up.
+     */
     error: ChatError | null;
 
     /** Why the last later page failed, or null. */
     moreError: ChatError | null;
-    refusal: RosterRefusal | null;
 
     /** The filter as typed. */
     query: string;
@@ -245,12 +245,6 @@ export type Members = {
     add: (people: PersonRow[]) => Promise<void>;
 };
 
-/** The refusals that are states of the panel rather than failures, by the platform's codes. */
-const refusals: Record<string, RosterRefusal> = {
-    "authz.not_member": "not_member",
-    "authz.no_roster_right": "no_roster_right"
-};
-
 /** A search not asked. */
 function noSearch(): MemberSearchState {
     return { query: null, rows: [], hasMore: false, isSearching: false, error: null };
@@ -266,7 +260,6 @@ function emptyState(): MembersState {
         isLoadingMore: false,
         error: null,
         moreError: null,
-        refusal: null,
         query: "",
         search: noSearch(),
         canManageMembers: false,
@@ -451,7 +444,6 @@ export function createMembers(dependencies: MembersDependencies): Members {
         const generation = rosterGeneration;
         state.isLoading = true;
         state.error = null;
-        state.refusal = null;
         const result = await fetchPage(channelId, undefined, null);
         if (isStopped || generation !== rosterGeneration) {
             return;
@@ -459,13 +451,7 @@ export function createMembers(dependencies: MembersDependencies): Members {
 
         state.isLoading = false;
         if (!result.ok) {
-            const refusal = refusals[result.error.code];
-            if (refusal) {
-                state.refusal = refusal;
-            }
-            else {
-                state.error = result.error;
-            }
+            state.error = result.error;
             return;
         }
 
@@ -702,9 +688,9 @@ export function createMembers(dependencies: MembersDependencies): Members {
      * rows, rather than an empty list. The next open starts from nothing.
      */
     function close(): void {
-        const { rows, hasMore, isLoading, error, refusal, query, search, canManageMembers } = state;
+        const { rows, hasMore, isLoading, error, query, search, canManageMembers } = state;
         reset();
-        Object.assign(state, { rows, hasMore, isLoading, error, refusal, query, search: { ...search, isSearching: false }, canManageMembers });
+        Object.assign(state, { rows, hasMore, isLoading, error, query, search: { ...search, isSearching: false }, canManageMembers });
     }
 
     /** Empties the roster and drops anything still on its way. */

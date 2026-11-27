@@ -35,7 +35,6 @@
 //       state: {
 //           channelId: string | null, rows: RosterMember[], hasMore, isLoading, isLoadingMore,
 //           error: ChatError | null, moreError: ChatError | null,
-//           refusal: "not_member" | "no_roster_right" | null,
 //           query: string,
 //           search: { query: string | null, rows: RosterMember[], hasMore, isSearching,
 //                     error: ChatError | null }
@@ -197,24 +196,20 @@ describe("the roster's pages", () => {
         expect(calls).toHaveLength(2);
     });
 
-    test("a room the person has not joined is its own state, not a failure", async () => {
-        const { members } = harness(notMember);
+    // Members is offered only where the room draws faces for the person, so a refused list comes
+    // only from a room that changed meanwhile: it is the first page's failure, with no state of its own.
+    test.each([
+        ["a room the person is not in", notMember],
+        ["a room that keeps its member list from the person", noRosterRight]
+    ])("a refusal from %s is the first page's failure", async (_room: string, answer: CallResult) => {
+        const { members } = harness(answer);
 
         await members.open(channel);
 
-        expect(members.state.refusal).toBe("not_member");
-        expect(members.state.error).toBeNull();
+        expect(members.state.error).toEqual((answer as CallResult & { ok: false }).error);
+        expect(members.state).not.toHaveProperty("refusal");
         expect(members.state.rows).toEqual([]);
         expect(members.state.isLoading).toBe(false);
-    });
-
-    test("a room that keeps its member list from the person is its own state", async () => {
-        const { members } = harness(noRosterRight);
-
-        await members.open(channel);
-
-        expect(members.state.refusal).toBe("no_roster_right");
-        expect(members.state.error).toBeNull();
     });
 
     test("a first page that fails says so, and Try again asks again", async () => {
@@ -222,7 +217,6 @@ describe("the roster's pages", () => {
 
         await members.open(channel);
         expect(members.state.error?.code).toBe("rpc.transport");
-        expect(members.state.refusal).toBeNull();
 
         await members.retry();
         expect(calls).toHaveLength(2);

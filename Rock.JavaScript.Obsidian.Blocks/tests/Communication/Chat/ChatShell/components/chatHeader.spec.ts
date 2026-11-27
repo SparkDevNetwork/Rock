@@ -379,7 +379,7 @@ describe("the header on a phone", () => {
     });
 
     test("opening More, which holds Members, says the person is reaching for it, so the panel's rights are read first", async () => {
-        const w = mountHeader({ isPhone: true, kind: "channel", isMembersOffered: true });
+        const w = mountHeader({ isPhone: true, kind: "channel", isMembersOffered: true, facts: roomFacts({ faces: [{ person_alias_guid: "a0000001-0000-4000-8000-000000000000", nick_name: "Tom", last_name: "Hale", avatar_url: null }] }) });
 
         await w.get("[data-testid='header-more'] button").trigger("click");
         await settle();

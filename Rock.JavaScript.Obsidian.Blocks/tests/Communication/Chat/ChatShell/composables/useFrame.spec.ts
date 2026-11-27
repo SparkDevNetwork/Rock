@@ -83,7 +83,11 @@ function fakeShell(calls: Calls): { shell: ChatShell, state: { activeChannelId: 
             }),
             previewRoom: jest.fn((channelId: string) => {
                 calls.push(`rooms.previewRoom:${channelId}`);
-            })
+            }),
+            // The two channels' facts carry a face, as a member's do, which is what offers Members.
+            factsOf: (channelId: string) => channelId === team || channelId === volunteers
+                ? { channel_id: channelId, is_member: true, member_count: 2, faces: [{ person_alias_guid: "tom-hale", nick_name: "Tom", last_name: "Hale", avatar_url: null }], people: [] }
+                : null
         },
         // no card open, which a profile in the column would follow
         profile: {
@@ -96,7 +100,8 @@ function fakeShell(calls: Calls): { shell: ChatShell, state: { activeChannelId: 
                 { channel_id: team, channel_type: "shared", name: "Team", dm_people: null, dm_other_count: null, room_kind: "channel", title: "Team" },
                 { channel_id: pairWithAnna, channel_type: "dm", name: null, dm_people: [{ person_alias_guid: "anna-reyes", nick_name: "Anna", last_name: "Reyes", avatar_url: null }], dm_other_count: 1, room_kind: "person", title: "Anna Reyes" }
             ],
-            roomKindOf: (channelId: string) => channelId === team ? "channel" : channelId === pairWithAnna ? "person" : null
+            roomKindOf: (channelId: string) => channelId === team || channelId === volunteers ? "channel" : channelId === pairWithAnna ? "person" : null,
+            rowOf: (channelId: string) => shell.channels.rows.find(row => row.channel_id === channelId)
         },
         members: {
             open: jest.fn(async (channelId: string) => {

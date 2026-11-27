@@ -374,7 +374,7 @@ describe("a channel's identity", () => {
     });
 
     test("makes the Members row a way to the members panel where the reader may see who is here", async () => {
-        const w = mountDetails({ facts: channelFacts({ member_count: 42 }), canSeeRoster: true });
+        const w = mountDetails({ facts: channelFacts({ member_count: 42 }), isMembersOffered: true });
 
         const members = w.get("[data-testid='details-members']");
         expect(members.element.tagName).toBe("BUTTON");

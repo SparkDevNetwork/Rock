@@ -469,7 +469,7 @@ button.chat-header-name-row:hover .chat-header-chev {
     import ChannelMark from "../ui/channelMark.partial.obs";
     import Dot from "../ui/dot.partial.obs";
     import GroupFace from "../ui/groupFace.partial.obs";
-    import { cardStatusWords, peopleCountWords, personFace, shownStatus } from "../ui/face.partial";
+    import { cardStatusWords, memberFaces, peopleCountWords, personFace, shownStatus } from "../ui/face.partial";
     import Icon from "../ui/icon.partial.obs";
     import IconButton from "../ui/iconButton.partial.obs";
     import Menu, { MenuItem } from "../ui/menu.partial.obs";
@@ -619,8 +619,8 @@ button.chat-header-name-row:hover .chat-header-chev {
         },
 
         /**
-         * Whether to offer the members panel, which needs a conversation that exists; a channel's
-         * facepile, a group's Members button, never in a conversation of two.
+         * Whether to offer the members panel, which needs a conversation that exists and faces to
+         * draw; never in a conversation of two.
          */
         isMembersOffered: {
             type: Boolean,
@@ -727,38 +727,23 @@ button.chat-header-name-row:hover .chat-header-chev {
     /** How many other people a group holds: the row's count, else the room's head count less the reader. */
     const groupOtherCount = computed((): number | null => props.otherCount ?? (props.facts ? props.facts.member_count - 1 : null));
 
-    /** Which rooms offer the members button: a channel or a group, never a conversation of two. */
-    const membersKind = computed((): "channel" | "group" | null => props.isMembersOffered && (props.kind === "channel" || props.kind === "group") ? props.kind : null);
-
     /**
      * What the members button draws, one control for a channel and a group: up to three of the
-     * room's other people then "+N" for everyone not drawn. A channel's faces, its leaders first,
-     * come with its facts and only for someone in it; a group's are the people the header already
-     * has. The button is only ever faces, so null leaves it out wherever none can be drawn: a
-     * channel the reader is not in, facts not read yet, or people not loaded yet. The faces are
-     * what tell one room from another at a glance, so nothing stands in for them.
+     * room's other people then "+N" for everyone not drawn. The button is only ever faces, so null
+     * leaves it out wherever none can be drawn (a channel the reader is not in, a room that keeps
+     * its list to its leaders, facts or people not read yet), and a phone's menu holds Members
+     * only beside it. The faces are what tell one room from another at a glance, so nothing
+     * stands in for them.
      */
     const membersButton = computed((): { faces: AvatarPerson[], count: string | null, label: string, tip: string } | null => {
-        let total: number;
-        let shown: AvatarPerson[];
-
-        if (membersKind.value === "channel" && props.facts) {
-            total = props.facts.member_count;
-            shown = props.facts.is_member ? (props.facts.faces ?? []).slice(0, 3).map(personFace) : [];
-        }
-        else if (membersKind.value === "group") {
-            // A group's people are the faces the header already has, drawn as a channel's are:
-            // the pile is how a group is told from another at a glance.
-            total = props.facts?.member_count ?? (props.otherCount ?? props.people.length) + 1;
-            shown = faces.value.slice(0, 3);
-        }
-        else {
-            return null;
-        }
-
+        const shown = props.isMembersOffered ? memberFaces(props.kind, props.facts, props.people).map(personFace) : [];
         if (shown.length === 0) {
             return null;
         }
+
+        // A channel's faces come with its facts, which hold its head count; a group's count may
+        // come before its facts, from its row.
+        const total = props.facts?.member_count ?? (props.otherCount ?? props.people.length) + 1;
 
         const tip = `${total.toLocaleString()} ${total === 1 ? "member" : "members"}`;
         const label = `${tip}, open member list`;
@@ -799,7 +784,7 @@ button.chat-header-name-row:hover .chat-header-chev {
             items.push({ key: "threads", label: threadsWords.value, icon: "thread" });
         }
 
-        if (membersKind.value) {
+        if (membersButton.value) {
             items.push({ key: "members", label: "Members", icon: "users" });
         }
 
@@ -875,7 +860,7 @@ button.chat-header-name-row:hover .chat-header-chev {
 
     /** More opening on a phone is the person reaching for Members when it holds it, as the pile's hover is. */
     function onMoreOpenChange(isOpen: boolean): void {
-        if (isOpen && membersKind.value) {
+        if (isOpen && membersButton.value) {
             emit("membersIntent");
         }
     }

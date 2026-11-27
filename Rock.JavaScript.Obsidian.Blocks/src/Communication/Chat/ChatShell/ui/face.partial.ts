@@ -19,7 +19,7 @@
 // avatar component because a component's setup script exports no functions, and the sidebar, the
 // header and the @ picker all draw the platform's people.
 import { startOfDay, timeLabel } from "../feedLayout.partial";
-import { ChatPerson, FaceStatus, SidebarRow } from "../types.partial";
+import { ChannelFacts, ChatPerson, FaceStatus, RoomKind, SidebarRow } from "../types.partial";
 import type { AvatarPerson } from "./avatar.partial.obs";
 
 /**
@@ -42,6 +42,31 @@ export function personName(person: Pick<ChatPerson, "nick_name" | "last_name">):
  */
 export function personFace(person: ChatPerson): AvatarPerson {
     return { name: personName(person), photoUrl: person.avatar_url ?? null };
+}
+
+/**
+ * The room's people the members button draws, at most three. A channel's faces, its leaders
+ * first, come with its facts only for someone in it, and never where the room keeps its list to
+ * its leaders; a group's are its people as its row or its facts hold them. Empty for a
+ * conversation of two and wherever no face can be shown, and Members is offered nowhere then,
+ * since the button is only ever faces: the header, a phone's menu and the details all ask this.
+ *
+ * @param kind The room's kind, or null before it is known.
+ * @param facts The room's facts, or null before they are read.
+ * @param people The room's other people as its sidebar row holds them, empty for none.
+ *
+ * @returns The people to draw, empty where Members is not offered.
+ */
+export function memberFaces(kind: RoomKind | null, facts: ChannelFacts | null, people: readonly ChatPerson[]): ChatPerson[] {
+    if (kind === "channel") {
+        return facts?.is_member ? (facts.faces ?? []).slice(0, 3) : [];
+    }
+
+    if (kind === "group") {
+        return (people.length > 0 ? people : facts?.people ?? []).slice(0, 3);
+    }
+
+    return [];
 }
 
 /**

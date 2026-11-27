@@ -29,7 +29,7 @@
 //   props: channelName: string, memberCount: number | null (the room's facts), isChannel: boolean,
 //          members: RosterMember[] (the rows to list),
 //          hasMore, isLoading, isLoadingMore: boolean, error, moreError: ChatError | null,
-//          refusal: "not_member" | "no_roster_right" | null, query: string,
+//          query: string,
 //          searchStatus: "searching" | "answered" | "failed" | null; the reader and the phone
 //          flag come from the session
 //   emits: query(text), retry, retrySearch, message(personAliasGuid),
@@ -94,7 +94,6 @@ function draw(given: Record<string, unknown> = {}): VueWrapper {
             isLoadingMore: false,
             error: null,
             moreError: null,
-            refusal: null,
             query: "",
             searchStatus: null,
             loadMore: waitingLoader(),
@@ -209,19 +208,19 @@ describe("states", () => {
         expect(w.text()).toContain("Loading members");
     });
 
-    test("a room the reader has not joined asks them to join, with no filter", () => {
-        const w = draw({ refusal: "not_member", members: [] });
+    // The panel opens only where the header draws the room's faces, so it has no state for a room
+    // the reader is not in or one that keeps its list to its leaders: a refusal can come only from
+    // a room that changed meanwhile, and it is the list's failure until the panel closes with it.
+    test("draws a refused list as its failure, with no join or leaders-only state", () => {
+        for (const code of ["authz.not_member", "authz.no_roster_right"]) {
+            const w = draw({ error: { code, severity: "permission" }, members: [] });
 
-        expect(w.get("[data-testid='members-state']").attributes("data-state")).toBe("not_member");
-        expect(text(w, "members-state")).toBe("Join to see who's here Members of young-adults can see its member list.");
-        expect(w.find("[data-testid='members-filter']").exists()).toBe(false);
-    });
-
-    test("a room that keeps its list from the reader says so", () => {
-        const w = draw({ refusal: "no_roster_right", members: [] });
-
-        expect(text(w, "members-state")).toBe("Only leaders can see who's here young-adults keeps its member list private. You can still message people you know.");
-        expect(w.find("[data-testid='members-filter']").exists()).toBe(false);
+            expect(w.get("[data-testid='members-state']").attributes("data-state")).toBe("error");
+            expect(w.text()).not.toContain("Join to see who's here");
+            expect(w.text()).not.toContain("Only leaders can see who's here");
+            w.unmount();
+            wrapper = null;
+        }
     });
 
     test("a first page that failed offers Try again", async () => {
@@ -512,17 +511,12 @@ describe("Add people", () => {
         expect(foot(w).find("[data-testid='members-add']").exists()).toBe(true);
     });
 
-    test("holds no place where the list is refused or failed, though Rock has not answered", () => {
-        expect(draw({ isAddPending: true, refusal: "not_member" }).find("[data-testid='members-foot']").exists()).toBe(false);
-        wrapper?.unmount();
+    test("holds no place where the list failed, though Rock has not answered", () => {
         expect(draw({ isAddPending: true, error: { code: "net.offline", severity: "failed", text: "Offline" } }).find("[data-testid='members-foot']").exists()).toBe(false);
     });
 
-    test("is not offered to someone who may not add, nor where the list is refused or failed", () => {
+    test("is not offered to someone who may not add, nor where the list failed", () => {
         expect(draw().find("[data-testid='members-foot']").exists()).toBe(false);
-        wrapper?.unmount();
-
-        expect(draw({ canManageMembers: true, refusal: "not_member", members: [] }).find("[data-testid='members-foot']").exists()).toBe(false);
         wrapper?.unmount();
 
         expect(draw({ canManageMembers: true, error: { code: "rpc.transport", severity: "failed" }, members: [] }).find("[data-testid='members-foot']").exists()).toBe(false);

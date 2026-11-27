@@ -40,6 +40,7 @@ import { ChatShell } from "../shell.partial";
 import { FocusStop, PersonRow } from "../types.partial";
 import { tokenDuration, tokenLength } from "../ui/brand.partial";
 import { EscapeLayer, focusQuietly, isDrawn, pullEscapeLayer, pushEscapeLayer } from "../ui/focusTrap.partial";
+import { memberFaces } from "../ui/face.partial";
 import { isMotionReduced } from "../ui/viewport.partial";
 import { Landings, ReplyLanding, useLandings } from "./useLandings.partial";
 import { searchStatus, shownMembers, successorChoices } from "./useMembers.partial";
@@ -430,6 +431,8 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
 
     const drawnThread = shallowRef<OpenThreadState | null>(null);
 
+    const rooms = useRoomsView({ shell, activeChannelId, drawnThread });
+
     const threadOrigin = ref<ThreadOrigin>(null);
     const personOrigin = ref<PersonOrigin>(null);
 
@@ -502,14 +505,13 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
     const isSidebarHidden = computed((): boolean => (isPhone.value && pane.value !== "list") || sidebarFold.value === "folded");
 
     /**
-     * Members is offered where a room has a roster to show: a channel or a group, never a
-     * conversation of two, which Rock keeps as it is. The header offers it by this, and the panel
-     * opens and follows a conversation change by it too.
+     * Members is offered where the header draws the room's faces: a channel the reader is in and
+     * may see the list of, or a group, never a conversation of two. A room with no faces to show
+     * has no way into its list anywhere, so the header's button, a phone's menu and the details'
+     * count all offer it by this, and the panel opens, follows a conversation and stays open by it.
      */
-    const isMembersOffered = computed((): boolean => {
-        const channelId = activeChannelId.value;
-        return !!channelId && shell.value.channels.roomKindOf(channelId) !== "person";
-    });
+    const isMembersOffered = computed((): boolean => !!activeChannelId.value
+        && memberFaces(rooms.activeKind.value, rooms.activeFacts.value, rooms.activePeople.value).length > 0);
 
     const shownList = computed((): ShownList | null => shownPanel.value === "activity" ? activityTab.value : shownPanel.value);
 
@@ -1052,6 +1054,16 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
     }
 
     /** Closes the panel column, which draws what it held while it narrows, without moving focus. */
+    /** Closes a list the open conversation no longer has; focus the person put outside the chat stays there. */
+    function closeFollowedPanel(): void {
+        if (rootElement.value?.contains(document.activeElement)) {
+            closePanel();
+        }
+        else {
+            endPanel();
+        }
+    }
+
     function endPanel(): void {
         releasePanel();
         panelKind.value = null;
@@ -1518,27 +1530,30 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
     });
 
     // The threads list and the roster are the open conversation's, so each follows it, re-pointing
-    // at the conversation now open; a draft has neither, and a conversation of two no roster, so
-    // they close there, as the header offers them. Activity spans every conversation, so it stays
-    // as it is.
+    // at the conversation now open; a draft has neither, and a room with no faces to show no
+    // roster, so they close there, as the header offers them. Activity spans every conversation,
+    // so it stays as it is.
     watch(activeChannelId, channelId => {
         const kind = panelKind.value;
         if (kind !== "threads" && kind !== "members") {
             return;
         }
 
-        // Focus the person put outside the chat stays there.
         if (!channelId || (kind === "members" && !isMembersOffered.value)) {
-            if (rootElement.value?.contains(document.activeElement)) {
-                closePanel();
-            }
-            else {
-                endPanel();
-            }
+            closeFollowedPanel();
             return;
         }
 
         void openList(kind);
+    });
+
+    // The roster also closes in the room it shows once that room stops offering it, its faces
+    // gone as the reader leaves or the room keeps its list to its leaders. Read only while the
+    // roster is open, so the room's facts are not asked for otherwise.
+    watch(() => panelKind.value === "members" && !!activeChannelId.value && !isMembersOffered.value, isWithdrawn => {
+        if (isWithdrawn) {
+            closeFollowedPanel();
+        }
     });
 
     // Focus is settled after every change of what the frame shows, the conversation included: a
@@ -1563,8 +1578,6 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
         window.clearTimeout(panelClearTimer);
         pullEscapeLayer(sidebarLayer);
     });
-
-    const rooms = useRoomsView({ shell, activeChannelId, drawnThread });
 
     return {
         isPhone,
@@ -1690,7 +1703,6 @@ function membersPanelViews(shell: Readonly<Ref<ChatShell>>, rooms: Pick<ReturnTy
             isLoadingMore: members.isLoadingMore,
             error: members.error,
             moreError: members.moreError,
-            refusal: members.refusal,
             query: members.query,
             searchStatus: searchStatus(members),
             canManageMembers: members.canManageMembers,
