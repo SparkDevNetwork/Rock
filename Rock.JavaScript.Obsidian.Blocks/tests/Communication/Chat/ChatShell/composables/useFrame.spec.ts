@@ -36,12 +36,21 @@ type Calls = string[];
 /** Someone in the team and in the volunteers, whose face a member is shown. */
 const tom = { person_alias_guid: "tom-hale", nick_name: "Tom", last_name: "Hale", avatar_url: null };
 
+/** A channel's facts as a member reads them, carrying a face. */
+function memberFacts(channelId: string): Record<string, unknown> {
+    return { channel_id: channelId, is_member: true, member_count: 2, faces: [tom], people: [tom] };
+}
+
 /** The shell as the frame reaches it, recording each call it makes in order. */
 function fakeShell(calls: Calls): { shell: ChatShell, state: { activeChannelId: string | null, hiddenPanes: { conversation: boolean, thread: boolean } } } {
     const state = reactive({ activeChannelId: null as string | null, hiddenPanes: { conversation: false, thread: false } });
 
     // Each room's kind by the platform's head count, which a group loses on dropping to two.
     const kinds = reactive<Record<string, string>>({ [team]: "channel", [volunteers]: "channel", [pairWithAnna]: "person" });
+    const facts = reactive<Record<string, unknown>>({
+        [team]: memberFacts(team),
+        [volunteers]: memberFacts(volunteers)
+    });
     const threads = {
         state: reactive({ thread: null as { channelId: string, rootId: number } | null }),
         openList: jest.fn(async (_channelId: string, tab?: string) => {
@@ -91,9 +100,9 @@ function fakeShell(calls: Calls): { shell: ChatShell, state: { activeChannelId: 
                 calls.push(`rooms.previewRoom:${channelId}`);
             }),
             // The two channels' facts carry a face, as a member's do, which is what offers Members.
-            factsOf: (channelId: string) => channelId === team || channelId === volunteers
-                ? { channel_id: channelId, is_member: true, member_count: 2, faces: [tom], people: [tom] }
-                : null
+            // A room's facts land after it opens, so a cell can take them away and land them late.
+            facts,
+            factsOf: (channelId: string) => facts[channelId] ?? null
         },
         // no card open, which a profile in the column would follow
         profile: {
@@ -356,6 +365,54 @@ describe("the panel column", () => {
         expect(frame.isMembersOffered.value).toBe(false);
         expect(frame.panelKind.value).toBe("members");
         expect(calls).toEqual([`members.open:${team}`]);
+    });
+
+    // Another channel's facts land after it opens, so its faces are not known yet as the list
+    // follows it there; the list stays open on it while they load and keeps it once they show faces.
+    test("the members list follows into a channel whose facts are still loading and stays once they show faces", async () => {
+        mounted = mountFrame();
+        const { frame, shell, calls, state } = mounted;
+        const facts = (shell.rooms as unknown as { facts: Record<string, unknown> }).facts;
+        delete facts[volunteers];
+        state.activeChannelId = team;
+        await settle();
+        await frame.onListPanel("members");
+
+        state.activeChannelId = volunteers;
+        await settle();
+
+        expect(frame.panelKind.value).toBe("members");
+        expect(calls).toEqual([`members.open:${team}`, `members.open:${volunteers}`]);
+
+        facts[volunteers] = memberFacts(volunteers);
+        await settle();
+
+        expect(frame.isMembersOffered.value).toBe(true);
+        expect(frame.panelKind.value).toBe("members");
+        expect(calls).toEqual([`members.open:${team}`, `members.open:${volunteers}`]);
+    });
+
+    // The same channel's facts landing with no face to show, as for a channel the reader is not
+    // in, close the list once they arrive, as the header offers no Members there.
+    test("the members list followed into a channel whose facts are loading closes once they land with no faces", async () => {
+        mounted = mountFrame();
+        const { frame, shell, calls, state } = mounted;
+        const facts = (shell.rooms as unknown as { facts: Record<string, unknown> }).facts;
+        delete facts[volunteers];
+        state.activeChannelId = team;
+        await settle();
+        await frame.onListPanel("members");
+
+        state.activeChannelId = volunteers;
+        await settle();
+        expect(frame.panelKind.value).toBe("members");
+
+        facts[volunteers] = { channel_id: volunteers, is_member: false, member_count: 2, faces: [], people: [] };
+        await settle();
+
+        expect(frame.isMembersOffered.value).toBe(false);
+        expect(frame.panelKind.value).toBeNull();
+        expect(calls).toEqual([`members.open:${team}`, `members.open:${volunteers}`, "members.close"]);
     });
 
     // The roster read afresh for another conversation takes its old rows away, so focus on one
