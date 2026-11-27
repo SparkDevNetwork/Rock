@@ -33,9 +33,15 @@ const pairWithAnna = "c0000003-0000-4000-8000-000000000000";
 
 type Calls = string[];
 
+/** Someone in the team and in the volunteers, whose face a member is shown. */
+const tom = { person_alias_guid: "tom-hale", nick_name: "Tom", last_name: "Hale", avatar_url: null };
+
 /** The shell as the frame reaches it, recording each call it makes in order. */
 function fakeShell(calls: Calls): { shell: ChatShell, state: { activeChannelId: string | null, hiddenPanes: { conversation: boolean, thread: boolean } } } {
     const state = reactive({ activeChannelId: null as string | null, hiddenPanes: { conversation: false, thread: false } });
+
+    // Each room's kind by the platform's head count, which a group loses on dropping to two.
+    const kinds = reactive<Record<string, string>>({ [team]: "channel", [volunteers]: "channel", [pairWithAnna]: "person" });
     const threads = {
         state: reactive({ thread: null as { channelId: string, rootId: number } | null }),
         openList: jest.fn(async (_channelId: string, tab?: string) => {
@@ -86,7 +92,7 @@ function fakeShell(calls: Calls): { shell: ChatShell, state: { activeChannelId: 
             }),
             // The two channels' facts carry a face, as a member's do, which is what offers Members.
             factsOf: (channelId: string) => channelId === team || channelId === volunteers
-                ? { channel_id: channelId, is_member: true, member_count: 2, faces: [{ person_alias_guid: "tom-hale", nick_name: "Tom", last_name: "Hale", avatar_url: null }], people: [] }
+                ? { channel_id: channelId, is_member: true, member_count: 2, faces: [tom], people: [tom] }
                 : null
         },
         // no card open, which a profile in the column would follow
@@ -100,7 +106,8 @@ function fakeShell(calls: Calls): { shell: ChatShell, state: { activeChannelId: 
                 { channel_id: team, channel_type: "shared", name: "Team", dm_people: null, dm_other_count: null, room_kind: "channel", title: "Team" },
                 { channel_id: pairWithAnna, channel_type: "dm", name: null, dm_people: [{ person_alias_guid: "anna-reyes", nick_name: "Anna", last_name: "Reyes", avatar_url: null }], dm_other_count: 1, room_kind: "person", title: "Anna Reyes" }
             ],
-            roomKindOf: (channelId: string) => channelId === team || channelId === volunteers ? "channel" : channelId === pairWithAnna ? "person" : null,
+            kinds,
+            roomKindOf: (channelId: string) => kinds[channelId] ?? null,
             rowOf: (channelId: string) => shell.channels.rows.find(row => row.channel_id === channelId)
         },
         members: {
@@ -328,6 +335,27 @@ describe("the panel column", () => {
 
         await frame.onListPanel("members");
         expect(frame.panelKind.value).toBeNull();
+    });
+
+    // A group whose list the person is reading drops to two as they remove someone from it; the
+    // list stays open on the people left, focus on the row after the one that went, though a
+    // conversation of two offers no Members to open it again.
+    test("the members list stays open on a group that drops to two people", async () => {
+        mounted = mountFrame();
+        const { frame, shell, calls, state } = mounted;
+        const kinds = (shell.channels as unknown as { kinds: Record<string, string> }).kinds;
+        kinds[team] = "group";
+        state.activeChannelId = team;
+        await settle();
+        await frame.onListPanel("members");
+        expect(frame.panelKind.value).toBe("members");
+
+        kinds[team] = "person";
+        await settle();
+
+        expect(frame.isMembersOffered.value).toBe(false);
+        expect(frame.panelKind.value).toBe("members");
+        expect(calls).toEqual([`members.open:${team}`]);
     });
 
     // The roster read afresh for another conversation takes its old rows away, so focus on one
